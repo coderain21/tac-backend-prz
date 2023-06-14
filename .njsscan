@@ -1,0 +1,8 @@
+- ignore-paths:
+  - assets
+  - node_modules
+  - .env
+
+  severity-filter:
+  - WARNING
+  - ERROR
