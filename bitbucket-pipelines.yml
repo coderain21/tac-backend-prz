@@ -175,7 +175,7 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
       - stage:
-            name: Deployment
+            name: Testing and DEV Deployment
             deployment: develop
             steps:
               - step: *APITesting
@@ -192,7 +192,7 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
       - stage:
-            name: Deployment
+            name: STAGING Deployment
             deployment: staging
             steps:
               - step: *Deploy
@@ -210,7 +210,7 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
       - stage:
-          name: Deployment
+          name: BETA Deployment
           deployment: beta
           steps:
             - step: *Deploy
@@ -227,7 +227,7 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
       - stage:
-          name: Deployment
+          name: PRODUCTION Deployment
           deployment: production
           steps:
             - step: *Deploy
