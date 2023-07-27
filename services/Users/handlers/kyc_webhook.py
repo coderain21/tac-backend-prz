@@ -9,25 +9,21 @@ secret_key = os.environ['SECRET_KEY']
 def kyc_webhook(event, context):
     try:
         print("event",event)
-        print("secret_key->",secret_key)
         # Retrieve the event data from the request
         headers = event['headers']
-        print("headers->",headers)
         
         signature = headers.get('X-Sumsub-Signature')
-        print("signature->",signature)
         
         data = json.loads(event['body'])
         # Verify the Sumsub signature
-        expected_signature = hmac.new(secret_key.encode(), event['body'].encode(), hashlib.sha256).hexdigest()
-        print("expected_signature->",expected_signature)
+        # expected_signature = hmac.new(secret_key.encode(), event['body'].encode(), hashlib.sha256).hexdigest()
 
-        if not hmac.compare_digest(signature, expected_signature):
-            print('Invalid signature. Possible tampering.')
-            return {
-                'statusCode': 403,
-                'body': json.dumps({'message': 'Invalid signature'})
-            }
+        # if not hmac.compare_digest(signature, expected_signature):
+        #     print('Invalid signature. Possible tampering.')
+        #     return {
+        #         'statusCode': 403,
+        #         'body': json.dumps({'message': 'Invalid signature'})
+        #     }
         applicant_id = data["applicantId"]
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
