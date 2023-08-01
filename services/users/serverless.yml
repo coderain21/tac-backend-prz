@@ -1,0 +1,123 @@
+service: users-management
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${env:MONGODB_NAME}
+    MONGODB_COLLECTION_NAME: Users
+    MONGO_CLIENT: ${env:MONGO_CLIENT}
+    
+
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${env:COGNITO_SELLER_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${env:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${env:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+                
+  
+ 
+
+
+functions: 
+  
+  # COGNITO PRE SIGNUP TRIGGER
+  cognito-pre-signup-trigger:
+    handler: handlers/cognito_pre_signup.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: PreSignUp
+          existing: true
+   
+
+
+  # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
+  cognito-post-signup-confirmation-trigger:
+    handler: handlers/cognito_post_confirmation.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: PostConfirmation
+          existing: true
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+
+     
+  
+ 
+  
+ 
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager

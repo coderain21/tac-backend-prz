@@ -1,20 +1,39 @@
 {
-  "name": "indy-auction-backend-apis",
+  "name": "deeplay-backend-apis",
   "version": "1.0.0",
-  "description": "",
-  "main": ".eslintrc.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "eslint": "eslint ./services/"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "deeplay-backend-apis"
+  },
+  "author": "sandhyashri",
   "license": "ISC",
-  "dependencies": {
-    "eslint": "^8.43.0",
-    "eslint-config-airbnb": "^19.0.4",
+  "devDependencies": {
+    "eslint": "^8.42.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
     "eslint-plugin-promise": "^6.1.1"
+  },
+  "description": "",
+  "dependencies": {
+    "@mongodb-js/ssh-tunnel": "^2.0.5",
+    "aws-sdk": "^2.1380.0",
+    "country-state-picker": "^1.1.5",
+    "data-uri-to-buffer": "^5.0.1",
+    "ejs": "^3.1.9",
+    "eslint-config-airbnb": "^19.0.4",
+    "file": "^0.2.2",
+    "fs": "^0.0.1-security",
+    "joi": "^17.9.2",
+    "mongoose": "^7.1.2",
+    "mongoose-paginate-v2": "^1.7.1",
+    "path": "^0.12.7",
+    "qrcode": "^1.5.3",
+    "wkhtmltopdf": "^0.4.0"
   }
 }
