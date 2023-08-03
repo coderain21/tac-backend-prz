@@ -9,28 +9,37 @@ const Joi = require('joi')
 const request = require('request')
 const { generate } = require('otp-generator')
 
+const passwordValidator = require('password-validator')
+const Users = require('../entities/Users')
+const mongoConnection = require('../lib/mongodb_helper')
+
 const helpers = require('../lib/helper')
 
 const schema = Joi.object().keys({
-    email_address: Joi.string().required().messages({
+    user_type: Joi.string().required().messages({
+        'string.base': 'user type should be of type string',
+        'string.empty': 'user type cannot be an empty field',
+        'any.required': 'user type is a required field',
+    }),
+    email_address: Joi.string().email().required().messages({
+        'string.empty': 'please enter the valid email address',
         'string.base': 'Email address should be of type string',
-        'string.empty': 'Email address cannot be an empty field',
         'any.required': 'Email address is a required field',
     }),
     password: Joi.string().required().messages({
         'string.base': 'Password should be of type string',
-        'string.empty': 'Address line 1 cannot be an empty field',
-        'any.required': 'Address line 1 is a required field',
+        'string.empty': 'Password line 1 cannot be an empty field',
+        'any.required': 'Password line 1 is a required field',
     }),
     confirm_password: Joi.string().required().messages({
         'string.base': 'confirm passowrd should be of type string',
-        'string.empty': 'Address line 2 cannot be an empty field',
-        'any.required': 'Address line 2 is a required field',
+        'string.empty': ' Confirm password cannot be an empty field',
+        'any.required': 'confirm passwordis a required field',
     }),
     terms_and_condition: Joi.boolean().required().messages({
         'boolean.base': 'terms and condition should be of type boolean',
     }),
-    newsletter_notification: Joi.boolean().required().messages({
+    newsletter_notification: Joi.boolean().optional().messages({
         'boolean.base': 'newsletter notification should be of type boolean',
     }),
     session_token: Joi.string().required().messages({
@@ -87,11 +96,53 @@ module.exports.verifyReCaptcha = async (event) => {
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
+        const connection = await mongoConnection.connect()
+        
+        const userExist = await Users.findOne({ email_address: userData.email_address, user_type: userData.user_type })
+        if (userExist) {
+            return {
+                statusCode: 409,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'An account linked to this already exists' }),
+            }
+        }
+        await connection.disconnect()
+        if (userData.password !== userData.confirm_password) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Password Doesnt match' }),
+            }
+        }
+        // eslint-disable-next-line new-cap
+        const passwordSchema = new passwordValidator()
+        // Add password validation rules
+        passwordSchema
+            .is().min(8) // Minimum length 8 characters
+            .has().uppercase()
+            .is()
+            .max(100) // Maximum length 100 characters
+            .has()
+            .lowercase() // Must have at least one lowercase letter
+            .has()
+            .digits() // Must have at least one digit
+            .has()
+            .symbols() // Must have at least one symbol
+        // Validate the password
+        const isPasswordValid = passwordSchema.validate(userData.password)
+        if (!isPasswordValid) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Invalid Password' }),
+            }
+        }
+
         console.log('zzzzzzzzzzzz', process.env.RECAPTCHA_KEY)
         const captchaResult = await verifyReCaptcha(userData.session_token)
         userData.otp = generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false })
-
-        if (!captchaResult.success_status) {
+        console.log('captchaResult', !captchaResult.success)
+        if (captchaResult.success === false) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
@@ -99,7 +150,9 @@ module.exports.verifyReCaptcha = async (event) => {
             }
         }
         console.log('userData', userData)
+        userData.free_user = true
         const encryptedData = await encryptWithTimeValidation(userData, process.env.CUSTOMER_SESSION_TOKEN_SECRET)
+        await helpers.sendPinpointEmail(userData.email_address, 'shrinit.poojary@7edge.com', JSON.stringify({ otp: userData.otp }), process.env.TEMPLATE_ARN_EMAIL_OTP)
         console.log('encryptedData', encryptedData)
         return {
             statusCode: 201,
