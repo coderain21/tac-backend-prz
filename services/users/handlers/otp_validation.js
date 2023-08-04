@@ -62,8 +62,6 @@ process. It is an asynchronous function that takes in three parameters: `event`,
 module.exports.otpValidation = async (event, _context, callback) => {
     try {
         let userData = JSON.parse(event.body)
-        // userData.password = await helpers.encryptDecryptPassword(userData.password, false)
-        // console.log('Password', userData.password)
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
@@ -76,7 +74,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
         if (userData.session_token) {
             try {
                 const data = await decryptWithTimeValidation(userData.session_token, process.env.CUSTOMER_SESSION_TOKEN_SECRET, 600000)
-                console.log('data', data)
                 const OTP = userData.otp
                 const decryptedPassword = await helpers.encryptDecryptPassword(userData.password, false)
                 console.log('userData', userData)
@@ -89,8 +86,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                 }
                 userData = { ...userData, ...data }
                 userData.unique_id = uuid.v1()
-                console.log('userData', OTP)
-                console.log('###', parseInt(data.otp, 10), parseInt(userData.otp, 10))
                 if (parseInt(data.otp, 10) === parseInt(OTP, 10)) {
                     delete userData.session
                     const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
@@ -102,7 +97,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                         }
                     }
                     userData.password = decryptedPassword
-                    console.log('Password', userData.password)
                     const connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     await connection.disconnect()
