@@ -1,0 +1,121 @@
+service: users-management
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${env:MONGODB_NAME}
+    MONGODB_COLLECTION_NAME: Users
+    MONGO_CLIENT: ${env:MONGO_CLIENT}
+    CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
+    RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
+    TEMPLATE_ARN_EMAIL_OTP: ${env:TEMPLATE_ARN_EMAIL_OTP}
+    TEMPLATE_ARN_WELCOME_EMAIL: ${env:TEMPLATE_ARN_WELCOME_EMAIL}
+    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
+    RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
+    
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${env:COGNITO_SELLER_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+            - mobiletargeting:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${env:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${env:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+                
+  
+ 
+
+
+functions: 
+  
+  # COGNITO PRE SIGNUP TRIGGER
+  verify-recaptha:
+    handler: handlers/verify_the_recaptcha.verifyReCaptcha
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+      - http:
+          path: /verify-captcha
+          method: post
+          cors: true
+  
+  otp-validation:
+    handler: handlers/otp_validation.otpValidation
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+      - http:
+          path: /otp-validation
+          method: post
+          cors: true
+
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
