@@ -27,6 +27,7 @@ const UserSchema = new Schema({
     is_first_time_login: { type: Boolean, default: true, required: true },
     newsletter_notification: { type: Boolean, default: false },
     terms_and_condition: { type: Boolean, default: false },
+    free_user: { type: Boolean, default: true },
 })
 
 UserSchema.plugin(mongoosePaginate)
