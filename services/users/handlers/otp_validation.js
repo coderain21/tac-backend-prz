@@ -10,6 +10,7 @@ const uuid = require('uuid')
 const Joi = require('joi')
 
 const { CognitoIdentityServiceProvider } = require('aws-sdk')
+const cognitoHelper = require('../lib/cognito_helper')
 
 // eslint-disable-next-line import/order
 const helpers = require('../lib/helper')
@@ -38,25 +39,6 @@ const schema = Joi.object().keys({
 
 AWS.config.update({ region: process.env.REGION })
 
-async function checkUserExists(username) {
-    try {
-        const params = {
-            UserPoolId: process.env.COGNITO_USER_POOL_ID,
-            Username: username,
-        }
-        const userInfo = await cognito.adminGetUser(params).promise()
-        if (userInfo.UserStatus === 'CONFIRMED') { return true }
-        return false
-    } catch (err) {
-        if (err.code === 'UserNotFoundException') {
-            console.log('User does not exist in Cognito')
-            return false
-        }
-        console.log('Error checking user existence:', err)
-        throw err
-    }
-}
-
 async function decryptWithTimeValidation(encryptedData, secretKey, maxAge) {
     try {
         const decipher = crypto.createDecipher('aes-256-cbc', secretKey)
@@ -72,93 +54,11 @@ async function decryptWithTimeValidation(encryptedData, secretKey, maxAge) {
         console.log(error)
         return false
     }
-
-    // throw new Error('Data has expired')
-}
-async function cognitoCreate(userData) {
-    try {
-        const attributeList = []
-        attributeList.push(
-            { Name: 'custom:is_first_time_login', Value: 'true' },
-            { Name: 'custom:user_type', Value: userData.user_type },
-            { Name: 'email', Value: userData.email_address },
-        )
-        console.log('sandhya', userData)
-        const userName = uuid.v4()
-        // const params = {
-        //     UserPoolId: process.env.COGNITO_USER_POOL_ID,
-        //     Username: userName, // userData.email_address,
-        //     TemporaryPassword: 'Temp12345!', // Replace with a temporary password for the user
-        //     MessageAction: 'SUPPRESS', // Do not send a welcome message to the user
-        //     UserAttributes: attributeList,
-        // }
-
-        // const creating_user = cognitoIdentityServiceProvider.adminCreateUser(params).promise()
-        // console.log('creat', creating_user)
-        // const param = {
-        //     UserPoolId: process.env.COGNITO_USER_POOL_ID,
-        //     Username: userName, // Replace with the username you want to set the password for
-        //     Password: userData.password,
-        //     Permanent: true, // Use lowercase "true" for boolean value
-        // }
-
-        // const response = await cognitoIdentityServiceProvider.adminResetUserPassword(param)
-        // console.log('response', response)
-        const adminCreateUserParams = {
-            UserPoolId: process.env.COGNITO_USER_POOL_ID,
-            Username: userName,
-            UserAttributes: attributeList,
-        }
-        const user = await cognitoIdentityServiceProvider.adminCreateUser(adminCreateUserParams).promise()
-        console.log('user', user)
-        const password_params = {
-            UserPoolId: process.env.COGNITO_USER_POOL_ID,
-            Username: userName,
-            Password: userData.password,
-            Permanent: true,
-        }
-        await cognitoIdentityServiceProvider.adminSetUserPassword(password_params).promise()
-        if (user) {
-        // const user = await cognitoIdentityServiceProvider
-        //     .signUp({
-        //         ClientId: '3duudq593a3j7jpp7afv1vbmuc', //                userData.user_type === 'seller' ? process.env.COGNITO_SELLER_CLIENT_ID : process.env.COGNITO_BUYER_CLIENT_ID,
-        //         Username: '56b212d4-10c1-7058-2410-dd2f70b8625ds',
-        //         Password: userData.password,
-        //         UserAttributes: attributeList,
-        //     })
-        //     .promise()
-        // console.log('xxxxxxxxxxx', user)
-
-            // console.log('inside2')
-            // if (user) {
-            //     const params = {
-            //         UserPoolId: 'eu-west-2_kqcLIvA4D', // process.env.COGNITO_USER_POOL_ID,
-            //         Username: '56b212d4-10c1-7058-2410-dd2f70b8625ds', // userData.email_address,
-            //     }
-            //     await cognitoIdentityServiceProvider.adminConfirmSignUp(params).promise()
-            await cognitoIdentityServiceProvider.adminAddUserToGroup({
-                GroupName: userData.user_type,
-                UserPoolId: process.env.COGNITO_USER_POOL_ID,
-                Username: userName,
-            }).promise()
-            return {
-                success_status: true,
-                message: 'User added successfuly',
-            }
-        }
-        return {
-            success_status: false,
-            message: 'There was an error while creating admin account',
-        }
-    } catch (error) {
-        console.log(error)
-        return {
-            success_status: false,
-            message: error.message,
-        }
-    }
 }
 
+/* The `module.exports.otpValidation` function is the main function that handles the OTP validation
+process. It is an asynchronous function that takes in three parameters: `event`, `_context`, and
+`callback`. */
 module.exports.otpValidation = async (event, _context, callback) => {
     try {
         let userData = JSON.parse(event.body)
@@ -175,7 +75,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
             try {
                 userData.password = await helpers.encryptDecryptPassword(userData.password, false)
                 const data = await decryptWithTimeValidation(userData.session_token, process.env.CUSTOMER_SESSION_TOKEN_SECRET, 5000000)
-                console.log('data', data)
                 if (data === false) {
                     return {
                         statusCode: 400,
@@ -193,7 +92,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                 }
                 delete userData.session
-                const cognitoResponse = await cognitoCreate(userData)
+                const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
                 if (cognitoResponse.success_status !== true) {
                     return {
                         statusCode: 400,

@@ -57,11 +57,10 @@ function encryptWithTimeValidation(data, secretKey) {
 }
 async function verifyReCaptcha(token) {
     try {
-        console.log('inside', `secret=${process.env.RECAPTCHA_KEY}&response=${token}`)
         const data = await new Promise((resolve, reject) => {
             request({
                 method: 'POST',
-                url: 'https://www.google.com/recaptcha/api/siteverify',
+                url: process.env.RECAPTCHA_URL,
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `secret=${process.env.RECAPTCHA_KEY}&response=${token}`,
             }, (error, response, body) => {
@@ -74,8 +73,6 @@ async function verifyReCaptcha(token) {
                 }
             })
         })
-
-        console.log('data111111111', data)
         return data
     } catch (err) {
         return {
@@ -136,11 +133,8 @@ module.exports.verifyReCaptcha = async (event) => {
                 body: JSON.stringify({ message: 'Invalid Password' }),
             }
         }
-
-        console.log('zzzzzzzzzzzz', process.env.RECAPTCHA_KEY)
         const captchaResult = await verifyReCaptcha(userData.session_token)
         userData.otp = generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false })
-        console.log('captchaResult', !captchaResult.success)
         if (captchaResult.success === false) {
             return {
                 statusCode: 400,
@@ -148,11 +142,9 @@ module.exports.verifyReCaptcha = async (event) => {
                 body: JSON.stringify({ message: 'Captcha verification failed' }),
             }
         }
-        console.log('userData', userData)
         userData.free_user = true
         const encryptedData = await encryptWithTimeValidation(userData, process.env.CUSTOMER_SESSION_TOKEN_SECRET)
         await helpers.sendPinpointEmail(userData.email_address, 'shrinit.poojary@7edge.com', JSON.stringify({ otp: userData.otp }), process.env.TEMPLATE_ARN_EMAIL_OTP)
-        console.log('encryptedData', encryptedData)
         return {
             statusCode: 201,
             headers: await helpers.getHeaders(),
