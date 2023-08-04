@@ -62,6 +62,8 @@ process. It is an asynchronous function that takes in three parameters: `event`,
 module.exports.otpValidation = async (event, _context, callback) => {
     try {
         let userData = JSON.parse(event.body)
+        // userData.password = await helpers.encryptDecryptPassword(userData.password, false)
+        // console.log('Password', userData.password)
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
@@ -73,8 +75,11 @@ module.exports.otpValidation = async (event, _context, callback) => {
         }
         if (userData.session_token) {
             try {
-                userData.password = await helpers.encryptDecryptPassword(userData.password, false)
-                const data = await decryptWithTimeValidation(userData.session_token, process.env.CUSTOMER_SESSION_TOKEN_SECRET, 5000000)
+                const data = await decryptWithTimeValidation(userData.session_token, process.env.CUSTOMER_SESSION_TOKEN_SECRET, 600000)
+                console.log('data', data)
+                const OTP = userData.otp
+                const decryptedPassword = await helpers.encryptDecryptPassword(userData.password, false)
+                console.log('userData', userData)
                 if (data === false) {
                     return {
                         statusCode: 400,
@@ -84,32 +89,35 @@ module.exports.otpValidation = async (event, _context, callback) => {
                 }
                 userData = { ...userData, ...data }
                 userData.unique_id = uuid.v1()
-                if (parseInt(data.otp, 10) !== parseInt(userData.otp, 10)) {
-                    return {
-                        statusCode: 400,
-                        headers: await helpers.getHeaders(),
-                        body: JSON.stringify({ message: 'Invalid OTP' }),
+                console.log('userData', OTP)
+                console.log('###', parseInt(data.otp, 10), parseInt(userData.otp, 10))
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10)) {
+                    delete userData.session
+                    const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
+                    if (cognitoResponse.success_status !== true) {
+                        return {
+                            statusCode: 400,
+                            headers: await helpers.getHeaders(),
+                            body: JSON.stringify({ message: cognitoResponse.message }),
+                        }
                     }
-                }
-                delete userData.session
-                const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
-                if (cognitoResponse.success_status !== true) {
-                    return {
-                        statusCode: 400,
-                        headers: await helpers.getHeaders(),
-                        body: JSON.stringify({ message: cognitoResponse.message }),
-                    }
-                }
-                console.log('Password', userData.password)
-                const connection = await mongoConnection.connect()
-                const user = await mongoConnection.save(userData, Users)
-                await connection.disconnect()
-                await helpers.sendPinpointEmail(userData.email_address, 'shrinit.poojary@7edge.com', JSON.stringify({}), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
+                    userData.password = decryptedPassword
+                    console.log('Password', userData.password)
+                    const connection = await mongoConnection.connect()
+                    const user = await mongoConnection.save(userData, Users)
+                    await connection.disconnect()
+                    await helpers.sendPinpointEmail(userData.email_address, 'shrinit.poojary@7edge.com', JSON.stringify({}), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
 
+                    return {
+                        statusCode: 201,
+                        headers: await helpers.getHeaders(),
+                        body: JSON.stringify({ message: 'Succes' }),
+                    }
+                }
                 return {
-                    statusCode: 201,
+                    statusCode: 400,
                     headers: await helpers.getHeaders(),
-                    body: JSON.stringify({ message: 'Succes' }),
+                    body: JSON.stringify({ message: 'Invalid OTP' }),
                 }
             } catch (err) {
                 console.log('Error sending OTP:', err)
