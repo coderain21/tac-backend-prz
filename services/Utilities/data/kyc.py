@@ -1,3 +1,6 @@
+"""
+This module has all the functions required for kyc
+"""
 import hashlib
 import hmac
 import json
@@ -29,7 +32,7 @@ def create_applicant(external_user_id, level_name):
                          headers=headers))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
-    applicant_id = (response.json()['id'])
+    applicant_id = response.json()['id']
     return applicant_id
 
 
@@ -58,7 +61,8 @@ def add_document(applicant_id):
 
 def get_applicant_status(applicant_id):
     # https://developers.sumsub.com/api-reference/#getting-applicant-status-api
-    url = SUMSUB_TEST_BASE_URL + '/resources/applicants/' + applicant_id + '/requiredIdDocsStatus'
+    url = SUMSUB_TEST_BASE_URL + '/resources/applicants/' + \
+        applicant_id + '/requiredIdDocsStatus'
     resp = sign_request(requests.Request('GET', url))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
@@ -67,7 +71,8 @@ def get_applicant_status(applicant_id):
 
 def get_access_token(external_user_id, level_name):
     # https://developers.sumsub.com/api-reference/#access-tokens-for-sdks
-    params = {'userId': external_user_id, 'ttlInSecs': '600', 'levelName': level_name}
+    params = {'userId': external_user_id,
+              'ttlInSecs': '600', 'levelName': level_name}
     headers = {'Content-Type': 'application/json',
                'Content-Encoding': 'utf-8'
                }
@@ -76,7 +81,7 @@ def get_access_token(external_user_id, level_name):
                                          headers=headers))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
-    token = (response.json()['token'])
+    token = response.json()['token']
 
     return token
 
@@ -90,7 +95,8 @@ def sign_request(request: requests.Request) -> requests.PreparedRequest:
     body = b'' if prepared_request.body is None else prepared_request.body
     if type(body) == str:
         body = body.encode('utf-8')
-    data_to_sign = str(now).encode('utf-8') + method.encode('utf-8') + path_url.encode('utf-8') + body
+    data_to_sign = str(now).encode('utf-8') + \
+        method.encode('utf-8') + path_url.encode('utf-8') + body
     # hmac needs bytes
     signature = hmac.new(
         SUMSUB_SECRET_KEY.encode('utf-8'),
@@ -125,5 +131,5 @@ def main():
     logging.info(token)
 
 
-if __name__ == '__main__':
-    exit(main())
+# if __name__ == '__main__':
+#     exit(main())

@@ -1,10 +1,13 @@
+"""
+This module is used to generate token for the kyc
+"""
 import json
 import os
-import uuid
+# import uuid
 import decimal
 from datetime import datetime
 from data.kyc import get_access_token
-from data.get import get_by_email
+# from data.get import get_by_email
 
 headers = {
     'Content-Type': 'application/json',

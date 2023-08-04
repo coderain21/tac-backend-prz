@@ -1,19 +1,18 @@
+"""This module is the webhook for sumsub kyc integration"""
 import json
-import hmac
-import hashlib
 import os
-import pymongo
+from pymongo import MongoClient
 secret_key = os.environ['SECRET_KEY']
 
 
 def kyc_webhook(event, context):
     try:
-        print("event",event)
+        print("event", event)
         # Retrieve the event data from the request
         headers = event['headers']
-        
+
         signature = headers.get('X-Sumsub-Signature')
-        
+
         data = json.loads(event['body'])
         # Verify the Sumsub signature
         # expected_signature = hmac.new(secret_key.encode(), event['body'].encode(), hashlib.sha256).hexdigest()
@@ -29,10 +28,10 @@ def kyc_webhook(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['USER_TABLE']]
 
-        user = collection.find_one({'applicantId':applicant_id})
+        user = collection.find_one({'applicantId': applicant_id})
 
         # Handle different webhook events
-         
+
         event_type = data['type']
         user["type"] = event_type
         user["reviewStatus"] = data["reviewStatus"]
@@ -56,7 +55,7 @@ def kyc_webhook(event, context):
             # Unknown event type
             pass
         collection.update_one({"_id": user["_id"]}, {
-                                  "$set": user})
+            "$set": user})
         return {
             'statusCode': 200,
             'body': json.dumps({'message': 'Webhook event received and processed successfully'})

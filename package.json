@@ -15,7 +15,8 @@
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-n": "^15.7.0",
-    "eslint-plugin-promise": "^6.1.1"
+    "eslint-plugin-promise": "^6.1.1",
+    "stripe": "^12.17.0"
   },
   "devDependencies": {
     "serverless-domain-manager": "^7.1.0",

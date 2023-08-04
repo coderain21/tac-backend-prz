@@ -1,4 +1,4 @@
-service: users
+service: utilities
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
