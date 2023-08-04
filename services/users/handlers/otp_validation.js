@@ -83,28 +83,63 @@ async function cognitoCreate(userData) {
             { Name: 'custom:user_type', Value: userData.user_type },
             { Name: 'email', Value: userData.email_address },
         )
-        console.log("userData", userData)
-        const user = await cognitoIdentityServiceProvider
-            .signUp({
-                ClientId: userData.user_type === 'seller' ? process.env.COGNITO_SELLER_CLIENT_ID : process.env.COGNITO_BUYER_CLIENT_ID,
-                Username: userData.email_address,
-                Password: userData.password,
-                UserAttributes: attributeList,
-            })
-            .promise()
-        console.log('xxxxxxxxxxx', user)
+        console.log('sandhya', userData)
+        const userName = uuid.v4()
+        // const params = {
+        //     UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        //     Username: userName, // userData.email_address,
+        //     TemporaryPassword: 'Temp12345!', // Replace with a temporary password for the user
+        //     MessageAction: 'SUPPRESS', // Do not send a welcome message to the user
+        //     UserAttributes: attributeList,
+        // }
 
-        console.log('inside2')
+        // const creating_user = cognitoIdentityServiceProvider.adminCreateUser(params).promise()
+        // console.log('creat', creating_user)
+        // const param = {
+        //     UserPoolId: process.env.COGNITO_USER_POOL_ID,
+        //     Username: userName, // Replace with the username you want to set the password for
+        //     Password: userData.password,
+        //     Permanent: true, // Use lowercase "true" for boolean value
+        // }
+
+        // const response = await cognitoIdentityServiceProvider.adminResetUserPassword(param)
+        // console.log('response', response)
+        const adminCreateUserParams = {
+            UserPoolId: process.env.COGNITO_USER_POOL_ID,
+            Username: userName,
+            UserAttributes: attributeList,
+        }
+        const user = await cognitoIdentityServiceProvider.adminCreateUser(adminCreateUserParams).promise()
+        console.log('user', user)
+        const password_params = {
+            UserPoolId: process.env.COGNITO_USER_POOL_ID,
+            Username: userName,
+            Password: userData.password,
+            Permanent: true,
+        }
+        await cognitoIdentityServiceProvider.adminSetUserPassword(password_params).promise()
         if (user) {
-            const params = {
-                UserPoolId: process.env.COGNITO_USER_POOL_ID,
-                Username: userData.email_address,
-            }
-            await cognitoIdentityServiceProvider.adminConfirmSignUp(params).promise()
+        // const user = await cognitoIdentityServiceProvider
+        //     .signUp({
+        //         ClientId: '3duudq593a3j7jpp7afv1vbmuc', //                userData.user_type === 'seller' ? process.env.COGNITO_SELLER_CLIENT_ID : process.env.COGNITO_BUYER_CLIENT_ID,
+        //         Username: '56b212d4-10c1-7058-2410-dd2f70b8625ds',
+        //         Password: userData.password,
+        //         UserAttributes: attributeList,
+        //     })
+        //     .promise()
+        // console.log('xxxxxxxxxxx', user)
+
+            // console.log('inside2')
+            // if (user) {
+            //     const params = {
+            //         UserPoolId: 'eu-west-2_kqcLIvA4D', // process.env.COGNITO_USER_POOL_ID,
+            //         Username: '56b212d4-10c1-7058-2410-dd2f70b8625ds', // userData.email_address,
+            //     }
+            //     await cognitoIdentityServiceProvider.adminConfirmSignUp(params).promise()
             await cognitoIdentityServiceProvider.adminAddUserToGroup({
                 GroupName: userData.user_type,
-                UserPoolId: process.env.COGNITO_USER_POOL_ID/* required */,
-                Username: userData.email_address, /* required */
+                UserPoolId: process.env.COGNITO_USER_POOL_ID,
+                Username: userName,
             }).promise()
             return {
                 success_status: true,
@@ -138,6 +173,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
         }
         if (userData.session_token) {
             try {
+                userData.password = await helpers.encryptDecryptPassword(userData.password, false)
                 const data = await decryptWithTimeValidation(userData.session_token, process.env.CUSTOMER_SESSION_TOKEN_SECRET, 5000000)
                 console.log('data', data)
                 if (data === false) {
@@ -165,6 +201,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                         body: JSON.stringify({ message: cognitoResponse.message }),
                     }
                 }
+                console.log('Password', userData.password)
                 const connection = await mongoConnection.connect()
                 const user = await mongoConnection.save(userData, Users)
                 await connection.disconnect()

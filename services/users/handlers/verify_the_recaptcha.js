@@ -97,7 +97,6 @@ module.exports.verifyReCaptcha = async (event) => {
             }
         }
         const connection = await mongoConnection.connect()
-        
         const userExist = await Users.findOne({ email_address: userData.email_address, user_type: userData.user_type })
         if (userExist) {
             return {
