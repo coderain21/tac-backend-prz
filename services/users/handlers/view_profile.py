@@ -1,6 +1,8 @@
 import json
 import os
 from lib.mongodb_python_helper import view_profile
+from lib.common_helper import Encoder
+
 def view_customer(event, context):
     try:
         print('entering funct')
@@ -29,7 +31,7 @@ def view_customer(event, context):
         body = json.dumps({
             'success_status': True,
             'data': customer_details
-        })
+        },cls=Encoder)
         return {
             'headers': {
                 'Content-Type': 'application/json',

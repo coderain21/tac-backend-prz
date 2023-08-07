@@ -133,8 +133,8 @@ functions:
             cors: true
             path: /{email}
             method: GET
-            # authorizer:
-            #   arn: ${env:COGNITO_AUTH_ARN}
+            authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
 
 
 plugins:

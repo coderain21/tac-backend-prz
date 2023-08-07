@@ -28,7 +28,7 @@ def view_profile(id):
         Database = client.get_database(os.environ.get('DATABASE'))
         collection = Database.get_collection(os.environ.get('MONGODB_COLLECTION_NAME'))
         customer_details = collection.find_one(
-            {'email_address': id})
+            {'email_address': id},{'_id':0})
         client.close()
         return customer_details
     except Exception as err:
