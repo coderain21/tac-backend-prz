@@ -3,9 +3,6 @@
 # /* eslint-disable import/no-unresolved */
 import pymongo
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def connect():
     try:
@@ -32,6 +29,7 @@ def view_profile(id):
         collection = Database.get_collection(os.environ.get('MONGODB_COLLECTION_NAME'))
         customer_details = collection.find_one(
             {'email_address': id})
+        client.close()
         return customer_details
     except Exception as err:
             print('Error retrieving document by unique_id:', err)
