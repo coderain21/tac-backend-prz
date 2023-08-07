@@ -118,7 +118,7 @@
                     }
                   },
                   "example":{
-                      "data": [ {
+                      "data": {
                         "_id": "647efd7aa00eb07ff85b2c6d",
                         "first_name": "sandhyashri",
                         "last_name": "s",
@@ -141,7 +141,7 @@
                          "tiktok_link": ""  ,
                          "kyc_status": false,
                         "kyb_status": false
-                      }]
+                      }
                   }
                 }
               }
