@@ -29,6 +29,9 @@ provider:
     TEMPLATE_ARN_WELCOME_EMAIL: ${env:TEMPLATE_ARN_WELCOME_EMAIL}
     PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
+    SELLERS_TABLE: ${env:SELLERS_TABLE}
+    SES_SENDER_EMAIL_ID: ${env:SES_SENDER_EMAIL_ID}
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     
   http:
     cors: true
@@ -81,7 +84,6 @@ custom:
 
 
 functions: 
-  
   # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verifyReCaptcha
@@ -108,12 +110,45 @@ functions:
         - sg-0882c1da39e729097
       subnetIds:
         - subnet-0ff05c7c2bd2a3f87
-  
     events:
       - http:
           path: /otp-validation
           method: post
           cors: true
+
+  send-reset-link:
+    handler: handlers/send_reset_link.send_reset_link
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+        - subnet-041c07d58c8318700
+    events:
+      - http:
+          cors: true
+          path: /forgot_password
+          method: post
+
+  update-new-password:
+    handler: handlers/reset_password.password_reset
+    runtime: python3.8
+    layers: 
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+       - subnet-041c07d58c8318700
+    events:
+      - http:
+          cors: true
+          path: /reset_password
+          method: post
+  
+    
 
 plugins:
   - serverless-offline
