@@ -23,7 +23,7 @@ parameters. */
 module.exports.updateUserInformation = async (event) => {
     try {
         const request_body = JSON.parse(event.body)
-        const email = decodeURIComponent(event.pathParameters.email_address)
+        const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)
         if (keys.length === 0) {
             body = JSON.stringify({

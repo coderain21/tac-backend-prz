@@ -20,7 +20,7 @@
       }
     ],
     "paths": {
-       "/{email_address}": {
+       "/{email}": {
         "get": {
           "tags": [
             "Users"
@@ -29,7 +29,7 @@
           "parameters": [
             {
               "required": true,
-              "name": "email_address",
+              "name": "email",
               "in": "path",
               "description": "get user by email",
               "schema": {
@@ -200,7 +200,7 @@
           "summary": "Update user information",
           "parameters": [
             {
-              "name": "email_address",
+              "name": "email",
               "in": "path",
               "description": "Update user information",
               "required": true,
