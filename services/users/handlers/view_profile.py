@@ -2,7 +2,6 @@ import json
 import os
 from lib.mongodb_python_helper import view_profile
 from lib.common_helper import Encoder
-
 def view_customer(event, context):
     try:
         print('entering funct')
@@ -11,8 +10,7 @@ def view_customer(event, context):
         customer_details = view_profile(email_address)
         print('******',customer_details)
         if not customer_details:
-            body = json.dumps({
-                
+            body = json.dumps({                
                 'success_status': False,
                 'message': 'Customer Not Found'
             })
@@ -27,7 +25,6 @@ def view_customer(event, context):
                 'statusCode': 404,
                 'body': body
             }
-        
         body = json.dumps({
             'success_status': True,
             'data': customer_details

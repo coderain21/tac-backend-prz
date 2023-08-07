@@ -3,7 +3,6 @@
 # /* eslint-disable import/no-unresolved */
 import pymongo
 import os
-
 def connect():
     try:
         connection_string = os.environ.get('MONGO_CLIENT')
