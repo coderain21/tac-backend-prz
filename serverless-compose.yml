@@ -1,14 +1,5 @@
 services:
-  admin-users:
-    path: services/admin-users
+  users:
+    path: services/users
     config: ${env:config}
-  cognito-auth:
-    path: services/cognito-auth
-    config: ${env:config}
-  manage-qr-codes:
-    path: services/manage-qr-codes
-    config: ${env:config}
-  customers:
-    path: services/customers
-    config: ${env:config}
-    
+  
