@@ -25,6 +25,7 @@ module.exports.updateUserInformation = async (event) => {
         const request_body = JSON.parse(event.body)
         const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)
+        const connection = await mongoConnection.connect()
         if (keys.length === 0) {
             body = JSON.stringify({
                 message: 'Please pass atleast one field',
@@ -36,6 +37,7 @@ module.exports.updateUserInformation = async (event) => {
             }
         }
         const get_user = await mongoConnection.view(Users, { email_address: email })
+        console.log('get', get_user)
         if (request_body.business_registration_number) {
             const business_name = await mongoConnection.view(Users, { business_registration_number: request_body.business_registration_number })
             if (business_name.length > 0) {
@@ -53,6 +55,7 @@ module.exports.updateUserInformation = async (event) => {
         if (get_user !== null) {
             const user_id = get_user[0]._id
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
+            console.log('update_user_information', update_user_information)
             if (update_user_information.acknowledged) {
                 body = JSON.stringify({
                     success_status: true,
@@ -67,6 +70,8 @@ module.exports.updateUserInformation = async (event) => {
             body = JSON.stringify({
                 message: 'Failed to update information',
             })
+            await connection.disconnect()
+
             return {
                 headers,
                 statusCode: 400,

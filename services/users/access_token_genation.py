@@ -1,6 +1,6 @@
 import boto3, os
 from botocore.exceptions import ClientError
-client = boto3.client('cognito-idp', region_name='ap-south-1')
+client = boto3.client('cognito-idp', region_name='eu-west-2')
 
 
 def generate_token():
@@ -10,7 +10,7 @@ def generate_token():
             ClientId='3duudq593a3j7jpp7afv1vbmuc',
             AuthFlow='ADMIN_NO_SRP_AUTH',
             AuthParameters={
-                'USERNAME': 'aishwarya@7edge.com',
+                'USERNAME': 'aishwarya+indy@7edge.com',
                 'PASSWORD': 'Aishu@76980'
             }
         )
