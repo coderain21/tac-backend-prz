@@ -155,8 +155,8 @@ functions:
   view-profile:
     handler: handlers/view_profile.view_customer
     runtime: python3.8
-    # layers:
-    #   - ${env:COMMON_PYTHON_LIB_ARN}
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - sg-0882c1da39e729097
@@ -184,7 +184,7 @@ functions:
         events:
           - http:
               cors: true
-              path: /{email_address}
+              path: /{email}
               method: PATCH
               authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}

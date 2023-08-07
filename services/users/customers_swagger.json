@@ -20,7 +20,7 @@
       }
     ],
     "paths": {
-       "/{email_address}": {
+       "/{email}": {
         "get": {
           "tags": [
             "Users"
@@ -29,7 +29,7 @@
           "parameters": [
             {
               "required": true,
-              "name": "email_address",
+              "name": "email",
               "in": "path",
               "description": "get user by email",
               "schema": {
@@ -116,32 +116,6 @@
                         }
                       }
                     }
-                  },
-                  "example":{
-                      "data": {
-                        "_id": "647efd7aa00eb07ff85b2c6d",
-                        "first_name": "sandhyashri",
-                        "last_name": "s",
-                        "brand_name": "7EDGE",
-                        "email_address": "aishwarya@7edge.com",
-                        "business_registration_number": "",
-                        "website": "",
-                         "address_line_1": "",
-                         "address_line_2": "",
-                         "city": "",
-                         "postal_code": "",
-                         "country": "",
-                         "phone_number": "",
-                         "date_of_birth": "",
-                         "about": "",
-                         "facebook_link": "",
-                         "Instagram_link": "",
-                         "twitter": "",
-                         "linkedin_link": "",
-                         "tiktok_link": ""  ,
-                         "kyc_status": false,
-                        "kyb_status": false
-                      }
                   }
                 }
               }
@@ -200,7 +174,7 @@
           "summary": "Update user information",
           "parameters": [
             {
-              "name": "email_address",
+              "name": "email",
               "in": "path",
               "description": "Update user information",
               "required": true,
