@@ -1,15 +1,16 @@
 import json
 import os
-
-from ..lib import mongodb_python_helper
-
-
-def view_customer(event):
+from lib.mongodb_python_helper import view_profile
+def view_customer(event, context):
     try:
+        print('entering funct')
         email_address = event['pathParameters']['email'].replace("%40", "@")  # Unescape the email address
-        customer_details = mongodb_python_helper.view_profile(email_address)    
+        print(email_address)
+        customer_details = view_profile(email_address)
+        print('******',customer_details)
         if not customer_details:
             body = json.dumps({
+                
                 'success_status': False,
                 'message': 'Customer Not Found'
             })
