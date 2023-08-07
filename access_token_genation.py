@@ -1,6 +1,8 @@
 import boto3, os
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
 client = boto3.client('cognito-idp', region_name='eu-west-2')
+load_dotenv()
 
 
 def generate_token():
