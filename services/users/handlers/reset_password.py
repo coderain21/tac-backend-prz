@@ -11,7 +11,7 @@ import jwt
 from lib.get import get_by_email
 from pymongo import MongoClient
 from schema import SchemaError, SchemaWrongKeyError
-from utils.helper import encode_password, admin_password_reset_schema
+from utils.helper import admin_password_reset_schema
 
 
 headers = {
@@ -37,7 +37,7 @@ def password_reset(event, context):
         db = mongo_client[os.environ['DATABASE']]
         data = json.loads(event['body'])
         try:
-            expected_fields = ['token', 'password','encrypted_password']
+            expected_fields = ['token', 'password', 'encrypted_password']
             fields_not_found = list(
                 set(expected_fields).difference(data.keys()))
             if fields_not_found:
@@ -72,7 +72,6 @@ def password_reset(event, context):
             encoded_data = jwt.decode(
                 data['token'], jwt_secret, algorithms=['HS256'])
 
-
             resp, msg = reset_password(
                 client, encoded_data['email_address'], data['password'])
             updated_password = data['encrypted_password']
@@ -83,20 +82,20 @@ def password_reset(event, context):
                     "body": json.dumps({"message": msg})
                 }
             collection = os.environ['SELLERS_TABLE']
-            admin_info = get_by_email(encoded_data['email_address'],collection)
+            admin_info = get_by_email(
+                encoded_data['email_address'], collection)
             if not admin_info:
                 return {
                     "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Invalid or Unregistered email_address"})}
-    
 
             filter = {'_id': admin_info['_id']}
 
             update = {'$set': {'password': updated_password}}
             collection = db[os.environ['SELLERS_TABLE']]
             result = collection.update_one(filter, update)
-         
+
             mongo_client.close()
 
             return {
@@ -143,7 +142,7 @@ def reset_password(client, username, password):
         tuple: A tuple containing the API response and an error message, if any.
     """
     try:
-        print("username",username)
+        print("username", username)
         response = client.admin_set_user_password(
             UserPoolId=os.environ.get('COGNITO_USER_POOL_ID'),
             Username=username,
@@ -151,7 +150,7 @@ def reset_password(client, username, password):
             Permanent=True
         )
         # print(response)
-        
+
     except BaseException as err:
         print(f"Unexpected {err=}, {type(err)=}")
         raise
