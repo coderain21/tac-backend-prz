@@ -26,8 +26,6 @@ def skip_404_test_results(transaction):
 @before_each
 def set_authorization(transaction):
     token = str(os.environ.get('TOKEN'))
-    random_number = random.randint(1, 9999)
-    modified_email = f'sandhyashri+testA{random_number}@7edge.com'
 
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])
