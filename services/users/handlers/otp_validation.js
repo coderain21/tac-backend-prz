@@ -101,11 +101,10 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     const user = await mongoConnection.save(userData, Users)
                     await connection.disconnect()
                     await helpers.sendPinpointEmail(userData.email_address, 'shrinit.poojary@7edge.com', JSON.stringify({}), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
-
                     return {
                         statusCode: 201,
                         headers: await helpers.getHeaders(),
-                        body: JSON.stringify({ message: 'Succes' }),
+                        body: JSON.stringify({ message: 'Succes', is_first_time_login: true }),
                     }
                 }
                 return {
