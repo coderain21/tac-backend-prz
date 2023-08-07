@@ -85,7 +85,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                 }
                 userData = { ...userData, ...data }
-                userData.unique_id = uuid.v1()
                 if (parseInt(data.otp, 10) === parseInt(OTP, 10)) {
                     delete userData.session
                     const cognitoResponse = await cognitoHelper.cognitoCreate(userData)

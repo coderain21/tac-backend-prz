@@ -21,7 +21,7 @@ provider:
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: Users
+    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
@@ -115,6 +115,22 @@ functions:
           method: post
           cors: true
 
+  update-profile:
+        handler: handlers/update_profile.updateUserInformation
+        layers:
+          - ${env:COMMON_LIB_ARN}
+        vpc:
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
+        events:
+          - http:
+              cors: true
+              path: /{email_address}
+              method: PATCH
+              authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
 plugins:
   - serverless-offline
   - serverless-package-external

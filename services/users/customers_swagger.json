@@ -1,9 +1,9 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "termsOfService": "https://deeplay.com/terms-of-service",
-      "description": "Deeplay API Documentation (Admin Application)",
-      "title": "Deeplay APIs",
+      "termsOfService": "https://indy.auction.com/terms-of-service",
+      "description": "Indy Auction API Documentation (Admin Application)",
+      "title": "Indy Auction APIs",
       "contact": {
         "name": "Sandhyashri",
         "email": "sandhyashri@7edge.com"
@@ -15,27 +15,27 @@
     },
     "servers": [
       {
-        "url": "https://apis.deeplay.co/dev/v1/",
+        "url": "https://apis.indyauction.net/dev/v1/",
         "description": "Test Server"
       }
     ],
     "paths": {
-      "/{email}": {
+       "/{email_address}": {
         "get": {
           "tags": [
-            "Customers"
+            "Users"
           ],
           "summary": "View user information",
           "parameters": [
             {
               "required": true,
-              "name": "email",
+              "name": "email_address",
               "in": "path",
               "description": "get user by email",
               "schema": {
                 "type": "string"
               },
-              "example": "zeeshan.anwar+c@7edge.com"
+              "example": "aishwarya@7edge.com"
             }
           ],
           "responses": {
@@ -51,44 +51,96 @@
                         "id": {
                           "type": "string"
                         },
-                        "child_first_name": {
+                        "first_name": {
                           "type": "string"
                         },
-                        "child_last_name": {
+                        "last_name": {
                           "type": "string"
                         },
-                        "child_age": {
+                        "brand_name": {
                           "type": "number"
                         },
-                        "parent_first_name": {
+                        "email_address": {
                           "type": "string"
                         },
-                        "parent_last_name": {
+                        "business_registration_number": {
                           "type": "string"
                         },
-                        "email": {
+                        "website": {
+                          "type": "string"
+                        },
+                        "address_line_1": {
+                          "type": "string"
+                        },
+                        "address_line_2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "postal_code": {
                           "type": "string"
                         },
                         "country": {
-                            "type": "string"
-                          },
-                          "password": {
-                            "type": "string"
-                          }
+                          "type": "string"
+                        },
+                        "phone_number": {
+                          "type": "string"
+                        },
+                        "date_of_birth": {
+                          "type": "string"
+                        },
+                        "about": {
+                          "type": "string"
+                        },
+                        "facebook_link": {
+                          "type": "string"
+                        },
+                        "Instagram_link": {
+                          "type": "string"
+                        },
+                        "twitter": {
+                          "type": "string"
+                        },
+                        "linkedin_link": {
+                          "type": "string"
+                        },
+                        "tiktok_link": {
+                          "type": "string"
+                        },
+                        "kyc_status": {
+                          "type": "boolean"
+                        },
+                        "kyb_status": {
+                          "type": "boolean"
+                        }
                       }
                     }
                   },
                   "example":{
                       "data": [ {
                         "_id": "647efd7aa00eb07ff85b2c6d",
-                        "child_first_name": "jdh",
-                        "child_last_name": "chdh",
-                        "child_age": 4,
-                        "parent_first_name": "dfhhda",
-                        "parent_last_name": "sdjdh",
-                        "email": "sandhyasshri+89@7edge.com",
-                        "country": "India",
-                        "password": "34567dusk"
+                        "first_name": "sandhyashri",
+                        "last_name": "s",
+                        "brand_name": "7EDGE",
+                        "email_address": "aishwarya@7edge.com",
+                        "business_registration_number": "",
+                        "website": "",
+                         "address_line_1": "",
+                         "address_line_2": "",
+                         "city": "",
+                         "postal_code": "",
+                         "country": "",
+                         "phone_number": "",
+                         "date_of_birth": "",
+                         "about": "",
+                         "facebook_link": "",
+                         "Instagram_link": "",
+                         "twitter": "",
+                         "linkedin_link": "",
+                         "tiktok_link": ""  ,
+                         "kyc_status": false,
+                        "kyb_status": false
                       }]
                   }
                 }
@@ -148,14 +200,14 @@
           "summary": "Update user information",
           "parameters": [
             {
-              "name": "email",
+              "name": "email_address",
               "in": "path",
               "description": "Update user information",
               "required": true,
               "schema": {
                 "type": "string"
               },
-              "example": "sandhyasshri+89@7edge.com"
+              "example": "aishwarya@7edge.com"
             }
           ],
           "requestBody": {
@@ -164,13 +216,13 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "parent_first_name":{
+                    "first_name":{
                       "type": "string"
                     }
                   }
                 },
                 "example": {
-                  "parent_first_name":"qxyz"
+                  "first_name":"sandhyashri"
 
                 }
               }
@@ -235,497 +287,6 @@
             }
           ]
         }
-      },
-      "/send_otp/{email}": {
-        "get": {
-          "tags": [
-            "Customers"
-          ],
-          "summary": "User send password reset OTP",
-          "parameters": [
-            {
-              "required": true,
-              "name": "email",
-              "in": "path",
-              "description": "request password by providing email",
-              "schema": {
-                "type": "string"
-              },
-              "example": "anusha.k+admin1@7edge.com"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "OTP has been sent successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      },
-                      "session":{
-                        "type": "string"
-                      }
-                    },
-                    "example": {
-                      "message": "OTP sent successfully",
-                      "session":"asdacascacdvdsvdvadsvada"
-                    }
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "Forbidden",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-                "description": "User not found",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      },
-                      "example": {
-                        "message": "User Not Found"
-                      }
-                    }
-                  }
-                }
-              },
-            "500": {
-            "description": "Internal Server Error",
-            "content": {
-                "application/json": {
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                    "message": {
-                        "type": "string"
-                    }
-                    },
-                    "example": {
-                    "message": "There was an error sending OTP"
-                    }
-                }
-                }
-            }
-            }
-          }
-        }
-      },
-      "/verify_otp": {
-        "post": {
-
-          "tags": [
-            "Customers"
-          ],
-          "summary": "Verify User OTP",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "otp": {
-                      "type": "integer"
-                    },
-                    "session": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["otp", "session"]
-                },
-                "example": {
-                  "otp": 567890,
-                  "session": "adakjdajdnajbdkabdkandadnsacasbckajcnkacajbcjsabck"
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "BearerAuth": []
-            }
-          ],
-          "responses": {
-            "204": {
-              "description": "No Content"
-            },
-            "400": {
-              "description": "Invalid request payload",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "examples": {
-                    "example1": {
-                      "value": {
-                        "message": "Please pass valid OTP"
-                      }
-                    },
-                    "example2": {
-                      "value": {
-                        "message": "Missing mandatory fields"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                        "message": "You are not authorized to perform this API action"
-                      }
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "Forbidden",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                        "message": "There was an error while verifying OTP"
-                      }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/update_password/{email}":{
-        
-        "patch":{
-          "summary": "Update Password",
-          "tags": [
-            "Customers"
-          ],
-          "parameters": [
-            {
-              "name": "email",
-              "in": "path",
-              "description": "users email adress",
-              "required": true,
-              "schema": {
-                "type": "string"
-              },
-              "example": "sandhyashri+c@7edge.com"
-            }
-          ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "password":{
-                      "type": "string"
-                    }
-                  }
-                },
-                "example": {
-                  "password": "Sandhya890"
-
-                }
-              }
-            }
-          },
-          "responses": {
-            "204": {
-              "description": "Password Updated successfully"
-            },
-            "400": {
-              "description": "Bad Request",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "examples": {
-                    "example1": {
-                      "value": {
-                        "message": "Missing field - 'password'"
-                      }
-                    },
-                    "example2": {
-                      "value": {
-                        "message": "Password must be 6-16 characters"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                      "message": "There was an error updating the password"
-                    }
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "Forbidden",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                      "message": "You do not have access to this API action"
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Not Found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                      "message": "Invalid or Unregistered email_address"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "security": [
-            {
-              "BearerAuth": []
-            }
-          ]
-        }
-      },
-      "/scan": {
-        "post": {
-          "tags": [
-            "Customers"
-          ],
-          "summary": "Scan the QR Code",
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                },
-                "example":{
-                 "activation_code": "FRE0000000000005",
-                 "email": "anusha.k+test1@7edge.com"
-              }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "successfully scanned",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      },
-                      "language": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                      "message": "QR Code scanned successfully",
-                      "language": "French"
-                    }
-                  }
-                }
-              }
-            },
-            "400": {
-              "description": "Invalid request payload",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                      "message": "Please pass QR code ID"
-                    }
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example":{
-                      "message":"Code is invalid, give it another try"
-                    }
-                  }
-                }
-              }
-            },
-            "403": {
-              "description": "Forbidden",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "QR Code Not Found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example": {
-                      "message": "QR Code not found"
-                    }
-                  }
-                }
-              }
-            },
-            "409": {
-              "description": "QR Code already registered",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    },
-                    "example": {
-                      "message": "Code is already registered try with another one"
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     },
     "components": {
@@ -736,30 +297,69 @@
             "id": {
               "type": "string"
             },
-            "child_first_name": {
+            "first_name": {
               "type": "string"
             },
-            "child_last_name": {
+            "last_name": {
               "type": "string"
             },
-            "child_age": {
+            "brand_name": {
               "type": "number"
             },
-            "parent_first_name": {
+            "email_address": {
               "type": "string"
             },
-            "parent_last_name": {
+            "business_registration_number": {
               "type": "string"
             },
-            "email": {
+            "website": {
+              "type": "string"
+            },
+            "address_line_1": {
+              "type": "string"
+            },
+            "address_line_2": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postal_code": {
               "type": "string"
             },
             "country": {
-                "type": "string"
-              },
-              "password": {
-                "type": "string"
-              }
+              "type": "string"
+            },
+            "phone_number": {
+              "type": "string"
+            },
+            "date_of_birth": {
+              "type": "string"
+            },
+            "about": {
+              "type": "string"
+            },
+            "facebook_link": {
+              "type": "string"
+            },
+            "Instagram_link": {
+              "type": "string"
+            },
+            "twitter": {
+              "type": "string"
+            },
+            "linkedin_link": {
+              "type": "string"
+            },
+            "tiktok_link": {
+              "type": "string"
+            },
+            "kyc_status": {
+              "type": "boolean"
+            },
+            "kyb_status": {
+              "type": "boolean"
+            }
           }
         },
         "Error": {

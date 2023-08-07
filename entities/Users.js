@@ -15,10 +15,9 @@ and is_first_time_login. The schema also includes some options such as trim, def
 required fields. The schema is then used to create a Mongoose model named AdminUser, which can be
 used to interact with the corresponding MongoDB collection. */
 const UserSchema = new Schema({
-    unique_id: {
+    user_type: {
         type: String, trim: true, required: true, unique: true,
     },
-    user_type: { type: String, trim: true, required: true },
     password: { type: String, trim: true, required: true },
     email_address: { type: String, trim: true, unique: true },
     status: { type: Boolean, default: false },
@@ -28,6 +27,27 @@ const UserSchema = new Schema({
     newsletter_notification: { type: Boolean, default: false },
     terms_and_condition: { type: Boolean, default: false },
     free_user: { type: Boolean, default: true },
+    first_name: { type: String, trim: true, default: '' },
+    last_name: { type: String, trim: true, default: '' },
+    brand_name: { type: String, trim: true, default: '' },
+    business_registration_number: { type: String, trim: true, default: '' },
+    website: { type: String, trim: true, default: '' },
+    address_line_1: { type: String, trim: true, default: '' },
+    address_line_2: { type: String, trim: true, default: '' },
+    city: { type: String, trim: true, default: '' },
+    postal_code: { type: String, trim: true, default: '' },
+    country: { type: String, trim: true, default: '' },
+    phone_number: { type: String, trim: true, default: '' },
+    country_code: { type: String, trim: true, default: '' },
+    date_of_birth: { type: String, trim: true, default: '' },
+    about: { type: String, trim: true, default: '' },
+    facebook_link: { type: String, trim: true, default: '' },
+    Instagram_link: { type: String, trim: true, default: '' },
+    twitter: { type: String, trim: true, default: '' },
+    linkedin_link: { type: String, trim: true, default: '' },
+    tiktok_link: { type: String, trim: true, default: '' },
+    kyc_status: { type: String, trim: true, default: false },
+    kyb_status: { type: String, trim: true, default: false },
 })
 
 UserSchema.plugin(mongoosePaginate)
