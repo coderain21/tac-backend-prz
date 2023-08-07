@@ -7,12 +7,9 @@ This module provides a function for retrieving admin details by email from Mongo
 import os
 from pymongo import MongoClient
 
-# MongoDB configuration
-client = MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-collection = db[os.environ['USER_TABLE']]
+# 
 
-def get_by_email(email):
+def get_by_email(email,collection):
     """
     Retrieve admin details from MongoDB by email.
 
@@ -24,10 +21,17 @@ def get_by_email(email):
               Returns None if no admin with the specified email is found.
     """
     try:
-        query_result = collection.find_one({'email_address': email},{'password':0})
+        # MongoDB configuration
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection_sellers = db[collection]
+        query_result = collection_sellers.find_one({'email_address': email},{'password':0})
+        # print(query_result)
+        client.close()
         if query_result:
             return query_result
         return None
     except BaseException as err:
+        client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise

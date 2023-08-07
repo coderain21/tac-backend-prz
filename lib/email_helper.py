@@ -37,16 +37,16 @@ def send_mail(link, email_template, destination_address, token):
         mail = client.send_templated_email(**param)
         print('mail', mail)
         if mail:
-            client = MongoClient(os.environ['MONGO_CLIENT'])
-            database = client[os.environ['DATABASE']]
-            collection = database[os.environ['TOKENS_TABLE']]
-            document = {
-                "destination_address": destination_address,
-                "token": token
-            }
+        #     client = MongoClient(os.environ['MONGO_CLIENT'])
+        #     database = client[os.environ['DATABASE']]
+        #     collection = database[os.environ['TOKENS_TABLE']]
+        #     document = {
+        #         "destination_address": destination_address,
+        #         "token": token
+        #     }
 
-            result = collection.insert_one(document)
-            print('Inserted document ID:', result.inserted_id)
+        #     result = collection.insert_one(document)
+        #     print('Inserted document ID:', result.inserted_id)
             return {
                 'status': True,
             }
