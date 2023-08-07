@@ -25,8 +25,9 @@ def get_by_email(email,collection):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection_sellers = db[collection]
+
         query_result = collection_sellers.find_one({'email_address': email},{'password':0})
-        # print(query_result)
+        
         client.close()
         if query_result:
             return query_result

@@ -37,7 +37,7 @@ def password_reset(event, context):
         db = mongo_client[os.environ['DATABASE']]
         data = json.loads(event['body'])
         try:
-            expected_fields = ['token', 'password']
+            expected_fields = ['token', 'password','encrypted_password']
             fields_not_found = list(
                 set(expected_fields).difference(data.keys()))
             if fields_not_found:
@@ -72,59 +72,33 @@ def password_reset(event, context):
             encoded_data = jwt.decode(
                 data['token'], jwt_secret, algorithms=['HS256'])
 
-            # # check if the token exists
-            # collection = db[os.environ['TOKENS_TABLE']]
-            # query_result = collection.find_one(
-            #     {'destination_address': encoded_data['email_address']}, {'password': 0})
-            # print(query_result, "---<")
-            # if not query_result:
-            #     print('token not exists')
-            #     return {
-            #         "headers": headers,
-            #         "statusCode": 404,
-            #         "body": json.dumps({"message": "token used/expired"})
-            #     }
 
             resp, msg = reset_password(
                 client, encoded_data['email_address'], data['password'])
-            
-            updated_password = encode_password(data['password'])
+            updated_password = data['encrypted_password']
             if msg:
                 return {
                     "headers": headers,
                     "statusCode": 400,
                     "body": json.dumps({"message": msg})
                 }
-            collection = db[os.environ['SELLERS_TABLE']]
-            admin_info = get_by_email(encoded_data['email_address'],)
+            collection = os.environ['SELLERS_TABLE']
+            admin_info = get_by_email(encoded_data['email_address'],collection)
             if not admin_info:
                 return {
                     "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Invalid or Unregistered email_address"})}
-
-            collection = db[os.environ['ADMIN_TABLE']]
+    
 
             filter = {'_id': admin_info['_id']}
 
             update = {'$set': {'password': updated_password}}
-
+            collection = db[os.environ['SELLERS_TABLE']]
             result = collection.update_one(filter, update)
-
-            if result.modified_count > 0:
-                print('Document updated successfully.')
-            else:
-                print('Document not found or update failed.')
-
-            collection = db[os.environ['TOKENS_TABLE']]
-            criteria = {'destination_address': encoded_data['email_address']}
-
-            result = collection.delete_many(criteria)
+         
             mongo_client.close()
-            if result.deleted_count == 1:
-                print('Document deleted successfully.')
-            else:
-                print('Document not found or deletion failed.')
+
             return {
                 "headers": headers,
                 "statusCode": 204,
@@ -169,15 +143,17 @@ def reset_password(client, username, password):
         tuple: A tuple containing the API response and an error message, if any.
     """
     try:
-
+        print("username",username)
         response = client.admin_set_user_password(
             UserPoolId=os.environ.get('COGNITO_USER_POOL_ID'),
             Username=username,
             Password=password,
             Permanent=True
         )
-        print(response)
+        # print(response)
+        
     except BaseException as err:
         print(f"Unexpected {err=}, {type(err)=}")
         raise
+    print("password updated!")
     return response, None
