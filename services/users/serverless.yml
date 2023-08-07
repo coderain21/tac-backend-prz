@@ -34,6 +34,9 @@ provider:
     SES_SENDER_EMAIL_ID: ${env:SES_SENDER_EMAIL_ID}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
+    DATABASE: ${env:DATABASE}
+    BASE_URL_SELLER: ${env:BASE_URL_SELLER}
+    FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${env:FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER}
     
   http:
     cors: true
@@ -125,9 +128,9 @@ functions:
       - ${env:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - sg-0f4f7528493e34a09
+        - sg-0882c1da39e729097
       subnetIds:
-        - subnet-041c07d58c8318700
+        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -140,10 +143,10 @@ functions:
     layers: 
       - ${env:PYTHON_LIB_ARN}
     vpc:
-      securityGroupIds:
-        - sg-0f4f7528493e34a09
-      subnetIds:
-       - subnet-041c07d58c8318700
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true

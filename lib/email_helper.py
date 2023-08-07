@@ -25,7 +25,8 @@ def send_mail(link, email_template, destination_address, token):
     """
     try:
         sender_email = os.environ['SES_SENDER_EMAIL_ID']
-        client = boto3.client('ses')
+        print(sender_email)
+        client = boto3.client('ses',region_name= 'eu-west-2')
         param = {
             'Source': sender_email,
             'Template': email_template,
