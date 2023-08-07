@@ -16,10 +16,10 @@ required fields. The schema is then used to create a Mongoose model named AdminU
 used to interact with the corresponding MongoDB collection. */
 const UserSchema = new Schema({
     user_type: {
-        type: String, trim: true, required: true, unique: true,
+        type: String, trim: true, required: true,
     },
     password: { type: String, trim: true, required: true },
-    email_address: { type: String, trim: true, unique: true },
+    email_address: { type: String, trim: true },
     status: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
