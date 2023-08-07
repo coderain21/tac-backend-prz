@@ -6,6 +6,7 @@ disabledDeprecations:
   - UNSUPPORTED_CLI_OPTIONS
   - CLI_OPTIONS_SCHEMA_V3
   - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
 provider:
   name: aws
   endpointType: REGIONAL
@@ -21,14 +22,15 @@ provider:
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: Users
+    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
     TEMPLATE_ARN_EMAIL_OTP: ${env:TEMPLATE_ARN_EMAIL_OTP}
     TEMPLATE_ARN_WELCOME_EMAIL: ${env:TEMPLATE_ARN_WELCOME_EMAIL}
-    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
+    PASSWORD_SECRET_KEY: SELLERINDYAUCTION
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
+    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
     
   http:
     cors: true
@@ -114,6 +116,26 @@ functions:
           path: /otp-validation
           method: post
           cors: true
+      
+  view-profile:
+    handler: handlers/view_profile.view_customer
+    runtime: python3.8
+    # layers:
+    #   - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+        - http:
+            cors: true
+            path: /{email}
+            method: GET
+            authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+
 
 plugins:
   - serverless-offline
