@@ -24,7 +24,7 @@ const UserSchema = new Schema({
     status: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-    is_first_time_login: { type: Boolean, default: true, required: true },
+    is_first_time_login: { type: Boolean, default: false, },
     newsletter_notification: { type: Boolean, default: false },
     terms_and_condition: { type: Boolean, default: false },
     free_user: { type: Boolean, default: true },
