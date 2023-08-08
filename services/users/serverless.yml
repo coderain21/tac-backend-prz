@@ -89,6 +89,43 @@ custom:
 
 
 functions: 
+
+# COGNITO PRE SIGNUP TRIGGER
+  cognito-pre-signup-trigger:
+    handler: handlers/cognito_presignup.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: PreSignUp
+          existing: true
+   
+
+
+  # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
+  cognito-post-signup-confirmation-trigger:
+    handler: handlers/cognito_post_confirmation.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: PostConfirmation
+          existing: true
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+  
   # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verifyReCaptcha
