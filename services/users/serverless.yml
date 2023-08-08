@@ -40,6 +40,7 @@ provider:
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     LEVEL_NAME: ${env:LEVEL_NAME}
+    SUMSUB_SECRET_KEY_WEBHOOK: ${env:SUMSUB_SECRET_KEY_WEBHOOK}
     
   http:
     cors: true

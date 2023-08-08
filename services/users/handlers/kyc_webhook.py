@@ -11,7 +11,7 @@ def kyc_webhook(event, context):
         headers = event['headers']
         
         # Retrieve the secret key from environment variables
-        secret_key = os.environ['SECRET_KEY']
+        secret_key = os.environ['SUMSUB_SECRET_KEY_WEBHOOK']
         
         # Retrieve the webhook payload and header values
         payload_bytes = event['body'].encode()
