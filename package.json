@@ -25,6 +25,7 @@
   "dependencies": {
     "@mongodb-js/ssh-tunnel": "^1.2.3",
     "aws-sdk": "^2.1380.0",
+    "bcrypt": "^5.1.0",
     "country-state-picker": "^1.1.5",
     "crypto-js": "^4.1.1",
     "data-uri-to-buffer": "^5.0.1",
