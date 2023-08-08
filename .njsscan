@@ -1,0 +1,11 @@
+- ignore-paths:
+  - assets
+  - node_modules
+  - .env
+
+  severity-filter:
+  - WARNING
+  - ERROR
+
+  ignore-rules:
+  - node_nosqli_injection   

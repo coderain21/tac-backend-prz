@@ -1,0 +1,528 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "Deeplay API Documentation (Admin Application)",
+    "title": "Deeplay APIs",
+    "contact": {
+      "name": "Sarvesh",
+      "email": "sarvesh.hugar@7edge.com"
+    },
+    "license": {
+      "name": "Proprietary"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.deeplay.co/dev/v1"
+    }
+  ],
+  "paths": {
+    "/qr-codes/generate-qr-codes": {
+      "post": {
+        "summary": "Generate QR Codes",
+        "description": "Generate QR codes for product activation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateQRCodesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generating QR codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateQRCodesRequest"
+                },
+                "examples": {
+                  "example1": {
+                    "summary": "Example Response",
+                    "value": {
+                      "message": "QR codes generated successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "success_status": false,
+                      "message": "Please enter the value for language"
+
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Number should be between 1-1000",
+                      "errors": {
+                        "number": "should be between 1-1000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "You are not authorized to perform this API action"
+                    }
+                  }
+                },
+                "example1": {
+                  "summary": "Example Response",
+                  "value": {
+                    "message": "You are not authorized to perform this API action"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error - Failed to generate QR codes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error Generating QR codes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/qr-codes/view/{qr_code}": {
+      "get": {
+        "summary": "Get an qrcode by qr_code",
+        "parameters": [
+          {
+            "name": "qr_code",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "000003"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/viewQrCode"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "examples": {
+                  "example1": {
+                    "summary": "Example Response",
+                    "value": {
+                      "message": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "View user information",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "get user by email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "rashmi.rao@7edge.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "child_first_name": {
+                        "type": "string"
+                      },
+                      "child_last_name": {
+                        "type": "string"
+                      },
+                      "child_age": {
+                        "type": "number"
+                      },
+                      "parent_first_name": {
+                        "type": "string"
+                      },
+                      "parent_last_name": {
+                        "type": "string"
+                      },
+                      "email": {
+                        "type": "string"
+                      },
+                      "country": {
+                          "type": "string"
+                        },
+                        "password": {
+                          "type": "string"
+                        }
+                    }
+                  }
+                },
+                "example":{
+                  
+                    "data":  {
+                      "_id": "647efd7aa00eb07ff85b2c6d",
+                      "child_first_name": "jdh",
+                      "child_last_name": "chdh",
+                      "child_age": 4,
+                      "parent_first_name": "dfhhda",
+                      "parent_last_name": "sdjdh",
+                      "email": "sandhyasshri+89@7edge.com",
+                      "country": "India",
+                      "password": "34567dusk"
+                    }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+              "description": "view user",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        }
+      }
+    },
+    "/{email}":{
+      "patch":{
+        "summary": "Update user information",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "path",
+            "description": "Update user information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "sandhyashri@7edge.com"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "parent_first_name":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "parent_first_name":"Sandhyashri"
+
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    }
+    
+  },
+  "components": {
+    "schemas": {
+      "GenerateQRCodesRequest": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "description": "note for QR code generation"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language for the QR codes",
+            "enum": [
+              "French"
+            ]
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Number of QR codes needed",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "uuid": {
+            "type": "string",
+            "description": "unique identifier"
+          }
+        },
+        "required": [
+          "quantity",
+          "language",
+          "uuid"
+        ],
+        "example": {
+          "note": "Sample note",
+          "language": "French",
+          "quantity": 10,
+          "uuid": "1234ruefffs"
+        }
+      },
+      "viewQrCode": {
+        "type": "object",
+        "properties": {
+          "success_status":{
+            "type":"boolean"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "_id": {
+                "type": "string"
+              },
+              "qr_code": {
+                "type": "string"
+              },
+              "activation_code": {
+                "type": "string"
+              },
+              "note": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "created_on": {
+                "type": "integer"
+              },
+              "customer_id": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "qr_code_url": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "quantity": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "language": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+           
+          }
+         
+        }
+      },
+      "users": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "child_first_name": {
+            "type": "string"
+          },
+          "child_last_name": {
+            "type": "string"
+          },
+          "child_age": {
+            "type": "number"
+          },
+          "parent_first_name": {
+            "type": "string"
+          },
+          "parent_last_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "country": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+      }
+    }
+  }
+}

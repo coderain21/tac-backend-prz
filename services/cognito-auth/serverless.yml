@@ -1,0 +1,71 @@
+service: cognito-auth
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ap-south-1
+  environment:
+    STAGE: ${self:provider.stage}
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
+    SENDER_EMAIL: ${env:SENDER_EMAIL}
+    SELLER_OTP_TEMPLATE: seller-user-account-login
+   
+
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:            
+             - dynamodb:*
+             - cognito-idp:*
+             - ses:*
+             - sns:*
+          Resource: "*"
+  
+functions: 
+
+  # COGNITO CREATE AUTH CHALLENGE
+  cognito-create-auth-challenge:
+    handler: handlers/cognito_create_auth_challenge.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: CreateAuthChallenge
+          existing: true
+  
+  # COGNITO DEFINE AUTH CHALLENGE
+  cognito-define-auth-challenge:
+    handler: handlers/cognito_define_auth_challenge.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: DefineAuthChallenge
+          existing: true
+
+  # COGNITO VERIFY AUTH CHALLENGE
+  cognito-verify-auth-challenge:
+    handler: handlers/cognito_verify_auth_challenge.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: VerifyAuthChallengeResponse
+          existing: true
+
+plugins:
+   - serverless-package-external
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
