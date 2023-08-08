@@ -1,15 +1,15 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "termsOfService": "https://indy.auction.com/terms-of-service",
-      "description": "Indy Auction API Documentation (Admin Application)",
+      "termsOfService": "https://theauctioncollective.com/terms/",
+      "description": "Indy Auction API Documentation (Seller Web Application)",
       "title": "Indy Auction APIs",
       "contact": {
-        "name": "Sandhyashri",
-        "email": "sandhyashri@7edge.com"
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
       },
       "license": {
-        "name": "Proprietary"
+        "name": "7EDGE"
       },
       "version": "1.0"
     },
