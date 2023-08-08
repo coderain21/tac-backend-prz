@@ -48,14 +48,16 @@ def generate_token():
         load_dotenv()
         user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
         client_id = os.environ.get('COGNITO_SELLER_CLIENT_ID') 
+        username =  os.environ.get('API_USERNAME')
+        password = os.environ.get('PASSWORD')
         print(client_id,"hgffgh")
         response = client.admin_initiate_auth(
             UserPoolId=user_pool_id,
             ClientId=client_id,
             AuthFlow='ADMIN_NO_SRP_AUTH',
             AuthParameters={
-                'USERNAME': os.environ.get('USERNAME'),
-                'PASSWORD': os.environ.get('PASSWORD')
+                'USERNAME': username,
+                'PASSWORD': password
             }
         )
         token = response['AuthenticationResult']['IdToken']
