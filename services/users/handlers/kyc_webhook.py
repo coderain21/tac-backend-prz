@@ -3,28 +3,34 @@ import hmac
 import hashlib
 import os
 import pymongo
-# secret_key = os.environ['SECRET_KEY']
-
+from pymongo import MongoClient
 
 def kyc_webhook(event, context):
     try:
-        print("event",event)
-        # Retrieve the event data from the request
+        print("event", event)
         headers = event['headers']
         
-        signature = headers.get('X-Sumsub-Signature')
+        # Retrieve the secret key from environment variables
+        secret_key = os.environ['SECRET_KEY']
+        
+        # Retrieve the webhook payload and header values
+        payload_bytes = event['body'].encode()
+        payload_digest = headers.get('x-payload-digest')
+        
+        # Calculate HMAC-SHA1 digest
+        calculated_digest = hmac.new(secret_key.encode(), payload_bytes, hashlib.sha1).hexdigest()
+        
+        # Compare calculated digest with header value
+        if not hmac.compare_digest(calculated_digest, payload_digest):
+            print('Invalid signature. Possible tampering.')
+            return {
+                'statusCode': 403,
+                'body': json.dumps({'message': 'Invalid signature'})
+            }
         
         data = json.loads(event['body'])
-        # Verify the Sumsub signature
-        # expected_signature = hmac.new(secret_key.encode(), event['body'].encode(), hashlib.sha256).hexdigest()
-
-        # if not hmac.compare_digest(signature, expected_signature):
-        #     print('Invalid signature. Possible tampering.')
-        #     return {
-        #         'statusCode': 403,
-        #         'body': json.dumps({'message': 'Invalid signature'})
-        #     }
         applicant_id = data["applicantId"]
+        \
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['SELLERS_TABLE']]
@@ -32,29 +38,19 @@ def kyc_webhook(event, context):
         user = collection.find_one({'applicantId':applicant_id})
 
         # Handle different webhook events
-         
         event_type = data['type']
-        user["type"] = event_type
-        user["reviewStatus"] = data["reviewStatus"]
 
-        if event_type == 'applicantCreated':
-            # Logic for applicant creation event
-            pass
-        elif event_type == 'applicantPending':
-            # Logic for applicant pending event
-            pass
-        elif event_type == 'applicantReviewed':
-            # Logic for applicant reviewed event
-            pass
-        elif event_type == 'applicant.accepted':
-            # Logic for applicant accepted event
-            pass
-        elif event_type == 'applicant.declined':
-            # Logic for applicant declined event
-            pass
+        if event_type == 'applicantCreated' or event_type == 'applicantPending' or event_type == 'applicantWorkflowCompleted':   
+            user["type"] = event_type
+            user["reviewStatus"] = data["reviewStatus"]
+
         else:
-            # Unknown event type
-            pass
+            user["type"] = event_type
+            user["reviewStatus"] = data["reviewStatus"]
+
+        if "reviewResult" in data:
+            user['reviewResult'] = data["reviewResult"] 
+
         collection.update_one({"_id": user["_id"]}, {
                                   "$set": user})
         return {
