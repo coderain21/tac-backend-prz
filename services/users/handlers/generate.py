@@ -1,3 +1,4 @@
+'''This module is used as webhook for the sumsub kyc'''
 import json
 import os
 import uuid
@@ -5,7 +6,6 @@ import decimal
 from pymongo import MongoClient
 from datetime import datetime
 from data.kyc import get_access_token,create_applicant
-from lib.get import get_by_email
 
 headers = {
     'Content-Type': 'application/json',
