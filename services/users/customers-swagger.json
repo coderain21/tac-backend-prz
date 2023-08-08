@@ -1,7 +1,7 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "termsOfService": " https://theauctioncollective.com/terms/",
+      "termsOfService": "https://theauctioncollective.com/terms/",
       "description": "Indy Auction API Documentation (Seller Web Application)",
       "title": "Indy Auction APIs",
       "contact": {
