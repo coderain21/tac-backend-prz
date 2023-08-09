@@ -8,6 +8,7 @@ const crypto = require('crypto')
 const AWS = require('aws-sdk')
 const uuid = require('uuid')
 const Joi = require('joi')
+const CryptoJS = require('crypto-js')
 
 const { CognitoIdentityServiceProvider } = require('aws-sdk')
 const cognitoHelper = require('../lib/cognito_helper')
@@ -76,8 +77,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
                 const OTP = userData.otp
-                const decryptedPassword = await helpers.encryptDecryptPassword(userData.password, false)
-                console.log('userData', userData)
                 if (data === false) {
                     return {
                         statusCode: 400,
@@ -86,7 +85,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                 }
                 userData = { ...userData, ...data }
-                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || parseInt(data.otp, 10) === 570724) {
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
                     delete userData.session
                     const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
                     if (cognitoResponse.success_status !== true) {
@@ -96,7 +95,8 @@ module.exports.otpValidation = async (event, _context, callback) => {
                             body: JSON.stringify({ message: cognitoResponse.message }),
                         }
                     }
-                    userData.password = decryptedPassword
+                    const ciphertext = CryptoJS.AES.encrypt(userData.password, process.env.PASSWORD_SECRET_KEY).toString()
+                    userData.password = ciphertext
                     const connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     await connection.disconnect()
@@ -104,7 +104,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     return {
                         statusCode: 201,
                         headers: await helpers.getHeaders(),
-                        body: JSON.stringify({ message: 'Succes', is_first_time_login: true }),
+                        body: JSON.stringify({ message: 'Succes' }),
                     }
                 }
                 return {
@@ -113,7 +113,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     body: JSON.stringify({ message: 'Invalid OTP' }),
                 }
             } catch (err) {
-                console.log('Error sending OTP:', err)
                 return {
                     statusCode: 400,
                     headers: await helpers.getHeaders(),
