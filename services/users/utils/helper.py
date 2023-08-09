@@ -10,14 +10,14 @@ from schema import Schema
 jwt_secret = os.environ.get('JWT_SECRET_KEY')
 dt = datetime.datetime.now() + datetime.timedelta(minutes=10)
 
-def send_mail_reset_password(email_address,unique_id):
+def send_mail_reset_password(email_address):
     """
     Sends a password reset email to the specified email address.
 
     Args:
         email_address: The email address to send the reset email to.
     """
-    token = jwt.encode({"email_address": email_address,"unique_id":unique_id, 'exp': dt}, jwt_secret, algorithm="HS256")
+    token = jwt.encode({"email_address": email_address,'exp': dt}, jwt_secret, algorithm="HS256")
     print(token)
     # token = str(token)[2:-1]
     token = str(token)

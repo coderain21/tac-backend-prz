@@ -33,7 +33,7 @@ def send_reset_link(event, context):
         collection = os.environ["SELLERS_TABLE"]
         admin_info = get_by_email(data['email_address'],collection)
         if admin_info:
-            send_mail_reset_password(data['email_address'],admin_info["unique_id"])
+            send_mail_reset_password(data['email_address'])
             return {
                 "headers": headers,
                 "statusCode": 201,
