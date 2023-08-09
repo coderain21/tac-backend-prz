@@ -104,7 +104,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     return {
                         statusCode: 201,
                         headers: await helpers.getHeaders(),
-                        body: JSON.stringify({ message: 'Succes', is_first_time_login: true }),
+                        body: JSON.stringify({ message: 'Succes' }),
                     }
                 }
                 return {
