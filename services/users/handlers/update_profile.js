@@ -6,6 +6,7 @@
 /* eslint-disable import/no-unresolved */
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
+const cognitoHelper = require('../lib/cognito_helper')
 
 let body
 const headers = {
@@ -57,6 +58,8 @@ module.exports.updateUserInformation = async (event) => {
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
             console.log('update_user_information', update_user_information)
             if (update_user_information.acknowledged) {
+                const cognitoUpdate = await cognitoHelper.cognitoUpdate(email, request_body)
+                console.log('cogni', cognitoUpdate)
                 body = JSON.stringify({
                     success_status: true,
                     message: 'Changes saved successfully',
