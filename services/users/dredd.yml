@@ -29,5 +29,5 @@ hooks-worker-term-retry: 500
 hooks-worker-handler-host: 127.0.0.1
 hooks-worker-handler-port: 61321
 config: ./dredd.yml 
-blueprint: customers_swagger.json
-endpoint: 'https://apis.deeplay.co/dev/v1/customers'
+blueprint: customers-swagger.json
+endpoint: 'https://apis.indyauction.net/dev/v1/users-management'
