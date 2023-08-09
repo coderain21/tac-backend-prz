@@ -40,7 +40,7 @@ module.exports.updateUserInformation = async (event) => {
         console.log('get', get_user)
         if (request_body.business_registration_number) {
             const business_name = await mongoConnection.view(Users, { business_registration_number: request_body.business_registration_number })
-            if (business_name.length > 0) {
+            if (business_name.length > 0 && business_name[0].email_address !== email) {
                 body = JSON.stringify({
                     success_status: false,
                     message: 'Already Exists',
