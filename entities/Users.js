@@ -18,6 +18,7 @@ const UserSchema = new Schema({
     user_type: {
         type: String, trim: true, required: true,
     },
+    user_name: { type: String, trim: true},
     password: { type: String, trim: true, required: true },
     email_address: { type: String, trim: true },
     status: { type: Boolean, default: false },
