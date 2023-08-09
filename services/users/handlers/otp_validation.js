@@ -97,6 +97,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                         }
                     }
                     userData.password = decryptedPassword
+                    userData.user_name = uuid.v4()
                     const connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     await connection.disconnect()
