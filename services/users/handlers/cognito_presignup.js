@@ -19,18 +19,6 @@ const Users = require('../entities/Users')
 const mongoConnection = require('../lib/mongodb_helper')
 const cognitoHelper = require('../lib/cognito_helper')
 
-function generateRandomPassword(length) {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    let password = ''
-
-    for (let i = 0; i < length; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length)
-        password += charset.charAt(randomIndex)
-    }
-
-    return password
-}
-
 exports.handler = async (event, context, callback) => {
     async function checkForExistingUsers(event, linkToExistingUser) {
         console.log('Executing checkForExistingUsers')
@@ -59,7 +47,7 @@ exports.handler = async (event, context, callback) => {
                 await linkUser(result.Users[0].Username, event)
                 return result
             }
-            let newPassword = generateRandomPassword(10) // Change the length as needed
+            let newPassword = 'INDY@SELLER' // Change the length as needed
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
 
             const userData = {
