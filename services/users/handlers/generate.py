@@ -5,7 +5,7 @@ import uuid
 import decimal
 from pymongo import MongoClient
 from datetime import datetime
-from data.kyc import get_access_token,create_applicant
+from lib.common_helper import get_access_token,create_applicant
 
 headers = {
     'Content-Type': 'application/json',
