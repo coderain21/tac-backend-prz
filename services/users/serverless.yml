@@ -28,7 +28,7 @@ provider:
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
     TEMPLATE_ARN_EMAIL_OTP: ${env:TEMPLATE_ARN_EMAIL_OTP}
     TEMPLATE_ARN_WELCOME_EMAIL: ${env:TEMPLATE_ARN_WELCOME_EMAIL}
-    PASSWORD_SECRET_KEY: SELLERINDYAUCTION
+    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     SELLERS_TABLE: ${env:SELLERS_TABLE}
     SES_SENDER_EMAIL_ID: ${env:SES_SENDER_EMAIL_ID}
@@ -115,20 +115,20 @@ functions:
 
 
   # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
-  cognito-post-signup-confirmation-trigger:
-    handler: handlers/cognito_post_confirmation.handler
-    layers:
-      - ${env:COMMON_LIB_ARN}
-    events:
-      - cognitoUserPool:
-          pool: ${env:COGNITO_USER_POOL}
-          trigger: PostConfirmation
-          existing: true
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+  # cognito-post-signup-confirmation-trigger:
+  #   handler: handlers/cognito_post_confirmation.handler
+  #   layers:
+  #     - ${env:COMMON_LIB_ARN}
+  #   events:
+  #     - cognitoUserPool:
+  #         pool: ${env:COGNITO_USER_POOL}
+  #         trigger: PostConfirmation
+  #         existing: true
+  #   vpc:
+  #     securityGroupIds:
+  #       - sg-0882c1da39e729097
+  #     subnetIds:
+  #       - subnet-0ff05c7c2bd2a3f87
   
   
   # COGNITO PRE SIGNUP TRIGGER
@@ -268,6 +268,23 @@ functions:
           path: /kyc
           method: post
 
+
+  update-password:
+        handler: handlers/update_password.updatePassword
+        layers:
+          - ${env:COMMON_LIB_ARN}
+        vpc:
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
+        events:
+          - http:
+              cors: true
+              path: /password-update/{email}
+              method: PATCH
+              authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
 plugins:
   - serverless-offline
   - serverless-package-external
