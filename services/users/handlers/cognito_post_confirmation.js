@@ -3,8 +3,6 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 const AWS = require('aws-sdk')
-const Users = require('../entities/Users')
-const mongoConnection = require('../lib/mongodb_helper')
 
 AWS.config.update({ region: process.env.REGION })
 
