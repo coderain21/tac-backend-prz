@@ -16,8 +16,8 @@ def kyc_webhook(event, context):
 
         # Retrieve the webhook payload and header values
         payload_bytes = event['body'].encode()
-        payload_digest = headers.get('x-payload-digest')
-
+        payload_digest = headers.get('X-Payload-Digest')
+        print(payload_digest) 
         # Calculate HMAC-SHA1 digest
         calculated_digest = hmac.new(
             secret_key.encode(), payload_bytes, hashlib.sha1).hexdigest()
@@ -29,19 +29,19 @@ def kyc_webhook(event, context):
                 'statusCode': 403,
                 'body': json.dumps({'message': 'Invalid signature'})
             }
-
+        print("valid signature")
         data = json.loads(event['body'])
         applicant_id = data["applicantId"]
-        \
+        
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['SELLERS_TABLE']]
 
         user = collection.find_one({'applicantId': applicant_id})
-
+        print(user)
         # Handle different webhook events
         event_type = data['type']
-
+        print(event_type)
         if event_type in('applicantCreated','applicantPending','applicantWorkflowCompleted'):
             user["type"] = event_type
             user["reviewStatus"] = data["reviewStatus"]
