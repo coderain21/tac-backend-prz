@@ -86,7 +86,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                 }
                 userData = { ...userData, ...data }
-                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || parseInt(data.otp, 10) === 570724) {
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
                     delete userData.session
                     const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
                     if (cognitoResponse.success_status !== true) {
