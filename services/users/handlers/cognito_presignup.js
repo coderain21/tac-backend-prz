@@ -47,7 +47,7 @@ exports.handler = async (event, context, callback) => {
                 await linkUser(result.Users[0].Username, event)
                 return result
             }
-            let newPassword = 'INDY@SELLER' // Change the length as needed
+            let newPassword = process.env.SELLER_GOGGLE_PASSWORD// Change the length as needed
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
 
             const userData = {
