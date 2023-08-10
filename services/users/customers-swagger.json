@@ -261,6 +261,89 @@
             }
           ]
         }
+      },
+       "/upgrade": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "View user information",
+          "parameters": [
+            {
+              "required": true,
+              "name": "email",
+              "in": "path",
+              "description": "get user by email",
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "responses": {
+            "200":{
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "view user",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
       }
     },
     "components": {
