@@ -43,15 +43,15 @@ def kyc_webhook(event, context):
         event_type = data['type']
         print(event_type)
         if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
-            user["type"] = event_type
-            user["reviewStatus"] = data["reviewStatus"]
+            user["kyc_event_type"] = event_type
+            user["kyc_status"] = data["reviewStatus"]
 
         else:
-            user["type"] = event_type
-            user["reviewStatus"] = data["reviewStatus"]
+            user["kyc_event_type"] = event_type
+            user["kyc_status"] = data["reviewStatus"]
 
         if "reviewResult" in data:
-            user['reviewResult'] = data["reviewResult"]
+            user['kyc_reviewResult'] = data["reviewResult"]
 
         collection.update_one({"_id": user["_id"]}, {
             "$set": user})
