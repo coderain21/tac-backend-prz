@@ -98,23 +98,25 @@ definitions:
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - echo "API Testing Automation"
-          # - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
-          # - pip install pip==22.3.1 --break-system-packages
-          # - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-          # - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-          # - pip3 install boto3 dredd_hooks
-          # - pip3 install requests
-          # - npm i -g dredd
-          # - ./api-testing.sh
-          # - ./doc.sh
-          # - pipe: atlassian/aws-s3-deploy:0.2.4
-          #   variables:
-          #     AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-          #     AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
-          #     AWS_DEFAULT_REGION: $AWS_REGION
-          #     S3_BUCKET: $BUCKET_NAME
-          #     ACL: "public-read"
-          #     LOCAL_PATH: "swaggerdocs"
+          - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+          - pip install pip==22.3.1 --break-system-packages
+          - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - pip3 install boto3 dredd_hooks
+          - pip3 install requests
+          - pip3 install python-dotenv
+          - python access_token_genation.py
+          - npm i -g dredd
+          - ./api-testing.sh
+          - ./doc.sh
+          - pipe: atlassian/aws-s3-deploy:0.2.4
+            variables:
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_DEFAULT_REGION: $AWS_REGION
+              S3_BUCKET: $BUCKET_NAME
+              ACL: "public-read"
+              LOCAL_PATH: "swaggerdocs"
 
 pipelines:
   pull-requests:    
