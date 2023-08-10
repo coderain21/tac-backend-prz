@@ -6,6 +6,7 @@ disabledDeprecations:
   - UNSUPPORTED_CLI_OPTIONS
   - CLI_OPTIONS_SCHEMA_V3
   - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
 provider:
   name: aws
   endpointType: REGIONAL
@@ -21,7 +22,7 @@ provider:
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: Users
+    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
@@ -29,6 +30,19 @@ provider:
     TEMPLATE_ARN_WELCOME_EMAIL: ${env:TEMPLATE_ARN_WELCOME_EMAIL}
     PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
+    SELLERS_TABLE: ${env:SELLERS_TABLE}
+    SES_SENDER_EMAIL_ID: ${env:SES_SENDER_EMAIL_ID}
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
+    DATABASE: ${env:DATABASE}
+    BASE_URL_SELLER: ${env:BASE_URL_SELLER}
+    FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${env:FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER}
+    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
+    LEVEL_NAME: ${env:LEVEL_NAME}
+    SUMSUB_SECRET_KEY_WEBHOOK: ${env:SUMSUB_SECRET_KEY_WEBHOOK}
+    SELLER_GOOGLE_PASSWORD: INDY@SELLER
+    DASHBOARD_URL: ${env:DASHBOARD_URL}
     
   http:
     cors: true
@@ -81,6 +95,42 @@ custom:
 
 
 functions: 
+
+# COGNITO PRE SIGNUP TRIGGER
+  cognito-pre-signup-trigger:
+    handler: handlers/cognito_presignup.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: PreSignUp
+          existing: true
+   
+
+
+  # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
+  cognito-post-signup-confirmation-trigger:
+    handler: handlers/cognito_post_confirmation.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:COGNITO_USER_POOL}
+          trigger: PostConfirmation
+          existing: true
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
   
   # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
@@ -108,13 +158,134 @@ functions:
         - sg-0882c1da39e729097
       subnetIds:
         - subnet-0ff05c7c2bd2a3f87
-  
     events:
       - http:
           path: /otp-validation
           method: post
           cors: true
+      
+  send-reset-link:
+    handler: handlers/send_reset_link.send_reset_link
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /forgot_password
+          method: post
 
+  update-new-password:
+    handler: handlers/reset_password.password_reset
+    runtime: python3.8
+    layers: 
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /reset_password
+          method: post
+  
+    
+
+  view-profile:
+    handler: handlers/view_profile.view_customer
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+        - http:
+            cors: true
+            path: /{email}
+            method: GET
+            authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+
+
+  update-profile:
+        handler: handlers/update_profile.updateUserInformation
+        layers:
+          - ${env:COMMON_LIB_ARN}
+        vpc:
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
+        events:
+          - http:
+              cors: true
+              path: /{email}
+              method: PATCH
+              authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+
+  generate_token:
+    handler: handlers/generate.generate_token
+    runtime: python3.8
+    memorySize: 128
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /generate
+          method: get
+
+  kyc_webhook:
+    handler: handlers/kyc_webhook.kyc_webhook
+    runtime: python3.8
+    memorySize: 128
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /kyc
+          method: post
+
+
+  update-password:
+        handler: handlers/update_password.updatePassword
+        layers:
+          - ${env:COMMON_LIB_ARN}
+        vpc:
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
+        events:
+          - http:
+              cors: true
+              path: /password-update/{email}
+              method: PATCH
+              authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
 plugins:
   - serverless-offline
   - serverless-package-external
