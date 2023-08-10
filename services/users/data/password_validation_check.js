@@ -8,19 +8,19 @@ module.exports.validationCheck = async (oldPassword, userData) => {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Current password is incorrect. The password update cannot be completed.' }),
+                body: JSON.stringify({ message: 'Incorrect password' }),
             }
         } if (userData.new_password === oldPassword) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'New password matches current password. Please choose a different password.' }),
+                body: JSON.stringify({ message: 'New password cannot be the same as old password. Please try again. ' }),
             }
         } if (userData.new_password !== userData.confirm_password) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Confirmed password does not match the new password' }),
+                body: JSON.stringify({ message: 'Passwords do not match' }),
             }
         }
         return {
