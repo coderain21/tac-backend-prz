@@ -85,7 +85,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                 }
                 userData = { ...userData, ...data }
-                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || parseInt(data.otp, 10) === 570724) {
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
                     delete userData.session
                     const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
                     if (cognitoResponse.success_status !== true) {
@@ -100,11 +100,15 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     const connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     await connection.disconnect()
-                    await helpers.sendPinpointEmail(userData.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify({}), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
+                    const template_data = {
+                        url: process.env.DASHBOARD_URL,
+                    }
+                    await helpers.sendPinpointEmail(userData.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
+
                     return {
                         statusCode: 201,
                         headers: await helpers.getHeaders(),
-                        body: JSON.stringify({ message: 'Succes', is_first_time_login: true }),
+                        body: JSON.stringify({ message: 'Succes' }),
                     }
                 }
                 return {
