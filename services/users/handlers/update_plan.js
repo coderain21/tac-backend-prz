@@ -6,7 +6,9 @@
 /* eslint-disable import/no-unresolved */
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
-const cognitoHelper = require('../lib/cognito_helper')
+const UserPlanHistory = require('../entities/UserPlanHistory')
+
+const dataHelper = require('../data/plan_validation_check')
 
 let body
 const headers = {
@@ -21,11 +23,13 @@ const headers = {
 information in a MongoDB database. The function takes an `event` parameter, which is likely an HTTP
 request object that contains information about the request, such as the request body and path
 parameters. */
-module.exports.updateUserInformation = async (event) => {
+module.exports.updatePlan = async (event) => {
     try {
         const request_body = JSON.parse(event.body)
+        console.log('request', request_body)
         const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)
+        let update_value
         const connection = await mongoConnection.connect()
         if (keys.length === 0) {
             body = JSON.stringify({
@@ -37,29 +41,29 @@ module.exports.updateUserInformation = async (event) => {
                 body,
             }
         }
-        const get_user = await mongoConnection.view(Users, { email_address: email })
-        console.log('get', get_user)
-        if (request_body.business_registration_number) {
-            const business_name = await mongoConnection.view(Users, { business_registration_number: request_body.business_registration_number })
-            if (business_name.length > 0 && business_name[0].email_address !== email) {
-                body = JSON.stringify({
-                    success_status: false,
-                    message: 'Already Exists',
-                })
-                return {
-                    headers,
-                    statusCode: 409,
-                    body,
-                }
-            }
-        }
-        if (get_user !== null) {
+        const plan_validation = await dataHelper.validationCheck(request_body)
+        console.log('plan_vali', plan_validation)
+        if (plan_validation.success_status === true) {
+            const get_user = await mongoConnection.view(Users, { email_address: email })
             const user_id = get_user[0]._id
-            const update_user_information = await mongoConnection.updateUsingMongoDB(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.SELLERS_TABLE, Users, user_id, request_body)
-            console.log('update_user_information', update_user_information)
+            update_value = {
+                free_user: false,
+                plan_type: 'Starter',
+            }
+            // const update_user_information = await mongoConnection.update(Users, user_id, update_value)
+            const update_user_information = await mongoConnection.updateUsingMongoDB(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.SELLERS_TABLE, user_id, update_value)
+            const plan_history_data = {
+                user_type: 'seller',
+                user_name: get_user[0].user_name,
+                email_address: email,
+                previous_plan: request_body.current_plan,
+                current_plan: request_body.new_plan,
+                updated_plan_type: request_body.plan_status,
+            }
+            console.log('UserPlanHistory', UserPlanHistory)
             if (update_user_information.acknowledged) {
-                const cognitoUpdate = await cognitoHelper.cognitoUpdate(request_body, email)
-                console.log('cogni', cognitoUpdate)
+                const user = await mongoConnection.save(plan_history_data, UserPlanHistory)
+                console.log('user', user)
                 body = JSON.stringify({
                     success_status: true,
                     message: 'Changes saved successfully',
@@ -70,24 +74,14 @@ module.exports.updateUserInformation = async (event) => {
                     body,
                 }
             }
-            body = JSON.stringify({
-                message: 'Failed to update information',
-            })
-            await connection.disconnect()
-
-            return {
-                headers,
-                statusCode: 400,
-                body,
-            }
         }
-
         body = JSON.stringify({
-            message: 'User not found',
+            message: 'Please choose correct plan upgrade or downgrade.',
         })
+        await connection.disconnect()
         return {
             headers,
-            statusCode: 404,
+            statusCode: 400,
             body,
         }
     } catch (error) {

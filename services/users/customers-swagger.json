@@ -262,27 +262,51 @@
           ]
         }
       },
-       "/upgrade": {
-        "get": {
+       "/update-plans": {
+        "patch": {
           "tags": [
             "Users"
           ],
-          "summary": "View user information",
+          "summary": "Upgrade and downgrade the pricing plans for the user",
           "parameters": [
             {
               "required": true,
               "name": "email",
               "in": "path",
-              "description": "get user by email",
+              "description": "Upgrade and downgrade the pricing plans for the user",
               "schema": {
                 "type": "string"
               },
               "example": "aishwarya@7edge.com"
             }
           ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current_plan":{
+                      "type": "string"
+                    },
+                    "new_plan":{
+                      "type": "string"
+                    },
+                    "plan_status": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "plan_type":"Starter"
+
+                }
+              }
+            }
+          },
           "responses": {
-            "200":{
-              "description": "OK",
+            "201":{
+              "description": "no content",
               "content": {
                 "application/json": {
                   "schema": {
@@ -290,7 +314,9 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        
+                        "plan_type": {
+                          "type":"string"
+                        }
                       }
                     }
                   }
@@ -328,7 +354,22 @@
               }
             },
             "404": {
-                "description": "view user",
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+            "400": {
+                "description": "Invalid Request",
                 "content": {
                   "application/json": {
                     "schema": {
