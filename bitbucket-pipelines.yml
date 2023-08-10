@@ -113,7 +113,6 @@ definitions:
               AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
               AWS_DEFAULT_REGION: $AWS_REGION
               S3_BUCKET: $BUCKET_NAME
-              ACL: "authenticated-read"
               LOCAL_PATH: "swaggerdocs"
           - pipe: atlassian/aws-cloudfront-invalidate:0.1.1
             variables:
