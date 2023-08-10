@@ -9,6 +9,7 @@ const Users = require('../entities/Users')
 const UserPlanHistory = require('../entities/UserPlanHistory')
 
 const dataHelper = require('../data/plan_validation_check')
+const helpers = require('../lib/helper')
 
 let body
 const headers = {
@@ -36,7 +37,7 @@ module.exports.updatePlan = async (event) => {
                 message: 'Please pass atleast one field',
             })
             return {
-                headers,
+                headers: await helpers.getHeaders(),
                 statusCode: 400,
                 body,
             }
@@ -60,7 +61,7 @@ module.exports.updatePlan = async (event) => {
                 current_plan: request_body.new_plan,
                 updated_plan_type: request_body.plan_status,
             }
-            console.log('UserPlanHistory', UserPlanHistory)
+            console.log('plan_history_data', update_user_information)
             if (update_user_information.acknowledged) {
                 const user = await mongoConnection.save(plan_history_data, UserPlanHistory)
                 console.log('user', user)
@@ -69,7 +70,7 @@ module.exports.updatePlan = async (event) => {
                     message: 'Changes saved successfully',
                 })
                 return {
-                    headers,
+                    headers: await helpers.getHeaders(),
                     statusCode: 204,
                     body,
                 }
@@ -80,7 +81,7 @@ module.exports.updatePlan = async (event) => {
         })
         await connection.disconnect()
         return {
-            headers,
+            headers: await helpers.getHeaders(),
             statusCode: 400,
             body,
         }
@@ -90,7 +91,7 @@ module.exports.updatePlan = async (event) => {
             message: 'Failed to update information',
         })
         return {
-            headers,
+            headers: await helpers.getHeaders(),
             statusCode: 400,
             body,
         }
