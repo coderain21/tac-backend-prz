@@ -10,8 +10,8 @@ def generate_token():
             ClientId='3duudq593a3j7jpp7afv1vbmuc',
             AuthFlow='ADMIN_NO_SRP_AUTH',
             AuthParameters={
-                'USERNAME': 'aishwarya+indy@7edge.com',
-                'PASSWORD': 'Aishu@76980'
+                'USERNAME': 'anusha.k+seller@7edge.com',
+                'PASSWORD': 'Seller@123'
             }
         )
         token = response['AuthenticationResult']['IdToken']
