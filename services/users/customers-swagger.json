@@ -261,6 +261,65 @@
             }
           ]
         }
+      },
+      "/generate": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Generate token for the KYC",
+          "description": "Generate token for the KYC",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns token value",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while generating token",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while generating token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {

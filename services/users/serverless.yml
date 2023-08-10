@@ -251,6 +251,8 @@ functions:
           cors: true
           path: /generate
           method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
 
   kyc_webhook:
     handler: handlers/kyc_webhook.kyc_webhook
