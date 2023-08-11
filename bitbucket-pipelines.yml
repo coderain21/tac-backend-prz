@@ -1,0 +1,236 @@
+image: node:latest
+clone:
+  depth: full
+options:
+ max-time: 60 #max time in minutes
+definitions:
+  caches:
+    sonar: ~/.sonar/cache
+
+  steps:
+    - step: &BuildStep
+        name: Build
+        caches:
+          - node
+        script:
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - npm install
+          - echo "Build"
+
+    - step: &ESlint
+        name: ESLint
+        script:
+           - echo "ESLint"
+           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+           - npm install eslint
+           - npm run eslint
+
+    - step: &Pylint
+        name: PyLint
+        image: python:3.9   # Choose the desired Python version
+        script:
+            - echo "Pylint is skipped"
+            - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+            - apt-get update   # Update package manager (for Debian/Ubuntu-based images)
+            - apt-get install -y python3-pip   # Install pip (for Debian/Ubuntu-based images)
+            - pip install pylint
+            - pylint services/**/**/*.py
+
+    - step: &LicenseCompliance
+        name: License Compliance
+        script:
+           - echo "License Compliance"
+           - npm install -g license-checker
+           - license-checker --json > licenses.json --unknown
+
+    - step: &DependencyScanning 
+        name: Dependency Scanning
+        script:
+           - echo "Dependency Scanning skipped"
+           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          #  - npm run owasp
+
+    - step: &SecretChecking
+        name: Secret Detection
+        script:
+          - echo "Secret Checking"
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - pipe: atlassian/git-secrets-scan:0.4.3
+
+    - step: &SAST
+        name: Static Application Security Testing (SAST)
+        image: python:latest
+        script:
+          - echo "SAST"
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+          - pip install pip==22.3.1 --break-system-packages
+          - pip3 install njsscan
+          - njsscan -w .
+          - pip install bandit
+          - bandit -r services/**/*.py
+
+
+    - step: &Deploy
+        name: Deployment
+        size: 2x
+        script:
+          - echo "Deploy"
+          - npm i -g serverless@3.15.2
+          - npm i -g @serverless/compose
+          - npm i serverless-aws-documentation
+          - npm i serverless-domain-manager --f
+          - npm i serverless-dynamodb-autoscaling
+          - npm i serverless-dynamodb-ttl
+          - npm i serverless-offline
+          - npm i serverless-package-external
+          - npm i serverless-python-requirements
+          - npm i serverless-appsync-plugin
+          - apt-get update && apt-get install python -y && apt-get install python3-pip -y
+          - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - export AWS_REGION=${REGION}
+          - sls deploy --stage ${STAGE} --max-concurrency 5
+
+    
+    - step: &APITesting 
+        name: API Test Automation
+        script:
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - echo "API Testing Automation"
+          - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+          - pip install pip==22.3.1 --break-system-packages
+          - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - pip3 install boto3 dredd_hooks
+          - pip3 install requests
+          - pip3 install python-dotenv
+          - python access_token_genation.py
+          - npm i -g dredd
+          - ./api-testing.sh
+          - ./doc.sh
+          - pipe: atlassian/aws-s3-deploy:0.2.4
+            variables:
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_DEFAULT_REGION: $AWS_REGION
+              S3_BUCKET: $BUCKET_NAME
+              ACL: "public-read"
+              LOCAL_PATH: "swaggerdocs"
+
+pipelines:
+  pull-requests:    
+    feature/**:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - step: *APITesting
+      
+        
+      
+    bugfix/**:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - step: *APITesting
+      
+     
+     
+
+    hotfix/**:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - step: *APITesting
+
+  branches:
+    develop:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - stage:
+            name: Testing and DEV Deployment
+            deployment: develop
+            steps:
+              - step: *APITesting
+
+    staging:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - stage:
+            name: STAGING Deployment
+            deployment: staging
+            steps:
+              - step: *Deploy
+              
+
+    beta:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - stage:
+          name: BETA Deployment
+          deployment: beta
+          steps:
+            - step: *Deploy
+              
+    master:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - stage:
+          name: PRODUCTION Deployment
+          deployment: production
+          steps:
+            - step: *Deploy
+
