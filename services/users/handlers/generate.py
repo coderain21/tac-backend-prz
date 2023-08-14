@@ -49,6 +49,11 @@ def generate_token(event,context):
 
         user_info = collection_sellers.find_one({'email_address': email_address},{'password':0})
 
+        if "kyc_reviewResult" in user_info and "reviewAnswer" in user_info["kyc_reviewResult"] and user_info["kyc_reviewResult"]["reviewAnswer"]=="RED":
+            del user_info["external_user_id"]
+            del user_info["applicantId"]
+            del user_info["kyc_reviewResult"]
+
         if not "applicantId" in user_info and not "external_user_id" in user_info:
             external_user_id = str(uuid.uuid4())
             applicant_id = create_applicant(external_user_id,level_name)

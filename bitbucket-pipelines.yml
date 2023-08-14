@@ -39,16 +39,30 @@ definitions:
     - step: &LicenseCompliance
         name: License Compliance
         script:
-           - echo "License Compliance"
-           - npm install -g license-checker
-           - license-checker --json > licenses.json --unknown
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - echo "License Compliance"
+          - npm i --force
+          - npm install -g license-checker
+          - license-checker --json > licenses.json  
+          - node license.js
+        artifacts:
+          - matching_licenses.json
+          - licenses.json
 
-    - step: &DependencyScanning 
+
+    - step: &DependencyScanning
         name: Dependency Scanning
+        services:
+          - docker
         script:
-           - echo "Dependency Scanning skipped"
-           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
-          #  - npm run owasp
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - echo "Dependency Scanning"
+          - pipe: docker://aligent/owasp-dependency-check-pipe
+            variables:
+              SCAN_PATH: "./package.json"
+              CVSS_FAIL_LEVEL: "1"
+        artifacts:
+          - test-results/**  
 
     - step: &SecretChecking
         name: Secret Detection

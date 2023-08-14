@@ -251,6 +251,8 @@ functions:
           cors: true
           path: /generate
           method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
 
   kyc_webhook:
     handler: handlers/kyc_webhook.kyc_webhook
@@ -283,6 +285,23 @@ functions:
           - http:
               cors: true
               path: /password-update/{email}
+              method: PATCH
+              authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+
+  update-plans:
+        handler: handlers/update_plan.updatePlan
+        layers:
+          - ${env:COMMON_LIB_ARN}
+        vpc:
+          securityGroupIds:
+            - sg-0882c1da39e729097
+          subnetIds:
+            - subnet-0ff05c7c2bd2a3f87
+        events:
+          - http:
+              cors: true
+              path: /update-plan/{email}
               method: PATCH
               authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}

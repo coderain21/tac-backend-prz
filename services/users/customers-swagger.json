@@ -261,6 +261,176 @@
             }
           ]
         }
+      },
+       "/update-plan/{email}": {
+        "patch": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Upgrade and downgrade the pricing plans for the user",
+          "parameters": [
+            {
+              "required": true,
+              "name": "email",
+              "in": "path",
+              "description": "Upgrade and downgrade the pricing plans for the user",
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current_plan":{
+                      "type": "string"
+                    },
+                    "new_plan":{
+                      "type": "string"
+                    },
+                    "plan_status": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "current_plan": "Free",
+                  "new_plan": "Starter",
+                  "plan_status": "Upgrade"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "204":{
+              "description": "no content"
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+            "400": {
+                "description": "Invalid Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      },
+      "/generate": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Generate token for the KYC",
+          "description": "Generate token for the KYC",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns token value",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while generating token",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while generating token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
