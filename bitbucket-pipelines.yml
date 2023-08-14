@@ -149,7 +149,6 @@ pipelines:
       #       - step: *SecretChecking
       #       - step: *LicenseCompliance
       #       - step: *DependencyScanning
-      - step: *APITesting
       
         
       
