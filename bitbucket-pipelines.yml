@@ -139,17 +139,17 @@ definitions:
 pipelines:
   pull-requests:    
     feature/**:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
       - step: *APITesting
-      # - parallel:
-      #     fail-fast: true
-      #     steps:
-      #       - step: *BuildStep
-      #       - step: *Pylint
-      #       - step: *ESlint
-      #       - step: *SAST
-      #       - step: *SecretChecking
-      #       - step: *LicenseCompliance
-      #       - step: *DependencyScanning
       
         
       
