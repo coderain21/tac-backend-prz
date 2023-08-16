@@ -33,7 +33,8 @@ class Encoder(json.JSONEncoder):
 def generate_token(event,context):
     try:
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            # email_address = event['requestContext']['authorizer']['claims']['email']
+            email_address = "anubangera2000@gmail.com"
         except:
             return {
                 "headers": headers,
@@ -48,6 +49,7 @@ def generate_token(event,context):
         collection_sellers = db[os.environ["SELLERS_TABLE"]]
 
         user_info = collection_sellers.find_one({'email_address': email_address},{'password':0})
+        print(user_info)
 
         if "kyc_reviewResult" in user_info and "reviewAnswer" in user_info["kyc_reviewResult"] and user_info["kyc_reviewResult"]["reviewAnswer"]=="RED":
             del user_info["external_user_id"]
