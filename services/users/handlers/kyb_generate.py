@@ -33,8 +33,7 @@ class Encoder(json.JSONEncoder):
 def generate_token(event,context):
     try:
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            email_address='aishwarya+2@7edge.com'
+            email_address = event['requestContext']['authorizer']['claims']['email']
             print('email',email_address)
         except:
             return {

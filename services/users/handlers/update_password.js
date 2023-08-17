@@ -16,8 +16,7 @@ function is intended to be used as a handler for an AWS Lambda function. */
 module.exports.updatePassword = async (event) => {
     try {
         const userData = JSON.parse(event.body)
-        const email = decodeURIComponent(event.pathParameters.email)
-        const connection = await mongoConnection.connect()
+a        const connection = await mongoConnection.connect()
         const get_user = await mongoConnection.view(Users, { email_address: email })
         console.log('get', get_user)
         const user_old_password = get_user[0].password
