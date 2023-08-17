@@ -34,7 +34,7 @@ def generate_token(event,context):
     try:
         try:
             # email_address = event['requestContext']['authorizer']['claims']['email']
-            email_address = "namratha.shettigar@7edge.com"
+            email_address='aishwarya+2@7edge.com'
             print('email',email_address)
         except:
             return {
@@ -52,16 +52,19 @@ def generate_token(event,context):
         user_info = collection_sellers.find_one({'email_address': email_address},{'password':0})
         print('user', user_info)
 
-        if "kyb_reviewResult" in user_info and "kyb_reviewAnswer" in user_info["kyb_reviewResult"] and user_info["kyb_reviewResult"]["kyb_reviewAnswer"]=="RED":
+        if "kyb_reviewResult" in user_info and "reviewAnswer" in user_info["kyb_reviewResult"] and user_info["kyb_reviewResult"]["reviewAnswer"]=="RED":
             del user_info["kyb_external_user_id"]
             del user_info["companyId"]
             del user_info["kyb_reviewResult"]
 
         if not "companyId" in user_info and not "kyb_external_user_id" in user_info:
+
             kyb_external_user_id = str(uuid.uuid4())
-            company_id = create_applicant('company',kyb_external_user_id,level_name)
+            company_id = create_applicant(kyb_external_user_id,level_name)
             user_info["kyb_external_user_id"] = kyb_external_user_id
             user_info["companyId"] = company_id
+            user_info["kyb_reviewResult"] = { }
+            print('after', user_info)
             # Update the user_activity document
             collection_sellers.update_one({"_id": user_info["_id"]}, {
                               "$set": user_info})

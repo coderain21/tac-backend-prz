@@ -9,8 +9,7 @@ from pymongo import MongoClient
 def kyc_webhook(event, context):
     try:   
         print("event", event)
-        headers = event['headers']
-        
+        headers = event['headers']    
         # Retrieve the secret key from environment variables
         secret_key = os.environ['SUMSUB_SECRET_KEY_WEBHOOK']
 
@@ -33,7 +32,7 @@ def kyc_webhook(event, context):
 
         data = json.loads(event['body'])
 
-        if data['level_name']=='basic_kyc_level':
+        if data['levelName']=='basic_kyc_level':
 
             applicant_id = data["applicantId"]
             client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -41,10 +40,8 @@ def kyc_webhook(event, context):
             collection = db[os.environ['SELLERS_TABLE']]
 
             user = collection.find_one({'applicantId': applicant_id})
-            print(user)
             # Handle different webhook events
             event_type = data['type']
-            print(event_type)
             if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
                 user["kyc_event_type"] = event_type
                 user["kyc_status"] = data["reviewStatus"]
@@ -64,18 +61,17 @@ def kyc_webhook(event, context):
                 'statusCode': 200,
                 'body': json.dumps({'message': 'Webhook event received and processed successfully'})
             }
-        elif data['level_name']=='basic_kyb_level':
-
-            company_id = data["companyId"]
+        elif data['levelName']=='basic-kyb-level':
+            print('entering kyb')
+            company_id =  data["applicantId"]
             client = MongoClient(os.environ['MONGO_CLIENT'])
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 
             user = collection.find_one({'companyId': company_id})
-            print(user)
             # Handle different webhook events
             event_type = data['type']
-            print(event_type)
+            print('event_type', event_type)
             if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
                 user["kyb_event_type"] = event_type
                 user["kyb_status"] = data["reviewStatus"]

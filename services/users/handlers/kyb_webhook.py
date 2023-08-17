@@ -65,6 +65,14 @@ def kyb_webhook(event, context):
                         'statusCode': 200,
                         'body': json.dumps({'message': 'Webhook event received and processed successfully'})
                     }
+                except Exception as err:
+                    print(err)
+                    return {
+                        "headers": headers,
+                        "statusCode": 500,
+                        "body": json.dumps({"message": "There was an error while generating token"})
+                    }
+
             elif body['level_name']=='basic_kyb_level':
                     try:
                         # email_address = event['requestContext']['authorizer']['claims']['email']
@@ -114,10 +122,10 @@ def kyb_webhook(event, context):
                     }
 
 
-            except Exception as err:
-                    print(err)
-                    return {
-                        "headers": headers,
-                        "statusCode": 500,
-                        "body": json.dumps({"message": "There was an error while generating token"})
-                    }
+        except Exception as err:
+                print(err)
+                return {
+                    "headers": headers,
+                    "statusCode": 500,
+                    "body": json.dumps({"message": "There was an error while generating token"})
+                }

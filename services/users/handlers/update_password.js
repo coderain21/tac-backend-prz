@@ -11,6 +11,8 @@ const mongoConnection = require('../lib/mongodb_helper')
 const helpers = require('../lib/helper')
 const cognitoHelper = require('../lib/cognito_helper')
 
+/* The code you provided is a JavaScript function that exports a function called `updatePassword`. This
+function is intended to be used as a handler for an AWS Lambda function. */
 module.exports.updatePassword = async (event) => {
     try {
         const userData = JSON.parse(event.body)
