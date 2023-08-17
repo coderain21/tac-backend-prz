@@ -24,7 +24,6 @@ for (const dependency of allDependencies) {
         matchingLicenses[matchingLicenseKey] = licensesData[matchingLicenseKey]
     }
 }
-
 // Write the matching licenses to a separate file
 fs.writeFileSync('matching_licenses.json', JSON.stringify(matchingLicenses, null, 2))
 
