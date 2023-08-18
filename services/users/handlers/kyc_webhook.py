@@ -32,8 +32,7 @@ def kyc_webhook(event, context):
 
         data = json.loads(event['body'])
 
-        if data['levelName']=='basic_kyc_level':
-
+        if data['levelName']=='basic-kyc-level':
             applicant_id = data["applicantId"]
             client = MongoClient(os.environ['MONGO_CLIENT'])
             db = client[os.environ['DATABASE']]
