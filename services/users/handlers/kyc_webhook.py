@@ -7,9 +7,9 @@ from pymongo import MongoClient
 
 
 def kyc_webhook(event, context):
-    try:   
+    try:
         print("event", event)
-        headers = event['headers']    
+        headers = event['headers']
         # Retrieve the secret key from environment variables
         secret_key = os.environ['SUMSUB_SECRET_KEY_WEBHOOK']
 
