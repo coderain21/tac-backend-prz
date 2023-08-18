@@ -44,6 +44,7 @@ provider:
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     DASHBOARD_URL: ${env:DASHBOARD_URL}
     KYB_LEVEL_NAME: basic-kyb-level
+    YOUR_HOSTED_ZONE_ID: ${env:YOUR_HOSTED_ZONE_ID}
     
   http:
     cors: true
@@ -323,6 +324,25 @@ functions:
           cors: true
           path: /kyb-generate
           method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+    
+  seller_sub_domain:
+    handler: handlers/seller_domain.create_subdomain
+    runtime: python3.8
+    memorySize: 128
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /seller-sub-domain
+          method: post
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
 plugins:
