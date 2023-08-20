@@ -28,7 +28,7 @@ do
     base_name=$(basename "$file" -swagger.json)
 
     # Construct the URL
-    url="https://indyauction-api-documentation.s3.eu-west-2.amazonaws.com/swagger_api_documentation/$base_name-swagger.json"
+    url="https://indyaution.net/swagger_api_documentation/$base_name-swagger.json"
 
     # Check if the JSON object already exists in the array
     duplicate=false
