@@ -1,0 +1,151 @@
+service: qr-codes
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  REGION: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    passwordKey: Deeplay@Admin
+    MONGODB_NAME: deeplay-dev
+    MONGODB_COLLECTION_NAME: AdminUsers
+    MONGO_CLIENT: ${env:MONGO_CLIENT}
+    DATABASE: ${env:DATABASE}
+    ADMIN_TABLE: ${env:ADMIN_TABLE}
+    API_BASE_URL: ${env:BASE_URL}
+    S3_BUCKET: ${env:S3_BUCKET}
+    QR_CODES_TABLE: ${env:QR_CODES_TABLE}
+    ACCESSKEY: ${env:ACCESSKEY}
+    SECRETKEY: ${env:SECRETKEY}
+
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${env:COGNITO_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${env:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${env:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+                
+  
+ 
+
+
+functions: 
+  create:
+    handler: handlers/generate_qr_codes.generateQRCode
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+        - subnet-041c07d58c8318700
+    events:
+      - http:
+          path: /generate-qr-codes
+          method: post
+          cors: true
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
+  InvokeCreateQRCode:
+    handler: handlers/invoke_create.InvokeCreateQRCode
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    timeout: 900
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+        - subnet-041c07d58c8318700
+    
+  list:
+    handler: handlers/list_qr_codes.list_codes
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+        - subnet-041c07d58c8318700
+    events:
+      - http:
+          path: /list
+          method: post
+          cors: true
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
+  view:
+    handler: handlers/view.viewQRCode
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+        - subnet-041c07d58c8318700
+    events:
+      - http:
+          path: /view/{qr_code}
+          method: get
+          cors: true
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+ 
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager

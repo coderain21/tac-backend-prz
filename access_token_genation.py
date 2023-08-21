@@ -5,15 +5,30 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 
-client = boto3.client('cognito-idp', region_name='ap-south-1')
+from dotenv import load_dotenv  # Import the library
+
+# Load environment variables from .env file
+load_dotenv()
+
+aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+aws_region = os.environ.get('REGION')
+
+# Configure AWS SDK
+session = boto3.Session(
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name=aws_region
+)
+
+client = session.client('cognito-idp')
 
 def generate_token():
     try:
         user_pool_id = os.environ['COGNITO_USER_POOL_ID']
-        client_id = os.environ['COGNITO_CLIENT_ID']
-        username = os.environ['USERNAME']
+        client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
+        username = os.environ['API_USERNAME']
         password = os.environ['PASSWORD']
-
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return

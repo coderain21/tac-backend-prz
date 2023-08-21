@@ -1,4 +1,6 @@
 services:
-  admin-users:
-    path: services/admin-users
+  users:
+    path: services/users
     config: ${env:config}
+
+    

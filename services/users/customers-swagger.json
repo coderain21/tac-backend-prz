@@ -1,0 +1,528 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "termsOfService": "https://theauctioncollective.com/terms/",
+      "description": "Indy Auction API Documentation (Seller Web Application)",
+      "title": "Indy Auction APIs",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "license": {
+        "name": "7EDGE"
+      },
+      "version": "1.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/",
+        "description": "Test Server"
+      }
+    ],
+    "paths": {
+       "/{email}": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "View user information",
+          "parameters": [
+            {
+              "required": true,
+              "name": "email",
+              "in": "path",
+              "description": "get user by email",
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "OK",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "first_name": {
+                          "type": "string"
+                        },
+                        "last_name": {
+                          "type": "string"
+                        },
+                        "brand_name": {
+                          "type": "number"
+                        },
+                        "email_address": {
+                          "type": "string"
+                        },
+                        "business_registration_number": {
+                          "type": "string"
+                        },
+                        "website": {
+                          "type": "string"
+                        },
+                        "address_line_1": {
+                          "type": "string"
+                        },
+                        "address_line_2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "phone_number": {
+                          "type": "string"
+                        },
+                        "date_of_birth": {
+                          "type": "string"
+                        },
+                        "about": {
+                          "type": "string"
+                        },
+                        "facebook_link": {
+                          "type": "string"
+                        },
+                        "Instagram_link": {
+                          "type": "string"
+                        },
+                        "twitter": {
+                          "type": "string"
+                        },
+                        "linkedin_link": {
+                          "type": "string"
+                        },
+                        "tiktok_link": {
+                          "type": "string"
+                        },
+                        "kyc_status": {
+                          "type": "boolean"
+                        },
+                        "kyb_status": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "view user",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        },
+        "patch":{
+          "tags": [
+            "Customers"
+          ],
+          "summary": "Update user information",
+          "parameters": [
+            {
+              "name": "email",
+              "in": "path",
+              "description": "Update user information",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "first_name":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "first_name":"sandhyashri"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "No Content"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "example": {
+                      "message": "Please pass atleast one field"
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+      },
+       "/update-plan/{email}": {
+        "patch": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Upgrade and downgrade the pricing plans for the user",
+          "parameters": [
+            {
+              "required": true,
+              "name": "email",
+              "in": "path",
+              "description": "Upgrade and downgrade the pricing plans for the user",
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current_plan":{
+                      "type": "string"
+                    },
+                    "new_plan":{
+                      "type": "string"
+                    },
+                    "plan_status": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "current_plan": "Free",
+                  "new_plan": "Starter",
+                  "plan_status": "Upgrade"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "204":{
+              "description": "no content"
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+            "400": {
+                "description": "Invalid Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      },
+      "/generate": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Generate token for the KYC",
+          "description": "Generate token for the KYC",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns token value",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while generating token",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while generating token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "users": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "brand_name": {
+              "type": "number"
+            },
+            "email_address": {
+              "type": "string"
+            },
+            "business_registration_number": {
+              "type": "string"
+            },
+            "website": {
+              "type": "string"
+            },
+            "address_line_1": {
+              "type": "string"
+            },
+            "address_line_2": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            },
+            "postal_code": {
+              "type": "string"
+            },
+            "country": {
+              "type": "string"
+            },
+            "phone_number": {
+              "type": "string"
+            },
+            "date_of_birth": {
+              "type": "string"
+            },
+            "about": {
+              "type": "string"
+            },
+            "facebook_link": {
+              "type": "string"
+            },
+            "Instagram_link": {
+              "type": "string"
+            },
+            "twitter": {
+              "type": "string"
+            },
+            "linkedin_link": {
+              "type": "string"
+            },
+            "tiktok_link": {
+              "type": "string"
+            },
+            "kyc_status": {
+              "type": "boolean"
+            },
+            "kyb_status": {
+              "type": "boolean"
+            }
+          }
+        },
+        "Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
