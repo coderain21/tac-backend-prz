@@ -1,22 +1,23 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "termsOfService": "https://theauctioncollective.com/terms/",
-      "description": "Indy Auction API Documentation (Seller Web Application)",
-      "title": "Indy Auction APIs",
+      "title": "Users Management APIs",
+      "description": "Users Management APIs to view user's information, Upgrade and downgrade the pricing plans for the users,Generate token for the KYC",
       "contact": {
         "name": "no-reply@indy.auction",
         "email": "no-reply@indy.auction"
       },
-      "license": {
-        "name": "7EDGE"
-      },
-      "version": "1.0"
+      "version": "1.0.0"
     },
     "servers": [
       {
-        "url": "https://apis.indyauction.net/dev/v1/",
-        "description": "Test Server"
+        "url": "https://apis.indyauction.net/dev/v1/users-management"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Users Management",
+          "description": "APIs to view user's information, Upgrade and downgrade the pricing plans for the users,Generate token for the KYC"
       }
     ],
     "paths": {
@@ -169,7 +170,7 @@
         },
         "patch":{
           "tags": [
-            "Customers"
+            "Users"
           ],
           "summary": "Update user information",
           "parameters": [
@@ -380,6 +381,65 @@
           ],
           "summary": "Generate token for the KYC",
           "description": "Generate token for the KYC",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns token value",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while generating token",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while generating token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/kyb-generate": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Generate token for the KYB",
+          "description": "Generate token for the KYB",
           "parameters": [],
           "responses": {
             "200": {
