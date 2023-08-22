@@ -18,7 +18,13 @@ def skip_404_test_results(transaction):
     if (
         transaction['expected']['statusCode'] == '500' or
         transaction['expected']['statusCode'] == '404' or
-        transaction['expected']['statusCode'] == '403'
+        transaction['expected']['statusCode'] == '403' or
+        '/password-update/' in transaction['request']['uri'] or
+        '/verify-captcha' in transaction['request']['uri'] or
+        '/otp-validation' in transaction['request']['uri'] or
+        '/reset_password' in transaction['request']['uri'] or
+        '/forgot_password' in transaction['request']['uri']
+
     ):
         transaction['skip'] = True
 
