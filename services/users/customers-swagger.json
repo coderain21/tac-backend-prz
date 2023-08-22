@@ -1,22 +1,23 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "termsOfService": "https://theauctioncollective.com/terms/",
-      "description": "Indy Auction API Documentation (Seller Web Application)",
-      "title": "Indy Auction APIs",
+      "title": "Users Management APIs",
+      "description": "Users Management APIs to view user's information, Upgrade and downgrade the pricing plans for the users, Generate token for the KYC and KYB",
       "contact": {
         "name": "no-reply@indy.auction",
         "email": "no-reply@indy.auction"
       },
-      "license": {
-        "name": "7EDGE"
-      },
-      "version": "1.0"
+      "version": "1.0.0"
     },
     "servers": [
       {
-        "url": "https://apis.indyauction.net/dev/v1/",
-        "description": "Test Server"
+        "url": "https://apis.indyauction.net/dev/v1/users-management"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Users Management",
+          "description": "APIs to view user's information, Upgrade and downgrade the pricing plans for the users, Generate token for the KYC and KYB"
       }
     ],
     "paths": {
@@ -25,7 +26,7 @@
           "tags": [
             "Users"
           ],
-          "summary": "View user information",
+          "summary": "View  user information",
           "parameters": [
             {
               "required": true,
