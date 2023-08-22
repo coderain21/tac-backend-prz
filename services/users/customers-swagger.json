@@ -25,7 +25,7 @@
           "tags": [
             "Users"
           ],
-          "summary": "View user information",
+          "summary": "View  user information",
           "parameters": [
             {
               "required": true,
