@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const fetch = require('node-fetch')
-const stripe = require('stripe')(process.environ.STRIPE_SECRET_KEY)
+const stripe = require('stripe')('sk_test_51NSrthFdWS7wL4EMgIaIlyzCIPY2387pcfibXJdCWsVJWg1dHrjAHZIoeKTrOCNcUNqkAmEuGNQti3q0mcE3hThb00CCZpfg5S')
 
 // Make sure to have the 'node-fetch' library installed using npm or yarn.
 async function verifyRecaptcha(req, res, next) {
@@ -10,12 +10,30 @@ async function verifyRecaptcha(req, res, next) {
         //     country: 'CA',
         //     email: '',
         // })
-        const accountLink = await stripe.accountLinks.create({
-            account: 'acct_',
-            refresh_url: 'https://theauctioncollective.com/',
-            return_url: 'https://theauctioncollective.com/',
-            type: 'account_onboarding',
-        })
+        // const accountLink = await stripe.accountLinks.create({
+        //     account: 'acct_',
+        //     refresh_url: 'https://theauctioncollective.com/',
+        //     return_url: 'https://theauctioncollective.com/',
+        //     type: 'account_onboarding',
+        // })
+        const accountLink = await stripe.paymentIntents.create({
+            payment_method_types: ['card'],
+            amount: 6000,
+            currency: 'gbp',
+            application_fee_amount: 200,
+            transfer_data: {
+                destination: 'acct_1NhXFuC14PIGoJjg',
+            },
+        });
+        // const payout = await stripe.payouts.create(
+        //     {
+        //         amount: 1000,
+        //         currency: 'gbp',
+        //     },
+        //     {
+        //         stripeAccount: 'acct_1NSrthFdWS7wL4EM',
+        //     }
+        // );
         console.log('account', accountLink)
     } catch (error) {
         console.log(error)

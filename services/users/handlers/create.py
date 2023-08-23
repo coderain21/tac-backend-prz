@@ -37,8 +37,8 @@ class Encoder(json.JSONEncoder):
 def create(event,context):
     try:
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
-            # email_address = "sandhyashri+test45@7edge.com"
+            #email_address = event['requestContext']['authorizer']['claims']['email']
+            email_address = "aishwarya@7edge.com"
         except:
             return {
                 "headers": headers,
@@ -47,14 +47,13 @@ def create(event,context):
             }
 
         user_info = get_by_email(email_address)
-        
+         
         if not "stripe_connected_id" in user_info:
             created_account = stripe.Account.create(
                     type = "express",
                     email = email_address,
                     )
             stripe_id = created_account["id"]
-            # stripe_id = "acct_1NhRrTCSxvBdz2xP"
             print(stripe_id)
             update_data = {
                 "stripe_connected_id" : stripe_id

@@ -4,7 +4,7 @@
 # import stripe
 import stripe
 import os
-stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
+stripe.api_key = "sk_test_51NSrthFdWS7wL4EMgIaIlyzCIPY2387pcfibXJdCWsVJWg1dHrjAHZIoeKTrOCNcUNqkAmEuGNQti3q0mcE3hThb00CCZpfg5S"
 
 
 def main():
@@ -18,13 +18,13 @@ def main():
     # success_url="https://example.com/success",
     # cancel_url="https://example.com/cancel",
     # )
-    response = stripe.checkout.Session.create(
-        mode="payment",
-        line_items=[
-            {"price": "price_1NbK18FdWS7wL4EMEEsUUNUM", "quantity": 1}],
-        success_url="https://example.com/success",
-        cancel_url="https://example.com/cancel",
-    )
+    # response = stripe.checkout.Session.create(
+    #     mode="payment",
+    #     line_items=[
+    #         {"price": "price_1NbK18FdWS7wL4EMEEsUUNUM", "quantity": 1}],
+    #     success_url="https://example.com/success",
+    #     cancel_url="https://example.com/cancel",
+    # )
     # response=stripe.PaymentIntent.create(
     #     amount=100000,
     #     currency="usd",
@@ -32,15 +32,22 @@ def main():
 
     #     transfer_data={"destination": 'acct_1NbIPVCHsBwuF67e'},
     #     )
-    print(response)
-    response = stripe.PaymentIntent.create(
-        amount=10000,
-        currency="GBP",
-        automatic_payment_methods={"enabled": True},
-        application_fee_amount=123,
-        transfer_data={"destination": 'acct_1NbIPVCHsBwuF67e'},
-    )
-    print(response)
+    # print(response)
+    # response = stripe.PaymentIntent.create(
+    #     amount=10000,
+    #     currency="GBP",
+    #     automatic_payment_methods={"enabled": True},
+    #     application_fee_amount=123,
+    #     transfer_data={"destination": 'acct_1NbIPVCHsBwuF67e'},
+    # )
+    session  = stripe.Charge.create(
+            amount=5000,  # Amount in cents
+            currency='GBP',
+            source='tok_visa',  # Replace with an actual card token
+            application_fee_amount=127,  # Fee amount in cents
+            stripe_account='acct_1NiD26FjKQw6KiOX',  # Replace with the connected account ID
+        )
+    print(session)
 
 
 if __name__ == "__main__":
