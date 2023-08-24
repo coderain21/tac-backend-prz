@@ -1,0 +1,313 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Auction Management APIs",
+      "description": "Auction APIs to create the API's",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/auctions"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Auction Management",
+          "description": "APIs to manage the auctions list"
+      }
+    ],
+    "paths": {
+      "/create":{
+        "post": {
+          "tags": [
+            "Auction"
+          ],
+          "summary": "Auction",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auction"
+              },
+                "example": {
+                  "auction_id": "A001",
+                  "seller_email": "seller@example.com",
+                  "created_at": "2023-08-24",
+                  "updated_at": "2023-08-25",
+                  "template_name": "Auction Template 1",
+                  "menu_links": [
+                    {
+                      "title": "Home",
+                      "link_url": "https://example.com/home",
+                      "dropdown": [
+                        {
+                          "title": "About Us",
+                          "link_url": "https://example.com/about"
+                        },
+                        {
+                          "title": "Contact Us",
+                          "link_url": "https://example.com/contact"
+                        }
+                      ]
+                    }
+                  ],
+                  "logo_image": "https://example.com/logo.png",
+                  "logo_redirection_url": "https://example.com",
+                  "details": {
+                    "title": "Auction Event",
+                    "auction_image": "https://example.com/auction-image.png",
+                    "description": "Join our exciting auction event!",
+                    "currency": "USD"
+                  },
+                  "auction_date": {
+                    "start_date": "2023-09-01",
+                    "start_time": "10:00 AM",
+                    "end_date": "2023-09-05",
+                    "end_time": "6:00 PM"
+                  },
+                  "extension_type": "Automatic",
+                  "extension_time": "5 minutes",
+                  "registration_type": "Open",
+                  "add_buyer_fees": "10%",
+                  "faq": [
+                    {
+                      "add_question": "How do I participate?",
+                      "add_answer": "Register on our website and place bids."
+                    },
+                    {
+                      "add_question": "What payment methods are accepted?",
+                      "add_answer": "We accept credit cards and PayPal."
+                    }
+                  ],
+                  "time_zone": "UTC+5:30",
+                  "terms_and_condition": "By participating, you agree to our terms.",
+                  "publish_auction_results": true,
+                  "show_bidder_location_in_bidder_history": true,
+                  "make_your_auction_private": true,
+                  "passcode": "1234",
+                  "font": {
+                    "hearder_font": "Arial",
+                    "body_font": "Helvetica"
+                  },
+                  "buttons": {
+                    "background_color": "#007BFF",
+                    "text_color": "#FFFFFF"
+                  },
+                  "header": {
+                    "background_color": "#F2F2F2",
+                    "text_color": "#333333"
+                  },
+                  "content_area": {
+                    "background_color": "#FFFFFF",
+                    "text_color": "#555555"
+                  },
+                  "footer": {
+                    "background_color": "#333333",
+                    "text_color": "#FFFFFF"
+                  },
+                  "paddle": {
+                    "background_color": "#FFD700",
+                    "text_color": "#333333"
+                  },
+                  "status": "Active"
+                }
+              
+            }
+          }
+        },
+          "responses": {
+            "201":{
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        }
+       }
+
+    },
+    "components": {
+      "schemas": {
+        "Auction": {
+          "type": "object",
+          "properties": {
+            "seller_email":{
+              "type": "string"
+            },
+            "auction_id":{
+              "type": "string"
+            },
+            "template_name":{
+              "type": "string"
+            },
+            "menu_links":{
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "link_url": {
+                    "type": "string"
+                  },
+                  "dropdown": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title" :{
+                          "type": "string"
+                        },
+                        "link_url": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "logo_image":{
+              "type": "string"
+            },
+            "logo_redirection_url":{
+              "type": "string"
+            },
+            "details":{
+              "type": "object"
+            },
+            "auction_date":{
+              "type": "string"
+            },
+            "extension_type":{
+              "type": "string"
+            },
+            "extension_time":{
+              "type": "string"
+            },
+            "registration_type":{
+              "type": "string"
+            },
+            "add_buyer_fees":{
+              "type": "number"
+            },
+            "time_zone" :{
+              "type": "string"
+            },
+            "faq":{
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "add_question": {
+                    "type": "string"
+                  },
+                  "add_answer": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "terms_and_condition":{
+              "type": "string"
+            },
+            "publish_auction_result":{
+              "type": "boolean"
+            },
+            "show_bidder_location_in_bidder_history":{
+              "type": "boolean"
+            },
+            "make_your_auction_private":{
+              "type": "boolean"
+            },
+            "passcode":{
+              "type": "string"
+            },
+            "font":{
+              "type": "object"
+            },
+            "button":{
+              "type": "object"
+            },
+            "header":{
+              "type": "object"
+            },
+            "content_area":{
+              "type": "object"
+            },
+            "footer":{
+              "type": "object"
+            },
+            "paddle":{
+              "type": "object"
+            },
+            "status":{
+              "type": "string"
+            }
+        }
+        },
+        "Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
