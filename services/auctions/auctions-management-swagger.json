@@ -21,12 +21,12 @@
       }
     ],
     "paths": {
-      "/create":{
+      "/":{
         "post": {
           "tags": [
-            "Auction"
+            "create"
           ],
-          "summary": "Auction",
+          "summary": "Auction create",
           "requestBody": {
             "content": {
               "application/json": {
@@ -125,12 +125,7 @@
               "content": {
                 "application/json": {
                   "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
+                    "type": "object"
                   }
                 }
               }
@@ -150,21 +145,35 @@
                 }
               }
             },
-            "404": {
-                "description": "User not found",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Validation failed"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Please upgrade"
+                      }
+                    },
+                    "example3":{
+                      "value":{
+                        "message":"Something went wrong"
+                      }
+                    },
+                    "example4":{
+                      "value":{
+                        "message":"Invalid request"
                       }
                     }
                   }
                 }
               }
+                        }
             }
         }
        }
