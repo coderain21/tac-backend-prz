@@ -331,7 +331,6 @@ functions:
 
   split_payment:
     handler: handlers/split_payment.splitPayment
-    runtime: python3.8
     memorySize: 128
     layers:
       - ${env:PYTHON_LIB_ARN}
@@ -387,7 +386,7 @@ functions:
               arn: ${env:COGNITO_AUTH_ARN}
 
   stripe-webhook:
-      handler: handlers/create.create
+      handler: handlers/stripe.create
       runtime: python3.8
       layers:
         - ${env:COMMON_PYTHON_LIB_ARN}

@@ -78,10 +78,8 @@ custom:
 
 functions: 
 
-  seller_sub_domain:
-    handler: handlers/seller_domain.create_subdomain
-    runtime: python3.8
-    memorySize: 128
+  create:
+    handler: handlers/create.create_auction
     layers:
       - ${env:PYTHON_LIB_ARN}
     vpc:

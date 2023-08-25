@@ -69,6 +69,7 @@
                     "end_date": "2023-09-05",
                     "end_time": "6:00 PM"
                   },
+                  "note": "asda",
                   "extension_type": "Automatic",
                   "extension_time": "5 minutes",
                   "registration_type": "Open",
@@ -131,14 +132,13 @@
               }
             },
             "500": {
-              "description": "Internal Server Error",
+              "description": "Internal server error",
               "content": {
                 "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Internal server error"
                       }
                     }
                   }
@@ -191,6 +191,9 @@
               "type": "string"
             },
             "template_name":{
+              "type": "string"
+            },
+            "note": {
               "type": "string"
             },
             "menu_links":{
