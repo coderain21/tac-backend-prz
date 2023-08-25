@@ -1,0 +1,102 @@
+service: users
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: prod-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${env:DATABASE}
+    API_BASE_URL: ${env:BASE_URL}
+
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${env:COGNITO_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${env:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${env:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+                
+  
+ 
+
+
+functions: 
+  # COGNITO PRE SIGNUP TRIGGER
+  main-categories:
+    handler: handlers/list.list_categories
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0f4f7528493e34a09
+      subnetIds:
+        - subnet-041c07d58c8318700
+    events:
+      - http:
+          cors: true
+          path: /
+          method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+
+    
+  
+ 
+  
+ 
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager

@@ -1,43 +1,6 @@
 """
-Module: common_helper
-
-This module provides common helper functions for encoding and headers.
-
+This module has all the functions required for kyc
 """
-import decimal
-import datetime
-import json
-from pymongo import MongoClient
-
-
-class Encoder(json.JSONEncoder):
-    """
-    Encoder Function for all returns
-
-    Accessibility: Private
-    Returns: Dictionary
-    """
-
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            return str(o)
-        if isinstance(o, bytes):
-            return str(o)
-        if isinstance(o, datetime.datetime):
-            return str(o)
-        if isinstance(o, object):
-            return o.__dict__
-        return o.__dict__
-
-
-headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': True,
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Methods': '*'
-}
-
 import hashlib
 import hmac
 import json
@@ -51,7 +14,7 @@ import requests
 SUMSUB_SECRET_KEY = os.environ['SUMSUB_SECRET_KEY']
 SUMSUB_APP_TOKEN = os.environ['SUMSUB_APP_TOKEN']
 SUMSUB_TEST_BASE_URL = "https://api.sumsub.com"
-REQUEST_TIMEOUT = 120
+REQUEST_TIMEOUT = 300
 
 
 def create_applicant(external_user_id, level_name):
@@ -69,7 +32,7 @@ def create_applicant(external_user_id, level_name):
                          headers=headers))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
-    applicant_id = (response.json()['id'])
+    applicant_id = response.json()['id']
     return applicant_id
 
 
@@ -98,7 +61,8 @@ def add_document(applicant_id):
 
 def get_applicant_status(applicant_id):
     # https://developers.sumsub.com/api-reference/#getting-applicant-status-api
-    url = SUMSUB_TEST_BASE_URL + '/resources/applicants/' + applicant_id + '/requiredIdDocsStatus'
+    url = SUMSUB_TEST_BASE_URL + '/resources/applicants/' + \
+        applicant_id + '/requiredIdDocsStatus'
     resp = sign_request(requests.Request('GET', url))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
@@ -107,7 +71,8 @@ def get_applicant_status(applicant_id):
 
 def get_access_token(external_user_id, level_name):
     # https://developers.sumsub.com/api-reference/#access-tokens-for-sdks
-    params = {'userId': external_user_id, 'ttlInSecs': '600', 'levelName': level_name}
+    params = {'userId': external_user_id,
+              'ttlInSecs': '600', 'levelName': level_name}
     headers = {'Content-Type': 'application/json',
                'Content-Encoding': 'utf-8'
                }
@@ -116,7 +81,7 @@ def get_access_token(external_user_id, level_name):
                                          headers=headers))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
-    token = (response.json()['token'])
+    token = response.json()['token']
 
     return token
 
@@ -130,7 +95,8 @@ def sign_request(request: requests.Request) -> requests.PreparedRequest:
     body = b'' if prepared_request.body is None else prepared_request.body
     if type(body) == str:
         body = body.encode('utf-8')
-    data_to_sign = str(now).encode('utf-8') + method.encode('utf-8') + path_url.encode('utf-8') + body
+    data_to_sign = str(now).encode('utf-8') + \
+        method.encode('utf-8') + path_url.encode('utf-8') + body
     # hmac needs bytes
     signature = hmac.new(
         SUMSUB_SECRET_KEY.encode('utf-8'),
@@ -148,57 +114,22 @@ def sign_request(request: requests.Request) -> requests.PreparedRequest:
 # 2) Adding a document to the applicant
 # 3) Getting applicant status
 # 4) Getting access token
-# def main():
-#     logging.basicConfig(level=logging.INFO)
-#     external_user_id = str(uuid.uuid4())
-#     # external_user_id="c34ed318-7fad-4b8f-bd41-4e244013042e"
-#     print(external_user_id)
-#     level_name = 'basic-kyc-level'
-#     applicant_id = create_applicant(external_user_id, level_name)
-#     print(applicant_id)
-#     # logging.info(applicant_id)
-#     # image_id = add_document(applicant_id)
-#     # logging.info(image_id)
-#     # status = get_applicant_status(applicant_id)
-#     # logging.info(status)
-#     token = get_access_token(external_user_id, level_name)
-#     logging.info(token)
+def main():
+    logging.basicConfig(level=logging.INFO)
+    external_user_id = str(uuid.uuid4())
+    # external_user_id="c34ed318-7fad-4b8f-bd41-4e244013042e"
+    print(external_user_id)
+    level_name = 'basic-kyc-level'
+    applicant_id = create_applicant(external_user_id, level_name)
+    print(applicant_id)
+    # logging.info(applicant_id)
+    # image_id = add_document(applicant_id)
+    # logging.info(image_id)
+    # status = get_applicant_status(applicant_id)
+    # logging.info(status)
+    token = get_access_token(external_user_id, level_name)
+    logging.info(token)
 
 
 # if __name__ == '__main__':
 #     exit(main())
-
-def update_by_email(email, update_data,table_name):
-    """
-    Update user details in MongoDB by email.
-
-    Args:
-        email (str): Email address of the user to update.
-        update_data (dict): Dictionary containing the fields to update.
-
-    Returns:
-        bool: True if the update was successful, False otherwise.
-    """
-    try:
-        # MongoDB configuration
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[table_name]
-
-        # Remove the email field from the update_data to avoid accidentally changing it
-        if 'email_address' in update_data:
-            del update_data['email_address']
-
-        # Update the user's data in the collection
-        update_result = collection.update_one(
-            {'email_address': email}, {'$set': update_data})
-        
-        client.close()
-
-        if update_result.modified_count > 0:
-            return True
-        return False
-    except BaseException as err:
-        client.close()
-        print(f"Unexpected {err=}, {type(err)=}")
-        raise

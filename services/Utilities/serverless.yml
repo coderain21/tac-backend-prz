@@ -1,0 +1,116 @@
+service: utilities
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${env:DATABASE}
+    LEVEL_NAME: ${env:LEVEL_NAME}
+    MONGO_CLIENT: ${env:MONGO_CLIENT}
+    USER_TABLE: ${env:USER_TABLE}
+    SECRET_KEY: ${env:SECRET_KEY}
+   
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${env:COGNITO_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${env:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${env:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+                
+  
+ 
+
+
+functions: 
+  generate_token:
+    handler: handlers/generate.generate_token
+    runtime: python3.8
+    memorySize: 128
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /generate
+          method: get
+
+  kyc_webhook:
+    handler: handlers/kyc_webhook.kyc_webhook
+    runtime: python3.8
+    memorySize: 128
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /kyc
+          method: post
+ 
+ 
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
