@@ -24,6 +24,8 @@ provider:
     MONGODB_NAME: ${env:MONGODB_NAME}
     MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
+    COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    
     
     
   http:
@@ -81,7 +83,7 @@ functions:
   create:
     handler: handlers/create.create_auction
     layers:
-      - ${env:PYTHON_LIB_ARN}
+      - ${env:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
         - sg-0882c1da39e729097
@@ -90,7 +92,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /seller-sub-domain
+          path: /{email}
           method: post
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}

@@ -179,6 +179,9 @@ const AuctionSchema = new Schema({
         required: true,
 
     },
+    note: {
+        type: String, trim: true, required: true,
+    },
 })
 
 HistorySchema.plugin(mongoosePaginate)
