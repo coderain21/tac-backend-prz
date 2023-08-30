@@ -8,28 +8,41 @@ require('dotenv').config()
 const { Schema } = mongoose
 const stage = process.env.STAGE
 
+const mongoose = require('mongoose');
+
 const auctionDateSchema = new mongoose.Schema({
     start_date: {
-        type: String,
+        type: Date,
         required: true,
-        trim: true,
     },
     start_time: {
         type: String,
+        validate: {
+            validator: function (value) {
+                // Use a regex or other validation method here
+                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value);
+            },
+            message: 'Invalid start_time format (HH:mm AM/PM)',
+        },
         required: true,
-        trim: true,
     },
     end_date: {
-        type: String,
+        type: Date,
         required: true,
-        trim: true,
     },
     end_time: {
         type: String,
+        validate: {
+            validator: function (value) {
+                // Use a regex or other validation method here
+                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value);
+            },
+            message: 'Invalid end_time format (HH:mm AM/PM)',
+        },
         required: true,
-        trim: true,
     },
 })
+
 const auctionDetailsSchema = new mongoose.Schema({
     title: {
         type: String,
