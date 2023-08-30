@@ -10,7 +10,7 @@ from pymongo import MongoClient
 # MongoDB configuration
 client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
-collection = db[os.environ['USER_TABLE']]
+collection = db[os.environ['SELLERS_TABLE']]
 
 def get_by_email(email):
     """
