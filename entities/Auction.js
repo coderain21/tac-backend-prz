@@ -11,28 +11,23 @@ const stage = process.env.STAGE
 const fontDetailsSchema = new mongoose.Schema({
     hearder_font: {
         type: String,
-        required: true,
         trim: true,
     },
     body_font: {
         type: String,
-        required: true,
         trim: true,
     },
 })
 
-const commaonSchema = new mongoose.Schema({
+const commonSchema = new mongoose.Schema({
     background_color: {
         type: String,
-        required: true,
-        trim: true,
     },
     text_color: {
         type: String,
-        required: true,
-        trim: true,
     },
 })
+
 
 /* This code defines a Mongoose schema for an AdminUser model. The schema specifies the fields and
 their data types for an AdminUser document, including first_name, password, last_name,
@@ -120,6 +115,10 @@ const AuctionSchema = new Schema({
     extension_time: {
         type: String, trim: true, required: true,
     },
+    extension_time_between_lots: {
+        type: String, trim: true, required: true,
+
+    },
     registration_type: {
         type: String, trim: true, required: true,
     },
@@ -149,38 +148,35 @@ const AuctionSchema = new Schema({
     },
     font: {
         type: fontDetailsSchema,
-        required: true,
     },
     buttons: {
-        type: commaonSchema,
-        required: true,
+        type: commonSchema,
 
     },
     header: {
-        type: commaonSchema,
-        required: true,
+        type: commonSchema,
 
     },
     content_area: {
-        type: commaonSchema,
-        required: true,
+        type: commonSchema,
 
     },
     footer: {
-        type: commaonSchema,
-        required: true,
+        type: commonSchema,
 
     },
     paddle: {
-        type: commaonSchema,
-        required: true,
+        type: commonSchema,
 
     },
     note: {
         type: String, trim: true, required: true,
     },
+    status: {
+        type: String, trim: true, required: true, default: 'Draft',
+    },
 })
 
-HistorySchema.plugin(mongoosePaginate)
-const auctionManagement = mongoose.model(`${stage}-auction-management`, AuctionSchema, `${stage}-auction-management`)
+AuctionSchema.plugin(mongoosePaginate)
+const auctionManagement = mongoose.model(`${stage}-auctions`, AuctionSchema, `${stage}-auctions`)
 module.exports = auctionManagement

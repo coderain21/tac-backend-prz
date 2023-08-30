@@ -24,7 +24,6 @@ provider:
     MONGODB_NAME: ${env:MONGODB_NAME}
     MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
-    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAMEk}
     COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
     
     
@@ -93,7 +92,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /{email}
+          path: /
           method: post
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
