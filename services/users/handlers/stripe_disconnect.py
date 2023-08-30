@@ -3,13 +3,10 @@ This module is used to disconnect the stripe connected account
 """
 import json
 import os
-import stripe
 import decimal
 from datetime import datetime
 from data.get import get_by_email
 from lib.common_helper import update_by_email
-
-stripe.api_key = os.environ["STRIPE_API_KEY"]
 
 headers = {
     'Content-Type': 'application/json',
