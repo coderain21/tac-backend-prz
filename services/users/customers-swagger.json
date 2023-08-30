@@ -1002,7 +1002,128 @@
             }
           }
         }
-       }
+       },
+       "/stripe": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Create the connected account with platform and return url to proceed further data submission",
+          "description": "Create the connected account with platform and return url to proceed further data submission",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns url to connect to stripe",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "string_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while connecting to stripe",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while connecting to stripe"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "patch": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Update the stripe status of the connected user.",
+          "description": "Update the stripe status of the connected user.",
+          "parameters": [],
+          "responses": {
+            "204": {
+              "description": "Disconnects the user from platform account"
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "User not found!"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while disconnecting the stripe account",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while disconnecting the stripe account"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
 
     },
     "components": {

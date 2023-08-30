@@ -1,12 +1,13 @@
 """
 Module: common_helper
 
-This module provides common helper functions for encoding and headers.
+This module provides common helper functions for encoding ,headers ,KYC/KYB , and updaating the data in mongodb.
 
 """
 import decimal
 import datetime
 import json
+from pymongo import MongoClient
 
 
 class Encoder(json.JSONEncoder):
@@ -166,3 +167,38 @@ def sign_request(request: requests.Request) -> requests.PreparedRequest:
 
 # if __name__ == '__main__':
 #     exit(main())
+
+def update_by_email(email, update_data,table_name):
+    """
+    Update user details in MongoDB by email.
+
+    Args:
+        email (str): Email address of the user to update.
+        update_data (dict): Dictionary containing the fields to update.
+
+    Returns:
+        bool: True if the update was successful, False otherwise.
+    """
+    try:
+        # MongoDB configuration
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection = db[table_name]
+
+        # Remove the email field from the update_data to avoid accidentally changing it
+        if 'email_address' in update_data:
+            del update_data['email_address']
+
+        # Update the user's data in the collection
+        update_result = collection.update_one(
+            {'email_address': email}, {'$set': update_data})
+        
+        client.close()
+
+        if update_result.modified_count > 0:
+            return True
+        return False
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
