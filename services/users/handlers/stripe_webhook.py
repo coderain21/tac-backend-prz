@@ -16,6 +16,7 @@ headers = {
     'Access-Control-Allow-Credentials': False,
 }
 
+
 class Encoder(json.JSONEncoder):
     """
     Custom JSON Encoder to handle special types.
@@ -33,7 +34,7 @@ class Encoder(json.JSONEncoder):
         return super().default(o)
 
 
-def create(event,context):
+def create(event, context):
     try:
         event_body = json.loads(event["body"])
         data = event_body.get("data")
@@ -49,23 +50,24 @@ def create(event,context):
             if data["object"]["charges_enabled"] == True and data["object"]["details_submitted"] == True and data["object"]["payouts_enabled"] == True:
                 verified = True
                 account_linked = 1
-                
-            query_result = collection.find_one({'stripe_connected_id': stripe_id},{'password':0})
+
+            query_result = collection.find_one(
+                {'stripe_connected_id': stripe_id}, {'password': 0})
             if query_result is not None:
                 update_data = {
-                    "stripe_status" : "connected" if verified == True else "disconnected",
-                    "account_linked" : account_linked
+                    "stripe_status": "connected" if verified == True else "disconnected",
+                    "account_linked": account_linked
                 }
                 print(update_data)
                 update_result = collection.update_one(
                     {'stripe_connected_id': stripe_id}, {'$set': update_data})
-            
+
         client.close()
         return {
             "headers": headers,
             'statusCode': 204,
             'body': json.dumps({
-                
+
             },
                 cls=Encoder)
         }

@@ -17,6 +17,7 @@ headers = {
     'Access-Control-Allow-Credentials': False,
 }
 
+
 class Encoder(json.JSONEncoder):
     """
     Custom JSON Encoder to handle special types.
@@ -34,7 +35,7 @@ class Encoder(json.JSONEncoder):
         return super().default(o)
 
 
-def create(event,context):
+def create(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
@@ -47,7 +48,7 @@ def create(event,context):
 
         user_info = get_by_email(email_address)
 
-        #restricting free tier users from connecting to stripe.
+        # restricting free tier users from connecting to stripe.
         if "plan_type" in user_info and user_info.get("plan_type") == "Free":
             print("free_user")
             return {
@@ -55,37 +56,39 @@ def create(event,context):
                 "statusCode": 403,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-         
+
         if not "stripe_connected_id" in user_info:
             created_account = stripe.Account.create(
-                    type = "standard",
-                    email = email_address,
-                    )
+                type="standard",
+                email=email_address,
+            )
             stripe_id = created_account["id"]
             print(stripe_id)
             update_data = {
-                "stripe_connected_id" : stripe_id
+                "stripe_connected_id": stripe_id
             }
-            update_status = update_by_email(email_address,update_data,os.environ["SELLERS_TABLE"])
+            update_status = update_by_email(
+                email_address, update_data, os.environ["SELLERS_TABLE"])
             print(update_status)
         else:
             stripe_id = user_info["stripe_connected_id"]
 
         if "account_linked" in user_info and user_info["account_linked"] == 1:
             update_data = {
-                "stripe_status" : "connected"
+                "stripe_status": "connected"
             }
-            update_status = update_by_email(email_address,update_data,os.environ["SELLERS_TABLE"])
+            update_status = update_by_email(
+                email_address, update_data, os.environ["SELLERS_TABLE"])
             url = ""
         else:
             account_link = stripe.AccountLink.create(
-                account = stripe_id,
+                account=stripe_id,
                 refresh_url=os.environ["DASHBOARD_URL"],
                 return_url=os.environ["DASHBOARD_URL"],
                 type="account_onboarding",
-                )
+            )
             url = account_link["url"]
-     
+
         return {
             "headers": headers,
             'statusCode': 200,

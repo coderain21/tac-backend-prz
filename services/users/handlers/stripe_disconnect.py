@@ -1,5 +1,5 @@
 """
-This module is used to disconnect the stripe connected account 
+This module is used to disconnect the stripe connected account
 """
 import json
 import os
@@ -16,6 +16,7 @@ headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Credentials': False,
 }
+
 
 class Encoder(json.JSONEncoder):
     """
@@ -34,7 +35,7 @@ class Encoder(json.JSONEncoder):
         return super().default(o)
 
 
-def disconnect_account(event,context):
+def disconnect_account(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
@@ -56,11 +57,12 @@ def disconnect_account(event,context):
 
         if "stripe_status" in user_info:
             update_data = {
-                "stripe_status" : "disconnected"
+                "stripe_status": "disconnected"
             }
-            update_status = update_by_email(email_address,update_data,os.environ["SELLERS_TABLE"])
+            update_status = update_by_email(
+                email_address, update_data, os.environ["SELLERS_TABLE"])
             print(update_status)
-     
+
         return {
             "headers": headers,
             'statusCode': 204,
