@@ -8,64 +8,6 @@ require('dotenv').config()
 const { Schema } = mongoose
 const stage = process.env.STAGE
 
-const mongoose = require('mongoose');
-
-const auctionDateSchema = new mongoose.Schema({
-    start_date: {
-        type: Date,
-        required: true,
-    },
-    start_time: {
-        type: String,
-        validate: {
-            validator: function (value) {
-                // Use a regex or other validation method here
-                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value);
-            },
-            message: 'Invalid start_time format (HH:mm AM/PM)',
-        },
-        required: true,
-    },
-    end_date: {
-        type: Date,
-        required: true,
-    },
-    end_time: {
-        type: String,
-        validate: {
-            validator: function (value) {
-                // Use a regex or other validation method here
-                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value);
-            },
-            message: 'Invalid end_time format (HH:mm AM/PM)',
-        },
-        required: true,
-    },
-})
-
-const auctionDetailsSchema = new mongoose.Schema({
-    title: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    auction_image: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    description: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    currency: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-})
-
 const fontDetailsSchema = new mongoose.Schema({
     hearder_font: {
         type: String,
@@ -122,12 +64,54 @@ const AuctionSchema = new Schema({
     logo_redirection_url: {
         type: String, trim: true, required: true,
     },
-    details: {
-        type: auctionDetailsSchema,
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    auction_image: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    description: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    currency: {
+        type: String,
+        required: true,
+        trim: true,
+    },
+    start_date: {
+        type: Date,
         required: true,
     },
-    auction_date: {
-        type: auctionDateSchema,
+    start_time: {
+        type: String,
+        validate: {
+            validator(value) {
+                // Use a regex or other validation method here
+                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value)
+            },
+            message: 'Invalid start_time format (HH:mm AM/PM)',
+        },
+        required: true,
+    },
+    end_date: {
+        type: Date,
+        required: true,
+    },
+    end_time: {
+        type: String,
+        validate: {
+            validator(value) {
+                // Use a regex or other validation method here
+                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value)
+            },
+            message: 'Invalid end_time format (HH:mm AM/PM)',
+        },
         required: true,
     },
     extension_type: {

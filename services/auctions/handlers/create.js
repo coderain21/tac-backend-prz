@@ -29,7 +29,7 @@ parameters. */
 module.exports.create_auction = async (event) => {
     try {
         const request_body = JSON.parse(event.body)
-        const email = decodeURIComponent(event.pathParameters.email)
+        const email = 'sandhyashri@7edge.com'
         const get_user = await mongoConnection.view(Users, { email_address: email })
         const menu_link = request_body.menulink
         const auction_collection = process.env.AUCTION_MONGODB_COLLECTION_NAME
@@ -42,54 +42,6 @@ module.exports.create_auction = async (event) => {
                         message: 'please upgrade your current subscription',
                     }),
                 }
-            }
-        }
-
-        // Define a Joi schema for the menu_link array
-        const menuLinkSchema = Joi.array()
-            .max(7)
-            .items(Joi.object({
-                dropdown: Joi.string().max(5).required(),
-            }))
-        const auctionDateSchema = Joi.object({
-            start_date: Joi.date().iso().required(),
-            start_time: Joi.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/).required(),
-            end_date: Joi.date().iso().required(),
-            end_time: Joi.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/).required(),
-        })
-
-        // Validate the menu_link array
-        const { error } = menuLinkSchema.validate(menu_link)
-        const { error: auctionDateError } = auctionDateSchema.validate(auction_date)
-
-        const startDateTime = new Date(`${validatedAuctionDate.start_date} ${validatedAuctionDate.start_time}`)
-        const endDateTime = new Date(`${validatedAuctionDate.end_date} ${validatedAuctionDate.end_time}`)
-
-        if (error) {
-            return {
-                headers,
-                statusCode: 400,
-                body: JSON.stringify({
-                    message: `Invalid input: ${error.details[0].message}`,
-                }),
-            }
-        }
-        if (auctionDateError) {
-            return {
-                headers,
-                statusCode: 400,
-                body: JSON.stringify({
-                    message: 'Invalid auction date and time: ',
-                }),
-            }
-        }
-        if (startDateTime >= endDateTime) {
-            return {
-                headers,
-                statusCode: 400,
-                body: JSON.stringify({
-                    message: 'Bidding start date and time must be before the end date and time.',
-                }),
             }
         }
         const connection = await mongoConnection.connect()
