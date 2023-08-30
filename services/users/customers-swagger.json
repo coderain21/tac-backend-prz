@@ -1019,7 +1019,7 @@
                   "schema": {
                     "type": "object",
                     "properties": {
-                      "string_url": {
+                      "stripe_url": {
                         "type": "string"
                       }
                     }
