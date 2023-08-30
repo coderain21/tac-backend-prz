@@ -175,16 +175,44 @@
               }
             }
           }
-        }
-       },
-       "/{email}": {
-        "get": {
+        },
+      "get": {
           "tags": [
-            "Lists"
+            "create"
           ],
-          "summary": "",
+          "summary": "Listing auction",
           "description": "Listing auction",
-          "parameters": [],
+          "parameters": [
+            {
+              "name": "start_date",
+              "in": "query",
+              "description": "Filter by date range, this is the start date",
+              "schema": {
+                "type": "string",
+                "format": "date"
+              },
+              "example": "2023-08-30"
+            },
+            {
+              "name": "end_date",
+              "in": "query",
+              "description": "Filter by date range, this is the end date",
+              "schema": {
+                "type": "string",
+                "format": "date"
+              },
+              "example": "2023-08-30"
+            },
+            {
+              "name": "status",
+              "in": "query",
+              "description": "Filter by status",
+              "schema": {
+                "type": "string"
+              },
+              "example": "complete"
+            }
+          ],
           "responses": {
             "200": {
               "description": "Successfully retrieved auctions",
