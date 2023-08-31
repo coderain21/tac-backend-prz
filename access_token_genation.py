@@ -16,9 +16,9 @@ aws_region = os.environ.get('REGION')
 
 # Configure AWS SDK
 session = boto3.Session(
-    aws_access_key_id= 'AKIA5QZYLFWFHI745QWC', #aws_access_key_id,
-    aws_secret_access_key= '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' ,#aws_secret_access_key,
-    region_name= 'eu-west-2' #aws_region
+    aws_access_key_id= aws_access_key_id,
+    aws_secret_access_key= aws_secret_access_key,
+    region_name=aws_region
 )
 
 client = session.client('cognito-idp')
