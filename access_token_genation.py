@@ -25,10 +25,10 @@ client = session.client('cognito-idp')
 
 def generate_token():
     try:
-        user_pool_id = 'eu-west-2_kqcLIvA4D' #os.environ['COGNITO_USER_POOL_ID']
-        client_id = '3duudq593a3j7jpp7afv1vbmuc' #os.environ['COGNITO_SELLER_CLIENT_ID']
-        username = 'anusha.k+indyauction@7edge.com'  #os.environ['API_USERNAME']
-        password = 'Seller@123' #os.environ['PASSWORD']
+        user_pool_id = os.environ['COGNITO_USER_POOL_ID']
+        client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
+        username = os.environ['API_USERNAME']
+        password = os.environ['PASSWORD']
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return

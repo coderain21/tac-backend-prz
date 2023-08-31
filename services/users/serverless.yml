@@ -47,7 +47,6 @@ provider:
     YOUR_HOSTED_ZONE_ID: ${env:YOUR_HOSTED_ZONE_ID}
     STRIPE_API_KEY: ${env:STRIPE_API_KEY}
     
-    
   http:
     cors: true
     authorizers:
@@ -116,25 +115,7 @@ functions:
           pool: ${env:COGNITO_USER_POOL}
           trigger: PreSignUp
           existing: true
-   
 
-
-  # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
-  cognito-post-signup-confirmation-trigger:
-    handler: handlers/cognito_post_confirmation.handler
-    layers:
-      - ${env:COMMON_LIB_ARN}
-    events:
-      - cognitoUserPool:
-          pool: ${env:COGNITO_USER_POOL}
-          trigger: PostConfirmation
-          existing: true
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
-  
   
   # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
@@ -366,6 +347,24 @@ functions:
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
 
+  disconnect_account:
+    handler: handlers/stripe_disconnect.disconnect_account
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /stripe
+          method: patch
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+
   stripe-connect:
     handler: handlers/create.create
     runtime: python3.8
@@ -376,7 +375,6 @@ functions:
         - sg-0882c1da39e729097
       subnetIds:
         - subnet-0ff05c7c2bd2a3f87
-  
     events:
         - http:
             cors: true
@@ -386,7 +384,7 @@ functions:
               arn: ${env:COGNITO_AUTH_ARN}
 
   stripe-webhook:
-      handler: handlers/stripe.create
+      handler: handlers/stripe_webhook.create
       runtime: python3.8
       layers:
         - ${env:COMMON_PYTHON_LIB_ARN}
@@ -403,6 +401,8 @@ functions:
               method: post
               # authorizer:
               #   arn: ${env:COGNITO_AUTH_ARN}
+
+
   
 
 plugins:
