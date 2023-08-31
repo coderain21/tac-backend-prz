@@ -34,10 +34,6 @@
                   "$ref": "#/components/schemas/Auction"
               },
               "example": {
-                "auction_id": "A001",
-                "seller_email": "seller@example.com",
-                "created_at": "2023-08-24",
-                "updated_at": "2023-08-25",
                 "template_name": "Auction Template 1",
                 "extension_time_between_lots": "2m",
                 "menu_links": [
@@ -58,14 +54,12 @@
                 ],
                 "logo_image": "https://example.com/logo.png",
                 "logo_redirection_url": "https://example.com",
-                "auction_title": "Auction Event",
+                "title": "Auction Event",
                   "auction_image": "https://example.com/auction-image.png",
-                  "auction_description": "Join our exciting auction event!",
+                  "description": "Join our exciting auction event!",
                   "currency": "USD",
                   "start_date": 1669966800,
-                  "start_time": "10:00",
                   "end_date": 1669966800,
-                  "end_time": "6:00",
                 "note": "asda",
                 "extension_type": "Automatic",
                 "extension_time": "5 minutes",
@@ -73,12 +67,12 @@
                 "add_buyer_fees": "10%",
                 "faq": [
                   {
-                    "add_question": "How do I participate?",
-                    "add_answer": "Register on our website and place bids."
+                    "question": "How do I participate?",
+                    "answer": "Register on our website and place bids."
                   },
                   {
-                    "add_question": "What payment methods are accepted?",
-                    "add_answer": "We accept credit cards and PayPal."
+                    "question": "What payment methods are accepted?",
+                    "answer": "We accept credit cards and PayPal."
                   }
                 ],
                 "time_zone": "UTC+5:30",
@@ -152,16 +146,7 @@
                         "message": "Validation failed"
                       }
                     },
-                    "example2":{
-                      "value":{
-                        "message":"Please upgrade"
-                      }
-                    },
-                    "example3":{
-                      "value":{
-                        "message":"Something went wrong"
-                      }
-                    },
+                    
                     "example4":{
                       "value":{
                         "message":"Invalid request"
@@ -227,32 +212,22 @@
             "logo_redirection_url":{
               "type": "string"
             },
-            "auction_name":{
+            "title":{
               "type": "string"
             },
             "auction_image":{
               "type": "string"
             },
-            "auction_description":{
+            "description":{
               "type": "string"
             },
             "currency":{
               "type": "string"
             },
-            
-            "auction_date":{
-              "type": "string"
-            },
             "start_date":{
               "type": "number"
             },
-            "start_time":{
-              "type": "number"
-            },
             "end_date":{
-              "type": "number"
-            },
-            "end_time":{
               "type": "number"
             },
             "extension_type":{
@@ -278,10 +253,10 @@
               "items": {
                 "type": "object",
                 "properties": {
-                  "add_question": {
+                  "question": {
                     "type": "string"
                   },
-                  "add_answer": {
+                  "answer": {
                     "type": "string"
                   }
                 }

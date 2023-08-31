@@ -25,6 +25,7 @@ provider:
     MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
     COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     
     
     

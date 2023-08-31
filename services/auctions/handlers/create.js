@@ -10,58 +10,39 @@ const Joi = require('joi')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const Auction = require('../entities/Auction')
+const Counter = require('../entities/Counter')
 const helpers = require('../lib/helper')
 
-let body
-const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Methods': '*',
-}
-
-/* This code exports a function called `updateUserInformation` that is used to update a user's
-information in a MongoDB database. The function takes an `event` parameter, which is likely an HTTP
-request object that contains information about the request, such as the request body and path
-parameters. */
-
+/* The `module.exports.create_auction` function is an asynchronous function that handles the creation
+of an auction. It takes an `event` parameter, which is typically an HTTP request event. */
 module.exports.create_auction = async (event) => {
     try {
         const request_body = JSON.parse(event.body)
-        const email = 'sandhyashri@7edge.com'
+        const email = event.requestContext.authorizer.claims['cognito:username']
         request_body.seller_email = email
         const connection = await mongoConnection.connect()
         const get_user = await mongoConnection.view(Users, { email_address: email })
-        const auction_collection = process.env.TABLE_NAME
-        const maxAuction = await Auction.findOne().sort({ sequenceNumberCounter: -1 });
-
-        let nextSequenceNumber = 1;
-        console.log('get', maxAuction)
-        if (maxAuction && maxAuction.sequenceNumberCounter) {
-            nextSequenceNumber = maxAuction.sequenceNumberCounter + 1;
-        }
-
-        const formattedNextNumber = nextSequenceNumber.toString().padStart(3, '0');
-        const sequenceNumber = `A${formattedNextNumber}`;
-        if (get_user.user_type === 'free') {
-            if (db.collection(auction_collection).countDocuments({ email_address: email }, options) === 1) {
-                return {
-                    headers,
-                    statusCode: 400,
-                    body: JSON.stringify({
-                        message: 'please upgrade your current subscription',
-                    }),
-                }
+        const counter = await Counter.findOneAndUpdate({ auction_id: email, record_type: 'Auctions', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+        const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
+        request_body.auction_id = sequenceNumber
+        const auction = await mongoConnection.save(request_body, Auction)
+        if (auction) {
+            update_value = {
+                auctions_count: helpers.leftPad(counter.starting_sequence, 1),
+            }
+            await mongoConnection.updateUsingMongoDB(process.env.MONGO_CLIENT, process.env.MONGODB_NAME, process.env.SELLERS_TABLE, get_user[0]._id, update_value)
+            return {
+                statusCode: 201,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                }),
             }
         }
-        const auction = await mongoConnection.save(request_body, Auction)
         await connection.disconnect()
-        // Continue with your logic if validation passes
-        // ...
         return {
-            statusCode: 201,
+            statusCode: 400,
             headers: await helpers.getHeaders(),
+            message: 'Something went wrong. Please try again!',
         }
     } catch (error) {
         console.log('err', error)

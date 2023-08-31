@@ -28,7 +28,6 @@ const commonSchema = new mongoose.Schema({
     },
 })
 
-
 /* This code defines a Mongoose schema for an AdminUser model. The schema specifies the fields and
 their data types for an AdminUser document, including first_name, password, last_name,
 mobile_number, email_address, roles, is_active, user_type, created_at, updated_at, last_login_at,
@@ -36,115 +35,84 @@ and is_first_time_login. The schema also includes some options such as trim, def
 required fields. The schema is then used to create a Mongoose model named AdminUser, which can be
 used to interact with the corresponding MongoDB collection. */
 const AuctionSchema = new Schema({
-    user_type: {
-        type: String, trim: true, required: true,
-    },
     auction_id: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     seller_email: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     template_name: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     menu_links: {
-        type: Array, trim: true, required: true,
+        type: Array, trim: true,
     },
     logo_image: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     logo_redirection_url: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     title: {
         type: String,
-        required: true,
         trim: true,
     },
     auction_image: {
         type: String,
-        required: true,
         trim: true,
     },
     description: {
         type: String,
-        required: true,
         trim: true,
     },
     currency: {
         type: String,
-        required: true,
         trim: true,
     },
     start_date: {
         type: Date,
-        required: true,
-    },
-    start_time: {
-        type: String,
-        validate: {
-            validator(value) {
-                // Use a regex or other validation method here
-                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value)
-            },
-            message: 'Invalid start_time format (HH:mm AM/PM)',
-        },
-        required: true,
     },
     end_date: {
         type: Date,
-        required: true,
-    },
-    end_time: {
-        type: String,
-        validate: {
-            validator(value) {
-                // Use a regex or other validation method here
-                return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9] (AM|PM)$/.test(value)
-            },
-            message: 'Invalid end_time format (HH:mm AM/PM)',
-        },
-        required: true,
     },
     extension_type: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     extension_time: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     extension_time_between_lots: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
 
     },
     registration_type: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     add_buyer_fees: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     faq: {
-        type: Array, trim: true, required: true,
+        type: Array, trim: true,
     },
     time_zone: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     terms_and_condition: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     publish_auction_results: {
-        type: Boolean, trim: true, required: true,
+        type: Boolean, trim: true,
     },
     show_bidder_location_in_bidder_history: {
-        type: Boolean, trim: true, required: true,
+        type: Boolean, trim: true,
     },
     make_your_auction_private: {
-        type: Boolean, trim: true, required: true,
+        type: Boolean, trim: true,
     },
     passcode: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     font: {
         type: fontDetailsSchema,
@@ -170,10 +138,16 @@ const AuctionSchema = new Schema({
 
     },
     note: {
-        type: String, trim: true, required: true,
+        type: String, trim: true,
     },
     status: {
-        type: String, trim: true, required: true, default: 'Draft',
+        type: String, trim: true, default: 'Draft',
+    },
+    percentage: {
+        type: String, trim: true,
+    },
+    fees: {
+        type: String, trim: true, default: '',
     },
 })
 
