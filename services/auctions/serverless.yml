@@ -27,6 +27,8 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
     COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     
     
     
