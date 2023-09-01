@@ -1,4 +1,3 @@
-"""The code is importing necessary modules for the Python script."""
 import json
 import os
 from pymongo import MongoClient
