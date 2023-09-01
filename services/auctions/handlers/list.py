@@ -1,6 +1,10 @@
+# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
+# allow-wildcard-with-all=yes
+# disable=E0102,W0631,W0105,R1723,W0612,E1305,C0206,W0613,W0640,W0702, E0202,C0411, E0611,W3101, W0603,W0621,W3101,W0622,C0412,R1711, E1101,E1136,C0209,R1733, R1705, C0121, C0103,C0304, C0301, E0401, R0903,R0911,R1710,W0703,R1702,R0912,W1510,W1514,R1732,W1309,R0914,R0915,W0718,R0801'''
 import json
 import os
 from pymongo import MongoClient
+# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
 from lib.common_helper import Encoder
 from datetime import datetime, timedelta
 
@@ -47,7 +51,8 @@ def list_auction(event, context):
         status = event['queryStringParameters'].get('status', None)
         sort = event['queryStringParameters'].get('sort', 'True')
         key = event['queryStringParameters'].get('key', 'created_at')
-        order = event['queryStringParameters'].get('order', 'ascending')# 'ascending' or 'descending'
+        order = event['queryStringParameters'].get('order',
+                                                    'ascending')# 'ascending' or 'descending'
         page = int(event['queryStringParameters'].get('page', '1'))  # Default to page 1
         per_page = 3  # Number of records per page
         keyword = event['queryStringParameters'].get('keyword', '')  # Search keyword
@@ -56,7 +61,6 @@ def list_auction(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        skip_records = (page - 1) * per_page
 
         projection = {
             "_id": 0,  # Exclude the ObjectId field
@@ -102,7 +106,8 @@ def list_auction(event, context):
 
         # Check if keyword is provided
         if keyword:
-            keyword_condition = {"title": {"$regex": keyword, "$options": "i"}}  # Case-insensitive search
+            keyword_condition = {"title": {"$regex": keyword,
+                                            "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
 
         # Create the final query using $and operator
@@ -111,7 +116,6 @@ def list_auction(event, context):
             results = collection.find({"$and": query_conditions}, projection)
             total_records_count = collection.count_documents({"$and": query_conditions})
         else:
-            # If no conditions are provided, return all documents sorted by 'creation_date' in ascending order
             results = collection.find({"seller_email": email_address}, projection)
             total_records_count = collection.count_documents({"seller_email": email_address})
             print('3333333333', total_records_count)
@@ -121,6 +125,8 @@ def list_auction(event, context):
 
         if sort and sort.lower() == 'true':
             if key:
+                if key in ['start_date', 'end_date']:
+                    key = key.strip() 
                 if order and order.lower() == 'descending':
                     results_list = sorted(results_list, key=lambda x: x[key], reverse=True)
                 else:
@@ -138,7 +144,7 @@ def list_auction(event, context):
                 "results": paginated_results,
                 "total_records_found": total_records_count,
                 "current_page": page,
-                "total_pages": (total_records_count + per_page - 1) // per_page  # Calculate total pages
+                "total_pages": (total_records_count + per_page - 1) // per_page
             }, cls=Encoder)
         }
     except Exception as err:
