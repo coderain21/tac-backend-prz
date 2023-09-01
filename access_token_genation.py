@@ -16,9 +16,9 @@ aws_region = os.environ.get('REGION')
 
 # Configure AWS SDK
 session = boto3.Session(
-    aws_access_key_id= 'AKIA5QZYLFWFJBC3C3LK',#aws_access_key_id,
-    aws_secret_access_key= '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',#aws_secret_access_key,
-    region_name= 'eu-west-2'#aws_region
+    aws_access_key_id= aws_access_key_id,
+    aws_secret_access_key= aws_secret_access_key,
+    region_name=aws_region
 )
 
 client = session.client('cognito-idp')
@@ -27,8 +27,8 @@ def generate_token():
     try:
         user_pool_id = os.environ['COGNITO_USER_POOL_ID']
         client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
-        username = 'anusha.k+indyauction@7edge.com'#os.environ['API_USERNAME']
-        password = 'Seller@123' #os.environ['PASSWORD']
+        username = os.environ['API_USERNAME']
+        password = os.environ['PASSWORD']
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
