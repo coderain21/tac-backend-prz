@@ -69,7 +69,7 @@ def list_auction(event, context):
             "end_date": 1,
             "status": 1,
             "auction_image ": 1,
-            "notes": 1,
+            "note": 1,
             "created_at": 1
         }
 
