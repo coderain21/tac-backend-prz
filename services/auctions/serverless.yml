@@ -21,6 +21,7 @@ provider:
     COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${env:DATABASE}
     MONGODB_NAME: ${env:MONGODB_NAME}
     MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
@@ -29,7 +30,8 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
-    
+    CSV_FILE: ${env:CSV_FILE}
+    S3_BUCKET: ${env:S3_BUCKET}
     
     
   http:
