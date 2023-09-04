@@ -112,7 +112,7 @@ functions:
       events:
         - http:
             cors: true
-            path: /list
+            path: /
             method: get
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
