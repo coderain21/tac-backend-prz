@@ -1,9 +1,8 @@
-# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
-# allow-wildcard-with-all=yes
-# disable=E0102,W0631,W0105,R1723,W0612,E1305,C0206,W0613,W0640,W0702, E0202,C0411, E0611,W3101, W0603,W0621,W3101,W0622,C0412,R1711, E1101,E1136,C0209,R1733, R1705, C0121, C0103,C0304, C0301, E0401, R0903,R0911,R1710,W0703,R1702,R0912,W1510,W1514,R1732,W1309,R0914,R0915,W0718,R0801'''
-'''The `import json` statement is importing the `json` module in Python.'''
+"""This module is used to list the auctions """
 import json
 import os
+import csv
+import boto3
 from pymongo import MongoClient
 # ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
 from lib.common_helper import Encoder
@@ -17,11 +16,12 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def list_auction(event, context):
     """
     The `list_auction` function retrieves a list of auctions based on various query parameters, such as
     start date, end date, status, sort order, page number, and keyword.
-    
+
     :param event: The `event` parameter is a dictionary that contains the input data for the function.
     It typically includes information about the HTTP request, such as query parameters, headers, and the
     request body. In this case, the function expects the query parameters to include `start_date`,
@@ -38,10 +38,11 @@ def list_auction(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
-            print('email',email_address)
+            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
+                "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
@@ -51,12 +52,16 @@ def list_auction(event, context):
         sort = event['queryStringParameters'].get('sort', 'True')
         key = event['queryStringParameters'].get('key', 'created_at')
         order = event['queryStringParameters'].get('order',
-                                                    'ascending')# 'ascending' or 'descending'
-        page = int(event['queryStringParameters'].get('page', '1'))  # Default to page 1
-        per_page = 3  # Number of records per page
-        keyword = event['queryStringParameters'].get('keyword', '')  # Search keyword
+                                                   'ascending')  # 'ascending' or 'descending'
+        page = int(event['queryStringParameters'].get(
+            'page', '1'))  # Default to page 1
+        limit = int(event['queryStringParameters'].get(
+            'per_page', '3'))  # Number of records per page
+        keyword = event['queryStringParameters'].get(
+            'keyword', '')  # Search keyword
         query_conditions = []
-
+        export = int(event['queryStringParameters'].get('export', '0'))
+        download_link = None
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -72,7 +77,22 @@ def list_auction(event, context):
             "note": 1,
             "created_at": 1
         }
-
+        if export is not None and export == 1:
+            projection_for_export = {
+                "_id": 0,  # Exclude the ObjectId field
+                "auction_id": 1,
+                "title": 1,
+                "description": 1,
+                "time_zone": 1,
+                "start_date": 1,
+                "end_date": 1,
+                "registration_type": 1,
+                "currency": 1,
+                "extension_type": 1,
+                "extension_time": 1,
+                "total_lots": 1,
+                "status": 1
+            }
         # Check if both start_date and end_date are provided
         if start_date and end_date:
             start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -101,50 +121,48 @@ def list_auction(event, context):
         if status:
             status_condition = {"status": status}
             query_conditions.append(status_condition)
-            print(query_conditions)
 
         # Check if keyword is provided
         if keyword:
             keyword_condition = {"title": {"$regex": keyword,
-                                            "$options": "i"}}  # Case-insensitive search
+                                           "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
 
         # Create the final query using $and operator
         if query_conditions:
             query_conditions.append({"seller_email": email_address})
-            results = collection.find({"$and": query_conditions}, projection)
-            total_records_count = collection.count_documents({"$and": query_conditions})
+            results = collection.find({"$and": query_conditions}, projection).sort(
+                [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
+            if export is not None and export == 1:
+                download_link = export_as_csv(list(collection.find(
+                    {"$and": query_conditions}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
+            total_records_count = collection.count_documents(
+                {"$and": query_conditions})
         else:
-            results = collection.find({"seller_email": email_address}, projection)
-            total_records_count = collection.count_documents({"seller_email": email_address})
-            print('3333333333', total_records_count)
+            results = collection.find({"seller_email": email_address}, projection).sort(
+                [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
+            if export is not None and export == 1:
+                download_link = export_as_csv(list(collection.find(
+                    {"seller_email": email_address}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
+            total_records_count = collection.count_documents(
+                {"seller_email": email_address})
 
-        # Handle sorting based on 'sort', 'key', and 'order' variables
-        results_list = list(results)  # Convert the cursor to a list
-
-        if sort and sort.lower() == 'true':
-            if key:
-                if key in ['start_date', 'end_date']:
-                    key = key.strip()
-                if order and order.lower() == 'descending':
-                    results_list = sorted(results_list, key=lambda x: x[key], reverse=True)
-                else:
-                    results_list = sorted(results_list, key=lambda x: x[key])
-
-        # Manually implement pagination after sorting
-        start_index = (page - 1) * per_page
-        end_index = start_index + per_page
-        paginated_results = results_list[start_index:end_index]
-
+        paginated_results = list(results)
+        client.close()
+        body = {
+            "message": "Query successful",
+            "results": paginated_results,
+            "total_records_found": total_records_count,
+            "current_page": page,
+            "total_pages": (total_records_count + limit - 1) // limit
+        }
+        print(download_link)
+        if download_link is not None:
+            body["csv_url"] = download_link
         return {
             "statusCode": 200,
-            "body": json.dumps({
-                "message": "Query successful",
-                "results": paginated_results,
-                "total_records_found": total_records_count,
-                "current_page": page,
-                "total_pages": (total_records_count + per_page - 1) // per_page
-            }, cls=Encoder)
+            "headers": headers,
+            "body": json.dumps(body, cls=Encoder)
         }
     except Exception as err:
         print(err)
@@ -153,3 +171,72 @@ def list_auction(event, context):
             "statusCode": 500,
             "body": json.dumps({"message": "There was an error "})
         }
+
+
+def export_as_csv(auctions):
+    """
+    Exports a list of QR codes as a CSV file and uploads it to an S3 bucket.
+
+    Args:
+        auctions (list): A list of dictionaries representing the QR codes.
+
+    Returns:
+        str: The signed URL of the uploaded CSV file on S3.
+
+    Raises:
+        Exception: If an error occurs during the export and upload process.
+    """
+    try:
+
+        # Export QR codes as CSV and upload to S3
+        csv_file = os.environ["CSV_FILE"]
+        s3_key = f"exports/{csv_file}"
+        s3_bucket = os.environ['S3_BUCKET']
+        print(s3_bucket, type(s3_bucket))
+        with open(csv_file, "w") as file:
+            writer = csv.DictWriter(file, ["Auction ID", "Auction Name", "Auction Description", "Timezone", "Auction Start Date", "Auction Start Time", "Auction End Date", "Auction End Time",
+                                    "Registration Type", "Currency", "Extension Type", "Extension mins", "Number of Lots", "Status"])
+            writer.writeheader()
+
+            # Format the created_at field as dd-mm-year
+            for auction in auctions:
+                modified_auction = {}
+                modified_auction["Auction ID"] = auction["auction_id"]
+                modified_auction["Auction Name"] = auction["title"]
+                modified_auction["Auction Description"] = auction["description"]
+                modified_auction["Timezone"] = auction["time_zone"]
+                modified_auction["Auction Start Date"] = datetime.fromisoformat(
+                    str(auction["start_date"])).strftime("%d %B %Y")
+                modified_auction["Auction Start Time"] = datetime.fromisoformat(
+                    str(auction["start_date"])).strftime("%H:%M")
+                modified_auction["Auction End Date"] = datetime.fromisoformat(
+                    str(auction["end_date"])).strftime("%d %B %Y")
+                modified_auction["Auction End Time"] = datetime.fromisoformat(
+                    str(auction["end_date"])).strftime("%H:%M")
+                modified_auction["Registration Type"] = auction["registration_type"]
+                modified_auction["Currency"] = auction["currency"]
+                modified_auction["Extension Type"] = auction["extension_type"]
+                modified_auction["Extension mins"] = auction["extension_time"]+" minutes"
+                modified_auction["Number of Lots"] = auction.get(
+                    "total_lots", 0)
+                modified_auction["Status"] = auction["status"]
+                writer.writerow(modified_auction)
+
+        s3_client = boto3.client("s3", region_name='eu-west-2')
+        s3_client.upload_file(csv_file, s3_bucket, s3_key)
+
+        # Generate signed URL
+        s3_resource = boto3.resource("s3", region_name='eu-west-2')
+        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
+        object_acl.put(ACL="public-read")
+
+        s3_signed_url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": s3_bucket, "Key": s3_key},
+            # URL expiration time in seconds (adjust as needed)
+            ExpiresIn=3600,
+        )
+        return s3_signed_url
+    except Exception as err:
+        print(err)
+        return None

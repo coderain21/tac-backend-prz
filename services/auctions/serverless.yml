@@ -29,7 +29,8 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
-    
+    CSV_FILE: ${env:CSV_FILE}
+    S3_BUCKET: ${env:S3_BUCKET}
     
     
   http:
