@@ -15,9 +15,9 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-''' The `delete_note` function is a Python function that handles an API endpoint for deleting or adding
- a note to a document in a MongoDB collection'''.
 def delete_note(event, context):
+    '''The `delete_note` function is a Python function that handles an API endpoint for
+    deleting or addinga note to a document in a MongoDB collection'''
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
