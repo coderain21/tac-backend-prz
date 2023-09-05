@@ -64,7 +64,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
     try {
         let userData = JSON.parse(event.body)
         const validationResult = schema.validate(userData)
-        const pattern = /^anusha\.k\+7/i // Case-insensitive match
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
             return {
@@ -86,7 +85,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                 }
                 userData = { ...userData, ...data }
-                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421' && pattern.test(userData.email_address))) {
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
                     delete userData.session
                     const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
                     if (cognitoResponse.success_status !== true) {
