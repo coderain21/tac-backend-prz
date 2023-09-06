@@ -142,21 +142,37 @@ definitions:
               AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
               AWS_DEFAULT_REGION: $AWS_REGION
               DISTRIBUTION_ID: $DISTRIBUTION_ID
+        
+    - step: &DAST 
+        name: Dynamic Application Security Testing (DAST) 
+        image: softwaresecurityproject/zap-stable
+        services:
+          - docker
+        script:
+          - docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+          - sleep 30
+          - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
+          - mkdir test_results
+          - pip3 install boto3
+          - python3 dast.py
+        artifacts:
+          - test_results/**
 
 pipelines:
-  pull-requests:    
+  pull-requests:  
     feature/**:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - step: *APITesting
+      - step: *DAST
+      # - parallel:
+      #     fail-fast: true
+      #     steps:
+      #       - step: *BuildStep
+      #       - step: *Pylint
+      #       - step: *ESlint
+      #       - step: *SAST
+      #       - step: *SecretChecking
+      #       - step: *LicenseCompliance
+      #       - step: *DependencyScanning
+      # - step: *APITesting
       
         
       
