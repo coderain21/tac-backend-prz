@@ -21,7 +21,7 @@ def delete_note(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
-            print('email',email_address)
+            print('email ',email_address)
             # email_address='sthuthi@7edge.com'
         except:
             return {
