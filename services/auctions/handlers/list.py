@@ -150,8 +150,8 @@ def list_auction(event, context):
         paginated_results = list(results)
         client.close()
         body = {
-            "message": "Query successful",
-            "results": paginated_results,
+            "success_status": True,
+            "data": paginated_results,
             "total_records_found": total_records_count,
             "current_page": page,
             "total_pages": (total_records_count + limit - 1) // limit

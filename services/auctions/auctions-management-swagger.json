@@ -250,8 +250,8 @@
                   "$ref": "#/components/schemas/Auction"
                 },
                 "example": {
-                        "message": "Query successful",
-                        "results": [
+                        "success_status": "True",
+                        "data": [
                           {
                             "auction_id": "A0001",
                             "title": "Reserve Price Auction",
