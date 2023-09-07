@@ -6,6 +6,10 @@ options:
 definitions:
   caches:
     sonar: ~/.sonar/cache
+  services:
+    docker-high-memory:
+      memory: 6144
+      type: docker
 
   steps:
     - step: &BuildStep
@@ -150,7 +154,7 @@ definitions:
           - docker
         size: 2x
         script:
-          - docker run --memory=2g -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+          - docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
           - sleep 60
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
           - mkdir test_results
