@@ -16,8 +16,8 @@ aws_region = os.environ.get('REGION')
 
 # Configure AWS SDK
 session = boto3.Session(
-    aws_access_key_id=aws_access_key_id,
-    aws_secret_access_key=aws_secret_access_key,
+    aws_access_key_id= aws_access_key_id,
+    aws_secret_access_key= aws_secret_access_key,
     region_name=aws_region
 )
 
@@ -47,6 +47,6 @@ def generate_token():
         os.environ['TOKEN'] = token
         print(os.environ.get('TOKEN'))
     except ClientError as e:
-        print(e)
+        print('error sadagrfyhh', e)
 
 generate_token()
