@@ -2,5 +2,9 @@ services:
   users:
     path: services/users
     config: ${env:config}
+  auctions:
+    path: services/users
+    config: ${env:config}
+    
 
     
