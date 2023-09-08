@@ -49,10 +49,10 @@ def list_auction(event, context):
         start_date = event['queryStringParameters'].get('start_date', None)
         end_date = event['queryStringParameters'].get('end_date', None)
         status = event['queryStringParameters'].get('status', None)
-        sort = event['queryStringParameters'].get('sort', 'True')
+        # sort = event['queryStringParameters'].get('sort', 'True')
         key = event['queryStringParameters'].get('key', 'created_at')
         order = event['queryStringParameters'].get('order',
-                                                   'ascending')  # 'ascending' or 'descending'
+                                                   'descending')  # 'ascending' or 'descending'
         page = int(event['queryStringParameters'].get(
             'page', '1'))  # Default to page 1
         limit = int(event['queryStringParameters'].get(
@@ -73,7 +73,7 @@ def list_auction(event, context):
             "start_date": 1,
             "end_date": 1,
             "status": 1,
-            "auction_image ": 1,
+            "auction_image": 1,
             "note": 1,
             "created_at": 1
         }
@@ -151,7 +151,7 @@ def list_auction(event, context):
         client.close()
         body = {
             "message": "Query successful",
-            "results": paginated_results,
+            "data": paginated_results,
             "total_records_found": total_records_count,
             "current_page": page,
             "total_pages": (total_records_count + limit - 1) // limit
@@ -205,14 +205,10 @@ def export_as_csv(auctions):
                 modified_auction["Auction Name"] = auction["title"]
                 modified_auction["Auction Description"] = auction["description"]
                 modified_auction["Timezone"] = auction["time_zone"]
-                modified_auction["Auction Start Date"] = datetime.fromisoformat(
-                    str(auction["start_date"])).strftime("%d %B %Y")
-                modified_auction["Auction Start Time"] = datetime.fromisoformat(
-                    str(auction["start_date"])).strftime("%H:%M")
-                modified_auction["Auction End Date"] = datetime.fromisoformat(
-                    str(auction["end_date"])).strftime("%d %B %Y")
-                modified_auction["Auction End Time"] = datetime.fromisoformat(
-                    str(auction["end_date"])).strftime("%H:%M")
+                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%d %B %Y") 
+                modified_auction["Auction Start Time"] = "" if auction['start_date'] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%H:%M")
+                modified_auction["Auction End Date"] = "" if auction['end_date'] is None else datetime.fromisoformat(str(auction["end_date"])).strftime("%d %B %Y")
+                modified_auction["Auction End Time"] = "" if auction['end_date'] is None else datetime.fromisoformat(str(auction["end_date"])).strftime("%H:%M")
                 modified_auction["Registration Type"] = auction["registration_type"]
                 modified_auction["Currency"] = auction["currency"]
                 modified_auction["Extension Type"] = auction["extension_type"]
