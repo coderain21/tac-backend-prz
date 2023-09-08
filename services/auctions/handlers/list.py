@@ -1,6 +1,7 @@
 """This module is used to list the auctions """
 import json
 import os
+import re
 import csv
 import boto3
 from pymongo import MongoClient
@@ -202,7 +203,7 @@ def export_as_csv(auctions):
                 modified_auction = {}
                 modified_auction["Auction ID"] = auction["auction_id"]
                 modified_auction["Auction Name"] = auction["title"]
-                modified_auction["Auction Description"] = auction["description"]
+                modified_auction["Auction Description"] = re.sub(re.compile(r'<.*?>'), '', auction["description"])
                 modified_auction["Timezone"] = auction["time_zone"]
                 modified_auction["Auction Start Date"] = "" if auction["start_date"] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%d %B %Y")
                 modified_auction["Auction Start Time"] = "" if auction['start_date'] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%H:%M")
