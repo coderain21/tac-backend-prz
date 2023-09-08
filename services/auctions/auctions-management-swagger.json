@@ -359,7 +359,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "A0001"
+            "example": "A0179"
           },
           {
             "name": "del",
@@ -368,7 +368,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "1"
+            "example": "0"
           }
           
 
