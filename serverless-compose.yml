@@ -3,7 +3,8 @@ services:
     path: services/users
     config: ${env:config}
   auctions:
-    path: services/users
+    path: services/auctions
     config: ${env:config}
+    
 
     
