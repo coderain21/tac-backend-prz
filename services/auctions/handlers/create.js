@@ -25,6 +25,8 @@ module.exports.create_auction = async (event) => {
         const counter = await Counter.findOneAndUpdate({ auction_id: email, record_type: 'Auctions', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
         request_body.auction_id = sequenceNumber
+        request_body.start_date = new Date(request_body.start_date)
+        request_body.end_date = new Date(request_body.end_date)
         const auction = await mongoConnection.save(request_body, Auction)
         if (auction) {
             update_value = {
