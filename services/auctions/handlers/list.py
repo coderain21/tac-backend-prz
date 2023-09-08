@@ -175,10 +175,10 @@ def list_auction(event, context):
 
 def export_as_csv(auctions):
     """
-    Exports a list of QR codes as a CSV file and uploads it to an S3 bucket.
+    Exports a list of auctions as a CSV file and uploads it to an S3 bucket.
 
     Args:
-        auctions (list): A list of dictionaries representing the QR codes.
+        auctions (list): A list of dictionaries representing the auctions.
 
     Returns:
         str: The signed URL of the uploaded CSV file on S3.
@@ -205,7 +205,7 @@ def export_as_csv(auctions):
                 modified_auction["Auction Name"] = auction["title"]
                 modified_auction["Auction Description"] = auction["description"]
                 modified_auction["Timezone"] = auction["time_zone"]
-                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%d %B %Y") 
+                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%d %B %Y")
                 modified_auction["Auction Start Time"] = "" if auction['start_date'] is None else datetime.fromisoformat(str(auction["start_date"])).strftime("%H:%M")
                 modified_auction["Auction End Date"] = "" if auction['end_date'] is None else datetime.fromisoformat(str(auction["end_date"])).strftime("%d %B %Y")
                 modified_auction["Auction End Time"] = "" if auction['end_date'] is None else datetime.fromisoformat(str(auction["end_date"])).strftime("%H:%M")
