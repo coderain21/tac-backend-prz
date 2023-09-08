@@ -211,7 +211,7 @@ def export_as_csv(auctions):
                 modified_auction["Registration Type"] = auction["registration_type"]
                 modified_auction["Currency"] = auction["currency"]
                 modified_auction["Extension Type"] = auction["extension_type"]
-                modified_auction["Extension mins"] = auction["extension_time"]+" minutes"
+                modified_auction["Extension mins"] = "" if len(auction["extension_time"]) == 0 else auction["extension_time"]+" minutes"
                 modified_auction["Number of Lots"] = auction.get(
                     "total_lots", 0)
                 modified_auction["Status"] = auction["status"]
