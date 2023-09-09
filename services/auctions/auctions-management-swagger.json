@@ -247,18 +247,58 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Auction"
+                  "type": "object",
+                  "properties": { 
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "auction_id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "start_date": {
+                            "type": "string"
+                          },
+                          "end_date": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "auction_image": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total_records_found": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    }
+                  }
                 },
                 "example": {
-                        "success_status": "True",
                         "data": [
                           {
-                            "auction_id": "A0001",
-                            "title": "Reserve Price Auction",
+                            "auction_id": "A0169",
+                            "title": "Auction Event",
                             "start_date": "2023-08-30 06:46:23",
                             "end_date": "2023-08-31 06:46:23",
                             "status": "Draft",
-                            "created_at": "2023-08-31 10:27:57.993000"
+                            "created_at": "2023-08-31 10:27:57.993000",
+                            "auction_image": ""
                           }
                         ],
                         "total_records_found": 1,
@@ -319,7 +359,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "A0001"
+            "example": "A0179"
           },
           {
             "name": "del",
@@ -328,7 +368,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "1"
+            "example": "0"
           }
           
 
@@ -399,7 +439,99 @@
               }
             }
           }
+        },
+        "patch": {
+          "tags": [
+            "create"
+          ],
+          "summary": "delete auction",
+          "description": "delete auction",
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "to delete or add note for that auction id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "A0001"
+            },
+            {
+              "name": "del",
+              "in": "query",
+              "description": "keyword to determine whether to add or delete",
+              "schema": {
+                "type": "string"
+              },
+              "example": "1"
+            }
+
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "note":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "note":"asda"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully deleted the note or added the note",
+              "content": {
+                "application/json": {
+                  "example": {
+                          "message": "string"   
+                  }            
+                }
+              }
+            },
+            "400": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": {
+                          "type": "string",
+                          "example": "You do not have access to perform this API action"
+                        }
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
+        
       }
     }
 
