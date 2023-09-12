@@ -49,6 +49,7 @@ const UserSchema = new Schema({
     tiktok_link: { type: String, trim: true, default: '' },
     kyc_status: { type: String, trim: true, default: false },
     kyb_status: { type: String, trim: true, default: false },
+
 })
 
 UserSchema.plugin(mongoosePaginate)

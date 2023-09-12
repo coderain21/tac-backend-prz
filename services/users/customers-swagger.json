@@ -1,31 +1,32 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "termsOfService": "https://theauctioncollective.com/terms/",
-      "description": "Indy Auction API Documentation (Seller Web Application)",
-      "title": "Indy Auction APIs",
+      "title": "Users Management APIs",
+      "description": "Users Management APIs to view user's information, Upgrade and downgrade the pricing plans for the users, Generate token for the KYC and KYB",
       "contact": {
         "name": "no-reply@indy.auction",
         "email": "no-reply@indy.auction"
       },
-      "license": {
-        "name": "7EDGE"
-      },
-      "version": "1.0"
+      "version": "1.0.0"
     },
     "servers": [
       {
-        "url": "https://apis.indyauction.net/dev/v1/",
-        "description": "Test Server"
+        "url": "https://apis.indyauction.net/dev/v1/users-management"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Users Management",
+          "description": "APIs to view user's information, Upgrade and downgrade the pricing plans for the users, Generate token for the KYC and KYB"
       }
     ],
     "paths": {
-       "/{email}": {
+      "/{email}": {
         "get": {
           "tags": [
             "Users"
           ],
-          "summary": "View user information",
+          "summary": "View  user information",
           "parameters": [
             {
               "required": true,
@@ -169,7 +170,7 @@
         },
         "patch":{
           "tags": [
-            "Customers"
+            "Users"
           ],
           "summary": "Update user information",
           "parameters": [
@@ -262,6 +263,323 @@
           ]
         }
       },
+      "/verify-captcha":{
+        "post": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "verify recaptcha",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session_token":{
+                      "type": "string"
+                    },
+                    "email_address":{
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "confirm_password": {
+                      "type": "string"
+                    },
+                    "terms_and_condition": {
+                      "type": "boolean"
+                    },
+                    "newsletter_notification": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+                  "email_address": "shrinit.poojary@7edge.com",
+                  "password": "12345678",
+                  "confirm_password":"12345678",
+                  "terms_and_condition": true,
+                  "newsletter_notification": true
+                }
+              }
+            }
+          },
+          "responses": {
+            "201":{
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "409": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "400": {
+                "description": "Bad Request",
+                "content": {
+                  "application/json": {
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "Invalid Password"
+                        }
+                      },
+                      "example2":{
+                        "value":{
+                          "message":"Captcha verification failed"
+                        }
+                      },
+                      "example3":{
+                        "value":{
+                          "message":"Password Doesnt match"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      },
+      "/otp-validation":{
+        "post": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Validating OTP",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session_token":{
+                      "type": "string"
+                    },
+                    "otp":{
+                      "type":"string"
+                    }
+                  }
+                },
+                "example": {
+                  "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+                  "otp": "123456"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201":{
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+              "400": {
+                "description": "Bad Request",
+                "content": {
+                  "application/json": {
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "Invalid session token"
+                        }
+                      },
+                      "example2":{
+                        "value":{
+                          "message":"Invalid OTP"
+                        }
+                      },
+                      "example3":{
+                        "value":{
+                          "message":"Something went wrong"
+                        }
+                      },
+                      "example4":{
+                        "value":{
+                          "message":"Invalid request"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      },
+       "/update-plan/{email}": {
+        "patch": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Upgrade and downgrade the pricing plans for the user",
+          "parameters": [
+            {
+              "required": true,
+              "name": "email",
+              "in": "path",
+              "description": "Upgrade and downgrade the pricing plans for the user",
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "current_plan":{
+                      "type": "string"
+                    },
+                    "new_plan":{
+                      "type": "string"
+                    },
+                    "plan_status": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "current_plan": "Free",
+                  "new_plan": "Starter",
+                  "plan_status": "Upgrade"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "204":{
+              "description": "no content"
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+            "400": {
+                "description": "Invalid Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      },
       "/generate": {
         "get": {
           "tags": [
@@ -320,11 +638,497 @@
             }
           }
         }
+      },
+      "/kyb-generate": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Generate token for the KYB",
+          "description": "Generate token for the KYB",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns token value",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "token": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while generating token",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while generating token"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/password-update/{email}": {
+        "x-dredd": "skip",        
+        "patch":{
+          "tags": ["Users"],
+          "summary": "updating users password",
+          "parameters": [
+            {
+              "name": "email",
+              "in": "path",
+              "description": "Update user information",
+              "required": true,
+              "schema": {
+                "type": "string"
+              },
+              "example": "aishwarya@7edge.com"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "old_password":{
+                      "type": "string"
+                    },
+                    "new_password": {
+                      "type": "string"
+                    },
+                    "confirm_password": {
+                      "type": "string"
+                    }
+                    
+                  }
+                },
+                "example": {
+                  "old_password":"Aish@1234",
+                  "new_password":"Aish@134",
+                  "confirm_password":"Aish@134"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "example": {
+                      "message":"Password updated successfully"
+
+                    }
+                  }
+                }
+              }
+
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Current password is incorrect. The password update cannot be completed"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"New password matches current password. Please choose a different password"
+                      }
+                    },
+                    "example3":{
+                      "value":{
+                        "message":"Confirmed password does not match the new password"
+                      }
+                    },
+                    "example4":{
+                      "value":{
+                        "message":"Something went wrong.Please try again"
+                      }
+                    }
+
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+       },
+      "/forgot_password":{
+        "post": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Forgot Password",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "email_address":{
+                      "type": "string"
+                    }
+                },
+                "example": {
+                  "email_address": "shrinit.poojary@7edge.com"
+                }
+              }
+            }
+          }
+        },
+          "responses": {
+            "201":{
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        }
+       },
+      "/reset_password": {
+        "x-dredd": "skip",        
+        "post":{
+          "tags": ["Users"],
+          "summary": "reseting users password",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "email_address":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "email_address": "aishwarya@7edge.com"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "example": {
+                      "message":"Password changed successfully"
+
+                    }
+                  }
+                }
+              }
+
+            },
+            "401": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Token expired"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Invalid Token"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+              "400": {
+                "description": "error",
+                "content": {
+                  "application/json": {
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "Unexpected Key found"
+                        }
+                      },
+                      "example2":{
+                        "value":{
+                          "message":"Password must be 8-16 characters"
+                        }
+                      }
+                    }
+                  }
+                }
+  
+              },
+              "404": {
+                "description": "error",
+                "content": {
+                  "application/json": {
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "Invalid or Unregistered email_address"
+                        }
+                      },
+                      "example2":{
+                        "value":{
+                          "message":"Password must be 8-16 characters"
+                        }
+                      }
+                    }
+                  }
+                }
+  
+              },
+            "500": {
+              "description": "There was an error while resetting password, Please try again",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+       },
+       "/stripe": {
+        "get": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Create the connected account with platform and return url to proceed further data submission",
+          "description": "Create the connected account with platform and return url to proceed further data submission",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Returns url to connect to stripe",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "stripe_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while connecting to stripe",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while connecting to stripe"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "patch": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "Update the stripe status of the connected user.",
+          "description": "Update the stripe status of the connected user.",
+          "parameters": [],
+          "responses": {
+            "204": {
+              "description": "Disconnects the user from platform account"
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "User not found!"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error - There was an error while disconnecting the stripe account",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while disconnecting the stripe account"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
+
+
     },
     "components": {
       "schemas": {
-        "users": {
+        "Users": {
           "type": "object",
           "properties": {
             "id": {
