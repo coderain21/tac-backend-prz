@@ -38,7 +38,6 @@ module.exports.updateUserInformation = async (event) => {
             }
         }
         const get_user = await mongoConnection.view(Users, { email_address: email })
-        console.log('get', get_user)
         if (request_body.business_registration_number) {
             const business_name = await mongoConnection.view(Users, { business_registration_number: request_body.business_registration_number })
             if (business_name.length > 0 && business_name[0].email_address !== email) {
@@ -56,7 +55,6 @@ module.exports.updateUserInformation = async (event) => {
         if (get_user !== null) {
             const user_id = get_user[0]._id
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
-            console.log('update_user_information', update_user_information)
             if (update_user_information.acknowledged) {
                 const cognitoUpdate = await cognitoHelper.cognitoUpdate(request_body, email)
                 console.log('cogni', cognitoUpdate)
