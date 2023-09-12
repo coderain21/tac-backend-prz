@@ -34,6 +34,7 @@ def generate_token(event,context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            print('email',email_address)
         except:
             return {
                 "headers": headers,
@@ -41,33 +42,36 @@ def generate_token(event,context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        level_name = os.environ['LEVEL_NAME']
-
+        level_name = os.environ['KYB_LEVEL_NAME']
+        print('leve', level_name)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection_sellers = db[os.environ["SELLERS_TABLE"]]
 
         user_info = collection_sellers.find_one({'email_address': email_address},{'password':0})
-        print(user_info)
+        print('user', user_info)
 
-        if "kyc_reviewResult" in user_info and "reviewAnswer" in user_info["kyc_reviewResult"] and user_info["kyc_reviewResult"]["reviewAnswer"]=="RED":
-            del user_info["external_user_id"]
-            del user_info["applicantId"]
-            del user_info["kyc_reviewResult"]
+        if "kyb_reviewResult" in user_info and "reviewAnswer" in user_info["kyb_reviewResult"] and user_info["kyb_reviewResult"]["reviewAnswer"]=="RED":
+            del user_info["kyb_external_user_id"]
+            del user_info["companyId"]
+            del user_info["kyb_reviewResult"]
 
-        if not "applicantId" in user_info and not "external_user_id" in user_info:
-            external_user_id = str(uuid.uuid4())
-            applicant_id = create_applicant(external_user_id,level_name)
-            user_info["external_user_id"] = external_user_id
-            user_info["applicantId"] = applicant_id
+        if not "companyId" in user_info and not "kyb_external_user_id" in user_info:
+
+            kyb_external_user_id = str(uuid.uuid4())
+            company_id = create_applicant(kyb_external_user_id,level_name)
+            user_info["kyb_external_user_id"] = kyb_external_user_id
+            user_info["companyId"] = company_id
+            user_info["kyb_reviewResult"] = { }
+            print('after', user_info)
             # Update the user_activity document
             collection_sellers.update_one({"_id": user_info["_id"]}, {
                               "$set": user_info})
         else:
-            external_user_id = user_info["external_user_id"]
+            kyb_external_user_id = user_info["kyb_external_user_id"]
 
 
-        token=get_access_token(external_user_id, level_name)
+        token=get_access_token(kyb_external_user_id, level_name)
         return {
             "headers": headers,
             'statusCode': 200,
