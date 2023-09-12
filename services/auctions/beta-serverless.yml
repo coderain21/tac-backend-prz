@@ -26,7 +26,12 @@ provider:
     MONGO_CLIENT: ${env:MONGO_CLIENT}
     COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    
+    DATABASE: ${env:DATABASE}
+    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
+    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${env:CSV_FILE}
+    S3_BUCKET: ${env:S3_BUCKET}
     
     
   http:
@@ -97,6 +102,47 @@ functions:
           method: post
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
+  
+      
+  list_auction:
+      handler: handlers/list.list_auction
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /
+            method: get
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+  
+  delete_note:
+      handler: handlers/delete_note.delete_note
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /
+            method: patch
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+
+
 plugins:
   - serverless-offline
   - serverless-package-external

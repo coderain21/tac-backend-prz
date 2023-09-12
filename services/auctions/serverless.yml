@@ -137,6 +137,7 @@ functions:
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
 
+
 plugins:
   - serverless-offline
   - serverless-package-external
