@@ -37,7 +37,7 @@ def lambda_handler(event, context):
                             {"seller_email": seller_email,"auction_id":request_body["auction_id"]})
 
             # Check if the user has already added 10 lots
-            if existing_lots_count > 10:
+            if existing_lots_count >= 10:
                 return {
                     "statusCode": 400,
                     "body": json.dumps({"message": "Free users are limited to 10 lots."})
