@@ -119,7 +119,7 @@
                 "example":{
                   "value": {
                     "message": "string",
-                    "auction_id": "A0001"
+                    "auction_id": "string"
                   }
                 }
                 }
