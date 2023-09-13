@@ -112,16 +112,17 @@
         }
       },
         "responses": {
-          "201":{
+          "200":{
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object"
+                "example":{
+                  "message": "Auction created successfully",
+                  "auctions_id": "A0362"
+                }
                 }
               }
-            }
-          },
+            },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -316,10 +317,8 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": {
-                        "type": "string",
                         "example": "You do not have access to perform this API action"
-                      }
+                      
                     }
                   }    
                 }
@@ -348,8 +347,8 @@
         "tags": [
           "create"
         ],
-        "summary": "delete auction",
-        "description": "delete auction",
+        "summary": "delete Note",
+        "description": "delete Note",
         "parameters": [
          
           {
@@ -413,16 +412,13 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": {
-                        "type": "string",
                         "example": "You do not have access to perform this API action"
                       }
                     }
                   }    
                 }
               }
-            }
-          },
+            },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -441,8 +437,91 @@
           }
         }
       }
-    }
+    },
+    "/lots":{
+      "post": {
+        "tags": [
+          "create lots"
+        ],
+        "summary": "Lots create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Lots"
+            },
+            "example": {
 
+                "auction_id":"A0001",
+                "seller_email":"anusha.k+indyauction@7edge.com",
+                "lot_number":"1",
+                "lot_title":"platinum diamond ring",
+                "starting_bid":"2000",
+                "current_bid":"3000",
+                "Top_bidder":"sandhyashri",
+                "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
+                "title1":"ring",
+                "title2":"ghj",
+                "description":"",
+                "starting_price":"1999",
+                "low_estimate":"3000",
+                "high_estimate":"20000",
+                "shipping_details":"Bombay",
+                "tags":"jewellery"
+              
+            }
+            
+          }
+        }
+      },
+        "responses": {
+          "200":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Validation failed"
+                    }
+                  },
+                  
+                  "example4":{
+                    "value":{
+                      "message":"Invalid request"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   },
   "components": {
     "schemas": {
@@ -590,8 +669,72 @@
             "type": "string"
           }
         }
+      },
+    "Lots":{
+      "type": "object",
+      "properties": {
+        "auction_id":{
+          "type": "string"
+        },
+        "seller_email":{
+          "type": "string"
+        },
+        "lot_number":{
+          "type":"string"
+        },
+        "lot_title":{
+          "type":"string"
+        },
+        "starting_bid":{
+          "type":"string"
+        },
+        "current_bid":{
+          "type":"string"
+        },
+        "Top_bidder":{
+          "type":"string"
+        },
+        "images":{
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "feature": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "title1":{
+          "type":"string"
+        },
+        "title2":{
+          "type":"string"
+        },
+        "description":{
+          "type":"string"
+        },
+        "starting_price":{
+          "type":"string"
+        },
+        "low_estimate":{
+          "type":"string"
+        },
+        "high_estimate":{
+          "type":"string"
+        },
+        "shipping_details":{
+          "type":"string"
+        },
+        "tags":{
+          "type":"string"
+        }
       }
-    },
+    }
+  },
     "securitySchemes": {
       "BearerAuth": {
         "type": "apiKey",
