@@ -76,7 +76,18 @@ def list_auction(event, context):
             "status": 1,
             "auction_image": 1,
             "note": 1,
-            "created_at": 1
+            "created_at": 1,
+            "currency": 1,
+            "description": 1,
+            "time_zone": 1,
+            "extension_type": 1,
+            "extension_time": 1,
+            "extension_time_between_lots": 1,
+            "registration_type": 1,
+            "add_buyer_fees": 1,
+            "fees": 1,
+            "make_your_auction_private": 1,
+            "passcode": 1
         }
         if export is not None and export == 1:
             projection_for_export = {
