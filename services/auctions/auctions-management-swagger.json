@@ -112,16 +112,19 @@
         }
       },
         "responses": {
-          "201":{
+          "200":{
             "description": "Success",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object"
+                "example":{
+                  "value": {
+                    "message": "string",
+                    "auction_id": "A0001"
+                  }
+                }
                 }
               }
-            }
-          },
+            },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -316,10 +319,8 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": {
-                        "type": "string",
                         "example": "You do not have access to perform this API action"
-                      }
+                      
                     }
                   }    
                 }
@@ -413,16 +414,13 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": {
-                        "type": "string",
                         "example": "You do not have access to perform this API action"
                       }
                     }
                   }    
                 }
               }
-            }
-          },
+            },
           "500": {
             "description": "Internal Server Error",
             "content": {
