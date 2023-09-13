@@ -24,7 +24,7 @@
     "/":{
       "post": {
         "tags": [
-          "Auction"
+          "create"
         ],
         "summary": "Auction create",
         "requestBody": {
@@ -161,7 +161,7 @@
       },
       "get": {
         "tags": [
-          "Auction"
+          "create"
         ],
         "summary": "Listing auction",
         "description": "Listing auction",
@@ -275,39 +275,6 @@
                           },
                           "auction_image": {
                             "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          },
-                          "currency": {
-                            "type": "string"
-                          },
-                          "extension_type": {
-                            "type": "string"
-                          },
-                          "extension_time": {
-                            "type": "string"
-                          },
-                          "extension_time_between_lots": {
-                            "type": "string"
-                          },
-                          "registration_type": {
-                            "type": "string"
-                          },
-                          "add_buyer_fees": {
-                            "type": "string"
-                          },
-                          "time_zone": {
-                            "type": "string"
-                          },
-                          "make_your_auction_private": {
-                            "type": "string"
-                          },
-                          "passcode": {
-                            "type": "string"
-                          },
-                          "fees": {
-                            "type": "string"
                           }
                         }
                       }
@@ -332,18 +299,7 @@
                             "end_date": "2023-08-31 06:46:23",
                             "status": "Draft",
                             "created_at": "2023-08-31 10:27:57.993000",
-                            "auction_image": "",
-                            "description": "",
-                            "currency": "",
-                            "extension_type": "",
-                            "extension_time": "",
-                            "extension_time_between_lots": "",
-                            "registration_type": "",
-                            "add_buyer_fees": "",
-                            "time_zone": "",
-                            "make_your_auction_private": "",
-                            "passcode": "",
-                            "fees": ""
+                            "auction_image": ""
                           }
                         ],
                         "total_records_found": 1,
@@ -354,7 +310,7 @@
               }
             }
           },
-          "403": {
+          "400": {
             "description": "forbidden",
             "content": {
               "application/json": {
@@ -389,7 +345,7 @@
       },
       "patch": {
         "tags": [
-          "Auction"
+          "create"
         ],
         "summary": "delete Note",
         "description": "delete Note",
@@ -449,7 +405,7 @@
               }
             }
           },
-          "403": {
+          "400": {
             "description": "forbidden",
             "content": {
               "application/json": {
@@ -485,7 +441,7 @@
     "/lots":{
       "post": {
         "tags": [
-          "Lots"
+          "create lots"
         ],
         "summary": "Lots create",
         "requestBody": {
@@ -557,6 +513,184 @@
                   "example4":{
                     "value":{
                       "message":"Invalid request"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "create lots"
+        ],
+        "summary": "Listing lots",
+        "description": "Listing lots",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0010"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "title1"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "descending"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "per page documents documents",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2"
+          },
+          {
+            "name": "search_keyword",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "eum"
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { 
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "auction_id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "start_date": {
+                            "type": "string"
+                          },
+                          "end_date": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "auction_image": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total_records_found": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "auction_id": "A0010",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "lot_number": "5",
+                      "lot_title": "dumbells",
+                      "starting_bid": "2000",
+                      "current_bid": "2000",
+                      "Top_bid": "shrinit",
+                      "images": [
+                        {
+                          "url": "abcdefghijklmnopqrstuvwxyz.com",
+                          "feature": true
+                        }
+                      ],
+                      "title1": "eumbells",
+                      "title2": "ghj",
+                      "description": "",
+                      "starting_price": "1999",
+                      "low_estimate": "3000",
+                      "high_estimate": "20000",
+                      "shipping_address": "Bombay",
+                      "tags": "jewellery"
+                    }
+                  ],
+                  "total_records_found": 1,
+                  "current_page": 1,
+                  "total_pages": 1
+                }
+                
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
                     }
                   }
                 }
