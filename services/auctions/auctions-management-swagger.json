@@ -117,8 +117,8 @@
             "content": {
               "application/json": {
                 "example":{
-                    "message": "string",
-                    "auction_id": "string"
+                  "message": "Auction created successfully",
+                  "auctions_id": "A0362"
                 }
                 }
               }
