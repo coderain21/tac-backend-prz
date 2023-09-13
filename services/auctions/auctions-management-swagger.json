@@ -117,10 +117,8 @@
             "content": {
               "application/json": {
                 "example":{
-                  "value": {
                     "message": "string",
                     "auction_id": "string"
-                  }
                 }
                 }
               }
