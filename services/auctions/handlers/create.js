@@ -38,7 +38,7 @@ module.exports.create_auction = async (event) => {
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({
                     message: 'Auction created successfully',
-                    auctions_count: update_value.auctions_count,
+                    auctions_id: sequenceNumber,
                 }),
             }
         }
