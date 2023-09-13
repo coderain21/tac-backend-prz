@@ -579,7 +579,7 @@
           "schema": {
             "type": "string"
           },
-          "example": "A0010"
+          "example": "A0012"
         },
         {
           "name": "sort_by",
