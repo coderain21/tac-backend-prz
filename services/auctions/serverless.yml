@@ -156,7 +156,7 @@ functions:
           method: post
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
-          
+            
   list_lots:
     handler: handlers/view_lots.list_lots
     runtime: python3.8
@@ -193,6 +193,24 @@ functions:
             method: delete
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
+
+  view:
+    handler: handlers/view.view
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /view
+          method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
 
 plugins:
   - serverless-offline
