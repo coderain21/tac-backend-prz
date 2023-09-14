@@ -682,7 +682,7 @@
 
                     "auction_id":"A0012",
                     "seller_email":"anusha.k+indyauction@7edge.com",
-                    "lot_number":" ",
+                    "lot_number": 0,
                     "lot_title":"platinum diamond ring",
                     "starting_bid":2000,
                     "current_bid":3000,
@@ -899,7 +899,7 @@
           "type": "string"
         },
         "lot_number":{
-          "type":"string"
+          "type":"integer"
         },
         "lot_title":{
           "type":"string"

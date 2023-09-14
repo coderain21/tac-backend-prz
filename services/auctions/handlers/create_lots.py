@@ -55,7 +55,7 @@ def lambda_handler(event, context):
                                                       {'$inc': {'starting_sequence': 1}},
                                                       return_document=pymongo.ReturnDocument.AFTER,
                                                       upsert=True)
-        request_body["lot_number"]= str(counter["starting_sequence"])
+        request_body["lot_number"]= counter["starting_sequence"]
 
         # Insert the lot data into the MongoDB collection
         collection.insert_one(request_body)
