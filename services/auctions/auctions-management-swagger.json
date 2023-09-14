@@ -496,20 +496,20 @@
             },
             "example": {
 
-                "auction_id":"A0001",
+                "auction_id":"A0012",
                 "seller_email":"anusha.k+indyauction@7edge.com",
-                "lot_number":"1",
+                "lot_number":" ",
                 "lot_title":"platinum diamond ring",
-                "starting_bid":"2000",
-                "current_bid":"3000",
+                "starting_bid":2000,
+                "current_bid":3000,
                 "Top_bidder":"sandhyashri",
                 "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
                 "title1":"ring",
                 "title2":"ghj",
                 "description":"",
-                "starting_price":"1999",
-                "low_estimate":"3000",
-                "high_estimate":"20000",
+                "starting_price":1999,
+                "low_estimate":3000,
+                "high_estimate":20000,
                 "shipping_details":"Bombay",
                 "tags":"jewellery"
               
@@ -564,9 +564,184 @@
             }
           }
         }
+      },
+    "get": {
+      "tags": [
+        "Lots"
+      ],
+      "summary": "Listing lots",
+      "description": "Listing lots",
+      "parameters": [
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "to determine the which auction lots to be displayed ",
+          "schema": {
+            "type": "string"
+          },
+          "example": "A0012"
+        },
+        {
+          "name": "sort_by",
+          "in": "query",
+          "description": "Sort by key",
+          "schema": {
+            "type": "string"
+          },
+          "example": "title1"
+        },
+        {
+          "name": "sort_order",
+          "in": "query",
+          "description": "ascending or descending",
+          "schema": {
+            "type": "string"
+          },
+          "example": "descending"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number",
+          "schema": {
+            "type": "integer"
+          },
+          "example": 1
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "description": "per page documents documents",
+          "schema": {
+            "type": "string"
+          },
+          "example": "2"
+        },
+        {
+          "name": "search_keyword",
+          "in": "query",
+          "description": "ascending or descending",
+          "schema": {
+            "type": "string"
+          },
+          "example": "eum"
+        }
+
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully retrieved lots",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { 
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "auction_id": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        },
+                        "start_date": {
+                          "type": "string"
+                        },
+                        "end_date": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "auction_image": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "total_records_found": {
+                    "type": "integer"
+                  },
+                  "current_page": {
+                    "type": "integer"
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "data": [
+                  {
+
+                    "auction_id":"A0012",
+                    "seller_email":"anusha.k+indyauction@7edge.com",
+                    "lot_number":" ",
+                    "lot_title":"platinum diamond ring",
+                    "starting_bid":2000,
+                    "current_bid":3000,
+                    "Top_bidder":"sandhyashri",
+                    "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
+                    "title1":"ring",
+                    "title2":"ghj",
+                    "description":"",
+                    "starting_price":1999,
+                    "low_estimate":3000,
+                    "high_estimate":20000,
+                    "shipping_details":"Bombay",
+                    "tags":"jewellery"
+                  
+                }
+                ],
+                "total_records_found": 1,
+                "current_page": 1,
+                "total_pages": 1
+              }
+              
+            }
+          }
+        },
+        "403": {
+          "description": "forbidden",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                      "example": "You do not have access to perform this API action"
+                    
+                  }
+                }    
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
-  },
+  }
+},
   "components": {
     "schemas": {
       "Auction": {
@@ -730,10 +905,10 @@
           "type":"string"
         },
         "starting_bid":{
-          "type":"string"
+          "type":"integer"
         },
         "current_bid":{
-          "type":"string"
+          "type":"integer"
         },
         "Top_bidder":{
           "type":"string"
@@ -762,13 +937,13 @@
           "type":"string"
         },
         "starting_price":{
-          "type":"string"
+          "type":"integer"
         },
         "low_estimate":{
-          "type":"string"
+          "type":"integer"
         },
         "high_estimate":{
-          "type":"string"
+          "type":"integer"
         },
         "shipping_details":{
           "type":"string"
