@@ -28,7 +28,7 @@ def list_lots(event, context):
     try:
         try:
             # seller_email = event['requestContext']['authorizer']['claims']['email']
-            seller_email="anusha.k+indyauction@7edge.com"
+            seller_email="sthuthi@7edge.com"
         except:
             return {
                 "statusCode": 403,
@@ -75,11 +75,13 @@ def list_lots(event, context):
             "total_pages": (total_documents + limit - 1) // limit
         }
         return {
+            'headers': headers,
             "statusCode": 200,
             "body": json.dumps(body)
         }
     except Exception as e:
         return {
             "statusCode": 500,
+            'headers': headers,
             "body": json.dumps({"error": str(e)})
         }

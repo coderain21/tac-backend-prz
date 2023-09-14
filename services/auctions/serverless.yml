@@ -174,6 +174,25 @@ functions:
           method: get
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
+  
+  delete_lot:
+      handler: handlers/delete_lot.delete_lot
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /lots
+            method: delete
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
 
   view:
     handler: handlers/view.view
