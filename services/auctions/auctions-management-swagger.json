@@ -641,27 +641,9 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "auction_id": {
-                          "type": "string"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "start_date": {
-                          "type": "string"
-                        },
-                        "end_date": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "created_at": {
-                          "type": "string"
-                        },
-                        "auction_image": {
-                          "type": "string"
-                        }
+                        "schema": {
+                          "$ref": "#/components/schemas/Lots"
+                      }
                       }
                     }
                   },
@@ -766,7 +748,7 @@
               "example": {
               "auction_id": "A0012",
               "seller_email": "anusha.k+indyauction@7edge.com",
-              "lot_number": 1
+              "lot_number": 3
              }
              
             }
