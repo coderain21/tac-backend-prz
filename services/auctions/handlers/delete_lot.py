@@ -54,14 +54,14 @@ def delete_lot(event, context):
             return {
                 "statusCode": 200,
                 'headers': headers,
-                "body": json.dumps({"message": f"Lot {lot_number} deleted successfully."})
+                "body": json.dumps({"message":" deleted successfully."})
             }
         else:
             return {
                 "statusCode": 404,
                 'headers': headers,
                 "body": json.dumps({
-                    "message": f"Lot {lot_number} not found for seller {seller_email}."
+                    "message": "email not found"
                     })
             }
     except Exception as e:

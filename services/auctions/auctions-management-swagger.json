@@ -565,7 +565,7 @@
           }
         }
       },
-    "get": {
+      "get": {
       "tags": [
         "Lots"
       ],
@@ -739,7 +739,85 @@
           }
         }
       }
-    }
+      },
+      "delete": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "delete Lots",
+        "description": "delete Lots",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  },
+                  "seller_email":{
+                    "type": "string"
+                  },
+                  "lot_number":{
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+              "auction_id": "A0012",
+              "seller_email": "anusha.k+indyauction@7edge.com",
+              "lot_number": 1
+             }
+             
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auctions",
+            "content": {
+              "application/json": {
+                "example": {
+                        "message": " deleted successfully."
+                      }
+                
+              }
+            }
+          },
+          "404": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example":{
+                          "message":"email not found"
+                        }
+                      }
+                    }
+                  }    
+                }
+              }
+            },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
   }
 },
   "components": {
