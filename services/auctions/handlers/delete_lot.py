@@ -7,6 +7,13 @@ import pymongo
 client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["LOT_COLLECTION_NAME"]]
+headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': True,
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*'
+}
 
 def delete_lot(event, context):
     """
@@ -32,6 +39,7 @@ def delete_lot(event, context):
         if not lot_number or not seller_email:
             return {
                 "statusCode": 400,
+                'headers': headers,
                 "body": json.dumps({
                     "message": "Both lot_number and seller_email are required for lot deletion."
                     })
@@ -45,11 +53,13 @@ def delete_lot(event, context):
         if delete_result.deleted_count == 1:
             return {
                 "statusCode": 200,
+                'headers': headers,
                 "body": json.dumps({"message": f"Lot {lot_number} deleted successfully."})
             }
         else:
             return {
                 "statusCode": 404,
+                'headers': headers,
                 "body": json.dumps({
                     "message": f"Lot {lot_number} not found for seller {seller_email}."
                     })
@@ -57,5 +67,6 @@ def delete_lot(event, context):
     except Exception as e:
         return {
             "statusCode": 500,
+            'headers': headers,
             "body": json.dumps({"error": str(e)})
         }

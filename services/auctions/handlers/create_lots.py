@@ -4,11 +4,15 @@ import json
 import pymongo
 
 
-# Initialize the MongoDB client
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-collection = db[os.environ["LOT_COLLECTION_NAME"]]
-lot_collection= db[os.environ["COUNTER_LOT"]]
+
+
+headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': True,
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*'
+}
 
 def lambda_handler(event, context):
     """
@@ -30,6 +34,12 @@ def lambda_handler(event, context):
 
         # Check if the user_type is "Free"
         user_type = request_body.get('user_type', '')
+
+        # Initialize the MongoDB client
+        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        lot_collection= db[os.environ["COUNTER_LOT"]]
 
         if user_type == 'Free':
             # Get the existing lot count for the seller
@@ -59,13 +69,16 @@ def lambda_handler(event, context):
 
         # Insert the lot data into the MongoDB collection
         collection.insert_one(request_body)
+        client.close()
 
         return {
             "statusCode": 200,
+            'headers': headers,
             "body": json.dumps({"message": "Lot added successfully."})
         }
     except Exception as e:
         return {
             "statusCode": 500,
+            'headers': headers,
             "body": json.dumps({"error": str(e)})
         }

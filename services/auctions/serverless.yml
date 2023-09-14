@@ -190,7 +190,7 @@ functions:
         - http:
             cors: true
             path: /lots
-            method: patch
+            method: delete
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
 
