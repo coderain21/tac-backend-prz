@@ -1,3 +1,7 @@
+"""
+The `import_lots` function imports lots from a CSV file into a MongoDB database, with additional
+validation and checks.
+"""
 import os
 import csv
 import json
@@ -14,10 +18,8 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def import_lots(event, context):
-    """
 
-    """
+def import_lots(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
@@ -28,7 +30,7 @@ def import_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         data = json.loads(event['body'])
         auction_id = data.get("auction_id")
         csv_url = data.get("csv_url")
@@ -53,7 +55,7 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to Import lots"})
             }
 
-        print("plan_type",plan_type)
+        print("plan_type", plan_type)
 
         # Expected column headers as set
         expected_headers = [
@@ -68,7 +70,7 @@ def import_lots(event, context):
         ]
 
         additional_fields = {
-            "auction_id" : auction_id,
+            "auction_id": auction_id,
             "seller_email": email_address,
             "starting_bid": 0,
             "current_bid": 0,
@@ -99,22 +101,23 @@ def import_lots(event, context):
             }
         documents = []
         existing_lots_count = collection.count_documents(
-                {"seller_email": email_address, "auction_id": data["auction_id"]})
-        auction_record = auction_collection.find_one({"auction_id" : auction_id,"seller_email": email_address},{"_id":0})
+            {"seller_email": email_address, "auction_id": data["auction_id"]})
+        auction_record = auction_collection.find_one(
+            {"auction_id": auction_id, "seller_email": email_address}, {"_id": 0})
         if auction_record is None:
             return {
-            "statusCode": 404,
-            'headers': headers,
-            "body": json.dumps({"message": "Auction doesn't exists."})
+                "statusCode": 404,
+                'headers': headers,
+                "body": json.dumps({"message": "Auction doesn't exists."})
             }
-        print("existing_lots_count",existing_lots_count)
+        print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
                                                       "seller_email": email_address,
                                                       'record_type': 'Lots'}
-                                                    )
+                                                     )
         if counter_record is None:
-            last_lot_number = 0 
+            last_lot_number = 0
             counter_record = {
                 "auction_id": auction_id,
                 "seller_email": email_address,
@@ -124,7 +127,7 @@ def import_lots(event, context):
             result = counter_collection.insert_one(counter_record)
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
-        print("last_lot_number",last_lot_number)
+        print("last_lot_number", last_lot_number)
         try:
             for row in csv_reader:
                 dict1 = {}
@@ -133,41 +136,46 @@ def import_lots(event, context):
                         "statusCode": 400,
                         'headers': headers,
                         "body": json.dumps({"message": "Missing mandatory fields."})
-                        }
-                
+                    }
+
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
                 dict1["starting_price"] = int(row.get('Starting Price'))
-                dict1["low_estimate"] = int(row.get('Low Estimate',0))
-                dict1["high_estimate"] = int(row.get('High Estimate',0))
+                dict1["low_estimate"] = int(row.get('Low Estimate', 0))
+                dict1["high_estimate"] = int(row.get('High Estimate', 0))
                 dict1["shipping_details"] = row['Product Shipping Location']
                 dict1["tags"] = row['Tags']
-             
+
                 dict1.update(additional_fields)
-                last_lot_number+=1
+                last_lot_number += 1
                 dict1["lot_number"] = last_lot_number
                 documents.append(dict1)
         except Exception as err:
             print(err)
             return {
-                        "statusCode": 400,
-                        'headers': headers,
-                        "body": json.dumps({"message": "Invalid data detected in CSV."})
-                    }
-       
+                "statusCode": 400,
+                'headers': headers,
+                "body": json.dumps({"message": "Invalid data detected in CSV."})
+            }
+        if plan_type == "Starter" and (existing_lots_count+len(documents)) > 500:
+            return {
+                "statusCode": 400,
+                'headers': headers,
+                "body": json.dumps({"message": "Upgrade the plan to import more lots"})
+            }
         # Insert the documents in bulk
         result = collection.insert_many(documents)
 
         update_data = {
             "starting_sequence": last_lot_number
         }
-        
-        print("latest lot number",last_lot_number)
+
+        print("latest lot number", last_lot_number)
         counter_collection.update_one({"auction_id": auction_id,
-                                        "seller_email": email_address,
-                                        "record_type": "Lots"}, {
-                              "$set": update_data})
+                                       "seller_email": email_address,
+                                       "record_type": "Lots"}, {
+            "$set": update_data})
         client.close()
 
         return {

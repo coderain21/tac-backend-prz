@@ -15,10 +15,11 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def delete_lot(event, context):
     """
     The function "delete_lot" is used to delete a lot.
-    
+
     :param event: The event parameter is an object that contains information about the triggering event
     that caused the function to be invoked. This can include details such as the event type, event
     source, and any event-specific data
@@ -34,7 +35,7 @@ def delete_lot(event, context):
         # Check if the request includes the necessary data for lot identification
         lot_number = request_body.get('lot_number', 0)
         seller_email = request_body.get('seller_email', '')
-        auction_id = request_body.get('auction_id','')
+        auction_id = request_body.get('auction_id', '')
 
         if not lot_number or not seller_email:
             return {
@@ -42,19 +43,19 @@ def delete_lot(event, context):
                 'headers': headers,
                 "body": json.dumps({
                     "message": "Both lot_number and seller_email are required for lot deletion."
-                    })
+                })
             }
 
         # Delete the specified lot from the MongoDB collection
         delete_result = collection.delete_one({
-            "lot_number":lot_number, "seller_email": seller_email,"auction_id": auction_id
-            })
+            "lot_number": lot_number, "seller_email": seller_email, "auction_id": auction_id
+        })
 
         if delete_result.deleted_count == 1:
             return {
                 "statusCode": 200,
                 'headers': headers,
-                "body": json.dumps({"message":" deleted successfully."})
+                "body": json.dumps({"message": " deleted successfully."})
             }
         else:
             return {
@@ -62,7 +63,7 @@ def delete_lot(event, context):
                 'headers': headers,
                 "body": json.dumps({
                     "message": "email not found"
-                    })
+                })
             }
     except Exception as e:
         return {
