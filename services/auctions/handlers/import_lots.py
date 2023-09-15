@@ -20,8 +20,7 @@ def import_lots(event, context):
     """
     try:
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            email_address = "sthuthi@7edge.com"
+            email_address = event['requestContext']['authorizer']['claims']['email']
             print('email', email_address)
         except:
             return {
@@ -122,13 +121,12 @@ def import_lots(event, context):
                 "record_type": "Lots",
                 "starting_sequence": last_lot_number
             }
-            # result = counter_collection.insert_one(counter_record)
+            result = counter_collection.insert_one(counter_record)
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
         print("last_lot_number",last_lot_number)
         try:
             for row in csv_reader:
-                print("row",row)
                 dict1 = {}
                 if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "" or row['Tags'] == "":
                     return {
@@ -145,8 +143,7 @@ def import_lots(event, context):
                 dict1["high_estimate"] = int(row.get('High Estimate',0))
                 dict1["shipping_details"] = row['Product Shipping Location']
                 dict1["tags"] = row['Tags']
-                
-                
+             
                 dict1.update(additional_fields)
                 last_lot_number+=1
                 dict1["lot_number"] = last_lot_number
@@ -158,10 +155,9 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Invalid data detected in CSV."})
                     }
-        print(documents)
-
+       
         # Insert the documents in bulk
-        # result = collection.insert_many(documents)
+        result = collection.insert_many(documents)
 
         update_data = {
             "starting_sequence": last_lot_number
@@ -177,7 +173,7 @@ def import_lots(event, context):
         return {
             "statusCode": 201,
             'headers': headers,
-            "body": json.dumps({"message": "Lots imported successfully.","data" : documents})
+            "body": json.dumps({"message": "Lots imported successfully."})
         }
     except Exception as e:
         return {
