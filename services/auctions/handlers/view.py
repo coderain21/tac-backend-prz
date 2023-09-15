@@ -79,9 +79,12 @@ def view(event, context):
             "content_area.text_color": 1,
             "header.background_color": 1,
             "header.text_color": 1,
+            "font.header_font": 1,
+            "font.body_font": 1,
             "logo_image": 1,
         }
-        result = collection.find_one({"seller_email": email_address, "auction_id": auction_id}, projection)
+        result = collection.find_one({"seller_email": email_address,
+                                      "auction_id": auction_id}, projection)
 
         if result is None:
             return {
