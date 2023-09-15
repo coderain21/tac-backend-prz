@@ -28,8 +28,8 @@ def view(event, context):
     """
     try:
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            email_address="anusha.k+indyauction@7edge.com"
+            email_address = event['requestContext']['authorizer']['claims']['email']
+            # email_address="anusha.k+indyauction@7edge.com"
             print('email', email_address)
         except:
             return {
