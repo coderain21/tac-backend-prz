@@ -23,7 +23,8 @@ def update_lot(event):
     additional information about the result.
     """
     try:
-            seller_email = event['requestContext']['authorizer']['claims']['email']
+            seller_email = 'sthuthi@7edge.com'
+            # seller_email = event['requestContext']['authorizer']['claims']['email']
     except:
             return {
                 "statusCode": 403,
@@ -42,7 +43,8 @@ def update_lot(event):
         return (400, {"message": "Both lot_number and seller_email are required for lot update."})
 
     update_data = {
-        "lot_title": request_body.get('lot_title', ''),
+        "title1": request_body.get('title1', ''),
+        "title2": request_body.get('title2', ''),
         "description": request_body.get('description', ''),
         "starting_price": request_body.get('starting_price', ''),
         "low_estimate": request_body.get('low_estimate', ''),
