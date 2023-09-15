@@ -20,6 +20,44 @@ headers = {
 
 
 def import_lots(event, context):
+    """
+    Import lots from a CSV file into a MongoDB database.
+
+    Parameters:
+    - event (dict): An AWS Lambda event containing the API Gateway request.
+    - context (object): An AWS Lambda context object.
+
+    Returns:
+    - dict: A dictionary containing the HTTP response to be returned to the client.
+
+    This function handles the import of lots from a CSV file into a MongoDB database.
+    It requires the following input data in the event:
+    - 'auction_id': The ID of the auction where lots will be imported.
+    - 'csv_url': The URL to the CSV file containing lot information.
+
+    The function performs the following steps:
+    1. Verifies the user's authorization based on the 'email' claim in the request context.
+    2. Validates the presence of required input fields ('auction_id' and 'csv_url').
+    3. Checks the user's plan type; if it's 'Free', the import is not allowed.
+    4. Fetches expected headers for the CSV file and checks if they match the actual headers.
+    5. Retrieves information about the existing lots and the specified auction.
+    6. Retrieves or initializes a counter for lot numbering.
+    7. Parses the CSV data, validates it, and builds a list of lot documents.
+    8. Performs plan-specific limitations; for 'Starter' plans, checks the lot limit.
+    9. Inserts the lot documents into the MongoDB database.
+    10. Updates the lot numbering counter.
+    11. Closes the MongoDB client.
+    12. Returns an HTTP response indicating the success or failure of the import operation.
+
+    HTTP Responses:
+    - 201 Created: Lots were imported successfully.
+    - 400 Bad Request: Various error conditions are handled with appropriate error messages.
+    - 403 Forbidden: Unauthorized access is denied.
+    - 404 Not Found: When the specified auction doesn't exist.
+    - 500 Internal Server Error: For unexpected errors.
+
+    Note: This function assumes that necessary libraries and environment variables are properly configured.
+    """
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
@@ -187,5 +225,5 @@ def import_lots(event, context):
         return {
             "statusCode": 500,
             'headers': headers,
-            "body": json.dumps({"error": str(e)})
+            "body": json.dumps({"message": "There was an error while importing"})
         }
