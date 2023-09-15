@@ -57,7 +57,7 @@ def import_lots(event, context):
         print("plan_type",plan_type)
 
         # Expected column headers as set
-        expected_headers = {
+        expected_headers = [
             'Lot Title 1',
             'Title 2(Optional)',
             'Description',
@@ -66,7 +66,7 @@ def import_lots(event, context):
             'High Estimate',
             'Product Shipping Location',
             'Tags'
-        }
+        ]
 
         additional_fields = {
             "auction_id" : auction_id,
@@ -92,7 +92,12 @@ def import_lots(event, context):
         csv_buffer = StringIO(csv_data)
         # Parse the CSV data
         csv_reader = csv.DictReader(csv_buffer)
-        
+        if csv_reader.fieldnames != expected_headers:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "CSV headers do not match the expected headers."})
+            }
         documents = []
         existing_lots_count = collection.count_documents(
                 {"seller_email": email_address, "auction_id": data["auction_id"]})
@@ -102,7 +107,7 @@ def import_lots(event, context):
             "statusCode": 404,
             'headers': headers,
             "body": json.dumps({"message": "Auction doesn't exists."})
-        }
+            }
         print("existing_lots_count",existing_lots_count)
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
@@ -117,28 +122,42 @@ def import_lots(event, context):
                 "record_type": "Lots",
                 "starting_sequence": last_lot_number
             }
-
             # result = counter_collection.insert_one(counter_record)
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
         print("last_lot_number",last_lot_number)
-
-        for row in csv_reader:
-            print("in")
-            dict1 = {}
-            dict1["title1"] = row['Lot Title 1']
-            dict1["title2"] = row['Title 2(Optional)']
-            dict1["description"] = row['Description']
-            dict1["starting_price"] = row['Starting Price']
-            dict1["low_estimate"] = row['Low Estimate']
-            dict1["high_estimate"] = row['High Estimate']
-            dict1["shipping_details"] = row['Product Shipping Location']
-            dict1["tags"] = row['Tags']
-
-            dict1.update(additional_fields)
-            last_lot_number+=1
-            dict1["lot_number"] = last_lot_number
-            documents.append(dict1)
+        try:
+            for row in csv_reader:
+                print("row",row)
+                dict1 = {}
+                if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "" or row['Tags'] == "":
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "Missing mandatory fields."})
+                        }
+                
+                dict1["title1"] = row['Lot Title 1']
+                dict1["title2"] = row['Title 2(Optional)']
+                dict1["description"] = row['Description']
+                dict1["starting_price"] = int(row.get('Starting Price'))
+                dict1["low_estimate"] = int(row.get('Low Estimate',0))
+                dict1["high_estimate"] = int(row.get('High Estimate',0))
+                dict1["shipping_details"] = row['Product Shipping Location']
+                dict1["tags"] = row['Tags']
+                
+                
+                dict1.update(additional_fields)
+                last_lot_number+=1
+                dict1["lot_number"] = last_lot_number
+                documents.append(dict1)
+        except Exception as err:
+            print(err)
+            return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "Invalid data detected in CSV."})
+                    }
         print(documents)
 
         # Insert the documents in bulk
