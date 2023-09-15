@@ -23,8 +23,8 @@ def update_lot(event):
     additional information about the result.
     """
     try:
-            seller_email = 'sthuthi@7edge.com'
-            # seller_email = event['requestContext']['authorizer']['claims']['email']
+            # seller_email = 'sthuthi@7edge.com'
+            seller_email = event['requestContext']['authorizer']['claims']['email']
     except:
             return {
                 "statusCode": 403,

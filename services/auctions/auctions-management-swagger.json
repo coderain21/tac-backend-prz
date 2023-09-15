@@ -1051,7 +1051,7 @@
                 }
               },
               "example": {              
-                "auction_id":"A0001",
+                "auction_id":"A0012",
                 "lot_number": 1,
                 "images":[{"url": "abcdef","feature": false }],
                 "title1":"ring",
