@@ -18,19 +18,20 @@ def update_lot(event):
     on the provided request body.
     :param request_body: The `request_body` parameter is a dictionary that contains
     the data sent in the request body. It is expected to have the following keys:
-    :return: a tuple containing the status code and a dictionary message. The status code indicates the
-    success or failure of the lot update operation, and the message provides
+    :return: a tuple containing the status code and a dictionary message. 
+    The status code indicates the success or failure of the lot update operation,
+    and the message provides
     additional information about the result.
     """
     try:
             # seller_email = 'sthuthi@7edge.com'
-            seller_email = event['requestContext']['authorizer']['claims']['email']
+        seller_email = event['requestContext']['authorizer']['claims']['email']
     except:
-            return {
+        return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }    
+            }
     request_body = json.loads(event['body'])
     # Initialize the MongoDB client
     client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])

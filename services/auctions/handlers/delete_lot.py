@@ -41,7 +41,6 @@ def delete_lot(event, context):
 
         # Check if the request includes the necessary data for lot identification
         lot_number = request_body.get('lot_number', 0)
-        
         auction_id = request_body.get('auction_id','')
 
         if not lot_number or not seller_email:

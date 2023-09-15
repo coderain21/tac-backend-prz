@@ -57,17 +57,15 @@ def lambda_handler(event, context):
                     "body": json.dumps({"message": "No auction with the id found"})
                 }
         existing_lots_count = collection.count_documents(
-                {"seller_email": seller_email, "auction_id": request_body["auction_id"]})
-        
-
+            {"seller_email": seller_email, "auction_id": request_body["auction_id"]})
         if user_type == 'Free' and existing_lots_count >= 10:
-                return {
+            return {
                     "statusCode": 400,
                     "body": json.dumps({"message": "Free users are limited to 10 lots."})
                 }
         if user_type == 'Starter'and existing_lots_count >= 500:
             # Check if the user has already added 10 lots
-                return {
+            return {
                     "statusCode": 400,
                     "body": json.dumps({"message": "Starter users are limited to 500 lots."})
                 }
