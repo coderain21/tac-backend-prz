@@ -29,6 +29,7 @@ def view(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            # email_address="anusha.k+indyauction@7edge.com"
             print('email', email_address)
         except:
             return {
@@ -68,9 +69,22 @@ def view(event, context):
             "add_buyer_fees": 1,
             "fees": 1,
             "make_your_auction_private": 1,
-            "passcode": 1
+            "passcode": 1,
+            "menu_links": 1,
+            "footer.background_color": 1,
+            "footer.text_color": 1,
+            "buttons.background_color": 1,
+            "buttons.text_color": 1,
+            "content_area.background_color": 1,
+            "content_area.text_color": 1,
+            "header.background_color": 1,
+            "header.text_color": 1,
+            "font.hearder_font": 1,
+            "font.body_font": 1,
+            "logo_image": 1,
         }
-        result = collection.find_one({"seller_email": email_address, "auction_id": auction_id}, projection)
+        result = collection.find_one({"seller_email": email_address,
+                                      "auction_id": auction_id}, projection)
 
         if result is None:
             return {
