@@ -222,6 +222,7 @@ def import_lots(event, context):
             "body": json.dumps({"message": "Lots imported successfully."})
         }
     except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             'headers': headers,
