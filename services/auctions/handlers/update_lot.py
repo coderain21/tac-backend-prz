@@ -40,16 +40,16 @@ def update_lot(event):
     auction_id = request_body.get('auction_id')
 
     if not lot_number or not seller_email:
-        return (400, {"message": "Both lot_number and seller_email are required for lot update."})
+        return (400, {"message": "auction_id lot_number and seller_email are required for lot update."})
 
     update_data = {
         "title1": request_body.get('title1', ''),
         "title2": request_body.get('title2', ''),
         "description": request_body.get('description', ''),
-        "starting_price": request_body.get('starting_price', ''),
-        "low_estimate": request_body.get('low_estimate', ''),
-        "high_estimate": request_body.get('high_estimate', ''),
-        "shipping_address": request_body.get('shipping_address', ''),
+        "starting_price": request_body.get('starting_price', 0),
+        "low_estimate": request_body.get('low_estimate', 0),
+        "high_estimate": request_body.get('high_estimate', 0),
+        "shipping_details": request_body.get('shipping_details', ''),
         "tags": request_body.get('tags', []),
         "images": request_body.get('images', []),
     }
@@ -97,5 +97,5 @@ def lambda_handler(event, context):
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"error": str(e)})
+            "body": json.dumps({"message": "Internal server error"})
         }
