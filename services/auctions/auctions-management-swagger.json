@@ -1147,6 +1147,165 @@
           }
         }
       }
+    },
+    "/import":{
+      "post": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "This API is used to import the lots from csv",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id": {
+                    "type": "string"
+                  },
+                  "csv_url": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "auction_id",
+                  "csv_url"
+                ],
+                "additionalProperties": false,
+                "example": {
+                  "csv_url": "https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
+                  "auction_id": "A0172"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Lots imported successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide auction_id"
+                    }
+                  },    
+                  "example2":{
+                    "value":{
+                      "message":"Upgrade the plan to Import lots"
+                    }
+                  },    
+                  "example3":{
+                    "value":{
+                      "message":"CSV headers do not match the expected headers."
+                    }
+                  },    
+                  "example4":{
+                    "value":{
+                      "message":"Invalid data detected in CSV."
+                    }
+                  },    
+                  "example5":{
+                    "value":{
+                      "message":"Upgrade the plan to import more lots"
+                    }
+                  },    
+                  "example6":{
+                    "value":{
+                      "message":"Missing mandatory fields."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction doesn't exists."
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while importing"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          
+        }
+      }
   }
 },
   "components": {

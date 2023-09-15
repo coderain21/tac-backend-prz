@@ -4,8 +4,6 @@ import json
 import pymongo
 
 
-
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -13,6 +11,7 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
 
 def lambda_handler(event, context):
     """
@@ -76,12 +75,13 @@ def lambda_handler(event, context):
         # Get the next lot number for the seller
         counter = lot_collection.find_one_and_update({"auction_id": auction_id,
                                                       "seller_email": seller_email,
-                                                      'record_type': 'Lots', 
-                                                      'status': 'Active'}, 
-                                                      {'$inc': {'starting_sequence': 1}},
-                                                      return_document=pymongo.ReturnDocument.AFTER,
-                                                      upsert=True)
-        request_body["lot_number"]= counter["starting_sequence"]
+                                                      'record_type': 'Lots',
+                                                      'status': 'Active'},
+                                                     {'$inc': {
+                                                         'starting_sequence': 1}},
+                                                     return_document=pymongo.ReturnDocument.AFTER,
+                                                     upsert=True)
+        request_body["lot_number"] = counter["starting_sequence"]
 
         # Insert the lot data into the MongoDB collection
         collection.insert_one(request_body)

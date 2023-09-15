@@ -10,10 +10,11 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def delete_lot(event, context):
     """
     The function "delete_lot" is used to delete a lot.
-    
+
     :param event: The event parameter is an object that contains information about the triggering event
     that caused the function to be invoked. This can include details such as the event type, event
     source, and any event-specific data
@@ -49,7 +50,7 @@ def delete_lot(event, context):
                 'headers': headers,
                 "body": json.dumps({
                     "message": "Both lot_number and seller_email are required for lot deletion."
-                    })
+                })
             }
 
         # Delete the specified lot from the MongoDB collection
@@ -62,7 +63,7 @@ def delete_lot(event, context):
             return {
                 "statusCode": 200,
                 'headers': headers,
-                "body": json.dumps({"message":" deleted successfully."})
+                "body": json.dumps({"message": " deleted successfully."})
             }
         else:
             return {
@@ -70,7 +71,7 @@ def delete_lot(event, context):
                 'headers': headers,
                 "body": json.dumps({
                     "message": "email not found"
-                    })
+                })
             }
     except Exception as e:
         return {
