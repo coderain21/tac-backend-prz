@@ -44,7 +44,7 @@ def list_lots(event, context):
         page = int(event['queryStringParameters'].get(
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
-            'per_page', '3'))  # Number of records per page
+            'per_page', '200'))  # Number of records per page
 
         # Define the sort criteria based on user input
         if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'Top_bidder']:
