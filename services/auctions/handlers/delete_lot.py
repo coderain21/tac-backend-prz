@@ -2,11 +2,6 @@
 import os
 import json
 import pymongo
-
-# Initialize the MongoDB client
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-collection = db[os.environ["LOT_COLLECTION_NAME"]]
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -28,14 +23,26 @@ def delete_lot(event, context):
     name, and the function's memory limit
     """
     try:
+        try:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('email', seller_email)
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         # Parse the incoming JSON request
+        # Initialize the MongoDB client
+        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection = db[os.environ["LOT_COLLECTION_NAME"]]
         request_body = json.loads(event['body'])
         print(request_body)
 
         # Check if the request includes the necessary data for lot identification
         lot_number = request_body.get('lot_number', 0)
-        seller_email = request_body.get('seller_email', '')
-        auction_id = request_body.get('auction_id', '')
+        auction_id = request_body.get('auction_id','')
 
         if not lot_number or not seller_email:
             return {
@@ -48,8 +55,9 @@ def delete_lot(event, context):
 
         # Delete the specified lot from the MongoDB collection
         delete_result = collection.delete_one({
-            "lot_number": lot_number, "seller_email": seller_email, "auction_id": auction_id
-        })
+            "lot_number":lot_number, "seller_email": seller_email,"auction_id": auction_id
+            })
+        client.close()
 
         if delete_result.deleted_count == 1:
             return {

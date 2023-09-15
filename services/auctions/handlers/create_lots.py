@@ -27,8 +27,16 @@ def lambda_handler(event, context):
     """
     try:
         # Parse the incoming JSON request
+        try:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('email', seller_email)
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         request_body = json.loads(event['body'])
-        seller_email = request_body["seller_email"]
         auction_id = request_body["auction_id"]
 
         # Check if the user_type is "Free"
@@ -38,18 +46,27 @@ def lambda_handler(event, context):
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        lot_collection = db[os.environ["COUNTER_LOT"]]
-
-        if user_type == 'Free':
-            # Get the existing lot count for the seller
-            existing_lots_count = collection.count_documents(
-                {"seller_email": seller_email, "auction_id": request_body["auction_id"]})
-
-            # Check if the user has already added 10 lots
-            if existing_lots_count >= 10:
-                return {
+        lot_collection= db[os.environ["COUNTER_LOT"]]
+        auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        auction = auction_collection.count_documents({'seller_email':seller_email,
+                                                      'auction_id': auction_id })
+        if auction == 0:
+            return {
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "No auction with the id found"})
+                }
+        existing_lots_count = collection.count_documents(
+            {"seller_email": seller_email, "auction_id": request_body["auction_id"]})
+        if user_type == 'Free' and existing_lots_count >= 10:
+            return {
                     "statusCode": 400,
                     "body": json.dumps({"message": "Free users are limited to 10 lots."})
+                }
+        if user_type == 'Starter'and existing_lots_count >= 500:
+            # Check if the user has already added 10 lots
+            return {
+                    "statusCode": 400,
+                    "body": json.dumps({"message": "Starter users are limited to 500 lots."})
                 }
 
         # Remove the "user_type" field from the request
