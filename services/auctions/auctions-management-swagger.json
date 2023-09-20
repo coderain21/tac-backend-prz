@@ -674,7 +674,7 @@
 
                 "auction_id":"A0012",
                 "seller_email":"anusha.k+indyauction@7edge.com",
-                "lot_number":" ",
+                "lot_number":0,
                 "starting_bid":2000,
                 "current_bid":3000,
                 "Top_bidder":"sandhyashri",
