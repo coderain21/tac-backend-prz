@@ -3,11 +3,6 @@ import os
 import json
 import pymongo
 
-# Initialize the MongoDB client
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-collection = db[os.environ["LOT_COLLECTION_NAME"]]
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -46,6 +41,10 @@ def list_lots(event, context):
         limit = int(event['queryStringParameters'].get(
             'per_page', '200'))  # Number of records per page
 
+        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection = db[os.environ["LOT_COLLECTION_NAME"]]
+
         # Define the sort criteria based on user input
         if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'Top_bidder']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
@@ -66,6 +65,7 @@ def list_lots(event, context):
         lots = list(collection.find(query, {"_id": 0}).
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
         total_documents = collection.count_documents(query)
+        client.close()
 
         body = {
             "data": lots,
