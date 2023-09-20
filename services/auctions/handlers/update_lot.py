@@ -55,15 +55,12 @@ def update_lot(event):
         "images": request_body.get('images', []),
     }
 
-    update_result = collection.update_one(
+    collection.update_one(
         {"lot_number": lot_number, "seller_email": seller_email,"auction_id": auction_id},
         {"$set": update_data}
     )
     client.close()
-    if update_result.modified_count == 1:
-        return (200, {"message": "updated successfully."})
-    else:
-        return (404, {"message": "Lot not found for seller."})
+    return (200, {"message": "updated successfully."})
 
 def lambda_handler(event, context):
     """

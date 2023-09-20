@@ -1,4 +1,4 @@
-''''''
+''' the function is used to clone auction'''
 import os
 import json
 from pymongo import MongoClient
@@ -12,11 +12,21 @@ headers = {
 }
 
 def clone_auction(event, context):
+    """
+    The function `clone_auction` is used to clone an auction.
+    
+    :param event: The event parameter is an object that contains information about the event that
+    triggered the function. This can include details such as the event type, event source, and any
+    event-specific data
+    :param context: The `context` parameter is an object that provides information about the runtime
+    environment of the function. It includes details such as the AWS request ID, function name, and
+    other metadata
+    """
     try:
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
+            email_address = event['requestContext']['authorizer']['claims']['email']
             # print('email', email_address)
-            email_address= "sthuthi@7edge.com"
+            # email_address= "sthuthi@7edge.com"
         except:
             return {
                 "statusCode": 403,
