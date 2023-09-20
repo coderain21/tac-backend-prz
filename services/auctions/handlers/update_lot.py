@@ -54,8 +54,8 @@ def update_lot(event):
         "tags": request_body.get('tags', []),
         "images": request_body.get('images', []),
     }
-    
-    update_result = collection.update_one(
+
+    collection.update_one(
         {"lot_number": lot_number, "seller_email": seller_email,"auction_id": auction_id},
         {"$set": update_data}
     )
