@@ -5,7 +5,6 @@ import re
 import csv
 import boto3
 from pymongo import MongoClient
-# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
 from lib.common_helper import Encoder
 from datetime import datetime, timedelta
 
