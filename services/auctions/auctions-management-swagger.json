@@ -391,8 +391,8 @@
         "tags": [
           "Auction"
         ],
-        "summary": "delete Note",
-        "description": "delete Note",
+        "summary": "Delete Note",
+        "description": "Delete Note",
         "parameters": [
          
           {
@@ -1306,7 +1306,88 @@
           
         }
       }
-  }
+    },
+    "/clone":{
+      "post": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Auction cloned",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  }
+            },
+            "example": {
+
+                "auction_id":"A0172"
+              
+              }
+
+            }
+          }
+        }
+      },
+        "responses": {
+          "200":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example":{
+                  "message": "Auction cloned successfully"
+                }
+                }
+              }
+            },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction with ID {auction_id} not found"
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          }
+        } 
+    }
 },
   "components": {
     "schemas": {

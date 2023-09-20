@@ -23,8 +23,8 @@ def clone_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        path_parameters = event.get('pathParameters')
-        auction_id = path_parameters.get('auction_id')
+        request_body = json.loads(event['body'])
+        auction_id = request_body.get('auction_id')
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]

@@ -208,8 +208,8 @@ functions:
       events:
         - http:
             cors: true
-            path: /clone/{auction_id}
-            method: patch
+            path: /clone
+            method: post
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
 
