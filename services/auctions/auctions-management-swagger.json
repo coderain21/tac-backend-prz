@@ -1387,7 +1387,93 @@
             }
           }
         } 
-    }
+    },
+    "/update/{auction_id}": {      
+      "patch":{
+        "tags": ["Auction"],
+        "summary": "updating auction details",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Update auction information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "description":"Join our auction event!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "There was an error while updating the auction"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          }
+        }
+      }
+     }
 },
   "components": {
     "schemas": {

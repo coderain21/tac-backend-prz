@@ -82,6 +82,16 @@ def view(event, context):
             "font.hearder_font": 1,
             "font.body_font": 1,
             "logo_image": 1,
+            "percentage": 1,
+            "template_name": 1,
+            "logo_redirection_url": 1,
+            "faq": 1,
+            "terms_and_condition": 1,
+            "paddle": 1,
+            "show_bidder_location_in_bidder_history": 1,
+            "publish_auction_results": 1
+            
+            
         }
         result = collection.find_one({"seller_email": email_address,
                                       "auction_id": auction_id}, projection)
@@ -92,7 +102,9 @@ def view(event, context):
             "statusCode": 404,
             "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
         }
-
+        
+        if "paddle" in result and "_id" in result["paddle"]:
+            del result["paddle"]["_id"]
         client.close()
         body = {
             "data": result,
