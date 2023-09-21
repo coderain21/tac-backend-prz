@@ -11,10 +11,11 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def clone_auction(event, context):
     """
     The function `clone_auction` is used to clone an auction.
-    
+
     :param event: The event parameter is an object that contains information about the event that
     triggered the function. This can include details such as the event type, event source, and any
     event-specific data
@@ -25,8 +26,6 @@ def clone_auction(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
-            # print('email', email_address)
-            # email_address= "sthuthi@7edge.com"
         except:
             return {
                 "statusCode": 403,
@@ -38,17 +37,19 @@ def clone_auction(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        counter_collection= db[os.environ["COUNTER_LOT"]]
+        counter_collection = db[os.environ["COUNTER_LOT"]]
 
-        auction = auction_collection.find_one({"auction_id": auction_id, "seller_email": email_address},{"_id":0})
+        auction = auction_collection.find_one(
+            {"auction_id": auction_id, "seller_email": email_address}, {"_id": 0})
         if not auction:
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": f"Auction with ID {auction_id} not found"})
+                "body": json.dumps({"message": "Auction with given ID not found"})
             }
         counter = counter_collection.find_one_and_update(
-            {'auction_id': email_address, 'record_type': 'Auctions', 'status': 'Active'},
+            {'auction_id': email_address,
+                'record_type': 'Auctions', 'status': 'Active'},
             {'$inc': {'starting_sequence': 1}},
             upsert=True,
             return_document=True
@@ -63,12 +64,12 @@ def clone_auction(event, context):
         client.close()
         return {
             'headers': headers,
-            "statusCode": 200,
-            "body": json.dumps({"message":"Success"})
+            "statusCode": 201,
+            "body": json.dumps({"message": "Success"})
         }
     except Exception as e:
         return {
             "statusCode": 500,
             'headers': headers,
-            "body": json.dumps({"error": str(e)})
+            "body": json.dumps({"message": "Internal server error"})
         }

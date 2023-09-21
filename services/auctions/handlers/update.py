@@ -1,3 +1,4 @@
+"""This module is used to update the auction details"""
 import os
 import json
 import pymongo
@@ -10,7 +11,20 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def update_auction(event, context):
+    """
+    The `update_auction` function updates the specified fields of an auction in a MongoDB database based
+    on the request body and the auction ID.
+
+    :param event: The `event` parameter is a dictionary that contains information about the event that
+    triggered the function. It typically includes details such as the HTTP request headers, body, path
+    parameters, and more
+    :param context: The `context` parameter is an object that provides information about the runtime
+    environment of the function. It includes details such as the AWS request ID, function name, and
+    other metadata. It can be used to access information about the execution context of the function
+    :return: The function `update_auction` returns a JSON response with the following properties:
+    """
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
@@ -33,7 +47,8 @@ def update_auction(event, context):
         auction_id = event['pathParameters']['auction_id']
 
         # Filter the request body to keep only updatable fields
-        update_data = {key: value for key, value in request_body.items() if key in updatable_fields}
+        update_data = {key: value for key,
+                       value in request_body.items() if key in updatable_fields}
         print(update_data)
         if len(update_data) > 0:
             # Initialize the MongoDB client

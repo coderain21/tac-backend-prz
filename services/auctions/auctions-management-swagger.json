@@ -915,8 +915,8 @@
         "tags": [
           "Lots"
         ],
-        "summary": "delete Lots",
-        "description": "delete Lots",
+        "summary": "Delete Lots",
+        "description": "Delete Lots",
         "requestBody": {
           "content": {
             "application/json": {
@@ -993,8 +993,8 @@
         "tags": [
           "Lots"
         ],
-        "summary": "update lot",
-        "description": "update lot",
+        "summary": "Update lot",
+        "description": "Update lot",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1067,21 +1067,8 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Successfully retrieved auctions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "updated successfully"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Update successful"
           },
           "403": {
             "description": "forbidden",
@@ -1333,7 +1320,7 @@
         }
       },
         "responses": {
-          "200":{
+          "201":{
             "description": "Success",
             "content": {
               "application/json": {
@@ -1372,13 +1359,13 @@
             }
           },
           "404": {
-            "description": "Bad Request",
+            "description": "Not found",
             "content": {
               "application/json": {
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "Auction with ID {auction_id} not found"
+                      "message": "Auction with given ID not found"
                     }
                   }
                   }
@@ -1391,7 +1378,7 @@
     "/update/{auction_id}": {      
       "patch":{
         "tags": ["Auction"],
-        "summary": "updating auction details",
+        "summary": "Updating auction details",
         "parameters": [
           {
             "name": "auction_id",
@@ -1423,7 +1410,7 @@
         },
         "responses": {
           "204": {
-            "description": "No Content"
+            "description": "Update successful"
           },
           "403": {
             "description": "forbidden",
