@@ -12,26 +12,26 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def update_lot(event):
     """
     The `update_lot` function updates the details of a lot in a collection based
     on the provided request body.
     :param request_body: The `request_body` parameter is a dictionary that contains
     the data sent in the request body. It is expected to have the following keys:
-    :return: a tuple containing the status code and a dictionary message. 
+    :return: a tuple containing the status code and a dictionary message.
     The status code indicates the success or failure of the lot update operation,
     and the message provides
     additional information about the result.
     """
     try:
-            # seller_email = 'sthuthi@7edge.com'
         seller_email = event['requestContext']['authorizer']['claims']['email']
     except:
         return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+            "statusCode": 403,
+            "headers": headers,
+            "body": json.dumps({"message": "You do not have access to perform this API action"})
+        }
     request_body = json.loads(event['body'])
     # Initialize the MongoDB client
     client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
@@ -56,19 +56,21 @@ def update_lot(event):
     }
 
     collection.update_one(
-        {"lot_number": lot_number, "seller_email": seller_email,"auction_id": auction_id},
+        {"lot_number": lot_number, "seller_email": seller_email,
+            "auction_id": auction_id},
         {"$set": update_data}
     )
     client.close()
-    return (200, {"message": "updated successfully."})
+    return (204, {})
+
 
 def lambda_handler(event, context):
     """
-    The lambda_handler function is a Python function that handles incoming JSON requests, 
+    The lambda_handler function is a Python function that handles incoming JSON requests,
     updates a lot based on the request body, and returns a response with the appropriate status
     code and response body.
-    
-    :param event: 
+
+    :param event:
     The `event` parameter is a dictionary that contains information about the event that
     triggered the Lambda function. It typically includes details such as the HTTP request headers,
     request body, and other metadata
@@ -79,8 +81,8 @@ def lambda_handler(event, context):
     AWS request ID, function name, function version, and more. The `context` object is automatically
     passed to the Lambda function by the
     :return: The lambda_handler function is returning a dictionary with three keys: "statusCode",
-    "headers", and "body". The value of "statusCode" is the status code of the response, 
-    the value of "headers" is a dictionary of headers for the response, 
+    "headers", and "body". The value of "statusCode" is the status code of the response,
+    the value of "headers" is a dictionary of headers for the response,
     and the value of "body" is a JSON string representing the response body.
     """
     try:
