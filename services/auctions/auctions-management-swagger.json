@@ -315,7 +315,7 @@
                     "total_records_found": {
                       "type": "integer"
                     },
-                    "total_lots": {
+                    "total_auctions": {
                       "type": "integer"
                     },
                     "current_page": {
@@ -350,7 +350,7 @@
                           }
                         ],
                         "total_records_found": 1,
-                        "total_lots": 1,
+                        "total_auctions": 1,
                         "current_page": 1,
                         "total_pages": 1
                       }
@@ -843,6 +843,9 @@
                   "total_records_found": {
                     "type": "integer"
                   },
+                  "total_lots": {
+                    "type": "integer"
+                  },
                   "current_page": {
                     "type": "integer"
                   },
@@ -875,6 +878,7 @@
                 }
                 ],
                 "total_records_found": 1,
+                "total_lots": 1,
                 "current_page": 1,
                 "total_pages": 1
               }

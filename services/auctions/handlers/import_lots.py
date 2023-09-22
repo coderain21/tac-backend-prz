@@ -187,8 +187,8 @@ def import_lots(event, context):
                 }
                 # Parse and check low and high estimates
                 starting_price = int(row.get('Starting Price'))
-                low_estimate = int(row.get('Low Estimate', 0))
-                high_estimate = int(row.get('High Estimate', 0))
+                low_estimate = 0 if row.get('Low Estimate')=='' else int(row.get('Low Estimate',0))
+                high_estimate = 0 if row.get('High Estimate') == '' else int(row.get('High Estimate', 0))
 
                 if low_estimate > high_estimate:
                     return {
