@@ -2,6 +2,7 @@
 import os
 import json
 from pymongo import MongoClient
+import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -58,6 +59,8 @@ def clone_auction(event, context):
         print(sequence_number)
 
         auction['auction_id'] = sequence_number
+
+        auction['created_at'] = datetime.datetime.utcnow()
 
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
