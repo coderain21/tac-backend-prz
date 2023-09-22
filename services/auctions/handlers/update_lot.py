@@ -12,6 +12,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def update_lot(event):
     """
     The `update_lot` function updates the details of a lot in a collection based
@@ -24,14 +25,13 @@ def update_lot(event):
     additional information about the result.
     """
     try:
-            # seller_email = 'sthuthi@7edge.com'
         seller_email = event['requestContext']['authorizer']['claims']['email']
     except:
         return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+            "statusCode": 403,
+            "headers": headers,
+            "body": json.dumps({"message": "You do not have access to perform this API action"})
+        }
     request_body = json.loads(event['body'])
     # Initialize the MongoDB client
     client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
@@ -55,15 +55,14 @@ def update_lot(event):
         "images": request_body.get('images', []),
     }
 
-    update_result = collection.update_one(
-        {"lot_number": lot_number, "seller_email": seller_email,"auction_id": auction_id},
+    collection.update_one(
+        {"lot_number": lot_number, "seller_email": seller_email,
+            "auction_id": auction_id},
         {"$set": update_data}
     )
     client.close()
-    if update_result.modified_count == 1:
-        return (200, {"message": "updated successfully."})
-    else:
-        return (404, {"message": "Lot not found for seller."})
+    return (204, {})
+
 
 def lambda_handler(event, context):
     """
