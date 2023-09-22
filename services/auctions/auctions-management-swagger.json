@@ -1246,6 +1246,16 @@
                     "value":{
                       "message":"Missing mandatory fields."
                     }
+                  },
+                  "example7":{
+                    "value":{
+                      "message":"Too many tags. Maximum allowed is 3."
+                    }
+                  },
+                  "example8":{
+                    "value":{
+                      "message":"Low Estimate cannot be greater than High Estimate."
+                    }
                   }
                 }
               }

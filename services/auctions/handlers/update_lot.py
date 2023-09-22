@@ -18,7 +18,7 @@ def update_lot(event):
     on the provided request body.
     :param request_body: The `request_body` parameter is a dictionary that contains
     the data sent in the request body. It is expected to have the following keys:
-    :return: a tuple containing the status code and a dictionary message. 
+    :return: a tuple containing the status code and a dictionary message.
     The status code indicates the success or failure of the lot update operation,
     and the message provides
     additional information about the result.
@@ -67,11 +67,11 @@ def update_lot(event):
 
 def lambda_handler(event, context):
     """
-    The lambda_handler function is a Python function that handles incoming JSON requests, 
+    The lambda_handler function is a Python function that handles incoming JSON requests,
     updates a lot based on the request body, and returns a response with the appropriate status
     code and response body.
-    
-    :param event: 
+
+    :param event:
     The `event` parameter is a dictionary that contains information about the event that
     triggered the Lambda function. It typically includes details such as the HTTP request headers,
     request body, and other metadata
@@ -82,8 +82,8 @@ def lambda_handler(event, context):
     AWS request ID, function name, function version, and more. The `context` object is automatically
     passed to the Lambda function by the
     :return: The lambda_handler function is returning a dictionary with three keys: "statusCode",
-    "headers", and "body". The value of "statusCode" is the status code of the response, 
-    the value of "headers" is a dictionary of headers for the response, 
+    "headers", and "body". The value of "statusCode" is the status code of the response,
+    the value of "headers" is a dictionary of headers for the response,
     and the value of "body" is a JSON string representing the response body.
     """
     try:
