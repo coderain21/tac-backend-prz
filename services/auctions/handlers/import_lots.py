@@ -178,7 +178,8 @@ def import_lots(event, context):
                         "body": json.dumps({"message": "Missing mandatory fields."})
                     }
                 # Split tags and check if there are more than 3
-                tags = row['Tags'].split(',')
+                tags = [tag.strip() for tag in row['Tags'].split(',')]
+
                 if len(tags) > 3:
                     return {
                         "statusCode": 400,
@@ -203,7 +204,7 @@ def import_lots(event, context):
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
-                dict1["tags"] = row['Tags']
+                dict1["tags"] = tags
 
                 dict1.update(additional_fields)
                 last_lot_number += 1
