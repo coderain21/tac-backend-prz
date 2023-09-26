@@ -34,9 +34,11 @@ module.exports.create_auction = async (event) => {
             }
             await mongoConnection.updateUsingMongoDB(process.env.MONGO_CLIENT, process.env.MONGODB_NAME, process.env.SELLERS_TABLE, get_user[0]._id, update_value)
             return {
-                statusCode: 201,
+                statusCode: 200,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({
+                    message: 'Auction created successfully',
+                    auctions_id: sequenceNumber,
                 }),
             }
         }
