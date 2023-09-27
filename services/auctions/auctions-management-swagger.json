@@ -1166,13 +1166,18 @@
                     "type": "string"
                   }
                 }
+              },
+              "example": {              
+                "auction_id":"A0012",
+                "reorder_lot_number":"10",
+                "reorder_position":"5"
               }
             }
           }
         },
         "responses":{
           "204":{
-            "description":"Success"
+            "description":"Update successful"
           },
           "400": {
             "description": "Bad Request",
