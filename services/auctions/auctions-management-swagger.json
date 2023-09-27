@@ -315,6 +315,9 @@
                     "total_records_found": {
                       "type": "integer"
                     },
+                    "total_auctions": {
+                      "type": "integer"
+                    },
                     "current_page": {
                       "type": "integer"
                     },
@@ -347,6 +350,7 @@
                           }
                         ],
                         "total_records_found": 1,
+                        "total_auctions": 1,
                         "current_page": 1,
                         "total_pages": 1
                       }
@@ -391,8 +395,8 @@
         "tags": [
           "Auction"
         ],
-        "summary": "delete Note",
-        "description": "delete Note",
+        "summary": "Delete Note",
+        "description": "Delete Note",
         "parameters": [
          
           {
@@ -766,7 +770,7 @@
 
                 "auction_id":"A0012",
                 "seller_email":"anusha.k+indyauction@7edge.com",
-                "lot_number":" ",
+                "lot_number":0,
                 "starting_bid":2000,
                 "current_bid":3000,
                 "Top_bidder":"sandhyashri",
@@ -931,6 +935,9 @@
                   "total_records_found": {
                     "type": "integer"
                   },
+                  "total_lots": {
+                    "type": "integer"
+                  },
                   "current_page": {
                     "type": "integer"
                   },
@@ -963,6 +970,7 @@
                 }
                 ],
                 "total_records_found": 1,
+                "total_lots": 1,
                 "current_page": 1,
                 "total_pages": 1
               }
@@ -1007,8 +1015,8 @@
         "tags": [
           "Lots"
         ],
-        "summary": "delete Lots",
-        "description": "delete Lots",
+        "summary": "Delete Lots",
+        "description": "Delete Lots",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1085,8 +1093,8 @@
         "tags": [
           "Lots"
         ],
-        "summary": "update lot",
-        "description": "update lot",
+        "summary": "Update lot",
+        "description": "Update lot",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1159,21 +1167,8 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Successfully retrieved auctions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "updated successfully"
-                    }
-                  }
-                }
-              }
-            }
+          "204": {
+            "description": "Update successful"
           },
           "403": {
             "description": "forbidden",
@@ -1338,6 +1333,16 @@
                     "value":{
                       "message":"Missing mandatory fields."
                     }
+                  },
+                  "example7":{
+                    "value":{
+                      "message":"Too many tags. Maximum allowed is 3."
+                    }
+                  },
+                  "example8":{
+                    "value":{
+                      "message":"Low Estimate cannot be greater than High Estimate."
+                    }
                   }
                 }
               }
@@ -1398,7 +1403,174 @@
           
         }
       }
-  }
+    },
+    "/clone":{
+      "post": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Auction cloned",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  }
+            },
+            "example": {
+
+                "auction_id":"A0172"
+              
+              }
+
+            }
+          }
+        }
+      },
+        "responses": {
+          "201":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example":{
+                  "message": "Auction cloned successfully"
+                }
+                }
+              }
+            },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction with given ID not found"
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          }
+        } 
+    },
+    "/update/{auction_id}": {      
+      "patch":{
+        "tags": ["Auction"],
+        "summary": "Updating auction details",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Update auction information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "description":"Join our auction event!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "There was an error while updating the auction"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          }
+        }
+      }
+     }
 },
   "components": {
     "schemas": {

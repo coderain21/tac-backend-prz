@@ -5,7 +5,6 @@ import re
 import csv
 import boto3
 from pymongo import MongoClient
-# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
 from lib.common_helper import Encoder
 from datetime import datetime, timedelta
 
@@ -158,12 +157,14 @@ def list_auction(event, context):
                     {"seller_email": email_address}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
             total_records_count = collection.count_documents(
                 {"seller_email": email_address})
-
+        total_auctions = collection.count_documents(
+                {"seller_email": email_address})
         paginated_results = list(results)
         client.close()
         body = {
             "data": paginated_results,
             "total_records_found": total_records_count,
+            "total_auctions": total_auctions,
             "current_page": page,
             "total_pages": (total_records_count + limit - 1) // limit
         }
