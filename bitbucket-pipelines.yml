@@ -206,7 +206,7 @@ pipelines:
             deployment: develop
             steps:
               - step: *DevDeploy
-              - step: *APITesting
+      - step: *APITesting
 
     staging:
       - parallel:
