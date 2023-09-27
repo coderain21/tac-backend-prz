@@ -5,7 +5,7 @@ services:
   auctions:
     path: services/auctions
     config: ${env:config}
-    
+
     
 
     
