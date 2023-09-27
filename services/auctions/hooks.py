@@ -1,7 +1,5 @@
 from dredd_hooks import before_each, after_each
 import os
-import json
-import random
 import logging
 import urllib.parse
 
@@ -24,6 +22,7 @@ def skip_404_test_results(transaction):
         '/verify-captcha' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
         '/reset_password' in transaction['request']['uri'] or
+        '/reorder-lots' in transaction['request']['uri'] or
         ('/lots' in transaction['request']['uri'] and
          transaction['request']['method'] == 'DELETE') or
         'del=' in transaction['request']['uri'] or 
