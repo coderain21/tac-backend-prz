@@ -144,7 +144,7 @@ functions:
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
   
-   create_lots:
+  create_lots:
     handler: handlers/create_lots.lambda_handler
     runtime: python3.8
     layers:
