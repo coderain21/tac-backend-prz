@@ -251,7 +251,7 @@ functions:
               arn: ${env:COGNITO_AUTH_ARN}
 
   update_lot:
-      handler: handlers/update_lot.lambda_handler
+      handler: handlers/update_lot.update
       runtime: python3.8
       memorySize: 128
       layers:
@@ -303,6 +303,25 @@ functions:
             cors: true
             path: /update/{auction_id}
             method: patch
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+
+  delete_auction:
+      handler: handlers/delete.delete_auction
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /{auction_id}
+            method: delete
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
 

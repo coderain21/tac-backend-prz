@@ -112,7 +112,7 @@
         }
       },
         "responses": {
-          "200":{
+          "201":{
             "description": "Success",
             "content": {
               "application/json": {
@@ -477,6 +477,92 @@
                     "message": {
                       "type": "string",
                       "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{auction_id}":{
+      "delete": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Delete the auction",
+        "description": "Delete the auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Delete auction record for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted the auction"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You cannot delete the auction with the current status"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction with associated auction_id doesn't exists"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error while deleting the auction"
                     }
                   }
                 }

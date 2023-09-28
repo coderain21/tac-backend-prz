@@ -16,9 +16,9 @@ def reorder_lots(event):
     """
     The `reorder_lots` accepts auction id and the lot number that has to be re-ordered along with the new position.
 
-    :param auction_id: The `auction_id` for which the lots has to be reordered. 
+    :param auction_id: The `auction_id` for which the lots has to be reordered.
     :param reorder_lot_number: The `reorder_lot_number` parameter denotes the lot that has to be re-ordered.
-    :param reorder_position: The position to which the lot has to be moved too. 
+    :param reorder_position: The position to which the lot has to be moved too.
 
     :return: a JSON response with the following properties:
     - "statusCode": The HTTP status code of the response (204 for success, 403 for access denied, 500

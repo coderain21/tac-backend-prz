@@ -26,6 +26,12 @@ def update_lot(event):
     """
     try:
         seller_email = event['requestContext']['authorizer']['claims']['email']
+        if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
     except:
         return {
             "statusCode": 403,
@@ -64,9 +70,9 @@ def update_lot(event):
     return (204, {})
 
 
-def lambda_handler(event, context):
+def update(event, context):
     """
-    The lambda_handler function is a Python function that handles incoming JSON requests,
+    The update function is a Python function that handles incoming JSON requests,
     updates a lot based on the request body, and returns a response with the appropriate status
     code and response body.
 
