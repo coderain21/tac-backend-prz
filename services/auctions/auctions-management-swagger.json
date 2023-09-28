@@ -483,7 +483,99 @@
               }
             }
           }
+        },
+        "patch": {
+          "tags": [
+            "create"
+          ],
+          "summary": "delete auction",
+          "description": "delete auction",
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "to delete or add note for that auction id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "A0001"
+            },
+            {
+              "name": "del",
+              "in": "query",
+              "description": "keyword to determine whether to add or delete",
+              "schema": {
+                "type": "string"
+              },
+              "example": "1"
+            }
+
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "note":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "note":"asda"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully deleted the note or added the note",
+              "content": {
+                "application/json": {
+                  "example": {
+                          "message": "string"   
+                  }            
+                }
+              }
+            },
+            "400": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": {
+                          "type": "string",
+                          "example": "You do not have access to perform this API action"
+                        }
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
+        
       }
     },
     "/{auction_id}":{
