@@ -29,7 +29,12 @@ def view(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
-            # email_address="anusha.k+indyauction@7edge.com"
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', email_address)
         except:
             return {
