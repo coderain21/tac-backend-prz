@@ -112,7 +112,7 @@
         }
       },
         "responses": {
-          "200":{
+          "201":{
             "description": "Success",
             "content": {
               "application/json": {
@@ -578,7 +578,7 @@
         
       }
     },
-    "/view":{
+        "/view":{
       "get": {
         "tags": [
           "Auction"
@@ -1235,7 +1235,7 @@
         }
       }
     },
-    "/import":{
+        "/import":{
       "post": {
         "tags": [
           "Lots"
