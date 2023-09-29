@@ -112,7 +112,7 @@
         }
       },
         "responses": {
-          "200":{
+          "201":{
             "description": "Success",
             "content": {
               "application/json": {
@@ -315,6 +315,9 @@
                     "total_records_found": {
                       "type": "integer"
                     },
+                    "total_auctions": {
+                      "type": "integer"
+                    },
                     "current_page": {
                       "type": "integer"
                     },
@@ -347,6 +350,7 @@
                           }
                         ],
                         "total_records_found": 1,
+                        "total_auctions": 1,
                         "current_page": 1,
                         "total_pages": 1
                       }
@@ -473,6 +477,184 @@
                     "message": {
                       "type": "string",
                       "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "patch": {
+          "tags": [
+            "create"
+          ],
+          "summary": "delete auction",
+          "description": "delete auction",
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "to delete or add note for that auction id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "A0001"
+            },
+            {
+              "name": "del",
+              "in": "query",
+              "description": "keyword to determine whether to add or delete",
+              "schema": {
+                "type": "string"
+              },
+              "example": "1"
+            }
+
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "note":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "note":"asda"
+
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Successfully deleted the note or added the note",
+              "content": {
+                "application/json": {
+                  "example": {
+                          "message": "string"   
+                  }            
+                }
+              }
+            },
+            "400": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": {
+                          "type": "string",
+                          "example": "You do not have access to perform this API action"
+                        }
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+      }
+    },
+    "/{auction_id}":{
+      "delete": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Delete the auction",
+        "description": "Delete the auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Delete auction record for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted the auction"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You cannot delete the auction with the current status"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction with associated auction_id doesn't exists"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error while deleting the auction"
                     }
                   }
                 }
@@ -839,6 +1021,9 @@
                   "total_records_found": {
                     "type": "integer"
                   },
+                  "total_lots": {
+                    "type": "integer"
+                  },
                   "current_page": {
                     "type": "integer"
                   },
@@ -871,6 +1056,7 @@
                 }
                 ],
                 "total_records_found": 1,
+                "total_lots": 1,
                 "current_page": 1,
                 "total_pages": 1
               }
@@ -1135,6 +1321,109 @@
         }
       }
     },
+    "/reorder-lots":{
+      "post":{
+        "tags": [
+          "Lots"
+        ],
+        "summary": "This API is used to reorder the lots",
+        "requestBody":{
+          "required": true,
+          "content":{
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties":{
+                  "auction_id": {
+                    "type": "string"
+                  },
+                  "reorder_lot_number":{
+                    "type": "string"
+                  },
+                  "reorder_position":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {              
+                "auction_id":"A0012",
+                "reorder_lot_number":"10",
+                "reorder_position":"5"
+              }
+            }
+          }
+        },
+        "responses":{
+          "204":{
+            "description":"Update successful"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Lot number is not valid to re-order."
+                    }
+                  },    
+                  "example2":{
+                    "value":{
+                      "message":"auction_id reorder_lot_number and reorder_position are required for reordering a lot."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while importing"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/import":{
       "post": {
         "tags": [
@@ -1232,6 +1521,16 @@
                   "example6":{
                     "value":{
                       "message":"Missing mandatory fields."
+                    }
+                  },
+                  "example7":{
+                    "value":{
+                      "message":"Too many tags. Maximum allowed is 3."
+                    }
+                  },
+                  "example8":{
+                    "value":{
+                      "message":"Low Estimate cannot be greater than High Estimate."
                     }
                   }
                 }

@@ -65,11 +65,13 @@ def list_lots(event, context):
         lots = list(collection.find(query, {"_id": 0}).
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
         total_documents = collection.count_documents(query)
+        total_lots = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
         client.close()
 
         body = {
             "data": lots,
             "total_records_found": total_documents,
+            "total_lots": total_lots,
             "current_page": page,
             "total_pages": (total_documents + limit - 1) // limit
         }

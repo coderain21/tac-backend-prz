@@ -2,6 +2,7 @@
 import os
 import json
 import pymongo
+from datetime import datetime, timezone
 
 headers = {
     'Content-Type': 'application/json',
@@ -11,6 +12,18 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+def convert_timestamp_to_date(timestamp):
+    # Convert the timestamp to seconds
+    # timestamp = timestamp / 1000
+    # Create a datetime object in UTC
+    dt_utc = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+
+    # Format the datetime object as a string in the desired format
+    formatted_date_str = dt_utc.strftime('%Y-%m-%dT%H:%M:%S.%f+00:00')
+
+    # Convert the formatted string back to a datetime object
+    formatted_date = datetime.strptime(formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+    return formatted_date
 
 def update_auction(event, context):
     """
@@ -28,6 +41,12 @@ def update_auction(event, context):
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         except:
             return {
                 "statusCode": 403,
@@ -40,11 +59,18 @@ def update_auction(event, context):
                             "extension_time_between_lots", "registration_type", "add_buyer_fees", "percentage",
                             "fees", "faq", "time_zone", "terms_and_condition", "publish_auction_results",
                             "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
-                            "font", "buttons", "header", "content_area", "footer", "paddle",
+                            "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                             }
 
         request_body = json.loads(event['body'])
         auction_id = event['pathParameters']['auction_id']
+        if "start_date" in request_body:
+            date_converted = convert_timestamp_to_date(request_body["start_date"])
+            request_body["start_date"] = date_converted
+
+        if "end_date" in request_body:
+            date_converted = convert_timestamp_to_date(request_body["end_date"])
+            request_body["end_date"] = date_converted
 
         # Filter the request body to keep only updatable fields
         update_data = {key: value for key,

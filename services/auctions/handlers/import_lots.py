@@ -8,6 +8,7 @@ import json
 import requests
 from io import StringIO
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 from lib.get import get_by_email
 
 headers = {
@@ -61,6 +62,12 @@ def import_lots(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', email_address)
         except:
             return {
@@ -85,8 +92,10 @@ def import_lots(event, context):
         collection = os.environ['SELLERS_TABLE']
         user_info = get_by_email(
             email_address, collection)
+        print(user_info)
         plan_type = user_info.get("plan_type")
-        if plan_type == "Free":
+        free_user = user_info.get("free_user")
+        if plan_type == "Free" or free_user == True:
             return {
                 "statusCode": 400,
                 "headers": headers,
@@ -175,15 +184,34 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Missing mandatory fields."})
                     }
+                # Split tags and check if there are more than 3
+                tags = [tag.strip() for tag in row['Tags'].split(',')]
 
+                if len(tags) > 3:
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "Too many tags. Maximum allowed is 3."})
+                }
+                # Parse and check low and high estimates
+                starting_price = int(row.get('Starting Price'))
+                low_estimate = 0 if row.get('Low Estimate')=='' else int(row.get('Low Estimate',0))
+                high_estimate = 0 if row.get('High Estimate') == '' else int(row.get('High Estimate', 0))
+
+                if low_estimate > high_estimate:
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
+                    }
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
-                dict1["starting_price"] = int(row.get('Starting Price'))
-                dict1["low_estimate"] = int(row.get('Low Estimate', 0))
-                dict1["high_estimate"] = int(row.get('High Estimate', 0))
+                dict1["starting_price"] = starting_price
+                dict1["low_estimate"] = low_estimate
+                dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
-                dict1["tags"] = row['Tags']
+                dict1["tags"] = tags
 
                 dict1.update(additional_fields)
                 last_lot_number += 1
@@ -203,7 +231,16 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to import more lots"})
             }
         # Insert the documents in bulk
-        result = collection.insert_many(documents)
+        try:
+            result = collection.insert_many(documents)
+        except BulkWriteError as bwe:
+            write_errors = bwe.details.get('writeErrors', [])
+            error_messages = [error.get('errmsg', 'Unknown error') for error in write_errors]
+            return {
+                "statusCode": 400,
+                'headers': headers,
+                "body": json.dumps({"message": "Bulk write error occurred", "details": error_messages})
+            }
 
         update_data = {
             "starting_sequence": last_lot_number

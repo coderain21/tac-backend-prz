@@ -1,4 +1,25 @@
-'''The `import os` statement is importing the `os` module in Python.'''
+"""
+This Lambda function serves as an entry point for handling requests related to adding lots to an auction system.
+It performs several key actions, including:
+
+1. Parsing the incoming JSON request.
+2. Verifying the user's access based on the JWT token.
+3. Checking user type limits (Free or Starter) for adding lots to an auction.
+4. Managing MongoDB connections and operations to add lots to the database.
+5. Returning appropriate HTTP responses based on the success or failure of these actions.
+
+Parameters:
+    event (dict): A dictionary containing information about the triggering event that invoked the Lambda function.
+                  It includes event source details, event time, and event-specific data.
+
+    context: An object providing information about the runtime environment of the Lambda function, such as AWS request ID,
+             function name, function version, and more. It is used to interact with the AWS Lambda service and access
+             execution context information.
+
+Returns:
+    dict: A dictionary representing an HTTP response, including a status code, headers, and a response body.
+"""
+
 import os
 import json
 import pymongo
@@ -29,6 +50,12 @@ def lambda_handler(event, context):
         # Parse the incoming JSON request
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', seller_email)
         except:
             return {
@@ -75,8 +102,7 @@ def lambda_handler(event, context):
         # Get the next lot number for the seller
         counter = lot_collection.find_one_and_update({"auction_id": auction_id,
                                                       "seller_email": seller_email,
-                                                      'record_type': 'Lots',
-                                                      'status': 'Active'},
+                                                      'record_type': 'Lots'},
                                                      {'$inc': {
                                                          'starting_sequence': 1}},
                                                      return_document=pymongo.ReturnDocument.AFTER,
