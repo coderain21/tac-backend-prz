@@ -25,8 +25,6 @@ def convert_timestamp_to_date(timestamp):
     # Convert the formatted string back to a datetime object
     formatted_date = datetime.strptime(
         formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-    formatted_date = datetime.strptime(
-        formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
     return formatted_date
 
 
