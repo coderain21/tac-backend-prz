@@ -14,7 +14,7 @@ headers = {
 
 def convert_timestamp_to_date(timestamp):
     # Convert the timestamp to seconds
-    # timestamp = timestamp / 1000
+    timestamp = timestamp / 1000
     # Create a datetime object in UTC
     dt_utc = datetime.fromtimestamp(timestamp, tz=timezone.utc)
 
@@ -53,17 +53,52 @@ def update_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-
-        updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
-                            "description", "currency", "start_date", "end_date", "extension_type", "extension_time",
-                            "extension_time_between_lots", "registration_type", "add_buyer_fees", "percentage",
-                            "fees", "faq", "time_zone", "terms_and_condition", "publish_auction_results",
-                            "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
-                            "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
-                            }
-
         request_body = json.loads(event['body'])
         auction_id = event['pathParameters']['auction_id']
+
+        # Initialize the MongoDB client
+        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        auction_record = collection.find_one(
+            {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+        
+        if auction_record is None:
+            return {
+                "statusCode": 404,
+                'headers': headers,
+                "body": json.dumps({"message": "Auction doesn't exists."})
+            }
+        auction_status = auction_record.get("status")
+        if auction_status == "Draft":
+            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
+                                "description", "currency", "start_date", "end_date", "extension_type", "extension_time",
+                                "extension_time_between_lots", "registration_type", "add_buyer_fees", "percentage",
+                                "fees", "faq", "time_zone", "terms_and_condition", "publish_auction_results",
+                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
+                                }
+        elif auction_status == "Accepting bids":
+            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
+                                "description", "end_date",
+                                "extension_time_between_lots",
+                                "faq", "publish_auction_results",
+                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
+                                }
+        elif auction_status == "Completed":
+            updatable_fields = {}
+
+        elif auction_status == "Published":
+            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
+                                "description", "start_date", "end_date",
+                                "faq", "time_zone", "publish_auction_results",
+                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
+                                }
+
+        
+        
         if "start_date" in request_body:
             date_converted = convert_timestamp_to_date(request_body["start_date"])
             request_body["start_date"] = date_converted
@@ -77,16 +112,11 @@ def update_auction(event, context):
                        value in request_body.items() if key in updatable_fields}
         print(update_data)
         if len(update_data) > 0:
-            # Initialize the MongoDB client
-            client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-            db = client[os.environ['DATABASE']]
-            collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
-            client.close()
+        client.close()
         return {
             "headers": headers,
             'statusCode': 204,
