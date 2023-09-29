@@ -12,6 +12,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def convert_timestamp_to_date(timestamp):
     # Convert the timestamp to seconds
     timestamp = timestamp / 1000
@@ -22,8 +23,10 @@ def convert_timestamp_to_date(timestamp):
     formatted_date_str = dt_utc.strftime('%Y-%m-%dT%H:%M:%S.%f+00:00')
 
     # Convert the formatted string back to a datetime object
-    formatted_date = datetime.strptime(formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+    formatted_date = datetime.strptime(
+        formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
     return formatted_date
+
 
 def update_auction(event, context):
     """
@@ -43,10 +46,10 @@ def update_auction(event, context):
             seller_email = event['requestContext']['authorizer']['claims']['email']
             if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         except:
             return {
                 "statusCode": 403,
@@ -62,7 +65,7 @@ def update_auction(event, context):
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
-        
+
         if auction_record is None:
             return {
                 "statusCode": 404,
@@ -97,14 +100,14 @@ def update_auction(event, context):
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
 
-        
-        
         if "start_date" in request_body:
-            date_converted = convert_timestamp_to_date(request_body["start_date"])
+            date_converted = convert_timestamp_to_date(
+                request_body["start_date"])
             request_body["start_date"] = date_converted
 
         if "end_date" in request_body:
-            date_converted = convert_timestamp_to_date(request_body["end_date"])
+            date_converted = convert_timestamp_to_date(
+                request_body["end_date"])
             request_body["end_date"] = date_converted
 
         # Filter the request body to keep only updatable fields
