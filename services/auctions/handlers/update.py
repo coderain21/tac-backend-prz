@@ -28,6 +28,7 @@ def convert_timestamp_to_date(timestamp):
     return formatted_date
 
 
+
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction in a MongoDB database based
@@ -99,7 +100,8 @@ def update_auction(event, context):
                                 "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
-
+        else:
+            updatable_fields = {}
         if "start_date" in request_body:
             date_converted = convert_timestamp_to_date(
                 request_body["start_date"])
