@@ -24,7 +24,11 @@ def skip_404_test_results(transaction):
         '/verify-captcha' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
         '/reset_password' in transaction['request']['uri'] or
-        '/forgot_password' in transaction['request']['uri']
+        ('/lots' in transaction['request']['uri'] and
+         transaction['request']['method'] == 'DELETE') or
+        'del=' in transaction['request']['uri'] or 
+        '/stripe'  in transaction['request']['uri']
+
 
     ):
         transaction['skip'] = True

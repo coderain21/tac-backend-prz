@@ -37,6 +37,8 @@ module.exports.create_auction = async (event) => {
                 statusCode: 201,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({
+                    message: 'Auction created successfully',
+                    auctions_id: sequenceNumber,
                 }),
             }
         }

@@ -32,6 +32,8 @@ provider:
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     CSV_FILE: ${env:CSV_FILE}
     S3_BUCKET: ${env:S3_BUCKET}
+    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
+    COUNTER_LOT: ${env:COUNTER_LOT}
     
     
   http:
@@ -138,6 +140,150 @@ functions:
         - http:
             cors: true
             path: /
+            method: patch
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+  
+  create_lots:
+    handler: handlers/create_lots.lambda_handler
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: post
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+            
+  list_lots:
+    handler: handlers/view_lots.list_lots
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+  
+  delete_lot:
+      handler: handlers/delete_lot.delete_lot
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /lots
+            method: delete
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+    
+  clone_auction:
+      handler: handlers/clone_auction.clone_auction
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /clone
+            method: post
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+  view:
+    handler: handlers/view.view
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /view
+          method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+  update_lot:
+      handler: handlers/update_lot.lambda_handler
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /lots
+            method: patch
+            authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+  import_lots:
+    handler: handlers/import_lots.import_lots
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /import
+          method: post
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+  update_auction:
+      handler: handlers/update.update_auction
+      runtime: python3.8
+      memorySize: 128
+      layers:
+        - ${env:PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /update/{auction_id}
             method: patch
             authorizer:
                 arn: ${env:COGNITO_AUTH_ARN}
