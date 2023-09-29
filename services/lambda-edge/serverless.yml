@@ -1,0 +1,53 @@
+service: lambda-edge
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: us-east-1
+
+  iam:
+    role:
+      statements:
+        - Effect: 'Allow'
+          Action:
+             - states:*
+             - dynamodb:*
+             - lambda:*
+             - s3:*
+             - execute-api:*
+             - ses:*
+          Resource: '*'
+         
+package:
+  patterns:
+    - '!./.env'
+    - '!./.serverless'
+    - '!./node_modules/**'
+    - ./handlers/**
+    # - ./data/**
+
+functions:
+
+# ***************************************************
+# *  API GATEWAY LAMBDA EVENT HANDLERS              *
+# ***************************************************
+  lambda-edge:
+    handler: handlers/edge.handler
+    memorySize: 128
+    timeout: 5
+    
+    events:
+      - preExistingCloudFront:
+        # ---- Mandatory Properties -----
+          distributionId: E1RPL7PTC13VX1
+          eventType: viewer-request 
+          pathPattern: '*'
+          includeBody: false
+    
+plugins:
+   - serverless-package-external
+   - serverless-offline
+   - serverless-lambda-edge-pre-existing-cloudfront
