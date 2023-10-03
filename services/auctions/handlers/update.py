@@ -28,7 +28,6 @@ def convert_timestamp_to_date(timestamp):
     return formatted_date
 
 
-
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction in a MongoDB database based
@@ -43,14 +42,16 @@ def update_auction(event, context):
     :return: The function `update_auction` returns a JSON response with the following properties:
     """
     try:
-        try:
+        try:    
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            print('email ',seller_email)
+            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+            'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         except:
             return {
                 "statusCode": 403,
@@ -59,6 +60,14 @@ def update_auction(event, context):
             }
         request_body = json.loads(event['body'])
         auction_id = event['pathParameters']['auction_id']
+        print(event)
+        if event['queryStringParameters'] is not None:
+            print(111)
+            published_status = event['queryStringParameters'].get(
+                'published', 'false')
+            print(published_status)
+        else:
+            published_status = 'false'
 
         # Initialize the MongoDB client
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
@@ -73,6 +82,48 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+
+        if published_status == 'true':
+            required_fields = ["auction_image", "title", "description", "currency", "start_date",
+                "end_date", "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
+            print(123444)
+            if not all(auction_record.get(field) for field in required_fields):
+                print(123545443323434)
+
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            if ((auction_record['add_buyer_fees'] == 'Add percentage' and
+                 auction_record['percentage'] == "") or
+                (auction_record['add_buyer_fees'] == 'Add fixed fee'
+                 and auction_record['fees'] == "")):
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            if (auction_record['make_your_auction_private'] is True
+                 and auction_record['passcode'] == ""):
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+
+            else:
+                collection.update_one(
+                    {"seller_email": seller_email, "auction_id": auction_id},
+                    {"$set": {"status": "Published"}}
+                )
+                print(000000)
+                return {
+                    "statusCode": 204,
+                    'headers': headers,
+                    "body": json.dumps({'message': "suceessfull"})
+                }
+
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
