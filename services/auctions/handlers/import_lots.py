@@ -8,6 +8,7 @@ import json
 import requests
 from io import StringIO
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 from lib.get import get_by_email
 
 headers = {
@@ -61,6 +62,12 @@ def import_lots(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', email_address)
         except:
             return {
@@ -224,7 +231,16 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to import more lots"})
             }
         # Insert the documents in bulk
-        result = collection.insert_many(documents)
+        try:
+            result = collection.insert_many(documents)
+        except BulkWriteError as bwe:
+            write_errors = bwe.details.get('writeErrors', [])
+            error_messages = [error.get('errmsg', 'Unknown error') for error in write_errors]
+            return {
+                "statusCode": 400,
+                'headers': headers,
+                "body": json.dumps({"message": "Bulk write error occurred", "details": error_messages})
+            }
 
         update_data = {
             "starting_sequence": last_lot_number

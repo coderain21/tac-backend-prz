@@ -50,6 +50,12 @@ def lambda_handler(event, context):
         # Parse the incoming JSON request
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', seller_email)
         except:
             return {
