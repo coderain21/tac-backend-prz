@@ -4,10 +4,10 @@ useDotenv: true
 
 provider:
   name: aws
-  runtime: nodejs18.x
+  runtime: nodejs14.x
   stage: ${opt:stage, 'dev'}
   region: us-east-1
-
+ 
   iam:
     role:
       statements:
@@ -27,6 +27,7 @@ package:
     - '!./.serverless'
     - '!./node_modules/**'
     - ./handlers/**
+    - ./dynamo_helper.js
     # - ./data/**
 
 functions:

@@ -3,7 +3,7 @@
 /* eslint-disable import/extensions */
 // eslint-disable-next-line import/no-unresolved
 // const getDomainList = require('../data/s3_query')
-const mongoConnection = require('../mongodb_helper')
+const dynamoConnection = require('../dynamo_helper')
 
 module.exports.handler = async (event, context, callback) => {
     // Get contents of response
@@ -13,14 +13,21 @@ module.exports.handler = async (event, context, callback) => {
     console.log('event.Records[0].cfevent.Records[0].cf', JSON.stringify(event.Records[0].cf))
     // response.headers = {}
     const { headers } = response
-    const domain_data = await mongoConnection.subdomain('indyauction-develop', 'dev-subdomain', { subdomain: 'sthuthi' })
-    console.log(domain_data, 'asdfghj')
     console.log('headers.host[0]', JSON.stringify(headers.host[0]))
     const host = headers.host[0].value.split('.')[0]
+    const domain_data = await dynamoConnection.view({
+        tableName: 'dev-subdomain',
+        limit: 1000,
+        query: {
+            subdomain_name: host,
+        },
+    })
+
+    const [domain_details] = domain_data.Items
     // const domainList = await getDomainList.getDomainList({ search: host })
     // console.log('hosthosthosthost', host)
     // console.log('domainListdomainListdomainListdomainList', domainList)
-    if (!domain_data && host === domain_data?.subdomain) {
+    if (domain_details && host === domain_details?.subdomain_name) {
         callback(null, response)
     } else {
         const content = `
@@ -28,7 +35,7 @@ module.exports.handler = async (event, context, callback) => {
             <html lang="en">
               <head>
                 <meta charset="utf-8">
-                <title>EasyIdGen5%</title>
+                <title>Indy auction%</title>
               </head>
               <body>
                 <p>Domain Not found</p>
