@@ -2,8 +2,8 @@
 Module: deactivate
 
 This module contains a Lambda function for deactivating an auction. It connects to a MongoDB database
-and allows sellers to daectivate auctions they own, changing their status to "Draft". The function
-verifies the seller's authorization and checks the auction's status before deletion.
+and allows sellers to deactivate auctions they own, changing their status to "Draft". The function
+verifies the seller's authorization and checks the auction's status before Deactivation.
 
 Dependencies:
 - pymongo: Python driver for MongoDB.
@@ -30,7 +30,7 @@ headers = {
 def deactivate(event, context):
     """
     deactivate an auction with the specified ID, provided the seller has the necessary authorization
-    and the auction's status allows deletion.
+    and the auction's status allows deactivation.
 
     Args:
         event (dict): The input event data containing request parameters and context.
