@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 const { DynamoDB } = require('aws-sdk')
 
 const dynamoDb = new DynamoDB.DocumentClient({ region: 'us-east-1' })
