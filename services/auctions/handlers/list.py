@@ -94,7 +94,8 @@ def list_auction(event, context):
             "add_buyer_fees": 1,
             "fees": 1,
             "make_your_auction_private": 1,
-            "passcode": 1
+            "passcode": 1,
+            "template_name": 1
         }
         if export is not None and export == 1:
             projection_for_export = {

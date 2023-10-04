@@ -4,6 +4,8 @@ import os
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
+import pytz
+from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -80,19 +82,53 @@ def view(event, context):
             "publish_auction_results": 1
         }
         result = collection.find_one({"_id": auction_id}, projection)
-        print(result)
+
         if result is None:
             return {
                 "headers": headers,
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        if result["status"] not in ["Published", "Accepting bids","Completed"]:
+        # if result["status"] not in ["Published", "Accepting bids","Completed"]:
+        #     return {
+        #         "headers": headers,
+        #         "statusCode": 400,
+        #         "body": json.dumps({"message": "Auction is not published yet."})
+        #     }
+
+        # Get the timezone from the result
+        time_zone_str = result.get("time_zone")
+        if not time_zone_str:
             return {
                 "headers": headers,
                 "statusCode": 400,
-                "body": json.dumps({"message": "Auction is not published yet."})
+                "body": json.dumps({"message": "Timezone is missing for this auction."})
             }
+        
+        # Convert time_zone_str to a timezone object
+        auction_timezone = pytz.timezone(time_zone_str)
+
+        # Get the current time in the specified timezone
+        current_time = datetime.now(auction_timezone)
+
+        # Convert start_time and end_time to the auction's timezone
+        start_time = result.get("start_date")
+        start_time = auction_timezone.localize(start_time)  # Make it offset-aware
+        end_time = result.get("end_date")
+        end_time = auction_timezone.localize(end_time)  # Make it offset-aware
+
+        if start_time <= current_time < end_time:
+            # Auction is currently accepting bids
+            updated_status = "Accepting bids"
+        elif current_time >= end_time:
+            # Auction has ended
+            updated_status = "Completed"
+        else:
+            updated_status = result["status"]  # No change in status
+
+        # Update the status in the database
+        collection.update_one({"_id": auction_id}, {"$set": {"status": updated_status}})
+
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
