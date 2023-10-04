@@ -72,7 +72,7 @@ def list_auction(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         allowed_status = {
-        "status": {"$in": ["Draft", "Published", "Completed","Accepting Bids"]}
+        "status": {"$in": ["Draft", "Published", "Completed","Accepting bids"]}
         }
         projection = {
             "_id": 0,  # Exclude the ObjectId field
