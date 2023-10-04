@@ -1,0 +1,416 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Buyers Management APIs",
+      "description": "APIs to manage buyer side of the auction",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/buyers"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Auction Management",
+          "description": "APIs to manage the auctions"
+      }
+    ],
+    "paths": {
+      "/view":{
+        "get": {
+          "tags": [
+            "Auction"
+          ],
+          "summary": "View auction details",
+          "description": "View auction in detail",
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "Fetch details for the provided auction id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "A0172"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved auction details",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": { 
+                      "data": {
+                        "type": "object",
+                        "properties": {
+                          "auction_id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "start_date": {
+                            "type": "string"
+                          },
+                          "end_date": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "auction_image": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "currency": {
+                            "type": "string"
+                          },
+                          "extension_type": {
+                            "type": "string"
+                          },
+                          "extension_time": {
+                            "type": "string"
+                          },
+                          "extension_time_between_lots": {
+                            "type": "string"
+                          },
+                          "registration_type": {
+                            "type": "string"
+                          },
+                          "add_buyer_fees": {
+                            "type": "string"
+                          },
+                          "time_zone": {
+                            "type": "string"
+                          },
+                          "make_your_auction_private": {
+                            "type": "string"
+                          },
+                          "passcode": {
+                            "type": "string"
+                          },
+                          "fees": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                          "data": {
+                              "auction_id": "A0169",
+                              "title": "Auction Event",
+                              "start_date": "2023-08-30 06:46:23",
+                              "end_date": "2023-08-31 06:46:23",
+                              "status": "Draft",
+                              "created_at": "2023-08-31 10:27:57.993000",
+                              "auction_image": "",
+                              "description": "",
+                              "currency": "",
+                              "extension_type": "",
+                              "extension_time": "",
+                              "extension_time_between_lots": "",
+                              "registration_type": "",
+                              "add_buyer_fees": "",
+                              "time_zone": "",
+                              "make_your_auction_private": "",
+                              "passcode": "",
+                              "fees": ""
+                            }
+                        }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Please provide auction_id"
+                        
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                          "message": "Auction with associated auction_id doesn't exists"
+                        
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error "
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  },
+    "components": {
+      "schemas": {
+        "Auction": {
+          "type": "object",
+          "properties": {
+            "seller_email":{
+              "type": "string"
+            },
+            "auction_id":{
+              "type": "string"
+            },
+            "template_name":{
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            },
+            "menu_links":{
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "link_url": {
+                    "type": "string"
+                  },
+                  "dropdown": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title" :{
+                          "type": "string"
+                        },
+                        "link_url": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "logo_image":{
+              "type": "string"
+            },
+            "logo_redirection_url":{
+              "type": "string"
+            },
+            "title":{
+              "type": "string"
+            },
+            "auction_image":{
+              "type": "string"
+            },
+            "description":{
+              "type": "string"
+            },
+            "currency":{
+              "type": "string"
+            },
+            "start_date":{
+              "type": "number"
+            },
+            "end_date":{
+              "type": "number"
+            },
+            "extension_type":{
+              "type": "string"
+            },
+            "extension_time":{
+              "type": "string"
+            },
+            "extension_time_between_lots": {
+              "type": "string"
+            },
+            "registration_type":{
+              "type": "string"
+            },
+            "add_buyer_fees":{
+              "type": "number"
+            },
+            "time_zone" :{
+              "type": "string"
+            },
+            "faq":{
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string"
+                  },
+                  "answer": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "terms_and_condition":{
+              "type": "string"
+            },
+            "publish_auction_result":{
+              "type": "boolean"
+            },
+            "show_bidder_location_in_bidder_history":{
+              "type": "boolean"
+            },
+            "make_your_auction_private":{
+              "type": "boolean"
+            },
+            "passcode":{
+              "type": "string"
+            },
+            "font":{
+              "type": "object"
+            },
+            "button":{
+              "type": "object"
+            },
+            "header":{
+              "type": "object"
+            },
+            "content_area":{
+              "type": "object"
+            },
+            "footer":{
+              "type": "object"
+            },
+            "paddle":{
+              "type": "object"
+            },
+            "status":{
+              "type": "string"
+            }
+        }
+        },
+        "Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+      "Lots":{
+        "type": "object",
+        "properties": {
+          "auction_id":{
+            "type": "string"
+          },
+          "seller_email":{
+            "type": "string"
+          },
+          "lot_number":{
+            "type":"integer"
+          },
+          "lot_title":{
+            "type":"string"
+          },
+          "starting_bid":{
+            "type":"integer"
+          },
+          "current_bid":{
+            "type":"integer"
+          },
+          "Top_bidder":{
+            "type":"string"
+          },
+          "images":{
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "feature": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "title1":{
+            "type":"string"
+          },
+          "title2":{
+            "type":"string"
+          },
+          "description":{
+            "type":"string"
+          },
+          "starting_price":{
+            "type":"integer"
+          },
+          "low_estimate":{
+            "type":"integer"
+          },
+          "high_estimate":{
+            "type":"integer"
+          },
+          "shipping_details":{
+            "type":"string"
+          },
+          "tags":{
+            "type":"array",
+            "items":{
+              "type": "object",
+              "properties": {
+                "tags_name":{
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
