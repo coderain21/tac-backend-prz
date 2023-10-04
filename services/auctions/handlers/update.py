@@ -84,9 +84,9 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
         if published_status == 'true':
-            required_fields = ["auction_image", "title", "description", "currency", "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
+            required_fields = ["auction_image", "title", "description", "currency",
+                            "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             const_date = datetime(1970, 1, 1, 0, 0)
-            
             if (not all(auction_record.get(field) for field in required_fields)) and \
             (auction_record['start_date'] == const_date and auction_record['end_date'] == const_date):
                 return {
