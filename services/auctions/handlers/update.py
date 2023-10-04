@@ -85,12 +85,14 @@ def update_auction(event, context):
             }
         if published_status == 'true':
             required_fields = ["auction_image", "title", "description", "currency", "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
+            const_date = datetime(1970, 1, 1, 0, 0)
             
-            if (not all(auction_record.get(field) for field in required_fields)) and (auction_record['start_date'] ==  datetime.datetime(1970, 1, 1, 0, 0) and auction_record['end_date'] ==  datetime.datetime(1970, 1, 1, 0, 0)):
+            if (not all(auction_record.get(field) for field in required_fields)) and \
+            (auction_record['start_date'] == const_date and auction_record['end_date'] == const_date):
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "required fields are missing or empty."})
+                    "body": json.dumps({"message": "Required fields are missing or empty or start_date/end_date are not updated."})
                 }
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
