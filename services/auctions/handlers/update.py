@@ -88,8 +88,9 @@ def update_auction(event, context):
         if published_status == 'true':
             required_fields = ["auction_image", "title", "description", "currency", "start_date",
                 "end_date", "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
-            print(123444)
-            if not all(auction_record.get(field) for field in required_fields):
+            const_date= '1970-01-01T00:00:00.000+00:00'
+            datetime_obj = datetime.fromisoformat(const_date)
+            if (not all(auction_record.get(field) for field in required_fields)) and (auction_record['start_date'] == datetime_obj and auction_record['end_date'] == datetime_obj):
                 print(123545443323434)
 
                 return {
