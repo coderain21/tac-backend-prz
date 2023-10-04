@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-useless-escape */
+/* eslint-disable import/no-extraneous-dependencies */
 const AWS = require('aws-sdk')
 
 const S3 = new AWS.S3()

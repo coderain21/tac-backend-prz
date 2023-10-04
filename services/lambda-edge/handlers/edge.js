@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/extensions */
 // eslint-disable-next-line import/no-unresolved
 // const getDomainList = require('../data/s3_query')
