@@ -30,11 +30,13 @@ def convert_timestamp_to_date(timestamp):
 
 def update_auction(event, context):
     """
-    The `update_auction` function updates the specified fields of an auction in a MongoDB database based
-    on the request body and the auction ID.
+    The `update_auction` function updates the specified fields of an auction
+    in a MongoDB database based on the request body and the auction ID.
 
-    :param event: The `event` parameter is a dictionary that contains information about the event that
-    triggered the function. It typically includes details such as the HTTP request headers, body, path
+    :param event: The `event` parameter is a dictionary that contains
+    information about the event that
+    triggered the function. It typically includes details such as the
+    HTTP request headers, body, path
     parameters, and more
     :param context: The `context` parameter is an object that provides information about the runtime
     environment of the function. It includes details such as the AWS request ID, function name, and
@@ -42,7 +44,7 @@ def update_auction(event, context):
     :return: The function `update_auction` returns a JSON response with the following properties:
     """
     try:
-        try:    
+        try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
             print('email ',seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
@@ -126,11 +128,13 @@ def update_auction(event, context):
 
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
-            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
-                                "description", "currency", "start_date", "end_date", "extension_type", "extension_time",
-                                "extension_time_between_lots", "registration_type", "add_buyer_fees", "percentage",
-                                "fees", "faq", "time_zone", "terms_and_condition", "publish_auction_results",
-                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title",
+                                "auction_image","description", "currency", "start_date", "end_date",
+                                "extension_type", "extension_time","extension_time_between_lots", 
+                                "registration_type", "add_buyer_fees", "percentage",
+                                "fees", "faq", "time_zone", "terms_and_condition", 
+                                "publish_auction_results","show_bidder_location_in_bidder_history",
+                                "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
         elif auction_status == "Accepting bids":
