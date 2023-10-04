@@ -75,7 +75,7 @@ def list_auction(event, context):
         "status": {"$in": ["Draft", "Published", "Completed","Accepting bids"]}
         }
         projection = {
-            "_id": 0,  # Exclude the ObjectId field
+            "_id": 1,  # Exclude the ObjectId field
             "auction_id": 1,
             "title": 1,
             "start_date": 1,

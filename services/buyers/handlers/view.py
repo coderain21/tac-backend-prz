@@ -2,6 +2,7 @@
 import json
 import os
 from pymongo import MongoClient
+from bson import ObjectId
 from lib.common_helper import Encoder
 
 headers = {
@@ -27,21 +28,6 @@ def view(event, context):
     the conditions and data being processed in the function.
     """
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-            print('email', email_address)
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
         data = event['queryStringParameters']
         if data is None or "auction_id" not in data:
             return {
@@ -53,7 +39,10 @@ def view(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        auction_id = data["auction_id"]
+        auction_id = data.get("auction_id")
+        if auction_id is not None:
+            auction_id = ObjectId(auction_id)
+
         projection = {
             "_id": 1,
             "auction_id": 1,
@@ -62,8 +51,6 @@ def view(event, context):
             "end_date": 1,
             "status": 1,
             "auction_image": 1,
-            "note": 1,
-            "created_at": 1,
             "currency": 1,
             "description": 1,
             "time_zone": 1,
@@ -71,10 +58,7 @@ def view(event, context):
             "extension_time": 1,
             "extension_time_between_lots": 1,
             "registration_type": 1,
-            "add_buyer_fees": 1,
-            "fees": 1,
             "make_your_auction_private": 1,
-            "passcode": 1,
             "menu_links": 1,
             "footer.background_color": 1,
             "footer.text_color": 1,
@@ -87,7 +71,6 @@ def view(event, context):
             "font.hearder_font": 1,
             "font.body_font": 1,
             "logo_image": 1,
-            "percentage": 1,
             "template_name": 1,
             "logo_redirection_url": 1,
             "faq": 1,
@@ -95,19 +78,21 @@ def view(event, context):
             "paddle": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1
-
-
         }
-        result = collection.find_one({"seller_email": email_address,
-                                      "auction_id": auction_id}, projection)
-
+        result = collection.find_one({"_id": auction_id}, projection)
+        print(result)
         if result is None:
             return {
                 "headers": headers,
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-
+        if result["status"] not in ["Published", "Accepting bids","Completed"]:
+            return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Auction is not published yet."})
+            }
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
