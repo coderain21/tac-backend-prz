@@ -1688,6 +1688,15 @@
               "type": "string"
             },
             "example": "A0172"
+          },
+          {
+            "name": "published",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
           }
         ],
         "requestBody": {
