@@ -64,7 +64,6 @@ def update_auction(event, context):
         auction_id = event['pathParameters']['auction_id']
         print(event)
         if event['queryStringParameters'] is not None:
-            print(111)
             published_status = event['queryStringParameters'].get(
                 'published', 'false')
             print(published_status)
@@ -84,15 +83,10 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
-
         if published_status == 'true':
-            required_fields = ["auction_image", "title", "description", "currency", "start_date",
-                "end_date", "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
-            const_date= '1970-01-01T00:00:00.000+00:00'
-            datetime_obj = datetime.fromisoformat(const_date)
-            if (not all(auction_record.get(field) for field in required_fields)) and (auction_record['start_date'] == datetime_obj and auction_record['end_date'] == datetime_obj):
-                print(123545443323434)
-
+            required_fields = ["auction_image", "title", "description", "currency", "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
+            
+            if (not all(auction_record.get(field) for field in required_fields)) and (auction_record['start_date'] ==  datetime.datetime(1970, 1, 1, 0, 0) and auction_record['end_date'] ==  datetime.datetime(1970, 1, 1, 0, 0)):
                 return {
                     "statusCode": 400,
                     'headers': headers,
