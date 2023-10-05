@@ -36,7 +36,7 @@ module.exports.handler = async (event, context, callback) => {
             <html lang="en">
               <head>
                 <meta charset="utf-8">
-                <title>Indy auction%</title>
+                <title>Indy auction</title>
               </head>
               <body>
                 <p>Domain Not found</p>
