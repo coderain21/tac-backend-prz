@@ -73,6 +73,9 @@ def update_auction(event, context):
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+        total_lots = collection_lot.count_documents({"seller_email": seller_email,
+                                                     "auction_id": auction_id})
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
 
@@ -89,14 +92,12 @@ def update_auction(event, context):
             for field in required_fields:
                 if auction_record[field]== "":
                     print(field,auction_record[field])
-                    print(1)
                     return {
                         "statusCode": 400,
                         'headers': headers,
                         "body": json.dumps({"message": "required and cannot be empty."})
                     }
             if const_date in (auction_record['start_date'], auction_record['end_date']):
-                print(2)
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -106,7 +107,6 @@ def update_auction(event, context):
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
                 and auction_record['fees'] == "")):
-                print(34)
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -116,19 +116,22 @@ def update_auction(event, context):
                     and auction_record['passcode'] == "") or
                     (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
                     auction_record['extension_time_between_lots']== "")):
-                print(4)
                 return {
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
-
+            if total_lots < 1:
+                return {
+                    "statusCode": 404,
+                    'headers': headers,
+                    "body": json.dumps({"message": "No Lots Found"})
+                }
             else:
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
-                print(000000)
                 return {
                     "statusCode": 204,
                     'headers': headers,
