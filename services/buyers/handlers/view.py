@@ -37,7 +37,7 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-
+        passcode = data.get("passcode")
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -79,7 +79,8 @@ def view(event, context):
             "terms_and_condition": 1,
             "paddle": 1,
             "show_bidder_location_in_bidder_history": 1,
-            "publish_auction_results": 1
+            "publish_auction_results": 1,
+            "passcode" : 1,
         }
         result = collection.find_one({"_id": auction_id}, projection)
 
@@ -106,7 +107,7 @@ def view(event, context):
             }
         
         # Convert time_zone_str to a timezone object
-        auction_timezone = pytz.timezone(time_zone_str)
+        auction_timezone = pytz.timezone(time_zone_str[:3])
 
         # Get the current time in the specified timezone
         current_time = datetime.now(auction_timezone)
@@ -125,13 +126,20 @@ def view(event, context):
             updated_status = "Completed"
         else:
             updated_status = result["status"]  # No change in status
-
+        print(result["make_your_auction_private"])
+        if result["make_your_auction_private"] is True:
+            return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Timezone is missing for this auction."})
+            }
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {"$set": {"status": updated_status}})
 
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
+        result["status"] = updated_status
         body = {
             "data": result,
         }
