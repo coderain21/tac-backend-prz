@@ -75,7 +75,7 @@ def list_auction(event, context):
         "status": {"$in": ["Draft", "Published", "Completed","Accepting bids"]}
         }
         projection = {
-            "_id": 0,  # Exclude the ObjectId field
+            "_id": 1,
             "auction_id": 1,
             "title": 1,
             "start_date": 1,
@@ -94,7 +94,27 @@ def list_auction(event, context):
             "add_buyer_fees": 1,
             "fees": 1,
             "make_your_auction_private": 1,
-            "passcode": 1
+            "passcode": 1,
+            "menu_links": 1,
+            "footer.background_color": 1,
+            "footer.text_color": 1,
+            "buttons.background_color": 1,
+            "buttons.text_color": 1,
+            "content_area.background_color": 1,
+            "content_area.text_color": 1,
+            "header.background_color": 1,
+            "header.text_color": 1,
+            "font.hearder_font": 1,
+            "font.body_font": 1,
+            "logo_image": 1,
+            "percentage": 1,
+            "template_name": 1,
+            "logo_redirection_url": 1,
+            "faq": 1,
+            "terms_and_condition": 1,
+            "paddle": 1,
+            "show_bidder_location_in_bidder_history": 1,
+            "publish_auction_results": 1
         }
         if export is not None and export == 1:
             projection_for_export = {

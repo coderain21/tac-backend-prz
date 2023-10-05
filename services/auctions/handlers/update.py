@@ -27,15 +27,15 @@ def convert_timestamp_to_date(timestamp):
         formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
     return formatted_date
 
-
-
 def update_auction(event, context):
     """
-    The `update_auction` function updates the specified fields of an auction in a MongoDB database based
-    on the request body and the auction ID.
+    The `update_auction` function updates the specified fields of an auction
+    in a MongoDB database based on the request body and the auction ID.
 
-    :param event: The `event` parameter is a dictionary that contains information about the event that
-    triggered the function. It typically includes details such as the HTTP request headers, body, path
+    :param event: The `event` parameter is a dictionary that contains
+    information about the event that
+    triggered the function. It typically includes details such as the
+    HTTP request headers, body, path
     parameters, and more
     :param context: The `context` parameter is an object that provides information about the runtime
     environment of the function. It includes details such as the AWS request ID, function name, and
@@ -45,11 +45,13 @@ def update_auction(event, context):
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            print('email ', seller_email)
+            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
                     "statusCode": 403,
                     "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                    "body": json.dumps({"message": "do not have access to perform this API action"})
                 }
         except:
             return {
@@ -59,11 +61,21 @@ def update_auction(event, context):
             }
         request_body = json.loads(event['body'])
         auction_id = event['pathParameters']['auction_id']
+        print(event)
+        if event['queryStringParameters'] is not None:
+            published_status = event['queryStringParameters'].get(
+                'published', 'false')
+            print(published_status)
+        else:
+            published_status = 'false'
 
         # Initialize the MongoDB client
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+        total_lots = collection_lot.count_documents({"seller_email": seller_email,
+                                                     "auction_id": auction_id})
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
 
@@ -73,13 +85,68 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+        if published_status == 'true':
+            required_fields = ["auction_image", "title", "description", "currency",
+                            "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
+            const_date = datetime(1970, 1, 1, 0, 0)
+            for field in required_fields:
+                if auction_record[field]== "":
+                    print(field,auction_record[field])
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "required and cannot be empty."})
+                    }
+            if const_date in (auction_record['start_date'], auction_record['end_date']):
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty"})
+                }
+            if ((auction_record['add_buyer_fees'] == 'Add percentage' and
+                 auction_record['percentage'] == "") or
+                (auction_record['add_buyer_fees'] == 'Add fixed fee'
+                and auction_record['fees'] == "")):
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            if ((auction_record['make_your_auction_private'] is True
+                    and auction_record['passcode'] == "") or
+                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
+                    auction_record['extension_time_between_lots']== "")):
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            if total_lots < 1:
+                return {
+                    "statusCode": 404,
+                    'headers': headers,
+                    "body": json.dumps({"message": "No Lots Found"})
+                }
+            else:
+                collection.update_one(
+                    {"seller_email": seller_email, "auction_id": auction_id},
+                    {"$set": {"status": "Published"}}
+                )
+                return {
+                    "statusCode": 204,
+                    'headers': headers,
+                    "body": json.dumps({'message': "suceessfull"})
+                }
+
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
-            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
-                                "description", "currency", "start_date", "end_date", "extension_type", "extension_time",
-                                "extension_time_between_lots", "registration_type", "add_buyer_fees", "percentage",
-                                "fees", "faq", "time_zone", "terms_and_condition", "publish_auction_results",
-                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+            updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title",
+                                "auction_image", "description", "currency", "start_date", "end_date",
+                                "extension_type", "extension_time", "extension_time_between_lots",
+                                "registration_type", "add_buyer_fees", "percentage",
+                                "fees", "faq", "time_zone", "terms_and_condition",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history",
+                                "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
         elif auction_status == "Accepting bids":

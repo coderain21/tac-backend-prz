@@ -7,8 +7,9 @@ This module provides common helper functions for encoding and headers.
 import decimal
 import datetime
 import json
+import decimal
 from pymongo import MongoClient
-
+from bson import ObjectId  # Import ObjectId from pymongo
 
 class Encoder(json.JSONEncoder):
     """
@@ -25,9 +26,11 @@ class Encoder(json.JSONEncoder):
             return str(o)
         if isinstance(o, datetime.datetime):
             return str(o)
+        if isinstance(o, ObjectId):  # Handle ObjectId objects
+            return str(o)
         if isinstance(o, object):
             return o.__dict__
-        return o.__dict__
+        return super().default(o)
 
 
 headers = {

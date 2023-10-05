@@ -1688,6 +1688,15 @@
               "type": "string"
             },
             "example": "A0172"
+          },
+          {
+            "name": "published",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
           }
         ],
         "requestBody": {
@@ -1782,7 +1791,100 @@
           }
         }
       }
-     }
+     },
+    "/deactivate":{
+      "post": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Auction deactivation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  }
+            },
+            "example": {
+
+                "auction_id":"A0180"
+              
+              }
+
+            }
+          }
+        }
+      },
+        "responses": {
+          "204": {
+            "description": "Successfully deactivated the auction"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide auction_id"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "You cannot deactivate the auction with the current status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction with associated auction_id doesn't exists"
+                    }
+                  }
+                  }
+                }
+              }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while deactivating the auction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          }
+        } 
+    }
 },
   "components": {
     "schemas": {
