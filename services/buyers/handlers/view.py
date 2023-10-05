@@ -80,7 +80,7 @@ def view(event, context):
             "paddle": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,
-            "passcode" : 1,
+            "passcode": 1,
         }
         result = collection.find_one({"_id": auction_id}, projection)
 
@@ -90,7 +90,7 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        if result["status"] not in ["Published", "Accepting bids","Completed"]:
+        if result["status"] not in ["Published", "Accepting bids", "Completed"]:
             return {
                 "headers": headers,
                 "statusCode": 400,
@@ -105,7 +105,7 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Timezone is missing for this auction."})
             }
-        
+
         # Convert time_zone_str to a timezone object
         auction_timezone = pytz.timezone(time_zone_str[:3])
 
@@ -114,7 +114,8 @@ def view(event, context):
 
         # Convert start_time and end_time to the auction's timezone
         start_time = result.get("start_date")
-        start_time = auction_timezone.localize(start_time)  # Make it offset-aware
+        start_time = auction_timezone.localize(
+            start_time)  # Make it offset-aware
         end_time = result.get("end_date")
         end_time = auction_timezone.localize(end_time)  # Make it offset-aware
 
@@ -126,9 +127,10 @@ def view(event, context):
             updated_status = "Completed"
         else:
             updated_status = result["status"]  # No change in status
-        
+
         # Update the status in the database
-        collection.update_one({"_id": auction_id}, {"$set": {"status": updated_status}})
+        collection.update_one({"_id": auction_id}, {
+                              "$set": {"status": updated_status}})
 
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
@@ -144,10 +146,10 @@ def view(event, context):
         elif result["make_your_auction_private"] is True and passcode is not None:
             if result["passcode"] != str(passcode):
                 return {
-                "headers": headers,
-                "statusCode": 400,
-                "body": json.dumps({"message": "Invalid passcode."})
-            }
+                    "headers": headers,
+                    "statusCode": 400,
+                    "body": json.dumps({"message": "Invalid passcode."})
+                }
         result["status"] = updated_status
         del result["passcode"]
         body = {
