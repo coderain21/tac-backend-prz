@@ -251,13 +251,35 @@ def import_lots(event, context):
                                        "seller_email": email_address,
                                        "record_type": "Lots"}, {
             "$set": update_data})
-        client.close()
+        if result.inserted_ids:
+            auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": email_address})
 
-        return {
-            "statusCode": 201,
-            'headers': headers,
-            "body": json.dumps({"message": "Lots imported successfully."})
-        }
+            if auction_record and "total_lots" in auction_record and auction_record["total_lots"] >= 0:
+                # Increment the existing "total_lots" count
+                auction_collection.update_one(
+                    {"auction_id": auction_id, "seller_email": email_address},
+                    {"$inc": {"total_lots": len(result.inserted_ids)}}
+                )
+            else:
+                # Calculate the total lots count (if not already calculated) and update the auction record
+                total_lots_count = collection.count_documents({"seller_email": email_address, "auction_id": auction_id})
+                auction_collection.update_one(
+                    {"auction_id": auction_id, "seller_email": email_address},
+                    {"$set": {"total_lots": total_lots_count}}
+                )
+
+            client.close()
+            return {
+                "statusCode": 201,
+                'headers': headers,
+                "body": json.dumps({"message": "Lots imported successfully."})
+            }
+        else:
+            return {
+                "statusCode": 400,
+                'headers': headers,
+                "body": json.dumps({"message": "No lots were imported."})
+            }
     except Exception as e:
         print(e)
         return {
