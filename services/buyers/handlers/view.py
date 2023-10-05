@@ -90,12 +90,12 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        # if result["status"] not in ["Published", "Accepting bids","Completed"]:
-        #     return {
-        #         "headers": headers,
-        #         "statusCode": 400,
-        #         "body": json.dumps({"message": "Auction is not published yet."})
-        #     }
+        if result["status"] not in ["Published", "Accepting bids","Completed"]:
+            return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Auction is not published yet."})
+            }
 
         # Get the timezone from the result
         time_zone_str = result.get("time_zone")
@@ -126,20 +126,30 @@ def view(event, context):
             updated_status = "Completed"
         else:
             updated_status = result["status"]  # No change in status
-        print(result["make_your_auction_private"])
-        if result["make_your_auction_private"] is True:
-            return {
-                "headers": headers,
-                "statusCode": 400,
-                "body": json.dumps({"message": "Timezone is missing for this auction."})
-            }
+        
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {"$set": {"status": updated_status}})
 
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
+        print(result["make_your_auction_private"])
+        print(result["passcode"])
+        if result["make_your_auction_private"] is True and passcode is None:
+            return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "This is a private auction ,please provide passcode."})
+            }
+        elif result["make_your_auction_private"] is True and passcode is not None:
+            if result["passcode"] != str(passcode):
+                return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Invalid passcode."})
+            }
         result["status"] = updated_status
+        del result["passcode"]
         body = {
             "data": result,
         }
