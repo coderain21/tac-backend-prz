@@ -46,14 +46,14 @@ def update_auction(event, context):
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('email ',seller_email)
+            print('email ', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-            'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
+                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         except:
             return {
                 "statusCode": 403,
@@ -104,7 +104,7 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
             if (auction_record['make_your_auction_private'] is True
-                 and auction_record['passcode'] == ""):
+                    and auction_record['passcode'] == ""):
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -126,11 +126,11 @@ def update_auction(event, context):
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title",
-                                "auction_image","description", "currency", "start_date", "end_date",
-                                "extension_type", "extension_time","extension_time_between_lots", 
+                                "auction_image", "description", "currency", "start_date", "end_date",
+                                "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
-                                "fees", "faq", "time_zone", "terms_and_condition", 
-                                "publish_auction_results","show_bidder_location_in_bidder_history",
+                                "fees", "faq", "time_zone", "terms_and_condition",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }

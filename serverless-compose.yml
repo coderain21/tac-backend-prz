@@ -5,5 +5,8 @@ services:
   auctions:
     path: services/auctions
     config: ${env:config}
+  buyers:
+    path: services/buyers
+    config: ${env:config}
 
     
