@@ -114,7 +114,7 @@ def update_auction(event, context):
                 }
             if ((auction_record['make_your_auction_private'] is True
                     and auction_record['passcode'] == "") or
-                    (auction_record['extension_type'] in ('Cascade','Indivisual Lots') and
+                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
                     auction_record['extension_time_between_lots']== "")):
                 print(4)
                 return {
