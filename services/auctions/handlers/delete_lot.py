@@ -43,6 +43,7 @@ def delete_lot(event, context):
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         request_body = json.loads(event['body'])
         print(request_body)
 
@@ -63,9 +64,25 @@ def delete_lot(event, context):
         delete_result = collection.delete_one({
             "lot_number":lot_number, "seller_email": seller_email,"auction_id": auction_id
             })
-        client.close()
 
         if delete_result.deleted_count == 1:
+            auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+
+            if auction_record and "total_lots" in auction_record and auction_record["total_lots"] > 0:
+                # Decrease the existing "total_lots" count
+                auction_collection.update_one(
+                    {"auction_id": auction_id, "seller_email": seller_email},
+                    {"$inc": {"total_lots": -1}}
+                )
+            else:
+                # Calculate the total lots count (if not already calculated) and update the auction record
+                total_lots_count = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
+                auction_collection.update_one(
+                    {"auction_id": auction_id, "seller_email": seller_email},
+                    {"$set": {"total_lots": total_lots_count}}
+                )
+
+            client.close()
             return {
                 "statusCode": 200,
                 'headers': headers,
