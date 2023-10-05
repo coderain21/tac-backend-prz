@@ -51,7 +51,7 @@ def update_auction(event, context):
                 return {
                     "statusCode": 403,
                     "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                    "body": json.dumps({"message": "do not have access to perform this API action"})
                 }
         except:
             return {
@@ -95,27 +95,27 @@ def update_auction(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "required and cannot be empty."})
                     }
-            if (auction_record['start_date'] == const_date or auction_record['end_date'] == const_date):
+            if const_date in (auction_record['start_date'], auction_record['end_date']):
                 print(2)
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "One or more required fields are missing or empty, or start_date/end_date are not updated."})
+                    "body": json.dumps({"message": "required fields are missing or empty"})
                 }
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
-                and auction_record['fees'] == "") or 
-                (auction_record['extension_type'] == 'Cascade' and
-                auction_record['extension_time_between_lots']== "")):
+                and auction_record['fees'] == "")):
                 print(34)
                 return {
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
-            if (auction_record['make_your_auction_private'] is True
-                    and auction_record['passcode'] == ""):
+            if ((auction_record['make_your_auction_private'] is True
+                    and auction_record['passcode'] == "") or
+                    (auction_record['extension_type'] in ('Cascade','Indivisual Lots') and
+                    auction_record['extension_time_between_lots']== "")):
                 print(4)
                 return {
                     "statusCode": 400,
