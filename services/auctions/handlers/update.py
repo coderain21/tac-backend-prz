@@ -112,16 +112,14 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
-            if ((auction_record['make_your_auction_private'] is True
-                    and auction_record['passcode'] == "") or
-                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
-                    auction_record['extension_time_between_lots']== "")):
+            if auction_record['total_lots'] < 1:
                 print(4)
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "required fields are missing or empty."})
+                    "body": json.dumps({"message": "No Lots Found"})
                 }
+            
 
             else:
                 collection.update_one(
