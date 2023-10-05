@@ -27,7 +27,6 @@ def convert_timestamp_to_date(timestamp):
         formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
     return formatted_date
 
-
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction
@@ -46,14 +45,14 @@ def update_auction(event, context):
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('email ',seller_email)
+            print('email ', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-            'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
+                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         except:
             return {
                 "statusCode": 403,
@@ -87,24 +86,37 @@ def update_auction(event, context):
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             const_date = datetime(1970, 1, 1, 0, 0)
-            if (not all(auction_record.get(field) for field in required_fields)) and \
-            (auction_record['start_date'] == const_date and auction_record['end_date'] == const_date):
+            for field in required_fields:
+                if auction_record[field]== "":
+                    print(field,auction_record[field])
+                    print(1)
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "required and cannot be empty."})
+                    }
+            if (auction_record['start_date'] == const_date or auction_record['end_date'] == const_date):
+                print(2)
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "Required fields are missing or empty or start_date/end_date are not updated."})
+                    "body": json.dumps({"message": "One or more required fields are missing or empty, or start_date/end_date are not updated."})
                 }
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
-                 and auction_record['fees'] == "")):
+                and auction_record['fees'] == "") or 
+                (auction_record['extension_type'] == 'Cascade' and
+                auction_record['extension_time_between_lots']== "")):
+                print(34)
                 return {
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
             if (auction_record['make_your_auction_private'] is True
-                 and auction_record['passcode'] == ""):
+                    and auction_record['passcode'] == ""):
+                print(4)
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -126,11 +138,11 @@ def update_auction(event, context):
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title",
-                                "auction_image","description", "currency", "start_date", "end_date",
-                                "extension_type", "extension_time","extension_time_between_lots", 
+                                "auction_image", "description", "currency", "start_date", "end_date",
+                                "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
-                                "fees", "faq", "time_zone", "terms_and_condition", 
-                                "publish_auction_results","show_bidder_location_in_bidder_history",
+                                "fees", "faq", "time_zone", "terms_and_condition",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
