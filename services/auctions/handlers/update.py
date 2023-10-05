@@ -73,6 +73,8 @@ def update_auction(event, context):
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+        total_lots = collection_lot.count_documents({"seller_email": seller_email, "auction_id": auction_id})
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
 
@@ -112,10 +114,20 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
-            if auction_record['total_lots'] < 1:
+            if ((auction_record['make_your_auction_private'] is True
+                    and auction_record['passcode'] == "") or
+                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
+                    auction_record['extension_time_between_lots']== "")):
                 print(4)
                 return {
                     "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            if total_lots < 1:
+                print(444)
+                return {
+                    "statusCode": 404,
                     'headers': headers,
                     "body": json.dumps({"message": "No Lots Found"})
                 }
