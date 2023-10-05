@@ -27,7 +27,6 @@ def convert_timestamp_to_date(timestamp):
         formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
     return formatted_date
 
-
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction
@@ -52,7 +51,7 @@ def update_auction(event, context):
                 return {
                     "statusCode": 403,
                     "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                    "body": json.dumps({"message": "do not have access to perform this API action"})
                 }
         except:
             return {
@@ -87,24 +86,37 @@ def update_auction(event, context):
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             const_date = datetime(1970, 1, 1, 0, 0)
-            if (not all(auction_record.get(field) for field in required_fields)) and \
-            (auction_record['start_date'] == const_date and auction_record['end_date'] == const_date):
+            for field in required_fields:
+                if auction_record[field]== "":
+                    print(field,auction_record[field])
+                    print(1)
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "required and cannot be empty."})
+                    }
+            if const_date in (auction_record['start_date'], auction_record['end_date']):
+                print(2)
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "Required fields are missing or empty or start_date/end_date are not updated."})
+                    "body": json.dumps({"message": "required fields are missing or empty"})
                 }
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
-                 and auction_record['fees'] == "")):
+                and auction_record['fees'] == "")):
+                print(34)
                 return {
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
-            if (auction_record['make_your_auction_private'] is True
-                    and auction_record['passcode'] == ""):
+            if ((auction_record['make_your_auction_private'] is True
+                    and auction_record['passcode'] == "") or
+                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
+                    auction_record['extension_time_between_lots']== "")):
+                print(4)
                 return {
                     "statusCode": 400,
                     'headers': headers,
