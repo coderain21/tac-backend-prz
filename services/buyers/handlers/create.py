@@ -16,16 +16,24 @@ headers = {
 
 def create():
     response = client.create_user_pool(
-        PoolName='seller1'
+        PoolName='seller3'
     )
+    client_response = client.create_user_pool_client(
+    UserPoolId= response["UserPool"]["Id"],
+    ClientName='seller3-client'
+    )
+    print(client_response)
     return response
+
 def create_userpool(event, context):
     """
 
     """
     response = create()
+    body={
+        "response": response   }
     return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps(response,cls=Encoder)
+            "body": json.dumps(body,cls=Encoder)
         }
