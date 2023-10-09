@@ -82,7 +82,7 @@ definitions:
           - echo "SAST"
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
-          - pip install pip==22.3.1 --break-system-packages
+          - pip install pip==23.2.1 --break-system-packages
           - pip3 install njsscan
           - njsscan -w .
           - pip install bandit
@@ -120,6 +120,7 @@ definitions:
     
     - step: &APITesting 
         name: API Test Automation
+        trigger: manual
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - echo "API Testing Automation"
@@ -192,9 +193,8 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-      - step: *APITesting
+  
       
-     
      
 
     hotfix/**:
@@ -208,7 +208,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-      - step: *APITesting
+     
 
   branches:
     develop:
@@ -227,7 +227,7 @@ pipelines:
             deployment: develop
             steps:
               - step: *DevDeploy
-              - step: *APITesting
+      - step: *APITesting
 
     staging:
       - parallel:
@@ -280,4 +280,3 @@ pipelines:
           deployment: production
           steps:
             - step: *Deploy
-

@@ -7,6 +7,7 @@ import os
 from pymongo import MongoClient
 # ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
 
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -22,9 +23,15 @@ def delete_note(event, context):
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
             print('email ',email_address)
-            # email_address='sthuthi@7edge.com'
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         except:
             return {
+                "headers": headers,
                 "statusCode": 403,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
@@ -43,11 +50,13 @@ def delete_note(event, context):
             # Check if the update was successful
             if result.modified_count > 0:
                 return {
+                    "headers": headers,
                     "statusCode": 200,
                     "body": json.dumps({"message": "Note field successfully emptied"})
                 }
             else:
                 return {
+                    "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Document not found or note field already empty"})
                 }
@@ -69,17 +78,20 @@ def delete_note(event, context):
             # Check if the update was successful
             if result.modified_count > 0:
                 return {
+                    "headers": headers,
                     "statusCode": 200,
                     "body": json.dumps({"message": "Note field successfully added"})
                 }
             else:
                 return {
+                    "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Document not found or note field already empty"})
                 }
 
     except Exception as e:
         return {
+            "headers": headers,
             "statusCode": 500,
             "body": json.dumps({"message": "Internal Server Error: " + str(e)})
         }
