@@ -98,7 +98,39 @@ functions:
           cors: true
           path: /view
           method: get
+
+  # create_example:
+  #   handler: handlers/example.create_auction
+  #   layers:
+  #     - ${env:COMMON_LIB_ARN}
+  #   vpc:
+  #     securityGroupIds:
+  #       - sg-0882c1da39e729097
+  #     subnetIds:
+  #       - subnet-0ff05c7c2bd2a3f87
+  #   events:
+  #     - http:
+  #         cors: true
+  #         path: /
+  #         method: post
+  #         authorizer: arn:aws:lambda:us-east-1:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
           
+  create:
+    handler: handlers/create.create_userpool
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /create
+          method: post
+
 
 plugins:
   - serverless-offline
