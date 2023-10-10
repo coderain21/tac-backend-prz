@@ -77,7 +77,6 @@ def view_list_lots(event, context):
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
                   projection)
-        
         lots_list = list(lots_result)
         print(144,lots_list)
         return {
