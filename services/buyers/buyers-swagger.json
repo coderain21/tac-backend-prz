@@ -257,12 +257,50 @@
                   },
                   "example4": {
                     "value": {
-                      "message": "This is a private auction ,please provide passcode."
+                      "message": "This is a private auction ,please provide passcode.",
+                      "data": {
+                        "menu_links": [
+                            {
+                                "title": "Home",
+                                "link_url": "https://example.com/home",
+                                "dropdown": [
+                                    {
+                                        "title": "About Us",
+                                        "link_url": "https://example.com/about"
+                                    },
+                                    {
+                                        "title": "Contact Us",
+                                        "link_url": "https://example.com/contact"
+                                    }
+                                ]
+                            }
+                        ],
+                        "logo_image": "https://example.com/logo.png"
+                    }
                     }
                   },
                   "example5": {
                     "value": {
-                      "message": "Invalid passcode."
+                      "message": "Invalid passcode.",
+                      "data": {
+                        "menu_links": [
+                            {
+                                "title": "Home",
+                                "link_url": "https://example.com/home",
+                                "dropdown": [
+                                    {
+                                        "title": "About Us",
+                                        "link_url": "https://example.com/about"
+                                    },
+                                    {
+                                        "title": "Contact Us",
+                                        "link_url": "https://example.com/contact"
+                                    }
+                                ]
+                            }
+                        ],
+                        "logo_image": "https://example.com/logo.png"
+                    }
                     }
                   }
                 }
