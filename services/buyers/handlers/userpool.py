@@ -28,11 +28,20 @@ def encrypt_data(data):
 
     return encrypted_data
 
+
 def create_user_pool(sub_domain_name):
     # Initialize AWS Cognito client
     cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
-    # Create a Cognito User Pool
+    # Define the password policy
+    password_policy = {
+        'MinimumLength': 6,  # Minimum password length
+        'RequireUppercase': True,  # Requires at least one uppercase letter
+        'RequireLowercase': True,  # Requires at least one lowercase letter
+        'RequireNumbers': True,    # Requires at least one number
+    }
+
+    # Create a Cognito User Pool with the password policy
     response = cognito_client.create_user_pool(
         PoolName=f'userpool_{sub_domain_name}',
         AutoVerifiedAttributes=['email'],
@@ -43,7 +52,10 @@ def create_user_pool(sub_domain_name):
                 'Mutable': False,
                 'Required': True
             },
-        ]
+        ],
+        Policies={
+            'PasswordPolicy': password_policy
+        }
     )
     user_pool_id = response['UserPool']['Id']
 

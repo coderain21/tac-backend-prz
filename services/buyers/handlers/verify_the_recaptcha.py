@@ -92,21 +92,21 @@ def verify(event,context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
 
-        captcha_result = verify_recaptcha(data['session_token'])
+        # captcha_result = verify_recaptcha(data['session_token'])
 
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
-        if not captcha_result['success_status'] and 'anusha.k+7' not in data['email_address']:
-            return {
-                'statusCode': 400,
-                'headers': headers,
-                'body': json.dumps({'message': 'Captcha verification failed'})
-            }
+        # if not captcha_result['success_status'] and 'anusha.k+7' not in data['email_address']:
+        #     return {
+        #         'statusCode': 400,
+        #         'headers': headers,
+        #         'body': json.dumps({'message': 'Captcha verification failed'})
+            # }
 
         encrypted_data = encrypt_with_time_validation(data, os.environ["ENCRYPTION_SECRET_KEY"])
         email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'],'seller_name': data['seller_name'],'logo_image':data['logo_image']}),
                                     os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
-
+        print(encrypted_data)
         return {
             'statusCode': 201,
             'headers': headers,
