@@ -37,6 +37,11 @@ provider:
     SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
     USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
     KMS_KEY_ID: ${env:KMS_KEY_ID}
+    BUYER_EMAIL_OTP_TEMPLATE: ${env:BUYER_EMAIL_OTP_TEMPLATE}
+    ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
+    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
+    RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
+    RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     
     
   http:
@@ -134,6 +139,39 @@ functions:
           path: /{domain}
           method: get
 
+  # COGNITO PRE SIGNUP TRIGGER
+  verify-recaptha:
+    handler: handlers/verify_the_recaptcha.verify
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+  
+    events:
+      - http:
+          path: /verify-captcha
+          method: post
+          cors: true
+
+  # otp-validation:
+  #   handler: handlers/otp_validation.otpValidation
+  #   runtime: python3.8
+  #   layers:
+  #     - ${env:COMMON_LIB_ARN}
+  #   vpc:
+  #     securityGroupIds:
+  #       - sg-0882c1da39e729097
+  #     subnetIds:
+  #       - subnet-0ff05c7c2bd2a3f87
+  #   events:
+  #     - http:
+  #         path: /otp-validation
+  #         method: post
+  #         cors: true
 
 plugins:
   - serverless-offline

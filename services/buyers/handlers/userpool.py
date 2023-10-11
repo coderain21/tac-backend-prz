@@ -76,7 +76,7 @@ def fetch_item_from_dynamodb(sub_domain_name):
             user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
  
             # Query MongoDB for user pool data
-            user_pool_data = user_pools_collection.find_one({'email_address': email_address})
+            user_pool_data = user_pools_collection.find_one({'email_address': email_address},{"_id":0,"email_address":0,"sub_domain_name":0})
 
             if not user_pool_data:
                 # If user pool data doesn't exist, create it
@@ -108,14 +108,14 @@ def create(event, context):
     try:
         sub_domain_name = event['pathParameters']['domain']
         data = fetch_item_from_dynamodb(sub_domain_name)
-
+        print(data)
         # Encrypt the data using AWS KMS
         encrypted_data = encrypt_data(json.dumps(data, cls=Encoder))
 
         return {
             "statusCode": 201,
             "headers": headers,
-            "body": json.dumps({"encrypted_data": encrypted_data})
+            "body": json.dumps({"data": encrypted_data})
         }
     except Exception as err:
         print(err)
