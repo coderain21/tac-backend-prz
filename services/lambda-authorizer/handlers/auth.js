@@ -1,10 +1,10 @@
+/* eslint-disable import/no-unresolved */
 /* eslint-disable no-useless-escape */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable func-names */
 /* eslint-disable no-console */
 /* eslint-disable prefer-regex-literals */
 /* eslint-disable prefer-destructuring */
-/* eslint-disable no-unused-vars */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable camelcase */
 const jwt = require('jsonwebtoken')
@@ -97,7 +97,6 @@ function AuthPolicy(principal, awsAccountId, apiOptions) {
 }
 
 function validateToken(pems_data, event, context) {
-    const token = event.authorizationToken
     // Fail if the token is not jwt
     const auth_token = (event.authorizationToken).split(' ')
     const decodedJwt = jwt.decode(auth_token[1], { complete: true })
@@ -142,11 +141,11 @@ function validateToken(pems_data, event, context) {
             apiOptions.region = tmp[3]
             apiOptions.restApiId = apiGatewayArnTmp[0]
             apiOptions.stage = apiGatewayArnTmp[1]
-            const method = apiGatewayArnTmp[2]
-            let resource = '/' // root resource
-            if (apiGatewayArnTmp[3]) {
-                resource += apiGatewayArnTmp[3]
-            }
+            // const method = apiGatewayArnTmp[2]
+            // let resource = '/' // root resource
+            // if (apiGatewayArnTmp[3]) {
+            //     resource += apiGatewayArnTmp[3]
+            // }
             // For more information on specifics of generating policy, refer to blueprint for API Gateway's Custom authorizer in Lambda console
             const policy = new AuthPolicy(principalId, awsAccountId, apiOptions)
             policy.allowAllMethods()
