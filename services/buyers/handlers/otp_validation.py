@@ -13,9 +13,8 @@ import json
 import os
 import time
 import boto3
-import bcrypt
 from pymongo import MongoClient
-
+from passlib.hash import pbkdf2_sha256
 from lib.helper_python import decrypt_with_time_validation
 
 headers = {
@@ -28,7 +27,7 @@ headers = {
 
 
 def hash_password(password):
-    """Generate a salt and hash the provided password using bcrypt.
+    """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
 
     Args:
         password (str): The plaintext password to hash.
@@ -36,11 +35,9 @@ def hash_password(password):
     Returns:
         str: The hashed password as a UTF-8 encoded string.
     """
-    # Generate a salt and hash the password
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
-    return hashed_password.decode('utf-8')
-
+    # Generate a hashed password using Passlib's pbkdf2_sha256
+    hashed_password = pbkdf2_sha256.using(salt=b"indy@auction").hash(password)
+    return hashed_password
 
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
@@ -72,6 +69,13 @@ def admin_create_user(userData, userpool_id):
         # Attempt to create the user
         user = cognito_client.admin_create_user(**admin_create_user_params)
 
+        password_params = {
+            'UserPoolId': userpool_id,
+            'Username': userData['email_address'],
+            'Password': userData['password'],
+            'Permanent': True
+        }
+        cognito_client.admin_set_user_password(**password_params)
         if user:
             cognito_client.admin_add_user_to_group(
                 GroupName=userData['user_type'],

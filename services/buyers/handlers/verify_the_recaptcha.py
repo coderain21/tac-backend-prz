@@ -9,13 +9,10 @@ Please note that the code is designed for use within a serverless environment an
 The primary functionality of this module is to verify user registration data, including password strength, duplicate email check, and captcha validation (if enabled). It then generates an OTP, sends an email, and returns an encrypted token for further processing.
 """
 import json
-import requests
 import re
 import random
 import os
 from pymongo import MongoClient
-from urllib.parse import urlencode
-
 from lib.helper_python import encrypt_with_time_validation, send_pinpoint_email
 
 headers = {
