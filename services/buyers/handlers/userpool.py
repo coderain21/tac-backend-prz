@@ -66,6 +66,10 @@ def create_user_pool(sub_domain_name):
         GenerateSecret=False,  # You can set this to True if needed
     )
     client_id = response['UserPoolClient']['ClientId']
+    group_response = cognito_client.create_group(
+        GroupName='buyer',
+        UserPoolId=user_pool_id
+    )
 
     return user_pool_id, client_id
 
