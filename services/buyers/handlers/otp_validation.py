@@ -1,3 +1,14 @@
+"""This module contains a set of functions for user validation and creation in a serverless application. It utilizes Amazon Cognito for user management and MongoDB for data storage.
+
+Module Functions:
+- admin_create_user(userData, userpool_id): Create a new user in Amazon Cognito and add them to a Cognito User Group.
+- hash_password(password): Generate a salt and hash the given password using bcrypt.
+- validate(event, context): Validate user session tokens, create new Cognito users, and store user data in MongoDB.
+
+Please note that the code in this module is designed for use within a serverless environment and relies on various environment variables for configuration and secrets.
+
+The code's primary functionality involves user registration and validation by decrypting session tokens, creating Cognito users, and storing user data in a MongoDB database.
+"""
 import json
 import os
 import time
@@ -15,15 +26,37 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def hash_password(password):
+    """Generate a salt and hash the provided password using bcrypt.
+
+    Args:
+        password (str): The plaintext password to hash.
+
+    Returns:
+        str: The hashed password as a UTF-8 encoded string.
+    """
     # Generate a salt and hash the password
     salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), salt)
     return hashed_password.decode('utf-8')
 
+
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
+
 def admin_create_user(userData, userpool_id):
+    """Create a new user in Amazon Cognito and add them to a Cognito User Group.
+
+    Args:
+        userData (dict): User data, including email address and user type.
+        userpool_id (str): The ID of the Cognito User Pool.
+
+    Returns:
+        dict: A response indicating whether the user was created successfully or if there was an error.
+            - 'success_status' (bool): True if the user was created, False otherwise.
+            - 'message' (str): A message describing the result of the operation.
+    """
     try:
         attribute_list = [
             {'Name': 'email', 'Value': userData['email_address']}
@@ -65,6 +98,16 @@ def admin_create_user(userData, userpool_id):
 
 
 def validate(event, context):
+    """Validate user session tokens, create new Cognito users, and store user data in MongoDB.
+
+    Args:
+        event (dict): The event data containing the user's session token, OTP, and domain.
+        context: The AWS Lambda context object (not used in this function).
+
+    Returns:
+        dict: A response indicating the outcome of the validation and user creation process.
+            The response may include an HTTP status code, headers, and a JSON body with a message.
+    """
     try:
         data = json.loads(event['body'])
 
@@ -80,7 +123,8 @@ def validate(event, context):
             }
 
         secret_key = os.environ["ENCRYPTION_SECRET_KEY"]
-        decrypted_data = decrypt_with_time_validation(encrypted_token, secret_key)
+        decrypted_data = decrypt_with_time_validation(
+            encrypted_token, secret_key)
         print(decrypted_data)
         timestamp = decrypted_data["time_stamp"]
         if timestamp is None or decrypted_data is None:
@@ -101,7 +145,7 @@ def validate(event, context):
             }
 
         if int(decrypted_data.get('otp')) != otp:
-            
+
             return {
                 'statusCode': 400,
                 'headers': headers,
@@ -110,13 +154,15 @@ def validate(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-        userpool_id = user_pools_collection.find_one({"sub_domain_name":domain},{"user_pool_id":1})
+        userpool_id = user_pools_collection.find_one(
+            {"sub_domain_name": domain}, {"user_pool_id": 1})
         # Your code to create the user in Cognito
-        response = admin_create_user(decrypted_data,userpool_id["user_pool_id"])
+        response = admin_create_user(
+            decrypted_data, userpool_id["user_pool_id"])
 
         if response and response["success_status"] == True:
             # Your code to store the decrypted token data in MongoDB
-            
+
             collection = db[os.environ["BUYER_COLLECTION"]]
 
             insert_data = {}

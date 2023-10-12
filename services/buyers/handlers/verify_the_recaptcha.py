@@ -1,3 +1,13 @@
+"""This module contains functions for user registration verification and email validation within a serverless application.
+
+Module Functions:
+- is_valid_password(password): Check if a password meets specific requirements (uppercase, lowercase, digits, length).
+- verify(event, context): Verify user registration data, generate an OTP, send an email, and return an encrypted token.
+
+Please note that the code is designed for use within a serverless environment and relies on various environment variables for configuration and secrets.
+
+The primary functionality of this module is to verify user registration data, including password strength, duplicate email check, and captcha validation (if enabled). It then generates an OTP, sends an email, and returns an encrypted token for further processing.
+"""
 import json
 import requests
 import re
@@ -6,7 +16,7 @@ import os
 from pymongo import MongoClient
 from urllib.parse import urlencode
 
-from lib.helper_python import encrypt_with_time_validation,send_pinpoint_email
+from lib.helper_python import encrypt_with_time_validation, send_pinpoint_email
 
 headers = {
     'Content-Type': 'application/json',
@@ -16,10 +26,19 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
 def is_valid_password(password):
+    """Check if a password meets specific requirements (uppercase, lowercase, digits, length).
+
+    Args:
+        password (str): The password to be validated.
+
+    Returns:
+        bool: True if the password meets the requirements, False otherwise.
+    """
     # Define the regular expression pattern
     pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{6,16}$'
-    
+
     # Use the re.search function to check if the password matches the pattern
     return bool(re.search(pattern, password))
 
@@ -46,10 +65,21 @@ def is_valid_password(password):
 #         print(e)
 #         return {'success_status': False}
 
-def verify(event,context):
+
+def verify(event, context):
+    """Verify user registration data, generate an OTP, send an email, and return an encrypted token.
+
+    Args:
+        event (dict): The event data containing user registration details, including email, password, and other attributes.
+        context: The AWS Lambda context object (not used in this function).
+
+    Returns:
+        dict: A response indicating the outcome of the user registration process, including status code, headers, and a JSON body with an encrypted token or an error message.
+    """
     try:
         data = json.loads(event['body'])
-        expected_fields = ["email_address", "first_name", "last_name","password","confirm_password","terms_and_condition","newsletter_notification","seller_name","logo_image","user_type"]
+        expected_fields = ["email_address", "first_name", "last_name", "password", "confirm_password",
+                           "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
         if fields_not_found:
             return {"headers": headers,
@@ -65,7 +95,8 @@ def verify(event,context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         user_collection = db[os.environ["BUYER_COLLECTION"]]
-        user_exist = user_collection.find_one({'email_address': data['email_address'], 'user_type': data['user_type']})
+        user_exist = user_collection.find_one(
+            {'email_address': data['email_address'], 'user_type': data['user_type']})
 
         if user_exist:
             return {
@@ -73,7 +104,7 @@ def verify(event,context):
                 'headers': headers,
                 'body': json.dumps({'message': 'An account linked to this already exists'})
             }
-        
+
         client.close()
 
         if data['password'] != data['confirm_password']:
@@ -87,7 +118,7 @@ def verify(event,context):
                 is_password_valid = True
             else:
                 is_password_valid = False
-        
+
         if not is_password_valid:
             return {
                 'statusCode': 400,
@@ -106,9 +137,10 @@ def verify(event,context):
         #         'body': json.dumps({'message': 'Captcha verification failed'})
         #     }
 
-        encrypted_data = encrypt_with_time_validation(data, os.environ["ENCRYPTION_SECRET_KEY"])
-        email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'],'seller_name': data['seller_name'],'logo_image':data['logo_image']}),
-                                    os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
+        encrypted_data = encrypt_with_time_validation(
+            data, os.environ["ENCRYPTION_SECRET_KEY"])
+        email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
+                                           os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
         print(encrypted_data)
         return {
             'statusCode': 201,
