@@ -42,6 +42,7 @@ provider:
     BUYER_COLLECTION: ${env:BUYER_COLLECTION}
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
+    CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     
     
   http:
@@ -127,7 +128,7 @@ functions:
     handler: handlers/userpool.create
     runtime: python3.8
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - sg-0882c1da39e729097
@@ -141,8 +142,7 @@ functions:
 
   # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
-    handler: handlers/verify_the_recaptcha.verify
-    runtime: python3.8
+    handler: handlers/verify_the_recaptcha.verifyReCaptcha
     layers:
       - ${env:COMMON_LIB_ARN}
     vpc:
@@ -158,8 +158,8 @@ functions:
           cors: true
 
   otp-validation:
-    handler: handlers/otp_validation.validate
-    runtime: python3.8
+    handler: handlers/otp_validation.otpValidation
+ 
     layers:
       - ${env:COMMON_LIB_ARN}
     vpc:

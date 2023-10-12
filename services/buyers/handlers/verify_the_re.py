@@ -4,6 +4,7 @@ import re
 import random
 import os
 from pymongo import MongoClient
+from urllib.parse import urlencode
 
 from lib.helper_python import encrypt_with_time_validation,send_pinpoint_email
 
@@ -29,14 +30,15 @@ def verify_recaptcha(token):
             'secret': os.environ["RECAPTCHA_KEY"],
             'response': token
         }
-        print(payload)
-        print(recaptcha_url)
+        
+        data = urlencode(payload)  # Convert the payload to form data
+
         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-        print(headers)
-        response = requests.post(recaptcha_url, data=payload)
+
+        response = requests.post(recaptcha_url, data=data, headers=headers)
         response_data = response.json()
-        print(response.json(), 'sss')
-        if response_data['success']:
+        print(response_data)
+        if response_data.get('success', False):
             return response_data
         return {'success_status': False}
     except Exception as e:
@@ -77,7 +79,7 @@ def verify(event,context):
             return {
                 'statusCode': 400,
                 'headers': headers,
-                'body': json.dumps({'message': 'Password Doesn\'t match'})
+                'body': json.dumps({'message': "Password Doesn't match"})
             }
         if is_valid_password(password):
             if password == confirm_password:
@@ -92,16 +94,16 @@ def verify(event,context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
 
-        # captcha_result = verify_recaptcha(data['session_token'])
+        captcha_result = verify_recaptcha(data['session_token'])
 
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
-        # if not captcha_result['success_status'] and 'anusha.k+7' not in data['email_address']:
-        #     return {
-        #         'statusCode': 400,
-        #         'headers': headers,
-        #         'body': json.dumps({'message': 'Captcha verification failed'})
-            # }
+        if not captcha_result['success_status'] and 'anusha.k+7' not in data['email_address']:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Captcha verification failed'})
+            }
 
         encrypted_data = encrypt_with_time_validation(data, os.environ["ENCRYPTION_SECRET_KEY"])
         email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'],'seller_name': data['seller_name'],'logo_image':data['logo_image']}),
