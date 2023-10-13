@@ -15,6 +15,7 @@ import time
 import boto3
 from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
+from bson import ObjectId
 from lib.helper_python import decrypt_with_time_validation
 
 headers = {
@@ -118,8 +119,9 @@ def validate(event, context):
         encrypted_token = data.get('session_token')
         otp = int(data.get('otp'))
         domain = data.get('domain')
+        auction_id = data.get('id')
 
-        if not encrypted_token or not otp or not domain:
+        if not encrypted_token or not otp or not domain or not auction_id:
             return {
                 'statusCode': 400,
                 'headers': headers,
@@ -129,7 +131,7 @@ def validate(event, context):
         secret_key = os.environ["ENCRYPTION_SECRET_KEY"]
         decrypted_data = decrypt_with_time_validation(
             encrypted_token, secret_key)
-        print(decrypted_data)
+
         timestamp = decrypted_data["time_stamp"]
         if timestamp is None or decrypted_data is None:
             return {
@@ -149,7 +151,7 @@ def validate(event, context):
             }
 
         static_otp = "573421"
-        if str(otp) == static_otp or os.environ['STAGE'] != 'prod':
+        if str(otp) == static_otp and os.environ['STAGE'] != 'prod':
             print("Using static OTP for testing")
 
         elif int(decrypted_data.get('otp')) != otp:
@@ -161,15 +163,18 @@ def validate(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        seller_email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
+
         userpool_id = user_pools_collection.find_one(
-            {"sub_domain_name": domain}, {"user_pool_id": 1})
+            {"sub_domain_name": domain,"email_address":seller_email}, {"user_pool_id": 1})
+
+        print(seller_email)
         # Your code to create the user in Cognito
         response = admin_create_user(
             decrypted_data, userpool_id["user_pool_id"])
-
         if response and response["success_status"] == True:
             # Your code to store the decrypted token data in MongoDB
-
             collection = db[os.environ["BUYER_COLLECTION"]]
 
             insert_data = {}
@@ -180,6 +185,8 @@ def validate(event, context):
             insert_data["terms_and_condition"] = decrypted_data["terms_and_condition"]
             insert_data["user_type"] = decrypted_data["user_type"]
             insert_data["newsletter_notification"] = decrypted_data["newsletter_notification"]
+            insert_data["sub_domain"] = domain
+            insert_data["seller_email"] = seller_email
             collection.insert_one(insert_data)
             client.close()
 
