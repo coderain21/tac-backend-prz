@@ -257,12 +257,50 @@
                   },
                   "example4": {
                     "value": {
-                      "message": "This is a private auction ,please provide passcode."
+                      "message": "This is a private auction ,please provide passcode.",
+                      "data": {
+                        "menu_links": [
+                            {
+                                "title": "Home",
+                                "link_url": "https://example.com/home",
+                                "dropdown": [
+                                    {
+                                        "title": "About Us",
+                                        "link_url": "https://example.com/about"
+                                    },
+                                    {
+                                        "title": "Contact Us",
+                                        "link_url": "https://example.com/contact"
+                                    }
+                                ]
+                            }
+                        ],
+                        "logo_image": "https://example.com/logo.png"
+                    }
                     }
                   },
                   "example5": {
                     "value": {
-                      "message": "Invalid passcode."
+                      "message": "Invalid passcode.",
+                      "data": {
+                        "menu_links": [
+                            {
+                                "title": "Home",
+                                "link_url": "https://example.com/home",
+                                "dropdown": [
+                                    {
+                                        "title": "About Us",
+                                        "link_url": "https://example.com/about"
+                                    },
+                                    {
+                                        "title": "Contact Us",
+                                        "link_url": "https://example.com/contact"
+                                    }
+                                ]
+                            }
+                        ],
+                        "logo_image": "https://example.com/logo.png"
+                    }
                     }
                   }
                 }
@@ -301,8 +339,237 @@
           }
         }
       }
-    }
-  },
+    },
+    "/view-lots":{
+      "patch": {
+        "tags": [
+          "BUYER_LOTS"
+        ],
+        "summary": "view lots",
+        "description": "view lots",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "651e448f536806fbf8037c3c"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "highest_price"
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { 
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "schema": {
+                            "$ref": "#/components/schemas/Lots"
+                        }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data":[
+                    {
+                      "auction_id": "A0922",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "title1": "lot sample",
+                      "title2": "",
+                      "description": "<p>lot descripton</p>",
+                      "starting_price": 2332332,
+                      "low_estimate": 0,
+                      "high_estimate": 0,
+                      "shipping_details": "",
+                      "current_bid": 5,
+                      "tags": [
+                        "ss"
+                      ],
+                      "images": [
+                        {
+                          "url": "DomainName/Auctions/lots/images/d7dc51af-b34e-27fb-12fa-bb0eb16f425e/Screenshot from 2023-10-03 17-41-16.png",
+                          "featured": true
+                        }
+                      ],
+                      "lot_number": 1,
+                      "starting_bid": 5
+                    },
+                    {
+                      "title1": "Human' Nature",
+                      "title2": "New To The Scene",
+                      "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                      "starting_price": 4500,
+                      "low_estimate": 6000,
+                      "high_estimate": 50000,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0922",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "starting_bid": 1,
+                      "current_bid": 0,
+                      "Top_bidder": "",
+                      "images": [],
+                      "lot_number": 5
+                    },
+                    {
+                      "title1": "Ceramics & Craft |",
+                      "title2": "Down Stairs",
+                      "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                      "starting_price": 3002,
+                      "low_estimate": 5000,
+                      "high_estimate": 40000,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0922",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "starting_bid": 6,
+                      "current_bid": 0,
+                      "Top_bidder": "",
+                      "images": [],
+                      "lot_number": 4
+                    },
+                    {
+                      "title1": "Opportunities for Artists",
+                      "title2": "Snowdrops In A Stripey Mug",
+                      "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                      "starting_price": 2000,
+                      "low_estimate": 3000,
+                      "high_estimate": 400005,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0922",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "starting_bid": 3,
+                      "current_bid": 0,
+                      "Top_bidder": "",
+                      "images": [],
+                      "lot_number": 3
+                    },
+                    {
+                      "title1": "Out of the Margins",
+                      "title2": "Sonia Barton",
+                      "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                      "starting_price": 1500,
+                      "low_estimate": 2000,
+                      "high_estimate": 404000,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0922",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "starting_bid": 4,
+                      "current_bid": 0,
+                      "Top_bidder": "",
+                      "images": [],
+                      "lot_number": 2
+                    },
+                    {
+                      "title1": "The Jaka Project",
+                      "title2": "Father and Child",
+                      "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                      "starting_price": 1393,
+                      "low_estimate": 2900,
+                      "high_estimate": 46000,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0922",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "starting_bid": 2,
+                      "current_bid": 0,
+                      "Top_bidder": "",
+                      "images": [],
+                      "lot_number": 6
+                    }
+                  ]
+                }
+                
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "Please provide auction_id"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+},
   "components": {
     "schemas": {
       "Auction": {

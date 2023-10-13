@@ -138,17 +138,25 @@ def view(event, context):
         print(result["make_your_auction_private"])
         print(result["passcode"])
         if result["make_your_auction_private"] is True and passcode is None:
+            data = {}
+            data["menu_links"] = result.get("menu_links")
+            data["logo_image"] = result.get("logo_image")
             return {
                 "headers": headers,
                 "statusCode": 400,
-                "body": json.dumps({"message": "This is a private auction ,please provide passcode."})
+                "body": json.dumps({"message": "This is a private auction ,please provide passcode.",
+                                    "data": data})
             }
         elif result["make_your_auction_private"] is True and passcode is not None:
             if result["passcode"] != str(passcode):
+                data = {}
+                data["menu_links"] = result.get("menu_links")
+                data["logo_image"] = result.get("logo_image")
                 return {
                     "headers": headers,
                     "statusCode": 400,
-                    "body": json.dumps({"message": "Invalid passcode."})
+                    "body": json.dumps({"message": "Invalid passcode.",
+                                        "data": data})
                 }
         result["status"] = updated_status
         del result["passcode"]
