@@ -343,7 +343,7 @@
     "/view-lots":{
       "patch": {
         "tags": [
-          "BUYER_LOTS"
+          "Lots"
         ],
         "summary": "view lots",
         "description": "view lots",
@@ -568,6 +568,382 @@
           }
         }
       }
+  },
+  "/verify-captcha":{
+    "post": {
+      "tags": [
+        "Users"
+      ],
+      "summary": "verify recaptcha",
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "session_token":{
+                  "type": "string"
+                },
+                "logo_image":{
+                  "type": "string"
+                },
+                "seller_name":{
+                  "type": "string"
+                },
+                "email_address":{
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "confirm_password": {
+                  "type": "string"
+                },
+                "terms_and_condition": {
+                  "type": "boolean"
+                },
+                "newsletter_notification": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "example": {
+              "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+              "email_address": "shrinit.poojary@7edge.com",
+              "first_name": "Shrinit",
+              "last_name": "Poojary",
+              "logo_image": "",
+              "seller_name": "",
+              "password": "12345678",
+              "confirm_password":"12345678",
+              "terms_and_condition": true,
+              "newsletter_notification": true,
+              "user_type": "buyer"
+            }
+          }
+        }
+      },
+      "responses": {
+        "201":{
+          "description": "Success",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "encrypted_token": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "examples": {
+                "example1": {
+                  "value": {
+                    "message": "There was an error registering the user."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "409": {
+            "description": "Conflict in creating",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "An account linked to this already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide password"
+                    }
+                  },
+                  "example2":{
+                    "value":{
+                      "message":"Password Doesn't match"
+                    }
+                  },
+                  "example3":{
+                    "value":{
+                      "message":"Invalid Password"
+                    }
+                  }
+                }
+              }
+            }
+          }
+      }
+    }
+  },
+  "/otp-validation":{
+    "post": {
+      "tags": [
+        "Users"
+      ],
+      "summary": "Validating OTP",
+      "requestBody": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "session_token":{
+                  "type": "string"
+                },
+                "otp":{
+                  "type":"string"
+                },
+                "domain":{
+                  "type": "string"
+                }
+              }
+            },
+            "example": {
+              "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+              "otp": "123456",
+              "domain": ""
+            }
+          }
+        }
+      },
+      "responses": {
+        "201":{
+          "description": "Success",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "examples": {
+                "example1": {
+                  "value": {
+                    "message": "User created"
+                  }
+                }
+              }
+            }
+          }
+        },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Invalid request"
+                    }
+                  },
+                  "example2":{
+                    "value":{
+                      "message":"Invalid session token"
+                    }
+                  },
+                  "example3":{
+                    "value":{
+                      "message":"Invalid OTP"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Session token expired"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "User already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error creating the user."
+                    }
+                  }
+                }
+              }
+            }
+          }
+      }
+    }
+  },
+  "/{domain}": {
+    "get": {
+      "tags": [
+        "Users"
+      ],
+      "summary": "Get authentication parameters",
+      "parameters": [
+        {
+          "required": true,
+          "name": "domain",
+          "in": "path",
+          "description": "Get authentication parameters",
+          "schema": {
+            "type": "string"
+          },
+          "example": "www-dev"
+        }
+      ],
+      "responses": {
+        "201": {
+          "description": "created",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "string"
+                  }
+                }
+              },
+              "examples": {
+                "example1": {
+                  "value": {
+                    "data": "asjdbadadjajdancakcanca"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Domain not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+      }
+    }
   }
 },
   "components": {
@@ -706,6 +1082,32 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "email_address": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "terms_and_condition": {
+            "type": "boolean"
+          },
+          "user_type": {
+            "type": "string"
+          },
+          "newsletter_notification": {
+            "type": "boolean"
           }
         }
       },
