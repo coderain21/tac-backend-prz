@@ -730,13 +730,17 @@
                 },
                 "domain":{
                   "type": "string"
+                },
+                "id":{
+                  "type": "string"
                 }
               }
             },
             "example": {
               "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
               "otp": "123456",
-              "domain": ""
+              "domain": "",
+              "id":"64fb5c2d1a2290c0a734fc8b"
             }
           }
         }
@@ -857,7 +861,7 @@
       }
     }
   },
-  "/{domain}": {
+  "/": {
     "get": {
       "tags": [
         "Users"
@@ -867,12 +871,22 @@
         {
           "required": true,
           "name": "domain",
-          "in": "path",
+          "in": "query",
           "description": "Get authentication parameters",
           "schema": {
             "type": "string"
           },
           "example": "www-dev"
+        },
+        {
+          "required": true,
+          "name": "auction_id",
+          "in": "query",
+          "description": "Get authentication parameters",
+          "schema": {
+            "type": "string"
+          },
+          "example": "64fb5c2d1a2290c0a734fc8b"
         }
       ],
       "responses": {
@@ -1108,6 +1122,12 @@
           },
           "newsletter_notification": {
             "type": "boolean"
+          },
+          "sub_domain": {
+            "type": "string"
+          },
+          "seller_email": {
+            "type": "string"
           }
         }
       },

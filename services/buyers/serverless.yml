@@ -44,6 +44,7 @@ provider:
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
+    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
     
     
   http:
@@ -139,7 +140,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /{domain}
+          path: /
           method: get
 
   # COGNITO PRE SIGNUP TRIGGER
