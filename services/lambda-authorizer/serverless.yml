@@ -1,0 +1,39 @@
+service: lambda-authorizer
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  environment:
+    STAGE: ${self:provider.stage}
+    REGION: ${env:REGION}
+
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+             - lambda:*
+             - execute-api:*
+          Resource: "*"
+                 
+package:
+  patterns:
+    - '!./**'
+    - '!./node_modules/**'
+    - ./utils/**
+    - ./handlers/**
+    - ./assets/**
+
+functions:
+  lambda-authorizer:
+    handler: handlers/auth.handler
+    layers:
+      - ${env:LAMBDA_LAYER}
+
+plugins:
+  - serverless-package-external
+  - serverless-offline

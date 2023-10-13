@@ -34,6 +34,16 @@ provider:
     S3_BUCKET: ${env:S3_BUCKET}
     LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
     COUNTER_LOT: ${env:COUNTER_LOT}
+    SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
+    USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
+    KMS_KEY_ID: ${env:KMS_KEY_ID}
+    BUYER_EMAIL_OTP_TEMPLATE: ${env:BUYER_EMAIL_OTP_TEMPLATE}
+    ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
+    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
+    RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
+    RECAPTCHA_URL: ${env:RECAPTCHA_URL}
+    CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
+    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
     
     
   http:
@@ -54,6 +64,7 @@ provider:
             - s3:*
             - lambda:*
             - mobiletargeting:*
+            - dynamodb:*
           Resource: "*"
  
 package:
@@ -98,9 +109,25 @@ functions:
           cors: true
           path: /view
           method: get
-  
-  view_lots:
-    handler: handlers/view_list_lots.view_list_lots
+
+  # create_example:
+  #   handler: handlers/example.create_auction
+  #   layers:
+  #     - ${env:COMMON_LIB_ARN}
+  #   vpc:
+  #     securityGroupIds:
+  #       - sg-0882c1da39e729097
+  #     subnetIds:
+  #       - subnet-0ff05c7c2bd2a3f87
+  #   events:
+  #     - http:
+  #         cors: true
+  #         path: /
+  #         method: post
+  #         authorizer: arn:aws:lambda:us-east-1:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          
+  create_userpools:
+    handler: handlers/userpool.create
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
@@ -112,9 +139,58 @@ functions:
     events:
       - http:
           cors: true
+          path: /{domain}
+          method: get
+
+  # COGNITO PRE SIGNUP TRIGGER
+  verify-recaptha:
+    handler: handlers/verify_the_recaptcha.verify
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          path: /verify-captcha
+          method: post
+          cors: true
+
+  otp-validation:
+    handler: handlers/otp_validation.validate
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${env:ENCRYPTION_LAYER}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          path: /otp-validation
+          method: post
+          cors: true
+
+  view_lots:
+    handler: handlers/view_list_lots.view_list_lots
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
           path: /view-lots
           method: patch
-          
 
 plugins:
   - serverless-offline
