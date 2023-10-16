@@ -1,11 +1,11 @@
 """This module is used to view the auction with auction id"""
 import json
 import os
+from datetime import datetime
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
 import pytz
-from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -43,7 +43,6 @@ def view(event, context):
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
         if auction_id is not None:
-            print(auction_id,122)
             auction_id = ObjectId(auction_id)
         projection = {
             "_id": 1,
@@ -114,8 +113,6 @@ def view(event, context):
         print(result['start_date'])
         start_time= result['start_date']
         end_time= result['end_date']
-
-        
         # Get the timezone from the result
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
@@ -127,12 +124,9 @@ def view(event, context):
 
         # Convert time_zone_str to a timezone object
         time_zone_str = time_zone_str[:3]
-        print(time_zone_str+'ab')
         time_zone = time_zones[time_zone_str]
         # Get the current time in the specified timezone
-        print(1,time_zone)
         current_time = datetime.now(pytz.timezone(time_zone))
-        print(2)
         if not time_zone_str:
             return {
                 "headers": headers,
@@ -143,13 +137,12 @@ def view(event, context):
         # Convert time_zone_str to a time zone object using the dictionary
         if time_zone_str in time_zones:
             print(time_zone)
-            start_time = datetime.fromtimestamp(int(start_time.timestamp()), tz=pytz.timezone(time_zone))
-            end_time = datetime.fromtimestamp(int(end_time.timestamp()), tz=pytz.timezone(time_zone))
+            start_time = datetime.fromtimestamp(int(start_time.timestamp()),
+                                                 tz=pytz.timezone(time_zone))
+            end_time = datetime.fromtimestamp(int(end_time.timestamp()),
+                                               tz=pytz.timezone(time_zone))
         else:
             raise ValueError("Invalid time zone")
-        print(start_time)
-        print(end_time)
-        print(current_time)
         # Convert start_time and end_time to the auction's timezone
         # start_time = result.get("start_date")
         # start_time = auction_timezone.localize(
@@ -181,7 +174,7 @@ def view(event, context):
             return {
                 "headers": headers,
                 "statusCode": 400,
-                "body": json.dumps({"message": "This is a private auction ,please provide passcode.",
+                "body": json.dumps({"message":"This is a private auction,please provide passcode",
                                     "data": data})
             }
         elif result["make_your_auction_private"] is True and passcode is not None:
