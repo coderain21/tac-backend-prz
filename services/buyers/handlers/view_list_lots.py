@@ -3,6 +3,7 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
+from lib.common_helper import Encoder
 
 headers = {
     'Content-Type': 'application/json',
@@ -43,7 +44,7 @@ def view_list_lots(event, context):
             print(123)
             _id = ObjectId(auction_id)
         projection = {
-            "_id": 0,
+            "_id": 1,
             "auction_id": 1,
             "seller_email": 1
         }
@@ -82,7 +83,7 @@ def view_list_lots(event, context):
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data': lots_list})
+            "body": json.dumps({'data': lots_list}, cls=Encoder)
         }
 
     except Exception as e:
