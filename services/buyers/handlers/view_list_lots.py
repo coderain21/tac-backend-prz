@@ -40,7 +40,6 @@ def view_list_lots(event, context):
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data.get("auction_id")
         if auction_id is not None:
-            print(123)
             _id = ObjectId(auction_id)
         projection = {
             "_id": 0,
@@ -48,6 +47,7 @@ def view_list_lots(event, context):
             "seller_email": 1
         }
         result = collection.find_one({"_id": _id}, projection)
+        print(result)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
