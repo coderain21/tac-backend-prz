@@ -82,6 +82,21 @@ def view(event, context):
             "publish_auction_results": 1,
             "passcode": 1,
         }
+        time_zones = {
+            'GMT': 'GMT',
+            'BST': 'Europe/London',
+            'IST': 'Asia/Kolkata',
+            'CET': 'Europe/Paris',
+            'JST': 'Asia/Tokyo',
+            'AES': 'Australia/Sydney',
+            'NZS': 'Pacific/Auckland',
+            'PST': 'America/Los_Angeles',
+            'MST': 'America/Denver',
+            'CST': 'America/Chicago',
+            'EST': 'America/New_York',
+            'UTC': 'UTC'
+        }
+
         result = collection.find_one({"_id": auction_id}, projection)
 
         if result is None:
@@ -98,8 +113,9 @@ def view(event, context):
             }
         print(result['start_date'])
         start_time= result['start_date']
-        end_time= result['start_date']
-        print(start_time)
+        end_time= result['end_date']
+
+        
         # Get the timezone from the result
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
@@ -110,49 +126,30 @@ def view(event, context):
             }
 
         # Convert time_zone_str to a timezone object
-        time_zone = time_zone_str[:3]
-        print(type(time_zone))
-
+        time_zone_str = time_zone_str[:3]
+        print(time_zone_str+'ab')
+        time_zone = time_zones[time_zone_str]
         # Get the current time in the specified timezone
+        print(1,time_zone)
         current_time = datetime.now(pytz.timezone(time_zone))
+        print(2)
+        if not time_zone_str:
+            return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Timezone is missing for this auction."})
+            }
 
-        if time_zone == 'GMT':
-            print(1)
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('GMT'))
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('GMT'))
-        elif time_zone == 'BST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Europe/London'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Europe/London'))
-        elif time_zone == 'IST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Asia/Kolkata'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Asia/Kolkata'))
-        elif time_zone == 'CET':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Europe/Paris'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Europe/Paris'))
-        elif time_zone == 'JST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Asia/Tokyo'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Asia/Tokyo'))
-        elif time_zone == 'AEST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Australia/Sydney'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Australia/Sydney'))
-        elif time_zone == 'NZS':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Pacific/Auckland'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Pacific/Auckland'))
-        elif time_zone == 'PST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/Los_Angeles'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/Los_Angeles'))
-        elif time_zone == 'MST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/Denver'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/Denver'))
-        elif time_zone == 'CST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/Chicago'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/Chicago'))
-        elif time_zone == 'EST':
-            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/New_York'))
-            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/New_York'))
+        # Convert time_zone_str to a time zone object using the dictionary
+        if time_zone_str in time_zones:
+            print(time_zone)
+            start_time = datetime.fromtimestamp(int(start_time.timestamp()), tz=pytz.timezone(time_zone))
+            end_time = datetime.fromtimestamp(int(end_time.timestamp()), tz=pytz.timezone(time_zone))
         else:
             raise ValueError("Invalid time zone")
-
+        print(start_time)
+        print(end_time)
+        print(current_time)
         # Convert start_time and end_time to the auction's timezone
         # start_time = result.get("start_date")
         # start_time = auction_timezone.localize(
@@ -172,7 +169,6 @@ def view(event, context):
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {
                               "$set": {"status": updated_status}})
-
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
