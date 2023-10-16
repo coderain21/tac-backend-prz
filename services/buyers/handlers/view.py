@@ -41,10 +41,10 @@ def view(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        auction_id = data.get("auction_id")
+        auction_id = data['auction_id']
         if auction_id is not None:
+            print(auction_id,122)
             auction_id = ObjectId(auction_id)
-
         projection = {
             "_id": 1,
             "auction_id": 1,
@@ -96,7 +96,10 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-
+        print(result['start_date'])
+        start_time= result['start_date']
+        end_time= result['start_date']
+        print(start_time)
         # Get the timezone from the result
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
@@ -107,17 +110,55 @@ def view(event, context):
             }
 
         # Convert time_zone_str to a timezone object
-        auction_timezone = pytz.timezone(time_zone_str[:3])
+        time_zone = time_zone_str[:3]
+        print(type(time_zone))
 
         # Get the current time in the specified timezone
-        current_time = datetime.now(auction_timezone)
+        current_time = datetime.now(pytz.timezone(time_zone))
+
+        if time_zone == 'GMT':
+            print(1)
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('GMT'))
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('GMT'))
+        elif time_zone == 'BST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Europe/London'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Europe/London'))
+        elif time_zone == 'IST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Asia/Kolkata'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Asia/Kolkata'))
+        elif time_zone == 'CET':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Europe/Paris'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Europe/Paris'))
+        elif time_zone == 'JST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Asia/Tokyo'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Asia/Tokyo'))
+        elif time_zone == 'AEST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Australia/Sydney'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Australia/Sydney'))
+        elif time_zone == 'NZS':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('Pacific/Auckland'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('Pacific/Auckland'))
+        elif time_zone == 'PST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/Los_Angeles'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/Los_Angeles'))
+        elif time_zone == 'MST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/Denver'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/Denver'))
+        elif time_zone == 'CST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/Chicago'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/Chicago'))
+        elif time_zone == 'EST':
+            start_time = datetime.fromtimestamp(start_time, tz=pytz.timezone('America/New_York'))
+            end_time = datetime.fromtimestamp(end_time, tz=pytz.timezone('America/New_York'))
+        else:
+            raise ValueError("Invalid time zone")
 
         # Convert start_time and end_time to the auction's timezone
-        start_time = result.get("start_date")
-        start_time = auction_timezone.localize(
-            start_time)  # Make it offset-aware
-        end_time = result.get("end_date")
-        end_time = auction_timezone.localize(end_time)  # Make it offset-aware
+        # start_time = result.get("start_date")
+        # start_time = auction_timezone.localize(
+        #     start_time)  # Make it offset-aware
+        # end_time = result.get("end_date")
+        # end_time = auction_timezone.localize(end_time)  # Make it offset-aware
 
         if start_time <= current_time < end_time:
             # Auction is currently accepting bids
