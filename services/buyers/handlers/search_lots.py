@@ -1,3 +1,4 @@
+'''this api is for searching in lots'''
 import json
 import os
 from pymongo import MongoClient
@@ -12,6 +13,22 @@ headers = {
 }
 
 def lot_search(event, context):
+    """
+    The `lot_search` function searches for lots in an auction based on the provided auction ID and
+    search keyword.
+    
+    :param event: The `event` parameter is a dictionary that contains information about the event that
+    triggered the function. In this case, it is expected to have a key called 'queryStringParameters'
+    which contains the query parameters passed to the function
+    :param context: The `context` parameter is an object that provides information about the runtime
+    environment of the function. It includes details such as the AWS request ID, function name, and
+    other contextual information. In this code, the `context` parameter is not used, but it is included
+    in the function signature for compatibility
+    :return: The function `lot_search` returns a dictionary with the following keys:
+    - "statusCode": an integer representing the status code of the response
+    - "headers": a dictionary representing the headers of the response
+    - "body": a JSON string representing the body of the response
+    """
     try:
         data = event['queryStringParameters']
         if data is None or "auction_id" not in data:
