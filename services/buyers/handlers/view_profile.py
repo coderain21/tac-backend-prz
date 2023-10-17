@@ -43,9 +43,9 @@ def view_profile(event, context):
                 "body": json.dumps({"message": "user not found"})
             }
         return{
-            "statusCode": 204,
+            "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({})
+            "body": json.dumps({'data':result})
 
         }
     except Exception as e:
