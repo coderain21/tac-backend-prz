@@ -17,7 +17,7 @@ def view_list_lots(event, context):
     """
     The function `view_list_lots` retrieves a list of lots from a MongoDB database based on the provided
     auction ID and seller email, and allows sorting the lots by different parameters.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. In this case, it is expected to have a key called 'queryStringParameters'
     which contains the query parameters passed to the function
