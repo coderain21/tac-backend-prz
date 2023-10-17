@@ -996,8 +996,14 @@
                 "type": "object",
                 "properties": { 
                   "data": {
-                    "schema": {
-                      "$ref": "#/components/schemas/Lots"
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Lots"
+                      }
+                      }
                     }
                   }
               },
