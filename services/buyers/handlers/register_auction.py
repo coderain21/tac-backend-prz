@@ -35,8 +35,8 @@ def register_auction(event, context):
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data['username'])
-            email_address = cognito_data['username']
+            print(cognito_data)
+            email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
                 "statusCode": 403,
@@ -64,6 +64,7 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
+        print(data)
         if 'status' in data and data['status'] == 'True':
             result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
             status=result['status']
