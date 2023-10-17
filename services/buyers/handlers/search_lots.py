@@ -66,7 +66,7 @@ def lot_search(event, context):
         list_lots = list(search_result)
         if not list_lots:
             return {
-                "statusCode": 204,
+                "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "No lots found"})
             }
