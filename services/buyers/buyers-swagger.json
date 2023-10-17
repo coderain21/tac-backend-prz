@@ -260,23 +260,23 @@
                       "message": "This is a private auction ,please provide passcode.",
                       "data": {
                         "menu_links": [
-                            {
-                                "title": "Home",
-                                "link_url": "https://example.com/home",
-                                "dropdown": [
-                                    {
-                                        "title": "About Us",
-                                        "link_url": "https://example.com/about"
-                                    },
-                                    {
-                                        "title": "Contact Us",
-                                        "link_url": "https://example.com/contact"
-                                    }
-                                ]
-                            }
+                          {
+                            "title": "Home",
+                            "link_url": "https://example.com/home",
+                            "dropdown": [
+                              {
+                                "title": "About Us",
+                                "link_url": "https://example.com/about"
+                              },
+                              {
+                                "title": "Contact Us",
+                                "link_url": "https://example.com/contact"
+                              }
+                            ]
+                          }
                         ],
                         "logo_image": "https://example.com/logo.png"
-                    }
+                      }
                     }
                   },
                   "example5": {
@@ -284,23 +284,23 @@
                       "message": "Invalid passcode.",
                       "data": {
                         "menu_links": [
-                            {
-                                "title": "Home",
-                                "link_url": "https://example.com/home",
-                                "dropdown": [
-                                    {
-                                        "title": "About Us",
-                                        "link_url": "https://example.com/about"
-                                    },
-                                    {
-                                        "title": "Contact Us",
-                                        "link_url": "https://example.com/contact"
-                                    }
-                                ]
-                            }
+                          {
+                            "title": "Home",
+                            "link_url": "https://example.com/home",
+                            "dropdown": [
+                              {
+                                "title": "About Us",
+                                "link_url": "https://example.com/about"
+                              },
+                              {
+                                "title": "Contact Us",
+                                "link_url": "https://example.com/contact"
+                              }
+                            ]
+                          }
                         ],
                         "logo_image": "https://example.com/logo.png"
-                    }
+                      }
                     }
                   }
                 }
@@ -340,11 +340,9 @@
         }
       }
     },
-    "/view-lots":{
+    "/view-lots": {
       "patch": {
-        "tags": [
-          "Lots"
-        ],
+        "tags": ["Lots"],
         "summary": "view lots",
         "description": "view lots",
         "parameters": [
@@ -366,7 +364,6 @@
             },
             "example": "highest_price"
           }
-
         ],
         "responses": {
           "200": {
@@ -375,7 +372,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { 
+                  "properties": {
                     "data": {
                       "type": "array",
                       "items": {
@@ -383,14 +380,14 @@
                         "properties": {
                           "schema": {
                             "$ref": "#/components/schemas/Lots"
-                        }
+                          }
                         }
                       }
                     }
                   }
                 },
                 "example": {
-                  "data":[
+                  "data": [
                     {
                       "auction_id": "A0922",
                       "seller_email": "anusha.k+indyauction@7edge.com",
@@ -402,9 +399,7 @@
                       "high_estimate": 0,
                       "shipping_details": "",
                       "current_bid": 5,
-                      "tags": [
-                        "ss"
-                      ],
+                      "tags": ["ss"],
                       "images": [
                         {
                           "url": "DomainName/Auctions/lots/images/d7dc51af-b34e-27fb-12fa-bb0eb16f425e/Screenshot from 2023-10-03 17-41-16.png",
@@ -422,10 +417,7 @@
                       "low_estimate": 6000,
                       "high_estimate": 50000,
                       "shipping_details": "Lorem Ipsum",
-                      "tags": [
-                        "Recommended",
-                        "Paintings"
-                      ],
+                      "tags": ["Recommended", "Paintings"],
                       "auction_id": "A0922",
                       "seller_email": "anusha.k+indyauction@7edge.com",
                       "starting_bid": 1,
@@ -442,10 +434,7 @@
                       "low_estimate": 5000,
                       "high_estimate": 40000,
                       "shipping_details": "Lorem Ipsum",
-                      "tags": [
-                        "Recommended",
-                        "Paintings"
-                      ],
+                      "tags": ["Recommended", "Paintings"],
                       "auction_id": "A0922",
                       "seller_email": "anusha.k+indyauction@7edge.com",
                       "starting_bid": 6,
@@ -462,10 +451,7 @@
                       "low_estimate": 3000,
                       "high_estimate": 400005,
                       "shipping_details": "Lorem Ipsum",
-                      "tags": [
-                        "Recommended",
-                        "Paintings"
-                      ],
+                      "tags": ["Recommended", "Paintings"],
                       "auction_id": "A0922",
                       "seller_email": "anusha.k+indyauction@7edge.com",
                       "starting_bid": 3,
@@ -482,10 +468,7 @@
                       "low_estimate": 2000,
                       "high_estimate": 404000,
                       "shipping_details": "Lorem Ipsum",
-                      "tags": [
-                        "Recommended",
-                        "Paintings"
-                      ],
+                      "tags": ["Recommended", "Paintings"],
                       "auction_id": "A0922",
                       "seller_email": "anusha.k+indyauction@7edge.com",
                       "starting_bid": 4,
@@ -502,10 +485,7 @@
                       "low_estimate": 2900,
                       "high_estimate": 46000,
                       "shipping_details": "Lorem Ipsum",
-                      "tags": [
-                        "Recommended",
-                        "Paintings"
-                      ],
+                      "tags": ["Recommended", "Paintings"],
                       "auction_id": "A0922",
                       "seller_email": "anusha.k+indyauction@7edge.com",
                       "starting_bid": 2,
@@ -516,7 +496,6 @@
                     }
                   ]
                 }
-                
               }
             }
           },
@@ -527,10 +506,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "Please provide auction_id"
-                      
+                      "example": "Please provide auction_id"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -542,10 +520,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -568,100 +545,98 @@
           }
         }
       }
-  },
-  "/verify-captcha":{
-    "post": {
-      "tags": [
-        "Users"
-      ],
-      "summary": "verify recaptcha",
-      "requestBody": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "session_token":{
-                  "type": "string"
-                },
-                "logo_image":{
-                  "type": "string"
-                },
-                "seller_name":{
-                  "type": "string"
-                },
-                "email_address":{
-                  "type": "string"
-                },
-                "password": {
-                  "type": "string"
-                },
-                "confirm_password": {
-                  "type": "string"
-                },
-                "terms_and_condition": {
-                  "type": "boolean"
-                },
-                "newsletter_notification": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "example": {
-              "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
-              "email_address": "shrinit.poojary@7edge.com",
-              "first_name": "Shrinit",
-              "last_name": "Poojary",
-              "logo_image": "",
-              "seller_name": "",
-              "password": "12345678",
-              "confirm_password":"12345678",
-              "terms_and_condition": true,
-              "newsletter_notification": true,
-              "user_type": "buyer"
-            }
-          }
-        }
-      },
-      "responses": {
-        "201":{
-          "description": "Success",
+    },
+    "/verify-captcha": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "verify recaptcha",
+        "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "encrypted_token": {
+                  "session_token": {
                     "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "500": {
-          "description": "Internal Server Error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
+                  },
+                  "logo_image": {
                     "type": "string"
+                  },
+                  "seller_name": {
+                    "type": "string"
+                  },
+                  "email_address": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "confirm_password": {
+                    "type": "string"
+                  },
+                  "terms_and_condition": {
+                    "type": "boolean"
+                  },
+                  "newsletter_notification": {
+                    "type": "boolean"
                   }
                 }
               },
-              "examples": {
-                "example1": {
-                  "value": {
-                    "message": "There was an error registering the user."
-                  }
-                }
+              "example": {
+                "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+                "email_address": "shrinit.poojary@7edge.com",
+                "first_name": "Shrinit",
+                "last_name": "Poojary",
+                "logo_image": "",
+                "seller_name": "",
+                "password": "12345678",
+                "confirm_password": "12345678",
+                "terms_and_condition": true,
+                "newsletter_notification": true,
+                "user_type": "buyer"
               }
             }
           }
         },
-        "409": {
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "encrypted_token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error registering the user."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
             "description": "Conflict in creating",
             "content": {
               "application/json": {
@@ -693,81 +668,79 @@
                       "message": "Please provide password"
                     }
                   },
-                  "example2":{
-                    "value":{
-                      "message":"Password Doesn't match"
+                  "example2": {
+                    "value": {
+                      "message": "Password Doesn't match"
                     }
                   },
-                  "example3":{
-                    "value":{
-                      "message":"Invalid Password"
+                  "example3": {
+                    "value": {
+                      "message": "Invalid Password"
                     }
                   }
                 }
               }
             }
           }
-      }
-    }
-  },
-  "/otp-validation":{
-    "post": {
-      "tags": [
-        "Users"
-      ],
-      "summary": "Validating OTP",
-      "requestBody": {
-        "content": {
-          "application/json": {
-            "schema": {
-              "type": "object",
-              "properties": {
-                "session_token":{
-                  "type": "string"
-                },
-                "otp":{
-                  "type":"string"
-                },
-                "domain":{
-                  "type": "string"
-                },
-                "id":{
-                  "type": "string"
-                }
-              }
-            },
-            "example": {
-              "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
-              "otp": "123456",
-              "domain": "",
-              "id":"64fb5c2d1a2290c0a734fc8b"
-            }
-          }
         }
-      },
-      "responses": {
-        "201":{
-          "description": "Success",
+      }
+    },
+    "/otp-validation": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Validating OTP",
+        "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "message": {
+                  "session_token": {
+                    "type": "string"
+                  },
+                  "otp": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "id": {
                     "type": "string"
                   }
                 }
               },
-              "examples": {
-                "example1": {
-                  "value": {
-                    "message": "User created"
-                  }
-                }
+              "example": {
+                "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+                "otp": "123456",
+                "domain": "",
+                "id": "64fb5c2d1a2290c0a734fc8b"
               }
             }
           }
         },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "User created"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -778,14 +751,14 @@
                       "message": "Invalid request"
                     }
                   },
-                  "example2":{
-                    "value":{
-                      "message":"Invalid session token"
+                  "example2": {
+                    "value": {
+                      "message": "Invalid session token"
                     }
                   },
-                  "example3":{
-                    "value":{
-                      "message":"Invalid OTP"
+                  "example3": {
+                    "value": {
+                      "message": "Invalid OTP"
                     }
                   }
                 }
@@ -858,61 +831,59 @@
               }
             }
           }
-      }
-    }
-  },
-  "/": {
-    "get": {
-      "tags": [
-        "Users"
-      ],
-      "summary": "Get authentication parameters",
-      "parameters": [
-        {
-          "required": true,
-          "name": "domain",
-          "in": "query",
-          "description": "Get authentication parameters",
-          "schema": {
-            "type": "string"
-          },
-          "example": "www-dev"
-        },
-        {
-          "required": true,
-          "name": "auction_id",
-          "in": "query",
-          "description": "Get authentication parameters",
-          "schema": {
-            "type": "string"
-          },
-          "example": "64fb5c2d1a2290c0a734fc8b"
         }
-      ],
-      "responses": {
-        "201": {
-          "description": "created",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "data": {
-                    "type": "string"
+      }
+    },
+    "/": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get authentication parameters",
+        "parameters": [
+          {
+            "required": true,
+            "name": "domain",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "www-dev"
+          },
+          {
+            "required": true,
+            "name": "auction_id",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "64fb5c2d1a2290c0a734fc8b"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    }
                   }
-                }
-              },
-              "examples": {
-                "example1": {
-                  "value": {
-                    "data": "asjdbadadjajdancakcanca"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "data": "asjdbadadjajdancakcanca"
+                    }
                   }
                 }
               }
             }
-          }
-        },
-        "404": {
+          },
+          "404": {
             "description": "Not found",
             "content": {
               "application/json": {
@@ -956,6 +927,119 @@
               }
             }
           }
+        }
+      }
+    },
+    "/auction-register": {
+      "get": {
+        "tags": ["Auction"],
+        "summary": "Register to the auction",
+        "parameters": [
+          {
+            "required": true,
+            "name": "auction_id",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "651e4e7f699d157561d20788"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return registration status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "Approved"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Updated"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide auction_id"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Please register"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "status is pending"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
       }
     }
   },

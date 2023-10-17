@@ -68,11 +68,11 @@ def view_list_lots(event, context):
         elif sort_param == "highest_bid":
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_bid", -1)
+                  projection).sort("current_bid", -1)
         elif sort_param == "lowest_bid":
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_bid", 1)
+                  projection).sort("current_bid", 1)
         else:
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
