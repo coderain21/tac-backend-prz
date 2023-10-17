@@ -1039,7 +1039,7 @@
         }
       }
     },
-  "/search-lots":{
+    "/search-lots":{
     "get": {
       "tags": [
         "Lots"
@@ -1234,6 +1234,189 @@
         }
       }
     }
+    },
+    "/lot-details":{
+      "get": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "search lots",
+        "description": "search lots",
+        "parameters": [
+          {
+            "name": "lot_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "651eb2ccacc69f23a3de2001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { 
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                          "auction_id":{
+                            "type":"string"
+                          },
+                          "seller_email":{
+                            "type":"string"
+                          },
+                          "title1":{
+                            "type":"integer"
+                          },
+                          "title2":{
+                            "type":"string"
+                          },
+                          "description":{
+                            "type":"string"
+                          },
+                          "starting_price":{
+                            "type":"integer"
+                          },
+                          "low_estimate":{
+                            "type":"integer"
+                          },
+                          "high_estimate":{
+                            "type":"integer"
+                          },
+                          "shipping_details":{
+                            "type":"string"
+                          },
+                          "current_bid":{
+                            "type":"integer"
+                          },
+                          "tags": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "images": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "url": {
+                                  "type": "string"
+                                },
+                                "featured": {
+                                  "type": "boolean"
+                                }
+                              }
+                            }
+                          },
+                          "lot_number":{
+                            "type": "integer"
+                          }
+  
+                        }
+                      }
+                    }
+                },
+                "example": {
+                  "data": 
+                    {
+                      "auction_id": "A0006",
+                      "seller_email": "shrinit.poojary@7edge.com",
+                      "title1": "asparagus",
+                      "title2": "",
+                      "description": "<p>veggies</p>",
+                      "starting_price": 111,
+                      "low_estimate": 0,
+                      "high_estimate": 0,
+                      "shipping_details": "",
+                      "current_bid": 0,
+                      "tags": [
+                        "hi",
+                        "hello",
+                        "fellow"
+                      ],
+                      "images": [
+                        {
+                          "url": "DomainName/Auctions/lots/images/0cd698b3-1a2c-3314-07c4-83502068c3e8/4.png",
+                          "featured": true
+                        }
+                      ],
+                      "lot_number": 1
+                    }
+                  
+                }
+                
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "Please provide the lot_id"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "forbidden"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "Lot not found"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
  

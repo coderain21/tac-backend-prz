@@ -108,7 +108,7 @@ function validateToken(pems_data, event, context) {
     }
 
     // Reject the jwt if it's not an 'Access Token'
-    if (decodedJwt.payload.token_use !== 'access') {
+    if (decodedJwt.payload.token_use !== 'id') {
         console.log('Not an access token')
         context.fail('Unauthorized')
         return

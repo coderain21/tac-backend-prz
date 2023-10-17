@@ -194,6 +194,23 @@ functions:
           path: /search-lots
           method: get
 
+              
+  view_lot_details:
+    handler: handlers/view_lots.list_lots
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /lot-details
+          method: get
+
   auction_register:
     handler: handlers/register_auction.register_auction
     runtime: python3.8
@@ -219,7 +236,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          # authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:
@@ -232,22 +249,6 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
-               
-  view_lot_details:
-    handler: handlers/view_lots.list_lots
-    runtime: python3.8
-    layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-      - sg-0882c1da39e729097
-      subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
-          path: /lot-details
-          method: get
 
 plugins:
   - serverless-offline
