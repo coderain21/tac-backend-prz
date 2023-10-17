@@ -34,6 +34,7 @@ provider:
     S3_BUCKET: ${env:S3_BUCKET}
     LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
     COUNTER_LOT: ${env:COUNTER_LOT}
+    REGISTER_AUCTION_COLLECTION: ${env:REGISTER_AUCTION_COLLECTION}
     SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
     USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
     KMS_KEY_ID: ${env:KMS_KEY_ID}
@@ -66,6 +67,7 @@ provider:
             - lambda:*
             - mobiletargeting:*
             - dynamodb:*
+            - execute-api:*
           Resource: "*"
  
 package:
@@ -110,22 +112,6 @@ functions:
           cors: true
           path: /view
           method: get
-
-  # create_example:
-  #   handler: handlers/example.create_auction
-  #   layers:
-  #     - ${env:COMMON_LIB_ARN}
-  #   vpc:
-  #     securityGroupIds:
-  #       - sg-0882c1da39e729097
-  #     subnetIds:
-  #       - subnet-0ff05c7c2bd2a3f87
-  #   events:
-  #     - http:
-  #         cors: true
-  #         path: /
-  #         method: post
-  #         authorizer: arn:aws:lambda:us-east-1:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
           
   create_userpools:
     handler: handlers/userpool.create
@@ -143,7 +129,6 @@ functions:
           path: /
           method: get
 
-  # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verify
     runtime: python3.8
@@ -193,6 +178,45 @@ functions:
           path: /view-lots
           method: patch
 
+  auction_register:
+    handler: handlers/register_auction.register_auction
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          path: /auction-register
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
+resources:
+   Resources:
+     GatewayResponseDefault4XX:
+       Type: 'AWS::ApiGateway::GatewayResponse'
+       Properties:
+         ResponseParameters:
+           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+         ResponseType: DEFAULT_4XX
+         RestApiId:
+           Ref: 'ApiGatewayRestApi'
+           
 plugins:
   - serverless-offline
   - serverless-package-external
