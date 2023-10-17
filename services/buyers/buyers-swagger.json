@@ -1063,7 +1063,7 @@
           "schema": {
             "type": "string"
           },
-          "example": "aspa"
+          "example": "asparagus"
         }
   
       ],
@@ -1080,9 +1080,60 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "schema": {
-                          "$ref": "#/components/schemas/Lots"
-                      }
+                        "auction_id":{
+                          "type":"string"
+                        },
+                        "seller_email":{
+                          "type":"string"
+                        },
+                        "title1":{
+                          "type":"integer"
+                        },
+                        "title2":{
+                          "type":"string"
+                        },
+                        "description":{
+                          "type":"string"
+                        },
+                        "starting_price":{
+                          "type":"integer"
+                        },
+                        "low_estimate":{
+                          "type":"integer"
+                        },
+                        "high_estimate":{
+                          "type":"integer"
+                        },
+                        "shipping_details":{
+                          "type":"string"
+                        },
+                        "current_bid":{
+                          "type":"integer"
+                        },
+                        "tags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "images": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": "string"
+                              },
+                              "featured": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "lot_number":{
+                          "type": "integer"
+                        }
+
                       }
                     }
                   }

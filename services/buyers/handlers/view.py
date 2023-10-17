@@ -171,6 +171,9 @@ def view(event, context):
             data = {}
             data["menu_links"] = result.get("menu_links")
             data["logo_image"] = result.get("logo_image")
+            data["header"] = result.get("header")
+            data["font"] = result.get("font")
+            data["buttons"] = result.get("buttons")
             return {
                 "headers": headers,
                 "statusCode": 400,
