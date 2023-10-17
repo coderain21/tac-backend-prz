@@ -958,8 +958,148 @@
           }
       }
     }
-  }
-},
+  },
+  "/search-lots":{
+    "get": {
+      "tags": [
+        "Lots"
+      ],
+      "summary": "search lots",
+      "description": "search lots",
+      "parameters": [
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "to determine the which auction lots to be displayed ",
+          "schema": {
+            "type": "string"
+          },
+          "example": "651e8bed56250b9d9bfa495e"
+        },
+        {
+          "name": "search",
+          "in": "query",
+          "description": "Sort by key",
+          "schema": {
+            "type": "string"
+          },
+          "example": "aspa"
+        }
+  
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully retrieved lots",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { 
+                  "data": {
+                    "schema": {
+                      "$ref": "#/components/schemas/Lots"
+                    }
+                  }
+              },
+              "example": {
+                "data": [
+                  {
+                    "auction_id": "A0006",
+                    "seller_email": "shrinit.poojary@7edge.com",
+                    "title1": "asparagus",
+                    "title2": "",
+                    "description": "<p>veggies</p>",
+                    "starting_price": 111,
+                    "low_estimate": 0,
+                    "high_estimate": 0,
+                    "shipping_details": "",
+                    "current_bid": 0,
+                    "tags": [
+                      "hi",
+                      "hello",
+                      "fellow"
+                    ],
+                    "images": [
+                      {
+                        "url": "DomainName/Auctions/lots/images/0cd698b3-1a2c-3314-07c4-83502068c3e8/4.png",
+                        "featured": true
+                      }
+                    ],
+                    "lot_number": 1
+                  }
+                ]
+              }
+              
+            }
+          }
+        }
+      },
+        "400": {
+          "description": "Bad request",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                      "example": "Please provide the auction_id"
+                    
+                  }
+                }    
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "forbidden",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                      "example": "forbidden"
+                    
+                  }
+                }    
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Not Found",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                      "example": "Lots not found"
+                    
+                  }
+                }    
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    }
+  },
+ 
   "components": {
     "schemas": {
       "Auction": {
