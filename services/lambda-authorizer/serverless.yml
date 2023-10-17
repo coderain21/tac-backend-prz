@@ -31,6 +31,11 @@ package:
 functions:
   lambda-authorizer:
     handler: handlers/auth.handler
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
     layers:
       - ${env:LAMBDA_LAYER}
 

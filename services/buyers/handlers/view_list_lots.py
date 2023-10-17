@@ -41,7 +41,6 @@ def view_list_lots(event, context):
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data.get("auction_id")
         if auction_id is not None:
-            print(123)
             _id = ObjectId(auction_id)
         projection = {
             "_id": 1,
@@ -49,6 +48,7 @@ def view_list_lots(event, context):
             "seller_email": 1
         }
         result = collection.find_one({"_id": _id}, projection)
+        print(result)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -69,11 +69,11 @@ def view_list_lots(event, context):
         elif sort_param == "highest_bid":
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_bid", -1)
+                  projection).sort("current_bid", -1)
         elif sort_param == "lowest_bid":
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_bid", 1)
+                  projection).sort("current_bid", 1)
         else:
             lots_result = lot_collection.find(
                 {"auction_id": auction_id, 'seller_email': seller_email},
