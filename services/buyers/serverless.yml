@@ -210,6 +210,24 @@ functions:
           cors: true
           path: /lot-details
           method: get
+  
+  update_password:
+    handler: handlers/update_password.update_password
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /update-password
+          method: post
+  
+
 
   auction_register:
     handler: handlers/register_auction.register_auction
