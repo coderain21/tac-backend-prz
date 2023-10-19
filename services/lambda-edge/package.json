@@ -1,0 +1,23 @@
+{
+    "name": "deeplay-backend-apis",
+    "version": "1.0.0",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "eslint": "eslint ./services/"
+    },
+    "repository": {
+      "type": "git",
+      "url": "deeplay-backend-apis"
+    },
+    "author": "sandhyashri",
+    "license": "ISC",
+    "devDependencies": {
+    },
+    "description": "",
+    "dependencies": {
+      "mongodb": "^5.7.0",
+      "mongoose": "^7.4.2"
+    }
+  }
+  

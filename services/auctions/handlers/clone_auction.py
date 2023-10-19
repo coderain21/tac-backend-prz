@@ -27,6 +27,12 @@ def clone_auction(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         except:
             return {
                 "statusCode": 403,
@@ -63,6 +69,8 @@ def clone_auction(event, context):
         auction['created_at'] = datetime.datetime.utcnow()
 
         auction["status"] = "Draft"
+
+        auction['total_lots'] = 0
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
         client.close()
