@@ -1,13 +1,13 @@
 services:
-  users:
-    path: services/users
-    config: ${env:config}
-  auctions:
-    path: services/auctions
-    config: ${env:config}
-  buyers:
-    path: services/buyers
-    config: ${env:config}
+  # users:
+  #   path: services/users
+  #   config: ${env:config}
+  # auctions:
+  #   path: services/auctions
+  #   config: ${env:config}
+  # buyers:
+  #   path: services/buyers
+  #   config: ${env:config}
   lambda-authorizer:
     path: services/lambda-authorizer
     config: ${env:config}
