@@ -69,6 +69,8 @@ def clone_auction(event, context):
         auction['created_at'] = datetime.datetime.utcnow()
 
         auction["status"] = "Draft"
+
+        auction['total_lots'] = 0
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
         client.close()

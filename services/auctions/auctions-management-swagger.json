@@ -578,7 +578,93 @@
         
       }
     },
-        "/view":{
+    "/{auction_id}":{
+      "delete": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Delete the auction",
+        "description": "Delete the auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Delete auction record for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted the auction"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You cannot delete the auction with the current status"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction with associated auction_id doesn't exists"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error while deleting the auction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/view":{
       "get": {
         "tags": [
           "Auction"
@@ -1235,7 +1321,110 @@
         }
       }
     },
-        "/import":{
+    "/reorder-lots":{
+      "post":{
+        "tags": [
+          "Lots"
+        ],
+        "summary": "This API is used to reorder the lots",
+        "requestBody":{
+          "required": true,
+          "content":{
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties":{
+                  "auction_id": {
+                    "type": "string"
+                  },
+                  "reorder_lot_number":{
+                    "type": "string"
+                  },
+                  "reorder_position":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {              
+                "auction_id":"A0012",
+                "reorder_lot_number":"10",
+                "reorder_position":"5"
+              }
+            }
+          }
+        },
+        "responses":{
+          "204":{
+            "description":"Update successful"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Lot number is not valid to re-order."
+                    }
+                  },    
+                  "example2":{
+                    "value":{
+                      "message":"auction_id reorder_lot_number and reorder_position are required for reordering a lot."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while importing"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/import":{
       "post": {
         "tags": [
           "Lots"
@@ -1499,6 +1688,15 @@
               "type": "string"
             },
             "example": "A0172"
+          },
+          {
+            "name": "published",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
           }
         ],
         "requestBody": {
@@ -1545,6 +1743,29 @@
               }
             }
           },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction doesn't exists."
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -1570,7 +1791,100 @@
           }
         }
       }
-     }
+     },
+    "/deactivate":{
+      "post": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Auction deactivation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  }
+            },
+            "example": {
+
+                "auction_id":"A0180"
+              
+              }
+
+            }
+          }
+        }
+      },
+        "responses": {
+          "204": {
+            "description": "Successfully deactivated the auction"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide auction_id"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "You cannot deactivate the auction with the current status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction with associated auction_id doesn't exists"
+                    }
+                  }
+                  }
+                }
+              }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while deactivating the auction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          }
+        } 
+    }
 },
   "components": {
     "schemas": {

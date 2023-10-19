@@ -108,9 +108,31 @@ def lambda_handler(event, context):
                                                      return_document=pymongo.ReturnDocument.AFTER,
                                                      upsert=True)
         request_body["lot_number"] = counter["starting_sequence"]
-
+        request_body["seller_email"] = seller_email
         # Insert the lot data into the MongoDB collection
         collection.insert_one(request_body)
+
+        # After inserting the lot, update the total_lots count for the associated auction
+        auction_id = request_body["auction_id"]
+
+        # Check if the auction record already has a "total_lots" field
+        auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+
+        if auction_record and "total_lots" in auction_record:
+            # Increment the existing "total_lots" count
+            auction_collection.update_one(
+                {"auction_id": auction_id, "seller_email": seller_email},
+                {"$inc": {"total_lots": 1}}
+            )
+        else:
+            # Calculate the total lots count and update the auction record
+            total_lots_count = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
+            print(total_lots_count)
+            auction_collection.update_one(
+                {"auction_id": auction_id, "seller_email": seller_email},
+                {"$set": {"total_lots": total_lots_count}}
+            )
+
         client.close()
 
         return {
