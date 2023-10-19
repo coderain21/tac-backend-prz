@@ -1,11 +1,11 @@
 """This module is used to view the auction with auction id"""
 import json
 import os
+from datetime import datetime
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
 import pytz
-from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -41,10 +41,9 @@ def view(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        auction_id = data.get("auction_id")
+        auction_id = data['auction_id']
         if auction_id is not None:
             auction_id = ObjectId(auction_id)
-
         projection = {
             "_id": 1,
             "auction_id": 1,
@@ -82,6 +81,21 @@ def view(event, context):
             "publish_auction_results": 1,
             "passcode": 1,
         }
+        time_zones = {
+            'GMT': 'GMT',
+            'BST': 'Europe/London',
+            'IST': 'Asia/Kolkata',
+            'CET': 'Europe/Paris',
+            'JST': 'Asia/Tokyo',
+            'AES': 'Australia/Sydney',
+            'NZS': 'Pacific/Auckland',
+            'PST': 'America/Los_Angeles',
+            'MST': 'America/Denver',
+            'CST': 'America/Chicago',
+            'EST': 'America/New_York',
+            'UTC': 'UTC'
+        }
+
         result = collection.find_one({"_id": auction_id}, projection)
 
         if result is None:
@@ -96,7 +110,9 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-
+        print(result['start_date'])
+        start_time= result['start_date']
+        end_time= result['end_date']
         # Get the timezone from the result
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
@@ -107,17 +123,32 @@ def view(event, context):
             }
 
         # Convert time_zone_str to a timezone object
-        auction_timezone = pytz.timezone(time_zone_str[:3])
-
+        time_zone_str = time_zone_str[:3]
+        time_zone = time_zones[time_zone_str]
         # Get the current time in the specified timezone
-        current_time = datetime.now(auction_timezone)
+        current_time = datetime.now(pytz.timezone(time_zone))
+        if not time_zone_str:
+            return {
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Timezone is missing for this auction."})
+            }
 
+        # Convert time_zone_str to a time zone object using the dictionary
+        if time_zone_str in time_zones:
+            print(time_zone)
+            start_time = datetime.fromtimestamp(int(start_time.timestamp()),
+                                                 tz=pytz.timezone(time_zone))
+            end_time = datetime.fromtimestamp(int(end_time.timestamp()),
+                                               tz=pytz.timezone(time_zone))
+        else:
+            raise ValueError("Invalid time zone")
         # Convert start_time and end_time to the auction's timezone
-        start_time = result.get("start_date")
-        start_time = auction_timezone.localize(
-            start_time)  # Make it offset-aware
-        end_time = result.get("end_date")
-        end_time = auction_timezone.localize(end_time)  # Make it offset-aware
+        # start_time = result.get("start_date")
+        # start_time = auction_timezone.localize(
+        #     start_time)  # Make it offset-aware
+        # end_time = result.get("end_date")
+        # end_time = auction_timezone.localize(end_time)  # Make it offset-aware
 
         if start_time <= current_time < end_time:
             # Auction is currently accepting bids
@@ -131,7 +162,6 @@ def view(event, context):
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {
                               "$set": {"status": updated_status}})
-
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
@@ -144,7 +174,7 @@ def view(event, context):
             return {
                 "headers": headers,
                 "statusCode": 400,
-                "body": json.dumps({"message": "This is a private auction ,please provide passcode.",
+                "body": json.dumps({"message":"This is a private auction,please provide passcode",
                                     "data": data})
             }
         elif result["make_your_auction_private"] is True and passcode is not None:
