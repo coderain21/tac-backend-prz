@@ -13,7 +13,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def list_lots(event, context):
+def lot_details(event, context):
     """
     The function `list_lots` retrieves details of a lot from a MongoDB database based on the provided
     lot_id.

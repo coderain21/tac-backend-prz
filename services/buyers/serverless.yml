@@ -46,6 +46,11 @@ provider:
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
+    BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
+      Fn::GetAtt:
+      - "sesTemplate"
+      - "Arn"
+    
     
     
   http:
@@ -176,7 +181,7 @@ functions:
       - http:
           cors: true
           path: /view-lots
-          method: patch
+          method: get
   
   search_lots:
     handler: handlers/search_lots.lot_search
@@ -196,7 +201,7 @@ functions:
 
               
   view_lot_details:
-    handler: handlers/view_lots.list_lots
+    handler: handlers/view_lots.lot_details
     runtime: python3.8
     layers:
     - ${env:COMMON_PYTHON_LIB_ARN}
@@ -254,7 +259,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          # authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:
@@ -267,6 +272,15 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+
+     sesTemplate:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties:
+        HtmlPart: ${file(./template/paddle.html)}
+        Subject: "{{subject}}"
+        TemplateDescription: Test
+        TemplateName: paddle_${opt:stage, 'dev'}
+        TextPart: ${file(./template/paddle.html)}
 
 plugins:
   - serverless-offline
