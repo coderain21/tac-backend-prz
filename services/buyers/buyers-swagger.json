@@ -341,7 +341,7 @@
       }
     },
     "/view-lots": {
-      "patch": {
+      "get": {
         "tags": ["Lots"],
         "summary": "view lots",
         "description": "view lots",
@@ -943,7 +943,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "651e4e7f699d157561d20788"
+            "example": "64facdcb8e305feab49525dd"
           }
         ],
         "responses": {
@@ -971,7 +971,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json": {
+              "application/json ": {
                 "schema": {
                   "type": "object",
                   "properties": {
@@ -1240,8 +1240,8 @@
         "tags": [
           "Lots"
         ],
-        "summary": "search lots",
-        "description": "search lots",
+        "summary": "lots details",
+        "description": "lots details",
         "parameters": [
           {
             "name": "lot_id",

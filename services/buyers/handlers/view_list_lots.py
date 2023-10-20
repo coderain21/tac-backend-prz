@@ -65,7 +65,7 @@ def view_list_lots(event, context):
             }
         search_result = lot_collection.find({"auction_id": auction_id,
                                              'seller_email': seller_email,
-                                               **search_criteria})
+                                               **search_criteria}).sort('lot_number',1)
         sort_param = data.get("sort_by", "")
         if sort_param == "highest_price":
             search_result = lot_collection.find({"auction_id": auction_id,
@@ -86,7 +86,7 @@ def view_list_lots(event, context):
         else:
             search_result = lot_collection.find({"auction_id": auction_id,
                                                   'seller_email': seller_email, **search_criteria}
-                                                    )
+                                                    ).sort('lot_number',1)
         lots_list = list(search_result)
         print(144,lots_list)
         return {
