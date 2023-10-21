@@ -36,16 +36,16 @@ def register_auction(event, context):
     """
     try:
         try:
-            # cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            # print(cognito_data)
-            # email_address = cognito_data['email']
-            # if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-            #     return {
-            #     "statusCode": 403,
-            #     "headers": headers,
-            #     "body": json.dumps({"message": "You do not have access to perform this API action"})
-            # }
-            email_address='shrinitpoojary1234@gmail.com'
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            print(cognito_data)
+            email_address = cognito_data['email']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+            # email_address='shrinitpoojary1234@gmail.com'
         except:
             return {
                 "statusCode": 403,
@@ -134,7 +134,7 @@ def register_auction(event, context):
                             "auction_start_time":str(start_time),
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
-                            "img":registeration_type["logo_image"],"subject":"paddle number email sent after the user is successfully registered to the auction."})
+                            "img":registeration_type["logo_image"],"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
             print(template_data,111)
             send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
                                 template_data, os.environ["BUYER_AUCTION_REGISTER_TEMPLATE"])

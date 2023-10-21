@@ -130,7 +130,9 @@ def update_password(event, context):
             return {
                 "statusCode": 400,
                 "headers": headers,
-                "body": json.dumps({"message": "please enter the correct current password"})
+                "body": json.dumps({
+                "message": "Current password is incorrect. The password update cannot be completed"
+               })
             }
         new_password= hash_password(new_password)
         if new_password == encrypt_password:
