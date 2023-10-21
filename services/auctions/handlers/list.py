@@ -38,6 +38,12 @@ def list_auction(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', email_address)
         except:
             return {
@@ -65,9 +71,11 @@ def list_auction(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-
+        allowed_status = {
+        "status": {"$in": ["Draft", "Published", "Completed","Accepting bids"]}
+        }
         projection = {
-            "_id": 0,  # Exclude the ObjectId field
+            "_id": 1,
             "auction_id": 1,
             "title": 1,
             "start_date": 1,
@@ -86,7 +94,27 @@ def list_auction(event, context):
             "add_buyer_fees": 1,
             "fees": 1,
             "make_your_auction_private": 1,
-            "passcode": 1
+            "passcode": 1,
+            "menu_links": 1,
+            "footer.background_color": 1,
+            "footer.text_color": 1,
+            "buttons.background_color": 1,
+            "buttons.text_color": 1,
+            "content_area.background_color": 1,
+            "content_area.text_color": 1,
+            "header.background_color": 1,
+            "header.text_color": 1,
+            "font.hearder_font": 1,
+            "font.body_font": 1,
+            "logo_image": 1,
+            "percentage": 1,
+            "template_name": 1,
+            "logo_redirection_url": 1,
+            "faq": 1,
+            "terms_and_condition": 1,
+            "paddle": 1,
+            "show_bidder_location_in_bidder_history": 1,
+            "publish_auction_results": 1
         }
         if export is not None and export == 1:
             projection_for_export = {
@@ -138,10 +166,14 @@ def list_auction(event, context):
             keyword_condition = {"title": {"$regex": keyword,
                                            "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
+        queries = []
+        queries.append({"seller_email": email_address})
+        queries.append(allowed_status)
 
         # Create the final query using $and operator
         if query_conditions:
             query_conditions.append({"seller_email": email_address})
+            query_conditions.append(allowed_status)
             results = collection.find({"$and": query_conditions}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
             if export is not None and export == 1:
@@ -150,15 +182,15 @@ def list_auction(event, context):
             total_records_count = collection.count_documents(
                 {"$and": query_conditions})
         else:
-            results = collection.find({"seller_email": email_address}, projection).sort(
+            results = collection.find({"$and": queries}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
             if export is not None and export == 1:
                 download_link = export_as_csv(list(collection.find(
-                    {"seller_email": email_address}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
+                    {"$and": queries}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
             total_records_count = collection.count_documents(
-                {"seller_email": email_address})
+                {"$and": queries})
         total_auctions = collection.count_documents(
-                {"seller_email": email_address})
+                {"$and": queries})
         paginated_results = list(results)
         client.close()
         body = {
