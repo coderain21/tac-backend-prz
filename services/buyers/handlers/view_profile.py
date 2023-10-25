@@ -2,7 +2,7 @@
 import json
 import os
 from pymongo import MongoClient
-from bson import ObjectId
+# from bson import ObjectId
 from lib.common_helper import Encoder
 
 headers = {
@@ -34,8 +34,21 @@ def view_profile(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
-        result= collection.find_one({'email_address':email_address})
+        result= collection.find_one({'email_address':email_address},{ "password": 0,
+                      "terms_and_condition": 0,
+                      "user_type":0,
+                      "newsletter_notification":0,'_id': 0})
         client.close()
+        if 'address_line1' not in result:
+            result['address_line1'] = ""
+        if 'address_line2' not in result:
+            result['address_line2'] = ""
+        if 'phone_no' not in result:
+            result['phone_no'] = ""
+        if 'state' not in result:
+            result['state'] = ""
+        if 'country' not in result:
+            result['country'] = ""
         if result is None:
             return {
                 "statusCode": 404,
