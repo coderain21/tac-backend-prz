@@ -11,7 +11,7 @@ import boto3
 import jwt
 from passlib.hash import pbkdf2_sha256
 from pymongo import MongoClient
-from lib.get import fetch_seller_data_from_auction,fetch_buyer_data,fetch_user_pool_data
+from lib.get import fetch_seller_data_from_auction, fetch_buyer_data, fetch_user_pool_data
 
 headers = {
     'Content-Type': 'application/json',
@@ -19,7 +19,22 @@ headers = {
     'Access-Control-Allow-Credentials': False,
 }
 
+
 def is_valid_password(password):
+    """
+    Check if a given password meets the following criteria:
+
+    1. It must be at least 8 characters long.
+    2. It must contain at least one lowercase letter.
+    3. It must contain at least one uppercase letter.
+    4. It must contain at least one digit.
+
+    Parameters:
+    password (str): The password string to be validated.
+
+    Returns:
+    bool: True if the password meets the criteria, False otherwise.
+    """
     # Define the regular expression pattern
     pattern = r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$'
 
@@ -28,6 +43,7 @@ def is_valid_password(password):
         return True
     else:
         return False
+
 
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
@@ -41,6 +57,7 @@ def hash_password(password):
     # Generate a hashed password using Passlib's pbkdf2_sha256
     hashed_password = pbkdf2_sha256.using(salt=b"indy@auction").hash(password)
     return hashed_password
+
 
 def password_reset(event, context):
     """
@@ -76,13 +93,14 @@ def password_reset(event, context):
 
         if not is_valid_password(password):
             return {
-            "headers": headers,
-            "statusCode": 400,
-            "body": json.dumps({"message": "Invalid password"})
-        }
+                "headers": headers,
+                "statusCode": 400,
+                "body": json.dumps({"message": "Invalid password"})
+            }
 
         try:
-            cognito_client = boto3.client('cognito-idp', region_name='eu-west-2')
+            cognito_client = boto3.client(
+                'cognito-idp', region_name='eu-west-2')
             jwt_secret = os.environ.get(
                 'JWT_SECRET_KEY')
             encoded_data = jwt.decode(
@@ -94,13 +112,14 @@ def password_reset(event, context):
                     "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Seller doesn't exists"})}
-            buyer_data = fetch_buyer_data(seller_data["seller_email"],encoded_data.get("email_address"))
+            buyer_data = fetch_buyer_data(
+                seller_data["seller_email"], encoded_data.get("email_address"))
             if not buyer_data:
                 return {
                     "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Invalid or Unregistered email_address"})}
-            
+
             user_pool = fetch_user_pool_data(seller_data["seller_email"])
 
             client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -110,8 +129,8 @@ def password_reset(event, context):
             response = reset_password(
                 cognito_client, encoded_data['email_address'], password, user_pool["user_pool_id"])
 
-
-            filter = {'seller_email': seller_data["seller_email"],'email_address' : data.get("email_address")}
+            filter = {'seller_email': seller_data["seller_email"], 'email_address': data.get(
+                "email_address")}
 
             update = {'$set': {'password': hash_password(password)}}
 
@@ -150,7 +169,7 @@ def password_reset(event, context):
         }
 
 
-def reset_password(client, username, password,user_pool_id):
+def reset_password(client, username, password, user_pool_id):
     """
     Reset the user's password using the Cognito admin API.
 
