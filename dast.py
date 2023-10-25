@@ -40,7 +40,7 @@ print(swagger_files)
 async def run_dast(url, index, api_token):
     print(url)
     # current_directory = os.getcwd()
-    command = 'docker run -v "$(pwd):/zap/wrk/:rw" -t -e ZAP_AUTH_HEADER_VALUE="Bearer {0}" softwaresecurityproject/zap-stable zap-api-scan.py -t "{1}" -f openapi -r test_results/report{2}.html'.format(api_token, url, index)
+    command = f"docker run -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t '{url}' -f openapi -r test_results/report{index}.html"
     # command = f"docker run -v {current_directory}:/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t '{url}' -f openapi -r test_results/report{index}.html"
     try:
         print(command)
