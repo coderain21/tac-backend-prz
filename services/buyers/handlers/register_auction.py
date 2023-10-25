@@ -5,8 +5,8 @@ import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.helper_python import send_pinpoint_email
-# from datetime import datetime
-# from lib.common_helper import Encoder
+from datetime import datetime
+#from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -153,11 +153,14 @@ def register_auction(event, context):
                         "email_address":email_address,
                         "seller_email":seller_email,
                         "status":register_status,
-                        "paddle": paddle['starting_sequence']
+                        "paddle": paddle['starting_sequence'],
+                        'created_at': datetime.utcnow()
                         }
         print(12232)
         if status is not None and status['status']=='Declined':
-            auction_register.update_one({"auction_id": auction_id,'email_address':email_address },{"$set":{"status":'Pending'}})
+            auction_register.update_one({"auction_id": auction_id,'email_address':email_address },
+                                        {"$set":{"status":'Pending',
+                                        'created_at': datetime.utcnow()}})
         auction_register.insert_one(data_to_insert)
         return {
                     "statusCode": 204,
