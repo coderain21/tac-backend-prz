@@ -160,11 +160,16 @@ definitions:
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
           - mkdir test_results
           - pip3 install boto3
+          - export NODE_OPTIONS=--max-old-space-size=8192
           - python3 dast.py
         artifacts:
           - test_results/**
 
 pipelines:
+  custom: 
+   
+    BDD:
+      - step: *DAST
   pull-requests:  
     feature/**:
       - step: *DAST
