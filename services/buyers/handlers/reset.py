@@ -141,7 +141,7 @@ def password_reset(event, context):
             return {
                 "headers": headers,
                 "statusCode": 204,
-                "body": json.dumps({"message": "Password changed successfully"})
+                "body": json.dumps({})
             }
         except jwt.ExpiredSignatureError:
             return {
