@@ -80,7 +80,7 @@ def view_list_lots(event, context):
                                              'seller_email': seller_email, **search_criteria}
                                                ).sort("current_bid", -1)
         elif sort_param == "lowest_bid":
-            search_result = lot_collection.find({"auction_id": auction_id, 
+            search_result = lot_collection.find({"auction_id": auction_id,
                                             'seller_email': seller_email, **search_criteria}
                                             ).sort("current_bid", 1)
         else:
