@@ -160,6 +160,7 @@ definitions:
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
           - mkdir test_results
           - pip3 install boto3
+          - pip3 install python-dotenv
           - export NODE_OPTIONS=--max-old-space-size=8192
           - python3 dast.py
         artifacts:
