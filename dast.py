@@ -61,21 +61,29 @@ async def run_dast(url, index, api_token):
         raise
     return None
 
-async def run_dast_for_swagger_files(swagger_files):
-    tasks = []
-    api_token = generate_token()
-    for index, url in enumerate(swagger_files):
-        tasks.append(run_dast(url, index, api_token))
+# async def run_dast_for_swagger_files(swagger_files):
+#     tasks = []
+#     api_token = generate_token("USER")
+#     api_token1 = generate_token("BUYERS")
+#     for index, url in enumerate(swagger_files):
+#         tasks.append(run_dast(url, index, api_token))
 
-    await asyncio.gather(*tasks)
+#     await asyncio.gather(*tasks)
 
-def generate_token():
+def generate_token(user_type):
     try:
-        user_pool_id = 'eu-west-2_HfcLwHwnO'
-        client_id = '4hq3rgf5j572n1ocashp2esc1c'
-        username = 'anusha.k+buyer1@7edge.com'
-        password = 'Buyer123'
-
+        if user_type == 'USER':
+            user_pool_id = os.environ['COGNITO_USER_POOL_ID']
+            client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
+            username = 'anusha.k+indyauction@7edge.com'
+            password = os.environ['PASSWORD']
+            print(user_pool_id,client_id, username, password)
+        if user_type == 'BUYERS':
+            user_pool_id = os.environ['BUYER_COGNITO_USER_POOL_ID']
+            client_id = os.environ['BUYER_COGNITO_SELLER_CLIENT_ID']
+            username = os.environ['BUYER_API_USERNAME']
+            password = os.environ['BUYER_PASSWORD']
+            print(user_pool_id,client_id, username, password)
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
@@ -89,14 +97,44 @@ def generate_token():
                 'PASSWORD': password
             }
         )
-        token = response['AuthenticationResult']['IdToken']
-        return token
+        if 'AuthenticationResult' in response:
+            token = response['AuthenticationResult']['IdToken']
+            print("Token:buyyyywwwwwwwwww", token)
+        else:
+            token = response['Session']
+            print(token,"usedjhewuef")
+        os.environ['TOKEN'] = token
+        
+        
     except ClientError as e:
-        print(e)
+        print('error sadagrfyhh', e)
 
 async def main():
     try:
-        await run_dast_for_swagger_files(swagger_files)
+        
+        user_token =  generate_token("USER")
+        buyer_token =  generate_token("BUYERS")
+        print(buyer_token,"bbb")
+        print(user_token,"iuytj")
+
+        if buyer_token and user_token:
+            tokens = {
+                # 'services/admin-users': easyid_admin_token,
+                # 'services/enterprises': enterprise_user_token,
+                'services/auctions': buyer_token,
+                'services/users': user_token,
+                'services/buyers': user_token
+                
+                # Add other service directories and their corresponding tokens here
+            }
+
+            for index, service_dir in enumerate(swagger_files):
+                for service_directory, token in tokens.items():
+                    if service_directory in service_dir:
+                        await run_dast(service_dir, index, token)
+                        break  # Break the loop after finding and using the correct token
+        else:
+            print("Token generation failed.")
     except Exception as e:
         print("Error in main function:", str(e))
 
