@@ -14,6 +14,18 @@ headers = {
 }
 
 def view_profile(event, context):
+    """
+    The `view_profile` function retrieves user profile data from a MongoDB database based on the user's
+    email address and returns the data as a JSON response.
+    
+    :param event: The `event` parameter is a dictionary that contains information about the event that
+    triggered the function. It typically includes details such as the HTTP request, headers, and body
+    :param context: The `context` parameter is a context object that provides information about the
+    runtime environment of the function. It includes details such as the AWS request ID, function name,
+    and other metadata
+    :return: The function `view_profile` returns a JSON response with a status code, headers, and a
+    body. The specific content of the response depends on the execution path of the code.
+    """
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
