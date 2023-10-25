@@ -14,6 +14,7 @@ import boto3
 from pymongo import MongoClient
 import json
 import os
+from bson import ObjectId
 import base64
 from botocore.exceptions import ClientError
 from lib.common_helper import Encoder
@@ -39,7 +40,7 @@ def encrypt_data(data):
 
     # Encrypt the data using AWS KMS
     response = kms_client.encrypt(
-        KeyId=os.environ['KMS_KEY_ID'],  # Replace with your KMS key ID
+        KeyId=os.environ['KMS_KEY_ID'],
         Plaintext=data.encode('utf-8')
     )
 
@@ -47,7 +48,6 @@ def encrypt_data(data):
     encrypted_data = base64.b64encode(response['CiphertextBlob']).decode('utf-8')
 
     return encrypted_data
-
 
 def create_user_pool(sub_domain_name):
     """Create a Cognito User Pool with a specified subdomain and associated configurations.
@@ -83,6 +83,9 @@ def create_user_pool(sub_domain_name):
         ],
         Policies={
             'PasswordPolicy': password_policy
+        },
+        AdminCreateUserConfig={
+            'AllowAdminCreateUserOnly': True
         }
     )
     user_pool_id = response['UserPool']['Id']
@@ -91,70 +94,140 @@ def create_user_pool(sub_domain_name):
     response = cognito_client.create_user_pool_client(
         UserPoolId=user_pool_id,
         ClientName=f'Client_{sub_domain_name}',
-        GenerateSecret=False,  # You can set this to True if needed
+        GenerateSecret=False,
+        TokenValidityUnits={
+        'AccessToken': 'minutes',
+        'IdToken': 'minutes',
+        'RefreshToken': 'days'
+        },
+        ExplicitAuthFlows=[
+        'ALLOW_ADMIN_USER_PASSWORD_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_PASSWORD_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_REFRESH_TOKEN_AUTH'
+        ],
+        AccessTokenValidity=5,
+        IdTokenValidity=5,
+        RefreshTokenValidity=3650
     )
     client_id = response['UserPoolClient']['ClientId']
     group_response = cognito_client.create_group(
         GroupName='buyer',
         UserPoolId=user_pool_id
     )
-
     return user_pool_id, client_id
 
-def fetch_item_from_dynamodb(sub_domain_name):
+def fetch_item_from_dynamodb(sub_domain_name, default,id):
     """Fetch data from DynamoDB based on a subdomain name and query MongoDB for user pool data.
 
     Args:
         sub_domain_name (str): The subdomain name to use for data retrieval.
+        default (bool): True if it's a default domain, False otherwise.
 
     Returns:
         dict: User pool data associated with the subdomain name or an error response if the subdomain is not found.
     """
     try:
-        dynamodb = boto3.client('dynamodb', region_name='us-east-1')
-        # Fetch item from DynamoDB using sub_domain_name
-        response = dynamodb.get_item(
-            TableName=os.environ['SUB_DOMAIN_TABLE'],
-            Key={
-                'subdomain_name': {'S': sub_domain_name}
-            }
-        )
-        item = response.get('Item', None)
-        if item:
-            email_address = item['email_address']['S']
-
-            client = MongoClient(os.environ['MONGO_CLIENT'])
-            db = client[os.environ['DATABASE']]
-            user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-
-            # Query MongoDB for user pool data
-            user_pool_data = user_pools_collection.find_one({'email_address': email_address},{"_id":0,"email_address":0,"sub_domain_name":0})
-
-            if not user_pool_data:
-                # If user pool data doesn't exist, create it
-                user_pool_id, client_id = create_user_pool(sub_domain_name)
-                user_pool_data = {
-                    'sub_domain_name': sub_domain_name,
-                    'email_address': email_address,
-                    'user_pool_id': user_pool_id,
-                    'client_id': client_id
+        if not default:
+            dynamodb = boto3.client('dynamodb', region_name='us-east-1')
+            # Fetch item from DynamoDB using sub_domain_name
+            response = dynamodb.get_item(
+                TableName=os.environ['SUB_DOMAIN_TABLE'],
+                Key={
+                    'subdomain_name': {'S': sub_domain_name}
                 }
-                user_pools_collection.insert_one(user_pool_data)
-                print("User pool and client created and stored in MongoDB:", user_pool_data)
+            )
+            item = response.get('Item', None)
+            if item:
+                email_address = item['email_address']['S']
             else:
-                print("User pool data already exists in MongoDB:", user_pool_data)
-            client.close()
-            return user_pool_data
-        else:
-            return {
-                "headers": headers,
-                "statusCode": 404,
-                "body": json.dumps({"message": "Domain not found"})
+                return {
+                    "headers": headers,
+                    "statusCode": 404,
+                    "body": json.dumps({"message": "Domain not found"})
+                }
+
+        # If it's the default domain, fetch seller's email from the auction collection using an ID
+        seller_email = fetch_seller_email_from_auction(id)
+        print(seller_email)
+        email_data = email_address if not default else seller_email
+
+        # Split the seller_email before '@' to get the username
+        username = email_data.split('@')[0]
+        print(username)
+        # Check if user pool data already exists for the seller email and domain
+        user_pool_data = get_user_pool_data(email_data, sub_domain_name)
+
+        if not user_pool_data:
+            # Create the user pool with the seller email
+            user_pool_id, client_id = create_user_pool(username)
+
+            # Store user pool data in MongoDB
+            user_pool_data = {
+                'sub_domain_name': sub_domain_name,
+                'email_address': email_data,
+                'user_pool_id': user_pool_id,
+                'client_id': client_id,
             }
 
+            # Store user pool data in MongoDB
+            store_user_pool_data_in_mongodb(user_pool_data)
+        return user_pool_data
     except ClientError as e:
         print("Error:", e)
         return None
+
+def fetch_seller_email_from_auction(auction_id):
+    """
+    Fetch the seller's email from the auction collection in MongoDB.
+
+    Args:
+        auction_id (str): The unique identifier of the auction.
+
+    Returns:
+        str: The seller's email associated with the given auction_id or None if not found.
+    """
+    client = MongoClient(os.environ['MONGO_CLIENT'])
+    db = client[os.environ['DATABASE']]
+    auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+    email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
+    client.close()
+    return email
+
+def store_user_pool_data_in_mongodb(user_pool_data):
+    """
+    Store user pool data in a MongoDB collection.
+
+    Args:
+        user_pool_data (dict): User pool data to be stored, including user pool ID, client ID, email, and subdomain.
+
+    Returns:
+        None
+    """
+    client = MongoClient(os.environ['MONGO_CLIENT'])
+    db = client[os.environ['DATABASE']]
+    user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+    user_pools_collection.insert_one(user_pool_data)
+    client.close()
+
+def get_user_pool_data(username, sub_domain_name):
+    """
+    Retrieve user pool data from a MongoDB collection based on username and subdomain.
+
+    Args:
+        username (str): The username (email) associated with the user pool.
+        sub_domain_name (str): The subdomain name associated with the user pool.
+
+    Returns:
+        dict: User pool data, excluding email and subdomain, or None if not found.
+    """
+    client = MongoClient(os.environ['MONGO_CLIENT'])
+    db = client[os.environ['DATABASE']]
+    user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+    user_pool_data = user_pools_collection.find_one({
+        'email_address': username,
+        'sub_domain_name': sub_domain_name
+    },{"_id":0,"email_address":0,"sub_domain_name":0})
+
+    client.close()
+    return user_pool_data
 
 def create(event, context):
     """Handle a create event for a subdomain, fetch relevant data, encrypt it, and return the encrypted data as a response.
@@ -167,9 +240,10 @@ def create(event, context):
         dict: A response containing the encrypted data as a base64-encoded string or an error response in case of issues.
     """
     try:
-        sub_domain_name = event['pathParameters']['domain']
-        data = fetch_item_from_dynamodb(sub_domain_name)
-        print(data)
+        sub_domain_name = event['queryStringParameters'].get('domain')
+        auction_id = event['queryStringParameters'].get('auction_id')
+        default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
+        data = fetch_item_from_dynamodb(sub_domain_name, default, auction_id)
         # Encrypt the data using AWS KMS
         encrypted_data = encrypt_data(json.dumps(data, cls=Encoder))
 
