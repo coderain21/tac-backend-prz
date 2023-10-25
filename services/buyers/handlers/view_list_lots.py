@@ -3,6 +3,7 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
+from lib.common_helper import Encoder
 
 headers = {
     'Content-Type': 'application/json',
@@ -40,49 +41,58 @@ def view_list_lots(event, context):
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data.get("auction_id")
         if auction_id is not None:
-            print(123)
             _id = ObjectId(auction_id)
         projection = {
-            "_id": 0,
+            "_id": 1,
             "auction_id": 1,
             "seller_email": 1
         }
         result = collection.find_one({"_id": _id}, projection)
+        print(result)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
         seller_email = result['seller_email']
         auction_id = result['auction_id']
-        lots_result = result = collection.find_one(
-            {"auction_id": auction_id, 'seller_email': seller_email}, {'_id': 0})
-        projection = {'_id': 0}  # Exclude the _id field from the query results
+        search_keyword = data.get('search')
+        search_criteria={}
+        if search_keyword:
+            search_criteria = {
+                "$or": [
+                    {"title1": {"$regex": f".*{search_keyword}.*", "$options": "i"}},
+                    {"tags": {"$elemMatch": {"$regex": f".*{search_keyword}.*", "$options": "i"}}}
+                ]
+            }
+        search_result = lot_collection.find({"auction_id": auction_id,
+                                             'seller_email': seller_email,
+                                               **search_criteria}).sort('lot_number',1)
         sort_param = data.get("sort_by", "")
         if sort_param == "highest_price":
-            lots_result = lot_collection.find(
-                {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_price", -1)
+            search_result = lot_collection.find({"auction_id": auction_id,
+                                            'seller_email': seller_email, **search_criteria} 
+                                            ).sort("starting_price", -1)
         elif sort_param == "lowest_price":
-            lots_result = lot_collection.find(
-                {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_price", 1)
+            search_result = lot_collection.find({"auction_id": auction_id,
+                                             'seller_email': seller_email, **search_criteria}
+                                               ).sort("starting_price", 1)
         elif sort_param == "highest_bid":
-            lots_result = lot_collection.find(
-                {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_bid", -1)
+            search_result = lot_collection.find({"auction_id": auction_id,
+                                             'seller_email': seller_email, **search_criteria}
+                                               ).sort("current_bid", -1)
         elif sort_param == "lowest_bid":
-            lots_result = lot_collection.find(
-                {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection).sort("starting_bid", 1)
+            search_result = lot_collection.find({"auction_id": auction_id,
+                                            'seller_email': seller_email, **search_criteria}
+                                            ).sort("current_bid", 1)
         else:
-            lots_result = lot_collection.find(
-                {"auction_id": auction_id, 'seller_email': seller_email},
-                  projection)
-        lots_list = list(lots_result)
+            search_result = lot_collection.find({"auction_id": auction_id,
+                                                  'seller_email': seller_email, **search_criteria}
+                                                    ).sort('lot_number',1)
+        lots_list = list(search_result)
         print(144,lots_list)
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data': lots_list})
+            "body": json.dumps({'data': lots_list}, cls=Encoder)
         }
 
     except Exception as e:

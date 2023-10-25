@@ -17,6 +17,7 @@ services/**/entities
 services/**/lib
 services/**/access_token_genation.py
 services/**/api-testing.sh
+test-results
 # Compiled Java class files
 *.class
 # Compiled Python bytecode

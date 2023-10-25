@@ -169,7 +169,7 @@ def fetch_item_from_dynamodb(sub_domain_name, default,id):
 
             # Store user pool data in MongoDB
             store_user_pool_data_in_mongodb(user_pool_data)
-
+        return user_pool_data
     except ClientError as e:
         print("Error:", e)
         return None

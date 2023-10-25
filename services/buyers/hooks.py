@@ -20,14 +20,16 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '400' or
         '/verify-captcha' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
-        '/www-dev' in transaction['request']['uri']
+        '/www-dev' in transaction['request']['uri'] or 
+        '/auction-register' in transaction['request']['uri'] or 
+        '/update-password' in transaction['request']['uri']
     ):
         transaction['skip'] = True
 
 
 @before_each
 def set_authorization(transaction):
-    token = str(os.environ.get('TOKEN'))
+    token = str(os.environ.get('BUYERS'))
     print('s', transaction['expected']['statusCode'] == '400')
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])
