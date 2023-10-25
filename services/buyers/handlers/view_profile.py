@@ -15,23 +15,23 @@ headers = {
 
 def view_profile(event, context):
     try:
-        # try:
-        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-        #     print(cognito_data['username'])
-        #     email_address = cognito_data['username']
-        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        email_address= 'shrinit.poojary+100@7edge.com'
+        try:
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            print(cognito_data['username'])
+            email_address = cognito_data['username']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        # email_address= 'shrinit.poojary+100@7edge.com'
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
