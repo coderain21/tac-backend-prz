@@ -15,26 +15,54 @@ headers = {
 
 def view_profile(event, context):
     try:
-        try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data['username'])
-            email_address = cognito_data['username']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # try:
+        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+        #     print(cognito_data['username'])
+        #     email_address = cognito_data['username']
+        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
+        email_address= 'shrinit.poojary+100@7edge.com'
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
-        result= collection.find_one({'email_address':email_address},{ "password": 0,
+        data = event['queryStringParameters']
+        if data['update'] == 'True':
+            print(1)
+            body = json.loads(event['body'])
+            update_data={}
+            try:
+                update_data['first_name']= body['first_name']
+                # update_data['last_name']= data['last_name']
+                update_data['phone_no']= body['phone_no']
+                print(update_data)
+            except Exception:
+                return {
+                    "statusCode": 404,
+                    "headers": headers,
+                    "body": json.dumps({"message": 'please enter the required fileds'})
+                }
+            if body['last_name']:
+                update_data['last_name']= body['last_name']
+            result= collection.find_one_and_update({'email_address':email_address},
+                                                   {"$set": update_data})
+            
+            return{
+            "statusCode": 200,
+            "headers": headers,
+            "body": json.dumps({'data':result},cls=Encoder)
+            }
+        result= collection.find_one({'email_address':email_address},
+                      { "password": 0,
                       "terms_and_condition": 0,
                       "user_type":0,
                       "newsletter_notification":0,'_id': 0})
