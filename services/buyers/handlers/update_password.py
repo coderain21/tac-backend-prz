@@ -89,8 +89,7 @@ def update_password(event, context):
     """
     try:
         try:
-            cognito_data = json.loads(
-                event['requestContext']['authorizer']['data'])
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
@@ -100,6 +99,7 @@ def update_password(event, context):
                     "body": json.dumps(
                         {"message": "You do not have access to perform this API action"})
                 }
+            # email_address= 'shrinit.poojary+100@7edge.com'
         except:
             return {
                 "statusCode": 403,

@@ -111,7 +111,6 @@ def register_auction(event, context):
         print(11)
         paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
                             "seller_email": seller_email,
-                            "buyer_email":email_address,
                             'record_type': 'Paddle'},
                             {'$inc': {
                                 'starting_sequence': 1}},
@@ -137,7 +136,7 @@ def register_auction(event, context):
                             "img":registeration_type["logo_image"],"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
             print(template_data,111)
             send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
-                                template_data, os.environ["BUYER_AUCTION_REGISTER_TEMPLATE"])
+                                template_data,'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
         else:
             print(11111)
             register_status="Pending"

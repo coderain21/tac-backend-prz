@@ -42,7 +42,15 @@ def lot_details(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         result= collection.find_one({'_id': lot_id})
+        auction_details= auction.find_one({'auction_id': result['auction_id'],
+                                            'seller_email': result['seller_email']},
+                                          {'faq':1,'terms_and_condition':1,'menu_links':1,'font':1})
+        result['faq']=auction_details['faq']
+        result['font']=auction_details['font']
+        result['terms_and_condition']= auction_details['terms_and_condition']
+        result['menu_links']= auction_details['menu_links']
         print(result)
         client.close()
         if result is None:
