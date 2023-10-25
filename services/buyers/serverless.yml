@@ -294,6 +294,7 @@ functions:
     runtime: python3.8
     layers: 
       - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${env:ENCRYPTION_LAYER}
     vpc:
         securityGroupIds:
           - sg-0882c1da39e729097

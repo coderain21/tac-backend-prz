@@ -36,7 +36,7 @@ def admin_set_password(userData, userpool_id):
     """
     The `admin_set_password` function updates the password for a user in a user pool using the AWS
     Cognito service.
-    
+
     :param userData: The `userData` parameter is a dictionary that contains the user's email address and
     password. It should have the following structure:
     :param userpool_id: The `userpool_id` parameter is the unique identifier for the user pool in Amazon
@@ -78,7 +78,7 @@ def update_password(event, context):
     """
     The above function is a Python code that updates a user's password in a Cognito user pool based on
     certain conditions and returns appropriate responses.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, and body
     :param context: The `context` parameter is a context object that provides information about the

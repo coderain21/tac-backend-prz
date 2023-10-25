@@ -17,7 +17,7 @@ def lot_details(event, context):
     """
     The function `list_lots` retrieves details of a lot from a MongoDB database based on the provided
     lot_id.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. In this case, it is expected to have a key called `'queryStringParameters'`
     which contains the query parameters passed to the function

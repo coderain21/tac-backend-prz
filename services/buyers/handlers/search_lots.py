@@ -16,7 +16,7 @@ def lot_search(event, context):
     """
     The `lot_search` function searches for lots in an auction based on the provided auction ID and
     search keyword.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. In this case, it is expected to have a key called 'queryStringParameters'
     which contains the query parameters passed to the function
