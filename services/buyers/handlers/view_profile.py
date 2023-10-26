@@ -55,6 +55,7 @@ def view_profile(event, context):
             body = json.loads(event['body'])
             update_data={}
             try:
+                update_data['country_code']= body['country_code']
                 update_data['first_name']= body['first_name']
                 # update_data['last_name']= data['last_name']
                 update_data['phone_number']= body['phone_number']
