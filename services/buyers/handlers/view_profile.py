@@ -28,15 +28,17 @@ def view_profile(event, context):
     """
     try:
         try:
+            print(event)
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data['username'])
-            email_address = cognito_data['username']
+            print(cognito_data)
+            email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+            # email_address='shrinitpoojary1234@gmail.com'
         except:
             return {
                 "statusCode": 403,
@@ -55,7 +57,7 @@ def view_profile(event, context):
             try:
                 update_data['first_name']= body['first_name']
                 # update_data['last_name']= data['last_name']
-                update_data['phone_no']= body['phone_no']
+                update_data['phone_number']= body['phone_number']
                 print(update_data)
             except Exception:
                 return {

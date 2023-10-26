@@ -140,7 +140,7 @@ def update_password(event, context):
             return {
                 "statusCode": 400,
                 "headers": headers,
-                "body": json.dumps({"message": "new password is same as old password"})
+                "body": json.dumps({"message": "New password cannot be the same as old password. Please try again."})
             }
         confirm_password = hash_password(confirm_password)
         if new_password != confirm_password:

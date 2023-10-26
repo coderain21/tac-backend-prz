@@ -286,9 +286,21 @@ functions:
       - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
           path: /profile
           method: patch
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
     runtime: python3.8

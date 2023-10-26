@@ -1758,6 +1758,29 @@
         "tags": ["Users"],
         "summary": "View buyer profile",
         "description": "View auction profile",
+        "parameters": [
+          {
+            "name": "update",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+        }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name":{
+                    "type": "string"
+                  },
+                  "phone_no":{
+                    "type": "string"
+                }
+              },
         "responses": {
           "200": {
             "description": "Successfully retrieved auction details",
