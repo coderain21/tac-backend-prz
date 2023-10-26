@@ -1,0 +1,141 @@
+service: bids
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${env:DATABASE}
+    MONGODB_NAME: ${env:MONGODB_NAME}
+    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
+    MONGO_CLIENT: ${env:MONGO_CLIENT}
+    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
+    COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${env:CSV_FILE}
+    S3_BUCKET: ${env:S3_BUCKET}
+    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
+    COUNTER_LOT: ${env:COUNTER_LOT}
+    REGISTER_AUCTION_COLLECTION: ${env:REGISTER_AUCTION_COLLECTION}
+    SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
+    USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
+    KMS_KEY_ID: ${env:KMS_KEY_ID}
+    BUYER_EMAIL_OTP_TEMPLATE: ${env:BUYER_EMAIL_OTP_TEMPLATE}
+    ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
+    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
+    RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
+    RECAPTCHA_URL: ${env:RECAPTCHA_URL}
+    CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
+    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
+    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
+    BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
+      Fn::GetAtt:
+      - "sesTemplate"
+      - "Arn"
+    
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+    TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
+    BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${env:COGNITO_SELLER_CLIENT_ID}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+            - mobiletargeting:*
+            - dynamodb:*
+            - execute-api:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${env:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${env:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+
+functions: 
+  list:
+    handler: handlers/list.list_bidders
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /
+          method: get
+          # authorizer:
+          #     arn: ${env:COGNITO_AUTH_ARN}
+
+
+resources:
+   Resources:
+     GatewayResponseDefault4XX:
+       Type: 'AWS::ApiGateway::GatewayResponse'
+       Properties:
+         ResponseParameters:
+           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+         ResponseType: DEFAULT_4XX
+         RestApiId:
+           Ref: 'ApiGatewayRestApi'
+
+
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
