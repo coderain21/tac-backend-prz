@@ -69,7 +69,6 @@ def view_profile(event, context):
                 update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
-            
             return{
             "statusCode": 200,
             "headers": headers,
