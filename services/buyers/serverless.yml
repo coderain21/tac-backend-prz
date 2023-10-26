@@ -51,7 +51,9 @@ provider:
       - "sesTemplate"
       - "Arn"
     
-    
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+    TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
+    BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     
   http:
     cors: true
@@ -287,6 +289,39 @@ functions:
           cors: true
           path: /profile
           method: patch
+  send-reset-link:
+    handler: handlers/send_reset_link.send_reset_link
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /forgot_password
+          method: post
+
+  update-new-password:
+    handler: handlers/reset.password_reset
+    runtime: python3.8
+    layers: 
+      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${env:ENCRYPTION_LAYER}
+    vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /reset_password
+          method: post
+
 resources:
    Resources:
      GatewayResponseDefault4XX:
