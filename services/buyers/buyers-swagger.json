@@ -1524,6 +1524,347 @@
           }
         }
       }
+    },
+    "/forgot_password":{
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Sends the password reset link to the email.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email_address":{
+                    "type": "string"
+                  },
+                  "logo_image":{
+                    "type": "string"
+                  },
+                  "auction_id":{
+                    "type": "string"
+                  },
+                  "domain":{
+                    "type": "string"
+                  }
+              },
+              "example": {
+                "logo_image":"https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png",
+                "auction_id": "6520008e74542648a5819807",
+                "email_address": "aishwarya+vt@7edge.com",
+                "domain":"www-dev"
+            }
+            }
+          }
+        }
+      },
+        "responses": {
+          "201":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message":"Password Reset Instructions sent successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message":"Please provide auction_id"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message":"There was an error while resetting password, Please try again!"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+              "description": "User not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "example": {
+                      "message":"Invalid or Unregistered email_address"
+                    }
+                  }
+                }
+              }
+            }
+          }
+      }
+     },
+    "/reset_password": {
+      "x-dredd": "skip",        
+      "post":{
+        "tags": ["Users"],
+        "summary": "reseting users password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token":{
+                    "type": "string"
+                  },
+                  "_id":{
+                    "type": "string"
+                  },
+                  "password":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbF9hZGRyZXNzIjoiYWlzaHdhcnlhK3Z0QDdlZGdlLmNvbSIsImV4cCI6MTY5ODI0MTYyNH0.e3zR8w3g49nZe6AkUgnvVRkTWhDmHvyOHZDYjvB5y_k",
+                "_id": "6520008e74542648a5819807",
+                "password": "Aishu7007"
+            }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+
+          },
+          "401": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Token expired"
+                    }
+                  },
+                  "example2":{
+                    "value":{
+                      "message":"Invalid Token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+            "400": {
+              "description": "error",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Please provide token"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Password must be 8-16 characters"
+                      }
+                    },
+                    "example3":{
+                      "value":{
+                        "message":"Invalid password"
+                      }
+                    }
+                  }
+                }
+              }
+
+            },
+            "404": {
+              "description": "error",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Seller doesn't exists"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Invalid or Unregistered email_address"
+                      }
+                    }
+                  }
+                }
+              }
+
+            },
+          "500": {
+            "description": "There was an error while resetting password, Please try again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+     },
+    "/view-profile": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "View buyer profile",
+        "description": "View auction profile",
+        "parameters": [
+          {
+            "name": "update",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+        }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name":{
+                    "type": "string"
+                  },
+                  "phone_no":{
+                    "type": "string"
+                }
+              },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "email_address": {
+                          "type": "string"
+                        },
+                        "first_name": {
+                          "type": "string"
+                        },
+                        "last_name": {
+                          "type": "string"
+                        },
+                        "phone_no":{
+                          "type": "string"
+                        },
+                        "address_line1":{
+                          "type": "string"
+                        },
+                        "address_line2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                      "email_address": "aishwarya@7edge.com",
+                      "first_name": "Aishwarya",
+                      "last_name": "K"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "user not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
