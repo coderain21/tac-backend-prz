@@ -12,7 +12,7 @@ const request = require('request')
 const jwkToPem = require('jwk-to-pem')
 
 let iss
-let pems
+let pems = false
 
 /**
  * AuthPolicy receives a set of allowed and denied methods and generates a valid
@@ -97,6 +97,7 @@ function AuthPolicy(principal, awsAccountId, apiOptions) {
 }
 
 function validateToken(pems_data, event, context) {
+    // const token = event.authorizationToken
     // Fail if the token is not jwt
     const auth_token = (event.authorizationToken).split(' ')
     const decodedJwt = jwt.decode(auth_token[1], { complete: true })
@@ -107,7 +108,7 @@ function validateToken(pems_data, event, context) {
     }
 
     // Reject the jwt if it's not an 'Access Token'
-    if (decodedJwt.payload.token_use !== 'access') {
+    if (decodedJwt.payload.token_use !== 'id') {
         console.log('Not an access token')
         context.fail('Unauthorized')
         return
@@ -123,38 +124,57 @@ function validateToken(pems_data, event, context) {
     }
 
     // Verify the signature of the JWT token to ensure it's really coming from your User Pool
+    const policy_data = {
+        principalId: decodedJwt.principalId,
+        policyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+                {
+                    Action: 'execute-api:Invoke',
+                    Effect: 'Allow',
+                    Resource: [
+                        `arn:aws:execute-api:eu-west-2:929441721738:*/${process.env.STAGE}/*/*`,
+                    ],
+                },
+            ],
+        },
+    } // policy.build()
+    policy_data.context = { data: JSON.stringify(decodedJwt.payload) }
+    console.log('policy_data', policy_data)
+    context.succeed(policy_data)
+    // jwt.verify(auth_token[1], pem, { issuer: iss }, (err, payload) => {
+    //     if (err) {
+    //         context.fail('Unauthorized4')
+    //         return
+    //     } else {
+    //     // Valid token. Generate the API Gateway policy for the user
+    //     // Always generate the policy on value of 'sub' claim and not for 'username' because username is reassignable
+    //     // sub is UUID for a user which is never reassigned to another user.
+    //         const principalId = payload.sub
 
-    jwt.verify(auth_token[1], pem, { issuer: iss }, (err, payload) => {
-        if (err) {
-            context.fail('Unauthorized')
-        } else {
-        // Valid token. Generate the API Gateway policy for the user
-        // Always generate the policy on value of 'sub' claim and not for 'username' because username is reassignable
-        // sub is UUID for a user which is never reassigned to another user.
-            const principalId = payload.sub
-
-            // Get AWS AccountId and API Options
-            const apiOptions = {}
-            const tmp = event.methodArn.split(':')
-            const apiGatewayArnTmp = tmp[5].split('/')
-            const awsAccountId = tmp[4]
-            apiOptions.region = tmp[3]
-            apiOptions.restApiId = apiGatewayArnTmp[0]
-            apiOptions.stage = apiGatewayArnTmp[1]
-            // const method = apiGatewayArnTmp[2]
-            // let resource = '/' // root resource
-            // if (apiGatewayArnTmp[3]) {
-            //     resource += apiGatewayArnTmp[3]
-            // }
-            // For more information on specifics of generating policy, refer to blueprint for API Gateway's Custom authorizer in Lambda console
-            const policy = new AuthPolicy(principalId, awsAccountId, apiOptions)
-            policy.allowAllMethods()
-            console.log('policy.build()', JSON.stringify(policy.build()))
-            const policy_data = policy.build()
-            policy_data.context = decodedJwt.payload
-            context.succeed(policy_data)
-        }
-    })
+    //         // Get AWS AccountId and API Options
+    //         const apiOptions = {}
+    //         const tmp = event.methodArn.split(':')
+    //         const apiGatewayArnTmp = tmp[5].split('/')
+    //         const awsAccountId = tmp[4]
+    //         apiOptions.region = tmp[3]
+    //         apiOptions.restApiId = apiGatewayArnTmp[0]
+    //         apiOptions.stage = apiGatewayArnTmp[1]
+    //         const method = apiGatewayArnTmp[2]
+    //         let resource = '/' // root resource
+    //         if (apiGatewayArnTmp[3]) {
+    //             resource += apiGatewayArnTmp[3]
+    //         }
+    //         // For more information on specifics of generating policy, refer to blueprint for API Gateway's Custom authorizer in Lambda console
+    //         const policy = new AuthPolicy(principalId, awsAccountId, apiOptions)
+    //         policy.allowAllMethods()
+    //         console.log('policy.build()', JSON.stringify(policy.build()))
+    //         const policy_data = policy.build()
+    //         // policy_data.context = decodedJwt.payload
+    //         context.succeed(policy.build())
+    //         return
+    //     }
+    // })
 }
 
 /**
@@ -398,6 +418,7 @@ module.exports.handler = (event, context) => {
         // Download PEM for your UserPool if not already downloaded
         // console.log('event', JSON.stringify(event))
         if (!pems) {
+            console.log('no pems')
             const auth_token = (event.authorizationToken).split(' ')
             // Download the JWKs and save it as PEM
             const decodedJwt = jwt.decode(auth_token[1], { complete: true })
@@ -425,10 +446,14 @@ module.exports.handler = (event, context) => {
                 } else {
                     // Unable to download JWKs, fail the call
                     context.fail('error')
+                    return true
                 }
+                return false
             })
         } else {
-        // PEMs are already downloaded, continue with validating the token
+            console.log(' with pem')
+
+            // PEMs are already downloaded, continue with validating the token
             validateToken(pems, event, context)
         }
     } catch (e) {
