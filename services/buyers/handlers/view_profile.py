@@ -70,42 +70,38 @@ def view_profile(event, context):
                 update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
-            return{
-            "statusCode": 200,
-            "headers": headers,
-            "body": json.dumps({'data':result},cls=Encoder)
-            }
         result= collection.find_one({'email_address':email_address},
                       { "password": 0,
                       "terms_and_condition": 0,
                       "user_type":0,
                       "newsletter_notification":0,'_id': 0})
         client.close()
-        if 'address_line1' not in result:
-            result['address_line1'] = ""
-        if 'address_line2' not in result:
-            result['address_line2'] = ""
-        if 'phone_no' not in result:
-            result['phone_no'] = ""
-        if 'state' not in result:
-            result['state'] = ""
-        if 'country' not in result:
-            result['country'] = ""
         if result is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "user not found"})
             }
+        if 'address_line1' not in result:
+            result['address_line1'] = ""
+        if 'country_code' not in result:
+            result['country_code'] = ""
+        if 'address_line2' not in result:
+            result['address_line2'] = ""
+        if 'phone_number' not in result:
+            result['phone_number'] = ""
+        if 'state' not in result:
+            result['state'] = ""
+        if 'country' not in result:
+            result['country'] = ""
         return{
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data':result})
-
-        }
+            "body": json.dumps({'data':result},cls=Encoder)
+            }
     except Exception as e:
         return {
             "statusCode": 500,
             "headers": headers,
             "body": json.dumps({"message": e})
-        }
+            }

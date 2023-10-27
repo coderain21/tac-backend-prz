@@ -1753,8 +1753,8 @@
         }
       }
      },
-    "/view-profile": {
-      "get": {
+    "/profile": {
+      "patch": {
         "tags": ["Users"],
         "summary": "View buyer profile",
         "description": "View auction profile",
@@ -1777,10 +1777,17 @@
                   "first_name":{
                     "type": "string"
                   },
-                  "phone_no":{
+                  "phone_number":{
                     "type": "string"
+                },
+                "country_code":{
+                  "type": "string"
                 }
-              },
+              }
+            }
+          }
+        }
+        },
         "responses": {
           "200": {
             "description": "Successfully retrieved auction details",
