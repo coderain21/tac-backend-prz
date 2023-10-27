@@ -140,7 +140,7 @@ def list_bidders(event, context):
         return {
             "headers": headers,
             "statusCode": 500,
-            "body": json.dumps({"message": "There was an error "})
+            "body": json.dumps({"message": "There was an error an while retrieving the bidders list."})
         }
 
 

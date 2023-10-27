@@ -159,7 +159,7 @@
                     "properties": {
                       "message": {
                         "type": "string",
-                        "example": "Internal server error"
+                        "example": "There was an error an while retrieving the bidders list."
                       }
                     }
                   }
