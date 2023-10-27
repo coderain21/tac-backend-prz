@@ -55,10 +55,10 @@ def view_profile(event, context):
             body = json.loads(event['body'])
             update_data={}
             try:
-                update_data['country_code']= body['country_code']
+                update_data['country_code']=body['country_code']
                 update_data['first_name']= body['first_name']
                 # update_data['last_name']= data['last_name']
-                update_data['phone_number']= body['phone_number']
+                update_data['phone_no']= body['phone_no']
                 print(update_data)
             except Exception:
                 return {
@@ -70,6 +70,7 @@ def view_profile(event, context):
                 update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
+            result= collection.find_one({'email_address':email_address})
             return{
             "statusCode": 200,
             "headers": headers,
@@ -83,10 +84,12 @@ def view_profile(event, context):
         client.close()
         if 'address_line1' not in result:
             result['address_line1'] = ""
+        if 'country_code' not in result:
+            result['country_code'] = ""
         if 'address_line2' not in result:
             result['address_line2'] = ""
         if 'phone_no' not in result:
-            result['phone_no'] = ""
+            result['phone_number'] = ""
         if 'state' not in result:
             result['state'] = ""
         if 'country' not in result:
