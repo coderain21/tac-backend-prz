@@ -8,5 +8,8 @@ services:
   buyers:
     path: services/buyers
     config: ${env:config}
+  lambda-authorizer:
+    path: services/lambda-authorizer
+    config: ${env:config}
 
     

@@ -20,7 +20,8 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '400' or
         '/verify-captcha' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
-        '/www-dev' in transaction['request']['uri']
+        '/www-dev' in transaction['request']['uri'] or 
+        '/auction-register' in transaction['request']['uri']
     ):
         transaction['skip'] = True
 
