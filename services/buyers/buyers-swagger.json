@@ -1714,10 +1714,10 @@
           }
         }
       }
-    },
-    "/view-profile": {
-      "get": {
-        "tags": ["Buyers Management"],
+     },
+    "/profile": {
+      "patch": {
+        "tags": ["Users"],
         "summary": "View buyer profile",
         "description": "View auction profile",
         "parameters": [
@@ -1740,13 +1740,16 @@
                   "first_name": {
                     "type": "string"
                   },
-                  "phone_no": {
+                  "phone_number":{
                     "type": "string"
-                  }
+                },
+                "country_code":{
+                  "type": "string"
                 }
               }
             }
           }
+        }
         },
         "responses": {
           "200": {

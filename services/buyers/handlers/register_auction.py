@@ -130,9 +130,8 @@ def register_auction(event, context):
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
                             "img":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            print(template_data,111)
             send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
-                                template_data,'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+                                template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
             data_to_insert= {
                         'first_name': first_name,
                         'last_name': last_name,
@@ -169,4 +168,3 @@ def register_auction(event, context):
             'headers': headers,
             "body": json.dumps({"message": "Internal server error"})
         }
-    
