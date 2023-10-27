@@ -93,6 +93,7 @@ def register_auction(event, context):
         print(buyer)
         first_name=buyer['first_name']
         last_name=buyer['last_name']
+        marketing = buyer['newsletter_notification']
         print(11)
         if buyer is None:
             return {
@@ -154,7 +155,8 @@ def register_auction(event, context):
                         "seller_email":seller_email,
                         "status":register_status,
                         "paddle": paddle['starting_sequence'],
-                        'created_at': datetime.utcnow()
+                        'created_at': datetime.utcnow(),
+                        'marketing': marketing
                         }
         print(12232)
         if status is not None and status['status']=='Declined':

@@ -134,12 +134,13 @@ def update_password(event, context):
                 "message": "Current password is incorrect. The password update cannot be completed"
                })
             }
+        update_password = new_password
         new_password= hash_password(new_password)
         if new_password == encrypt_password:
             return {
                 "statusCode": 400,
                 "headers": headers,
-                "body": json.dumps({"message": "new password is same as old password"})
+                "body": json.dumps({"message": "New password cannot be the same as old password. Please try again."})
             }
         confirm_password = hash_password(confirm_password)
         if new_password != confirm_password:
@@ -149,8 +150,9 @@ def update_password(event, context):
                 "body": json.dumps({"message": "Current password and new password not matching"})
             }
         print(4)
-        userdata= {'email_address':email_address, 'password': new_password}
+        userdata= {'email_address':email_address, 'password': update_password}
         success_status = admin_set_password(userdata, userpool_id["user_pool_id"])
+        print(212,success_status)
         if success_status['success_status'] is not True:
             return {
                 "statusCode": 500,
