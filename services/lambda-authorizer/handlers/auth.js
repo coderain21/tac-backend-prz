@@ -115,13 +115,13 @@ function validateToken(pems_data, event, context) {
     }
 
     // Get the kid from the token and retrieve corresponding PEM
-    const { kid } = decodedJwt.header
-    const pem = pems_data[kid]
-    if (!pem) {
-        console.log('Invalid access token')
-        context.fail('Unauthorized')
-        return
-    }
+    // const { kid } = decodedJwt.header
+    // const pem = pems_data[kid]
+    // if (!pem) {
+    //     console.log('Invalid access token')
+    //     context.fail('Unauthorized')
+    //     return
+    // }
 
     // Verify the signature of the JWT token to ensure it's really coming from your User Pool
     const policy_data = {

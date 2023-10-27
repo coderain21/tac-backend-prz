@@ -21,17 +21,25 @@ session = boto3.Session(
     region_name=aws_region
 )
 
-client = session.client('cognito-idp')
+client = session.client('cognito-idp',region_name='eu-west-2')
 
-def generate_token():
+def generate_token(user_type):
     try:
-        user_pool_id = os.environ['COGNITO_USER_POOL_ID']
-        client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
-        username = os.environ['API_USERNAME']
-        password = os.environ['PASSWORD']
+        if user_type == 'USER':
+            user_pool_id = os.environ['COGNITO_USER_POOL_ID']
+            client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
+            username = os.environ['API_USERNAME']
+            password = os.environ['PASSWORD']
+        if user_type == 'BUYERS':
+            user_pool_id = os.environ['BUYER_COGNITO_USER_POOL_ID']
+            client_id = os.environ['BUYER_COGNITO_SELLER_CLIENT_ID']
+            username = os.environ['BUYER_API_USERNAME']
+            password = os.environ['BUYER_PASSWORD']
+            print(user_pool_id,client_id, username, password)
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
+
 
         response = client.admin_initiate_auth(
             UserPoolId=user_pool_id,
@@ -45,8 +53,9 @@ def generate_token():
 
         token = response['AuthenticationResult']['IdToken']
         os.environ['TOKEN'] = token
-        print(os.environ.get('TOKEN'))
+        print(f'export {user_type}="{token}"')
     except ClientError as e:
         print('error sadagrfyhh', e)
 
-generate_token()
+generate_token("USER")
+generate_token("BUYERS")

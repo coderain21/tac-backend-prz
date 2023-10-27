@@ -13,11 +13,11 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def list_lots(event, context):
+def lot_details(event, context):
     """
     The function `list_lots` retrieves details of a lot from a MongoDB database based on the provided
     lot_id.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. In this case, it is expected to have a key called `'queryStringParameters'`
     which contains the query parameters passed to the function
@@ -42,7 +42,15 @@ def list_lots(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         result= collection.find_one({'_id': lot_id})
+        auction_details= auction.find_one({'auction_id': result['auction_id'],
+                                            'seller_email': result['seller_email']},
+                                          {'faq':1,'terms_and_condition':1,'menu_links':1,'font':1})
+        result['faq']=auction_details['faq']
+        result['font']=auction_details['font']
+        result['terms_and_condition']= auction_details['terms_and_condition']
+        result['menu_links']= auction_details['menu_links']
         print(result)
         client.close()
         if result is None:
