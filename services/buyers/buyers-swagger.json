@@ -20,6 +20,7 @@
       "description": "APIs to manage the auctions"
     }
   ],
+  
   "paths": {
     "/view": {
       "get": {

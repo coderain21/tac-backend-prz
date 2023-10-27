@@ -4,7 +4,8 @@ import asyncio
 import os
 import boto3
 from botocore.exceptions import ClientError
-from dotenv import load_dotenv  # Import the library
+from dotenv import load_dotenv
+import git  # Import the Git module
 
 # Load environment variables from .env file
 load_dotenv()
@@ -61,14 +62,10 @@ async def run_dast(url, index, api_token):
         raise
     return None
 
-# async def run_dast_for_swagger_files(swagger_files):
-#     tasks = []
-#     api_token = generate_token("USER")
-#     api_token1 = generate_token("BUYERS")
-#     for index, url in enumerate(swagger_files):
-#         tasks.append(run_dast(url, index, api_token))
-
-#     await asyncio.gather(*tasks)
+def is_file_changed_in_latest_commit(file_to_check):
+    repo = git.Repo('.')
+    latest_commit = repo.head.commit
+    return file_to_check in [item.a_path for item in latest_commit.diff(None)]
 
 def generate_token(user_type):
     try:
@@ -77,13 +74,13 @@ def generate_token(user_type):
             client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
             username = 'anusha.k+indyauction@7edge.com'
             password = os.environ['PASSWORD']
-            print(user_pool_id,client_id, username, password)
+            print(user_pool_id, client_id, username, password)
         if user_type == 'BUYERS':
             user_pool_id = os.environ['BUYER_COGNITO_USER_POOL_ID']
             client_id = os.environ['BUYER_COGNITO_SELLER_CLIENT_ID']
             username = os.environ['BUYER_API_USERNAME']
             password = os.environ['BUYER_PASSWORD']
-            print(user_pool_id,client_id, username, password)
+            print(user_pool_id, client_id, username, password)
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
@@ -102,36 +99,31 @@ def generate_token(user_type):
             print("Token:buyyyywwwwwwwwww", token)
         else:
             token = response['Session']
-            print(token,"usedjhewuef")
+            print(token, "usedjhewuef")
         os.environ['TOKEN'] = token
-        
-        
+        return token
+
     except ClientError as e:
         print('error sadagrfyhh', e)
 
 async def main():
     try:
-        
-        user_token =  generate_token("USER")
-        buyer_token =  generate_token("BUYERS")
-        print(buyer_token,"bbb")
-        print(user_token,"iuytj")
+        user_token = generate_token("USER")
+        buyer_token = generate_token("BUYERS")
 
         if buyer_token and user_token:
             tokens = {
-                # 'services/admin-users': easyid_admin_token,
-                # 'services/enterprises': enterprise_user_token,
                 'services/auctions': buyer_token,
                 'services/users': user_token,
                 'services/buyers': user_token
-                
                 # Add other service directories and their corresponding tokens here
             }
 
             for index, service_dir in enumerate(swagger_files):
                 for service_directory, token in tokens.items():
                     if service_directory in service_dir:
-                        await run_dast(service_dir, index, token)
+                        if is_file_changed_in_latest_commit(service_dir):
+                            await run_dast(service_dir, index, token)
                         break  # Break the loop after finding and using the correct token
         else:
             print("Token generation failed.")
