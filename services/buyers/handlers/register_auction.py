@@ -97,7 +97,7 @@ def register_auction(event, context):
         first_name=buyer['first_name']
         last_name=buyer['last_name']
         marketing = buyer['newsletter_notification']
-        
+
         status= auction_register.find_one(
             {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
         if status is not None and status['status'] == 'Pending':

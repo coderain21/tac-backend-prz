@@ -1,4 +1,4 @@
-"""This module is used to list the auctions """
+"""This module is used to list the bidders """
 import json
 import os
 import re
@@ -6,7 +6,7 @@ import csv
 import boto3
 from pymongo import MongoClient
 from lib.common_helper import Encoder
-from datetime import datetime, timedelta
+from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -19,7 +19,7 @@ headers = {
 
 def list_bidders(event, context):
     """
-    The `list_bidders` function retrieves a list of auctions based on various query parameters, such as
+    The `list_bidders` function retrieves a list of bidders based on various query parameters, such as
     start date, end date, status, sort order, page number, and keyword.
 
     :param event: The `event` parameter is a dictionary that contains the input data for the function.
@@ -37,14 +37,13 @@ def list_bidders(event, context):
     """
     try:
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-            #     return {
-            #     "statusCode": 403,
-            #     "headers": headers,
-            #     "body": json.dumps({"message": "You do not have access to perform this API action"})
-            # }
-            email_address = "anusha.k+newacc@7edge.com"
+            email_address = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
             print('email', email_address)
         except:
             return {
@@ -53,7 +52,6 @@ def list_bidders(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        
         # sort = event['queryStringParameters'].get('sort', 'True')
         key = event['queryStringParameters'].get('key', 'created_at')
         order = event['queryStringParameters'].get('order',
@@ -61,7 +59,7 @@ def list_bidders(event, context):
         page = int(event['queryStringParameters'].get(
             'page', '1'))  # Default to page 1
         limit = int(event['queryStringParameters'].get(
-            'per_page', '3'))  # Number of records per page
+            'per_page', '10'))  # Number of records per page
         keyword = event['queryStringParameters'].get(
             'keyword', '')  # Search keyword
         query_conditions = []
@@ -146,12 +144,12 @@ def list_bidders(event, context):
         }
 
 
-def export_as_csv(auctions):
+def export_as_csv(bidders):
     """
-    Exports a list of auctions as a CSV file and uploads it to an S3 bucket.
+    Exports a list of bidders as a CSV file and uploads it to an S3 bucket.
 
     Args:
-        auctions (list): A list of dictionaries representing the auctions.
+        bidders (list): A list of dictionaries representing the bidders.
 
     Returns:
         str: The signed URL of the uploaded CSV file on S3.
@@ -172,7 +170,7 @@ def export_as_csv(auctions):
             writer.writeheader()
 
             # Format the created_at field as dd-mm-year
-            for auction in auctions:
+            for auction in bidders:
                 modified_auction = {}
                 modified_auction["Auction ID"] = auction["auction_id"]
                 modified_auction["Auction Name"] = auction["title"]

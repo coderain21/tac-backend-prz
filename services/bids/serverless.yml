@@ -45,12 +45,7 @@ provider:
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
-    BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
-      Fn::GetAtt:
-      - "sesTemplate"
-      - "Arn"
-    
+    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}    
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
@@ -118,8 +113,8 @@ functions:
           cors: true
           path: /
           method: get
-          # authorizer:
-          #     arn: ${env:COGNITO_AUTH_ARN}
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
 
 
 resources:

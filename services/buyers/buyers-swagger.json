@@ -3,10 +3,6 @@
   "info": {
     "title": "Buyers Management APIs",
     "description": "APIs to manage buyer side of the auction",
-    "contact": {
-      "name": "no-reply@indy.auction",
-      "email": "no-reply@indy.auction"
-    },
     "version": "1.0.0"
   },
   "servers": [
@@ -342,7 +338,7 @@
     },
     "/view-lots": {
       "get": {
-        "tags": ["Lots"],
+        "tags": ["Lots Management"],
         "summary": "view lots",
         "description": "view lots",
         "parameters": [
@@ -548,7 +544,7 @@
     },
     "/verify-captcha": {
       "post": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "verify recaptcha",
         "requestBody": {
           "content": {
@@ -687,7 +683,7 @@
     },
     "/otp-validation": {
       "post": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "Validating OTP",
         "requestBody": {
           "content": {
@@ -836,7 +832,7 @@
     },
     "/": {
       "get": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "Get authentication parameters",
         "parameters": [
           {
@@ -1041,7 +1037,7 @@
     },
     "/search-lots": {
       "get": {
-        "tags": ["Lots"],
+        "tags": ["Lots Management"],
         "summary": "search lots",
         "description": "search lots",
         "parameters": [
@@ -1225,7 +1221,7 @@
     },
     "/lot-details": {
       "get": {
-        "tags": ["Lots"],
+        "tags": ["Lots Management"],
         "summary": "lots details",
         "description": "lots details",
         "parameters": [
@@ -1395,7 +1391,7 @@
     },
     "/update-password": {
       "post": {
-        "tags": ["Lots"],
+        "tags": ["Buyers Management"],
         "summary": "updating users password",
         "requestBody": {
           "content": {
@@ -1498,7 +1494,7 @@
     },
     "/forgot_password": {
       "post": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "Sends the password reset link to the email.",
         "requestBody": {
           "content": {
@@ -1608,7 +1604,7 @@
     "/reset_password": {
       "x-dredd": "skip",
       "post": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "reseting users password",
         "requestBody": {
           "content": {
@@ -1721,7 +1717,7 @@
     },
     "/view-profile": {
       "get": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "View buyer profile",
         "description": "View auction profile",
         "parameters": [

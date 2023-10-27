@@ -17,7 +17,7 @@ def view_profile(event, context):
     """
     The `view_profile` function retrieves user profile data from a MongoDB database based on the user's
     email address and returns the data as a JSON response.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, and body
     :param context: The `context` parameter is a context object that provides information about the
