@@ -73,6 +73,7 @@ def list_bidders(event, context):
             "_id": 1,
             "auction_id": 1,
             "first_name": 1,
+            "last_name": 1,
             "created_at": 1,
             "paddle": 1,
             "marketing": 1,
