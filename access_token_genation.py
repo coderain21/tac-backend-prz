@@ -63,7 +63,7 @@ def generate_token(user_type):
         token = response['AuthenticationResult']['IdToken']
         os.environ['TOKEN'] = token
         print(f'export {user_type}="{token}"')
-    except ClientError as e:z
+    except ClientError as e:
         print('error sadagrfyhh', e)
 
 generate_token("USER")

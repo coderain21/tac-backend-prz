@@ -5,8 +5,6 @@ import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.helper_python import send_pinpoint_email
-from datetime import datetime
-#from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -27,7 +25,6 @@ def accept_buyer(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            # email_address='shrinitpoojary1234@gmail.com'
         except:
             return {
                 "statusCode": 403,
@@ -51,7 +48,6 @@ def accept_buyer(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        print(data)
         registeration_type=auction.find_one({'_id':ObjectId(auction_id)})
         paddle_color= registeration_type['paddle']
         paddle_text_color= paddle_color["text_color"]
@@ -90,12 +86,10 @@ def accept_buyer(event, context):
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
             start_date_time= registeration_type['start_date']
-            print(type(start_date_time))
             start_date=start_date_time.date()
             start_time=start_date_time.time()
             title = registeration_type['title']
             seller_name= seller['first_name']
-            print(start_time,start_date,title,first_name,seller_name)
             if registeration_type["logo_image"] == "":
                 logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
             else:
@@ -108,7 +102,6 @@ def accept_buyer(event, context):
                             "background_color":paddle_background_color,
                             "img":logo_img,
                             "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            print(template_data,111)
             send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
                                 template_data,
                                 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
@@ -129,7 +122,6 @@ def accept_buyer(event, context):
                     'headers': headers,
                     "body": json.dumps({})
                 }
-        
     except Exception as e:
         print(e)
         return {
