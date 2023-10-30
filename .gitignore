@@ -19,6 +19,7 @@ services/**/access_token_genation.py
 services/**/api-testing.sh
 test-results
 /test_results
+logins.sh
 # Compiled Java class files
 *.class
 # Compiled Python bytecode
