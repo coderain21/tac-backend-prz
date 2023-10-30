@@ -22,7 +22,8 @@ def skip_404_test_results(transaction):
         '/otp-validation' in transaction['request']['uri'] or
         '/www-dev' in transaction['request']['uri'] or 
         '/auction-register' in transaction['request']['uri'] or 
-        '/update-password' in transaction['request']['uri']
+        '/update-password' in transaction['request']['uri'] or 
+        '/reset_password' in transaction['request']['uri']
     ):
         transaction['skip'] = True
 

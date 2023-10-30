@@ -1636,7 +1636,7 @@
             "description": "Updated"
           },
           "401": {
-            "description": "Bad Request",
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "examples": {
@@ -1654,49 +1654,51 @@
               }
             }
           },
-          "400": {
-            "description": "error",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Please provide token"
-                    }
-                  },
-                  "example2": {
-                    "value": {
-                      "message": "Password must be 8-16 characters"
-                    }
-                  },
-                  "example3": {
-                    "value": {
-                      "message": "Invalid password"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "error",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Seller doesn't exists"
-                    }
-                  },
-                  "example2": {
-                    "value": {
-                      "message": "Invalid or Unregistered email_address"
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Please provide token"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Password must be 8-16 characters"
+                      }
+                    },
+                    "example3":{
+                      "value":{
+                        "message":"Invalid password"
+                      }
                     }
                   }
                 }
               }
-            }
-          },
+
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Seller doesn't exists"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Invalid or Unregistered email_address"
+                      }
+                    }
+                  }
+                }
+              }
+
+            },
           "500": {
             "description": "There was an error while resetting password, Please try again",
             "content": {
@@ -1714,10 +1716,10 @@
           }
         }
       }
-    },
-    "/view-profile": {
-      "get": {
-        "tags": ["Buyers Management"],
+     },
+    "/profile": {
+      "patch": {
+        "tags": ["Users"],
         "summary": "View buyer profile",
         "description": "View auction profile",
         "parameters": [
@@ -1740,13 +1742,16 @@
                   "first_name": {
                     "type": "string"
                   },
-                  "phone_no": {
+                  "phone_number":{
                     "type": "string"
-                  }
+                },
+                "country_code":{
+                  "type": "string"
                 }
               }
             }
           }
+        }
         },
         "responses": {
           "200": {
