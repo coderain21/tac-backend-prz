@@ -79,7 +79,7 @@ def paddle_number(event, context):
         return {
             'headers': headers,
             "statusCode": 200,
-            "body": json.dumps({'data':result})
+            "body": json.dumps({'data':{'paddle':result}})
         }
     except Exception as e:
         return {
