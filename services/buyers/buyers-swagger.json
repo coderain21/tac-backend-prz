@@ -1638,7 +1638,7 @@
             "description": "Updated"
           },
           "401": {
-            "description": "Bad Request",
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "examples": {
@@ -1656,49 +1656,51 @@
               }
             }
           },
-          "400": {
-            "description": "error",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Please provide token"
-                    }
-                  },
-                  "example2": {
-                    "value": {
-                      "message": "Password must be 8-16 characters"
-                    }
-                  },
-                  "example3": {
-                    "value": {
-                      "message": "Invalid password"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "error",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Seller doesn't exists"
-                    }
-                  },
-                  "example2": {
-                    "value": {
-                      "message": "Invalid or Unregistered email_address"
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Please provide token"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Password must be 8-16 characters"
+                      }
+                    },
+                    "example3":{
+                      "value":{
+                        "message":"Invalid password"
+                      }
                     }
                   }
                 }
               }
-            }
-          },
+
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Seller doesn't exists"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Invalid or Unregistered email_address"
+                      }
+                    }
+                  }
+                }
+              }
+
+            },
           "500": {
             "description": "There was an error while resetting password, Please try again",
             "content": {
@@ -1829,6 +1831,109 @@
                     "message": {
                       "type": "string",
                       "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/paddle": {
+      "get": {
+        "tags": ["Buyers Management"],
+        "summary": "displaying paddle ",
+        "description": "displaying paddle",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65363ffe6ecaedfb6ffef6eb"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "paddle": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "paddle": "22"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "Please provide the lot_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "paddle not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
                     }
                   }
                 }
