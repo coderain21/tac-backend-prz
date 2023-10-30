@@ -58,7 +58,7 @@ def view_profile(event, context):
                 update_data['country_code']=body['country_code']
                 update_data['first_name']= body['first_name']
                 # update_data['last_name']= data['last_name']
-                update_data['phone_no']= body['phone_no']
+                update_data['phone_number']= body['phone_number']
                 print(update_data)
             except Exception:
                 return {

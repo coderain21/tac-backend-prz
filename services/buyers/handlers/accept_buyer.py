@@ -15,25 +15,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def register_auction(event, context):
-    """
-    Register an auction for a buyer.
-
-    This function is responsible for registering an auction for a buyer and
-    managing the registration process. It checks if the user has access to
-    perform this action, validates the subdomain, and handles different
-    registration scenarios.
-
-    Args:
-        event (dict): An AWS Lambda event object containing input data.
-        context (dict): An AWS Lambda context object.
-
-    Returns:
-        dict: A response object with appropriate status code and message.
-
-    Raises:
-        Exception: If an internal server error occurs.
-    """
+def accept_buyer(event, context):
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
@@ -74,6 +56,10 @@ def register_auction(event, context):
         paddle_color= registeration_type['paddle']
         paddle_text_color= paddle_color["text_color"]
         paddle_background_color= paddle_color["background_color"]
+        if paddle_text_color== "":
+            paddle_text_color="#FFFFFF"
+        if paddle_background_color == "":
+            paddle_background_color = "#000000"
         seller_email= registeration_type['seller_email']
         buyer= buyer_collection.find_one(
             {'email_address':email_address,"seller_email":seller_email}, {'_id': 0})
@@ -110,28 +96,34 @@ def register_auction(event, context):
             title = registeration_type['title']
             seller_name= seller['first_name']
             print(start_time,start_date,title,first_name,seller_name)
+            if registeration_type["logo_image"] == "":
+                logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
+            else:
+                logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
                             "auction_start_time":str(start_time),
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
-                            "img":registeration_type["logo_image"],
+                            "img":logo_img,
                             "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
             print(template_data,111)
             send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
                                 template_data,
                                 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+            auction_register.update_one({"auction_id": auction_id,'email_address':email_address, 'seller_email':seller_email },
+                                    {"$set":{"status":register_status,'paddle':paddle['starting_sequence']}})
         elif status == 'Rejected':
             register_status = 'Rejected'
+            auction_register.update_one({"auction_id": auction_id,'email_address':email_address, 'seller_email':seller_email },
+                                    {"$set":{"status":register_status}})
         else:
             return {
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "invalid status"})
                 }
-        auction_register.update_one({"auction_id": auction_id,'email_address':email_address },
-                                    {"$set":{"status":register_status}})
         return {
                     "statusCode": 204,
                     'headers': headers,

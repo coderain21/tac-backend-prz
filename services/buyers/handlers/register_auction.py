@@ -121,7 +121,10 @@ def register_auction(event, context):
             start_time=start_date_time.time()
             title = registeration_type['title']
             seller_name= seller['first_name']
-            logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
+            if registeration_type["logo_image"] == "":
+                logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
+            else:
+                logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
             print(start_time,start_date,title,first_name,seller_name)
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
