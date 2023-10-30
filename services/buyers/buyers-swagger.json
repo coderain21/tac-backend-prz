@@ -43,6 +43,7 @@
             "example": 1234
           }
         ],
+        
         "responses": {
           "200": {
             "description": "Successfully retrieved auction details",

@@ -120,7 +120,6 @@ definitions:
     
     - step: &APITesting 
         name: API Test Automation
-        trigger: manual
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - echo "API Testing Automation"
@@ -173,18 +172,18 @@ pipelines:
       - step: *DAST
   pull-requests:  
     feature/**:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+      - step: *APITesting
       - step: *DAST
-      # - parallel:
-      #     fail-fast: true
-      #     steps:
-      #       - step: *BuildStep
-      #       - step: *Pylint
-      #       - step: *ESlint
-      #       - step: *SAST
-      #       - step: *SecretChecking
-      #       - step: *LicenseCompliance
-      #       - step: *DependencyScanning
-      # - step: *APITesting
       
         
       
@@ -199,6 +198,8 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+      - step: *APITesting
+      - step: *DAST
   
       
      
@@ -233,7 +234,9 @@ pipelines:
             deployment: develop
             steps:
               - step: *DevDeploy
-      - step: *APITesting
+              - step: *APITesting
+              - step: *DAST
+      
 
     staging:
       - parallel:
