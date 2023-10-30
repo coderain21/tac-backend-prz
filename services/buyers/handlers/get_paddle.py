@@ -32,7 +32,6 @@ def paddle_number(event, context):
         try:
             print(event)
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
@@ -40,7 +39,6 @@ def paddle_number(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            # email_address='shrinitpoojary1234@gmail.com'
         except:
             return {
                 "statusCode": 403,
@@ -57,13 +55,11 @@ def paddle_number(event, context):
             }
         auction_id= data['auction_id']
         auction_id= ObjectId(auction_id)
-        print(auction_id)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_details= auction.find_one({'_id':auction_id})
-        print(111,auction_details,email_address)
         paddle=buyer.find_one({"seller_email":auction_details['seller_email'],
                                'email_address':email_address,'auction_id':auction_id})
         if paddle is None:
@@ -72,8 +68,6 @@ def paddle_number(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "paddle not found"})
             }
-        print(paddle)
-        print(paddle['paddle'])
         result=paddle['paddle']
         client.close()
         if result is None:
