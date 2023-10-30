@@ -1672,7 +1672,7 @@
 
           },
           "401": {
-            "description": "Bad Request",
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "examples": {
@@ -1691,7 +1691,7 @@
             }
           },
             "400": {
-              "description": "error",
+              "description": "Bad request",
               "content": {
                 "application/json": {
                   "examples": {
@@ -1716,7 +1716,7 @@
 
             },
             "404": {
-              "description": "error",
+              "description": "Not found",
               "content": {
                 "application/json": {
                   "examples": {
