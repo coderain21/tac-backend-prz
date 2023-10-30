@@ -54,6 +54,7 @@ provider:
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    CDN_LINK: ${env:CDN_LINK}
     
   http:
     cors: true
@@ -219,20 +220,31 @@ functions:
           method: get
 
     acceting_buyer:
-    handler: handlers/view_lots.lot_details
-    runtime: python3.8
-    layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-      - sg-0882c1da39e729097
-      subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
+      handler: handlers/view_lots.lot_details
+      runtime: python3.8
+      layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+        - sg-0882c1da39e729097
+        subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
           path: /
-          method: post
+          method: patch
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
   update_password:
     handler: handlers/update_password.update_password
@@ -257,7 +269,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          # authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
           path: /update-password
           method: post
   
@@ -316,6 +328,34 @@ functions:
           path: /profile
           method: patch
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+      
+  paddle_number:
+    handler: handlers/get_paddle.paddle_number
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /paddle
+          method: get
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
 
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link

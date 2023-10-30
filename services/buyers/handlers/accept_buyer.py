@@ -36,22 +36,22 @@ def register_auction(event, context):
     """
     try:
         try:
-        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-        #     print(cognito_data)
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-        #         return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        #     # email_address='shrinitpoojary1234@gmail.com'
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            print(cognito_data)
+            email_address = cognito_data['email']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+            # email_address='shrinitpoojary1234@gmail.com'
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
@@ -62,6 +62,7 @@ def register_auction(event, context):
         data = event['queryStringParameters']
         auction_id= data.get('auction_id')
         auction_id= ObjectId(auction_id)
+        status = data.get('status')
         if data is None or "auction_id" not in data:
             return {
                 "statusCode": 400,
@@ -82,53 +83,53 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "buyer doesnt exist"})
             }
-        print(buyer)
         first_name=buyer['first_name']
-        last_name=buyer['last_name']
-        print(11)
-        if buyer is None:
+        current_status= auction_register.find_one(
+                        {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
+        if current_status['status'] == 'Approved':
             return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({"message": "Please register"})
-            }
-        status= auction_register.find_one(
-            {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
-        if status is not None and status['status'] == 'Pending':
+                    "statusCode": 204,
+                    'headers': headers,
+                    "body": json.dumps({})
+                }
+        first_name=buyer['first_name']
+        if status == 'Approved':
+            paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+                                "seller_email": seller_email,
+                                'record_type': 'Paddle'},
+                                {'$inc': {
+                                    'starting_sequence': 1}},
+                                return_document=pymongo.ReturnDocument.AFTER,
+                                upsert=True)
+            register_status="Approved"
+            seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
+            start_date_time= registeration_type['start_date']
+            print(type(start_date_time))
+            start_date=start_date_time.date()
+            start_time=start_date_time.time()
+            title = registeration_type['title']
+            seller_name= seller['first_name']
+            print(start_time,start_date,title,first_name,seller_name)
+            template_data = json.dumps({"paddle":paddle['starting_sequence'],
+                            "Seller_name": seller_name,"user_first_name": first_name,
+                            "Auction_title":title, "auction_start_date":str(start_date) ,
+                            "auction_start_time":str(start_time),
+                            "color":paddle_text_color,
+                            "background_color":paddle_background_color,
+                            "img":registeration_type["logo_image"],
+                            "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
+            print(template_data,111)
+            send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
+                                template_data,
+                                'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+        elif status == 'Rejected':
+            register_status = 'Rejected'
+        else:
             return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({"message": "status is pending"})
-            }
-        print(11)
-        paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
-                            "seller_email": seller_email,
-                            'record_type': 'Paddle'},
-                            {'$inc': {
-                                'starting_sequence': 1}},
-                            return_document=pymongo.ReturnDocument.AFTER,
-                            upsert=True)
-        register_status="Approved"
-        seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
-        start_date_time= registeration_type['start_date']
-        print(type(start_date_time))
-        start_date=start_date_time.date()
-        start_time=start_date_time.time()
-        title = registeration_type['title']
-        seller_name= seller['first_name']
-        print(start_time,start_date,title,first_name,seller_name)
-        template_data = json.dumps({"paddle":paddle['starting_sequence'],
-                        "Seller_name": seller_name,"user_first_name": first_name,
-                        "Auction_title":title, "auction_start_date":str(start_date) ,
-                        "auction_start_time":str(start_time),
-                        "color":paddle_text_color,
-                        "background_color":paddle_background_color,
-                        "img":registeration_type["logo_image"],
-                        "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-        print(template_data,111)
-        send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
-                            template_data,
-                            'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "invalid status"})
+                }
         auction_register.update_one({"auction_id": auction_id,'email_address':email_address },
                                     {"$set":{"status":register_status}})
         return {
@@ -136,6 +137,7 @@ def register_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({})
                 }
+        
     except Exception as e:
         print(e)
         return {

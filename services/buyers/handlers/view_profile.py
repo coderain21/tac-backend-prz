@@ -17,7 +17,7 @@ def view_profile(event, context):
     """
     The `view_profile` function retrieves user profile data from a MongoDB database based on the user's
     email address and returns the data as a JSON response.
-    
+
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, and body
     :param context: The `context` parameter is a context object that provides information about the
@@ -70,45 +70,38 @@ def view_profile(event, context):
                 update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
-            result= collection.find_one({'email_address':email_address})
-            return{
-            "statusCode": 200,
-            "headers": headers,
-            "body": json.dumps({'data':result},cls=Encoder)
-            }
         result= collection.find_one({'email_address':email_address},
                       { "password": 0,
                       "terms_and_condition": 0,
                       "user_type":0,
                       "newsletter_notification":0,'_id': 0})
         client.close()
-        if 'address_line1' not in result:
-            result['address_line1'] = ""
-        if 'country_code' not in result:
-            result['country_code'] = ""
-        if 'address_line2' not in result:
-            result['address_line2'] = ""
-        if 'phone_no' not in result:
-            result['phone_number'] = ""
-        if 'state' not in result:
-            result['state'] = ""
-        if 'country' not in result:
-            result['country'] = ""
         if result is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "user not found"})
             }
+        if 'address_line1' not in result:
+            result['address_line1'] = ""
+        if 'country_code' not in result:
+            result['country_code'] = ""
+        if 'address_line2' not in result:
+            result['address_line2'] = ""
+        if 'phone_number' not in result:
+            result['phone_number'] = ""
+        if 'state' not in result:
+            result['state'] = ""
+        if 'country' not in result:
+            result['country'] = ""
         return{
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data':result})
-
-        }
+            "body": json.dumps({'data':result},cls=Encoder)
+            }
     except Exception as e:
         return {
             "statusCode": 500,
             "headers": headers,
             "body": json.dumps({"message": e})
-        }
+            }
