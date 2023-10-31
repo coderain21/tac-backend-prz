@@ -21,7 +21,7 @@ def accept_buyer(event, context):
                 return {
                 "statusCode": 403,
                 "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
+                "body": json.dumps({"message": "You do not have access to perform  this API action"})
             }
             print('email', seller_email)
         except:
@@ -69,14 +69,6 @@ def accept_buyer(event, context):
                 "body": json.dumps({"message": "buyer doesnt exist"})
             }
         first_name=buyer['first_name']
-        current_status=registeration['status']
-        if current_status is not None:
-            if current_status['status'] == 'Approved':
-                return {
-                        "statusCode": 204,
-                        'headers': headers,
-                        "body": json.dumps({})
-                    }
         first_name=buyer['first_name']
         if status == 'Approved':
             paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
