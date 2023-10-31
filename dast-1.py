@@ -113,7 +113,7 @@ async def main():
 
             # Create a Git repository object for the current directory
             repo = git.Repo('.')
-
+            print(repo,"repo")
             # Get the latest commit
             latest_commit = repo.head.commit
 
