@@ -23,11 +23,7 @@ client = session.client('cognito-idp')
 
 # Function to get the latest commit's SHA-1 hash
 def get_latest_commit_sha():
-    try:
-        commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip()
-        return commit_sha.decode("utf-8")
-    except subprocess.CalledProcessError:
-        return None
+    return os.environ.get('BITBUCKET_COMMIT')
 
 def find_swagger_files(root_dir):
     swagger_files = []
