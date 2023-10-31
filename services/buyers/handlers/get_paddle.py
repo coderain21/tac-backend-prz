@@ -1,4 +1,4 @@
-'''this api will list the detail of the lot id passed in the parameter'''
+'''this api will get the paddle number of the buyer for a particular auction'''
 import json
 import os
 from pymongo import MongoClient

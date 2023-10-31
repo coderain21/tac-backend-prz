@@ -16,15 +16,14 @@ headers = {
 def accept_buyer(event, context):
     try:
         try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data)
-            email_address = cognito_data['email']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
                 return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+            print('email', seller_email)
         except:
             return {
                 "statusCode": 403,
