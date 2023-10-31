@@ -68,7 +68,14 @@ def paddle_number(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "paddle not found"})
             }
-        result=paddle['paddle']
+        try:
+            result=paddle['paddle']
+        except Exception:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "paddle not found"})
+            }
         client.close()
         if result is None:
             return {

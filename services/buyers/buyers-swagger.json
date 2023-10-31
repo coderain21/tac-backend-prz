@@ -924,10 +924,12 @@
             }
           }
         }
-      },
+      }
+    },
+    "/approval": {
       "patch": {
         "tags": ["Buyers Management"],
-        "summary": "acceptibg and rejecting buyers",
+        "summary": "accepting and rejecting buyers",
         "parameters": [
           {
             "required": true,
@@ -937,7 +939,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65277bffa3923db18025cbb9"
+            "example": "6540c0beca765df3f80d2275"
           },
           {
             "required": true,
@@ -948,6 +950,16 @@
               "type": "string"
             },
             "example": "Approved"
+          },
+          {
+            "required": true,
+            "name": "buyer_id",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6540c17d9cc11ec0bf466b84"
           }
         ],
         "responses": {

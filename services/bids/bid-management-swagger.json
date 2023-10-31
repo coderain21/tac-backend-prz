@@ -60,6 +60,15 @@
                 "type": "string"
               },
               "example": "C"
+            },
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "related auction id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "6540bd891bb1fa2adeb445f2"
             }
   
           ],
