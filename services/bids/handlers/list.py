@@ -4,6 +4,7 @@ import os
 import re
 import csv
 import boto3
+from bson import ObjectId
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 from datetime import datetime
@@ -62,6 +63,8 @@ def list_bidders(event, context):
             'per_page', '10'))  # Number of records per page
         keyword = event['queryStringParameters'].get(
             'keyword', '')  # Search keyword
+        auction_id = ObjectId(event['queryStringParameters'].get(
+            'auction_id', ''))
         query_conditions = []
         export = int(event['queryStringParameters'].get('export', '0'))
         download_link = None
@@ -98,11 +101,13 @@ def list_bidders(event, context):
                                            "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
         queries = []
+        queries.append({"auction_id": auction_id})
         queries.append({"seller_email": email_address})
         print(query_conditions)
         # Create the final query using $and operator
         if query_conditions:
             query_conditions.append({"seller_email": email_address})
+            query_conditions.append({"auction_id": auction_id})
             results = collection.find({"$and": query_conditions}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
             if export is not None and export == 1:
