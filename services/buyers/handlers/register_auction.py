@@ -138,6 +138,7 @@ def register_auction(event, context):
             data_to_insert= {
                         'first_name': first_name,
                         'last_name': last_name,
+                        'name': first_name+" "+last_name,
                         "auction_id":auction_id,
                         "email_address":email_address,
                         "seller_email":seller_email,
@@ -151,6 +152,7 @@ def register_auction(event, context):
             data_to_insert= {
                             'first_name': first_name,
                             'last_name': last_name,
+                            'name': first_name+" "+last_name,
                             "auction_id":auction_id,
                             "email_address":email_address,
                             "seller_email":seller_email,

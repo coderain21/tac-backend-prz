@@ -72,6 +72,7 @@ def list_bidders(event, context):
         projection = {
             "_id": 1,
             "auction_id": 1,
+            "name": 1,
             "first_name": 1,
             "last_name": 1,
             "created_at": 1,
@@ -93,7 +94,7 @@ def list_bidders(event, context):
 
         # Check if keyword is provided
         if keyword:
-            keyword_condition = {"first_name": {"$regex": keyword,
+            keyword_condition = {"name": {"$regex": keyword,
                                            "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
         queries = []

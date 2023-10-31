@@ -82,6 +82,12 @@
                             "first_name": {
                               "type": "string"
                             },
+                            "last_name": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
                             "auction_id": {
                               "type": "string"
                             },
