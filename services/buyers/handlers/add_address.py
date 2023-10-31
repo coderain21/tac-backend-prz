@@ -13,19 +13,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def view_profile(event, context):
-    """
-    The `view_profile` function retrieves user profile data from a MongoDB database based on the user's
-    email address and returns the data as a JSON response.
-
-    :param event: The `event` parameter is a dictionary that contains information about the event that
-    triggered the function. It typically includes details such as the HTTP request, headers, and body
-    :param context: The `context` parameter is a context object that provides information about the
-    runtime environment of the function. It includes details such as the AWS request ID, function name,
-    and other metadata
-    :return: The function `view_profile` returns a JSON response with a status code, headers, and a
-    body. The specific content of the response depends on the execution path of the code.
-    """
+def add_address(event, context):
     try:
         try:
             print(event)
@@ -38,14 +26,12 @@ def view_profile(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            # email_address='shrinitpoojary1234@gmail.com'
         except:
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # email_address= 'shrinit.poojary+100@7edge.com'
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
@@ -56,9 +42,9 @@ def view_profile(event, context):
             update_data={}
             try:
                 update_data['address_line1']=body['address_line1']
-                update_data['first_name']= body['first_name']
-                # update_data['last_name']= data['last_name']
-                update_data['phone_number']= body['phone_number']
+                update_data['country']= body['country']
+                update_data['town/city']= data['town/city']
+                update_data['postal_code']= body['postal_code']
                 print(update_data)
             except Exception:
                 return {
@@ -66,9 +52,20 @@ def view_profile(event, context):
                     "headers": headers,
                     "body": json.dumps({"message": 'please enter the required fileds'})
                 }
-            if body['last_name']:
-                update_data['last_name']= body['last_name']
+            if body['county']:
+                update_data['county']= body['county']
+            if body['address_line2']:
+                update_data['address_line2'] = body['address_line2']
             result= collection.find_one_and_update({'email_address':email_address},
+                                                   {"$set": update_data})
+        elif data['delete']== 'True':
+            update_data['address_line1']= ""
+            update_data['country']= ""
+            update_data['town/city']= ""
+            update_data['postal_code']= ""
+            update_data['county']= ""
+            update_data['address_line2'] = ""
+        updated= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
         result= collection.find_one({'email_address':email_address},
                       { "password": 0,
@@ -82,18 +79,6 @@ def view_profile(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "user not found"})
             }
-        if 'address_line1' not in result:
-            result['address_line1'] = ""
-        if 'country_code' not in result:
-            result['country_code'] = ""
-        if 'address_line2' not in result:
-            result['address_line2'] = ""
-        if 'phone_number' not in result:
-            result['phone_number'] = ""
-        if 'state' not in result:
-            result['state'] = ""
-        if 'country' not in result:
-            result['country'] = ""
         return{
             "statusCode": 200,
             "headers": headers,
