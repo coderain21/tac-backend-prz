@@ -21,6 +21,14 @@ session = boto3.Session(
 # Initialize the Cognito client
 client = session.client('cognito-idp')
 
+# Function to get the latest commit's SHA-1 hash
+def get_latest_commit_sha():
+    try:
+        commit_sha = subprocess.check_output(["git", "rev-parse", "HEAD"]).strip()
+        return commit_sha.decode("utf-8")
+    except subprocess.CalledProcessError:
+        return None
+
 def find_swagger_files(root_dir):
     swagger_files = []
 
@@ -100,10 +108,9 @@ async def main():
 
         if users_token and buyers_token:
             tokens = {
-                 'services/auctions': buyers_token,
+                'services/auctions': buyers_token,
                 'services/users': users_token,
                 'services/buyers': users_token
-                
                 # Add other service directories and their corresponding tokens here
             }
 
@@ -111,15 +118,13 @@ async def main():
             current_directory = os.getcwd()
             swagger_files = find_swagger_files(current_directory)
 
-            # Create a Git repository object for the current directory
-            repo = git.Repo('.')
-            print(repo,"repo")
-            # Get the latest commit
-            latest_commit = repo.head.commit
+            # Get the latest commit SHA-1 hash
+            latest_commit_sha = get_latest_commit_sha()
+            print(f"Latest commit SHA-1 hash: {latest_commit_sha}")
 
             for service_dir in swagger_files:
                 # Check if the Swagger file has changed in the latest commit
-                file_changed = service_dir in [item.a_path for item in latest_commit.diff(None)]
+                file_changed = subprocess.call(["git", "diff", "--name-only", latest_commit_sha, "--", service_dir]) == 0
                 if file_changed:
                     for service_directory, token in tokens.items():
                         if service_directory in service_dir:
