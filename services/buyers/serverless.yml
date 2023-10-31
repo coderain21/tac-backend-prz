@@ -231,20 +231,11 @@ functions:
         - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
-            cors:
-              origin: '*'
-              headers:
-                - Content-Type
-                - X-Amz-Date
-                - Authorization
-                - X-Api-Key
-                - X-Amz-Security-Token
-                - X-Requested-With
-                - Accept
-                - Access-Control-Allow-Headers
-            path: /
+            cors: true
+            path: /approval
             method: patch
-            authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+            authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
   
   update_password:
     handler: handlers/update_password.update_password

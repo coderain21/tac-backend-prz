@@ -30,7 +30,10 @@ def skip_404_test_results(transaction):
 
 @before_each
 def set_authorization(transaction):
-    token = str(os.environ.get('BUYERS'))
+    if '/approval' in transaction['request']['uri']:
+        token = str(os.environ.get('USER'))
+    else:
+        token = str(os.environ.get('BUYERS'))
     print('s', transaction['expected']['statusCode'] == '400')
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])
