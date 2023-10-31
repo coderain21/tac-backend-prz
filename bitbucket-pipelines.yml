@@ -162,6 +162,7 @@ definitions:
           - pip3 install boto3
           - export NODE_OPTIONS=--max-old-space-size=8192
           - pip3 install python-dotenv
+          - pip3 install GitPython
           - python3 dast-1.py
         artifacts:
           - test_results/**

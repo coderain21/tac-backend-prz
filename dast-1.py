@@ -6,7 +6,7 @@ import boto3
 from botocore.exceptions import ClientError
 import requests
 from dotenv import load_dotenv
-
+import git  # Import the Git module
 
 # Load environment variables from .env file
 load_dotenv()
