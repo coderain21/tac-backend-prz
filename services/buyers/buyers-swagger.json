@@ -1828,6 +1828,139 @@
         }
       }
      },
+     "/add-address": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "add and delete address",
+        "description": "add and delete address",
+        "parameters": [
+          {
+            "name": "update",
+            "in": "query",
+            "description": "to update the address",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+          }
+          {
+            "name": "delete",
+            "in": "query",
+            "description": "to delete the address",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address_line1": {
+                    "type": "string"
+                  },
+                  "address_line2":{
+                    "type": "string"
+                  },
+                  "town/city": {
+                    "type": "string"
+                  },
+                  "county":{
+                    "type": "string"
+                  },  
+                  "country": {
+                    "type": "string"
+                  },
+                  "postal code":{
+                     "type": "string"
+                  }
+              }
+            }
+          }
+        }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "address_line1": {
+                          "type": "string"
+                        },
+                        "address_line2": {
+                          "type": "string"
+                        },
+                        "town/city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "county": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "email_address": "aishwarya@7edge.com",
+                    "first_name": "Aishwarya",
+                    "last_name": "K"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "user not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/profile": {
       "patch": {
         "tags": ["Users"],
@@ -1837,7 +1970,7 @@
           {
             "name": "update",
             "in": "query",
-            "description": "to determine the which auction lots to be displayed ",
+            "description": "to display and update the profile ",
             "schema": {
               "type": "string"
             },
