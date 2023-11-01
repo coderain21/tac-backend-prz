@@ -36,36 +36,42 @@ def add_address(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
-        if data['update'] == 'True':
-            print(1)
-            body = json.loads(event['body'])
-            update_data={}
-            try:
-                update_data['address_line1']=body['address_line1']
-                update_data['country']= body['country']
-                update_data['town/city']= data['town/city']
-                update_data['postal_code']= body['postal_code']
-                print(update_data)
-            except Exception:
-                return {
-                    "statusCode": 404,
-                    "headers": headers,
-                    "body": json.dumps({"message": 'please enter the required fileds'})
-                }
-            if body['county']:
-                update_data['county']= body['county']
-            if body['address_line2']:
-                update_data['address_line2'] = body['address_line2']
-            result= collection.find_one_and_update({'email_address':email_address},
+        update_data={}
+        print(data)
+        if 'update' in data:
+            if data['update'] == 'True':
+                print(1)
+                body = json.loads(event['body'])
+                try:
+                    update_data['address_line1']=body['address_line1']
+                    update_data['country']= body['country']
+                    update_data['town/city']= body['town/city']
+                    update_data['postal_code']= body['postal_code']
+                    update_data['is_manual']=body['is_manual']
+                    print(update_data)
+                except Exception as e:
+                    return {
+                        "statusCode": 404,
+                        "headers": headers,
+                        "body": json.dumps({"message": 'please enter the required fileds'})
+                    }
+                if body['county']:
+                    update_data['county']= body['county']
+                if body['address_line2']:
+                    update_data['address_line2'] = body['address_line2']
+                result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
-        elif data['delete']== 'True':
-            update_data['address_line1']= ""
-            update_data['country']= ""
-            update_data['town/city']= ""
-            update_data['postal_code']= ""
-            update_data['county']= ""
-            update_data['address_line2'] = ""
-        updated= collection.find_one_and_update({'email_address':email_address},
+        if 'delete' in data:
+            if data['delete']== 'True':
+                update_data['address_line1']= ""
+                update_data['country']= ""
+                update_data['town/city']= ""
+                update_data['postal_code']= ""
+                update_data['county']= ""
+                update_data['address_line2'] = ""
+                update_data['is_manual'] = ""
+                print(update_data)
+                result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
         result= collection.find_one({'email_address':email_address},
                       { "password": 0,
@@ -88,5 +94,5 @@ def add_address(event, context):
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": e})
+            "body": json.dumps({"message": e}, cls=Encoder)
             }
