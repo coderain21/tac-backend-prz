@@ -53,7 +53,7 @@ def add_address(event, context):
                     return {
                         "statusCode": 404,
                         "headers": headers,
-                        "body": json.dumps({"message": 'please enter the required fileds'})
+                        "body": json.dumps({"message": ' please enter the required fileds'})
                     }
                 if 'address_line2' in body:
                     update_data['address_line2'] = body['address_line2']
