@@ -1,4 +1,4 @@
-'''this api will list the detail of the lot id passed in the parameter'''
+'''this api will retrieve the detail of the buyers'''
 import json
 import os
 from pymongo import MongoClient
