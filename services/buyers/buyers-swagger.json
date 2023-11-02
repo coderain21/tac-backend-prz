@@ -1842,7 +1842,7 @@
               "type": "string"
             },
             "example": "False"
-          }
+          },
           {
             "name": "delete",
             "in": "query",
