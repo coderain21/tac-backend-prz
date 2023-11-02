@@ -66,7 +66,7 @@ def view_profile(event, context):
                     "headers": headers,
                     "body": json.dumps({"message": 'please enter the required fileds'})
                 }
-            if body['last_name']:
+            if 'last_name' in body:
                 update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
