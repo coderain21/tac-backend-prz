@@ -163,6 +163,7 @@ def list_auction(event, context):
 
         # Check if keyword is provided
         if keyword:
+            keyword = re.escape(keyword)
             keyword_condition = {"title": {"$regex": keyword,
                                            "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
