@@ -5,8 +5,6 @@ import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.helper_python import send_pinpoint_email
-from datetime import datetime
-#from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -15,25 +13,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def register_auction(event, context):
-    """
-    Register an auction for a buyer.
-
-    This function is responsible for registering an auction for a buyer and
-    managing the registration process. It checks if the user has access to
-    perform this action, validates the subdomain, and handles different
-    registration scenarios.
-
-    Args:
-        event (dict): An AWS Lambda event object containing input data.
-        context (dict): An AWS Lambda context object.
-
-    Returns:
-        dict: A response object with appropriate status code and message.
-
-    Raises:
-        Exception: If an internal server error occurs.
-    """
+def accept_buyer(event, context):
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
@@ -61,20 +41,12 @@ def register_auction(event, context):
         data = event['queryStringParameters']
         auction_id= data.get('auction_id')
         auction_id= ObjectId(auction_id)
+        status = data.get('status')
         if data is None or "auction_id" not in data:
             return {
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
-            }
-        print(data)
-        if 'status' in data and data['status'] == 'True':
-            result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
-            status=result['status']
-            return {
-                "statusCode": 200,
-                "headers": headers,
-                "body": json.dumps({'status':status})
             }
         registeration_type=auction.find_one({'_id':ObjectId(auction_id)})
         paddle_color= registeration_type['paddle']
@@ -89,31 +61,28 @@ def register_auction(event, context):
             {'email_address':email_address,"seller_email":seller_email}, {'_id': 0})
         if buyer is None:
             return {
-                "statusCode": 404,
+                "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({"message": "buyer doesnt exist"})
             }
-        print(buyer)
         first_name=buyer['first_name']
-        last_name=buyer['last_name']
-        marketing = buyer['newsletter_notification']
-
-        status= auction_register.find_one(
-            {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
-        if status is not None and status['status'] == 'Pending':
+        current_status= auction_register.find_one(
+                        {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
+        if current_status['status'] == 'Approved':
             return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({"message": "status is pending"})
-            }
-        paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
-                            "seller_email": seller_email,
-                            'record_type': 'Paddle'},
-                            {'$inc': {
-                                'starting_sequence': 1}},
-                            return_document=pymongo.ReturnDocument.AFTER,
-                            upsert=True)
-        if registeration_type['registration_type'] == 'Email only':
+                    "statusCode": 204,
+                    'headers': headers,
+                    "body": json.dumps({})
+                }
+        first_name=buyer['first_name']
+        if status == 'Approved':
+            paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+                                "seller_email": seller_email,
+                                'record_type': 'Paddle'},
+                                {'$inc': {
+                                    'starting_sequence': 1}},
+                                return_document=pymongo.ReturnDocument.AFTER,
+                                upsert=True)
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
             start_date_time= registeration_type['start_date']
@@ -125,42 +94,29 @@ def register_auction(event, context):
                 logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
-            print(start_time,start_date,title,first_name,seller_name)
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
                             "auction_start_time":str(start_time),
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
-                            "img":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
+                            "img":logo_img,
+                            "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
             send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
-                                template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
-            data_to_insert= {
-                        'first_name': first_name,
-                        'last_name': last_name,
-                        'name': first_name+" "+last_name,
-                        "auction_id":auction_id,
-                        "email_address":email_address,
-                        "seller_email":seller_email,
-                        "status":register_status,
-                        "paddle": paddle['starting_sequence'],
-                        'created_at': datetime.utcnow(),
-                        'marketing': marketing
-                        }
+                                template_data,
+                                'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+            auction_register.update_one({"auction_id": auction_id,'email_address':email_address, 'seller_email':seller_email },
+                                    {"$set":{"status":register_status,'paddle':paddle['starting_sequence']}})
+        elif status == 'Rejected':
+            register_status = 'Rejected'
+            auction_register.update_one({"auction_id": auction_id,'email_address':email_address, 'seller_email':seller_email },
+                                    {"$set":{"status":register_status}})
         else:
-            register_status="Pending"
-            data_to_insert= {
-                            'first_name': first_name,
-                            'last_name': last_name,
-                            'name': first_name+" "+last_name,
-                            "auction_id":auction_id,
-                            "email_address":email_address,
-                            "seller_email":seller_email,
-                            "status":register_status,
-                            'created_at': datetime.utcnow(),
-                            'marketing': marketing
-                            }
-        auction_register.insert_one(data_to_insert)
+            return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "invalid status"})
+                }
         return {
                     "statusCode": 204,
                     'headers': headers,
@@ -173,3 +129,4 @@ def register_auction(event, context):
             'headers': headers,
             "body": json.dumps({"message": "Internal server error"})
         }
+    
