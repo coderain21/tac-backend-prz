@@ -55,9 +55,7 @@ def add_address(event, context):
                         "headers": headers,
                         "body": json.dumps({"message": 'please enter the required fileds'})
                     }
-                if body['county']:
-                    update_data['county']= body['county']
-                if body['address_line2']:
+                if 'address_line2' in body:
                     update_data['address_line2'] = body['address_line2']
                 result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
@@ -75,9 +73,7 @@ def add_address(event, context):
                                                    {"$set": update_data})
         result= collection.find_one({'email_address':email_address},
                       { "password": 0,
-                      "terms_and_condition": 0,
-                      "user_type":0,
-                      "newsletter_notification":0,'_id': 0})
+                      "terms_and_condition": 0})
         client.close()
         if result is None:
             return {
