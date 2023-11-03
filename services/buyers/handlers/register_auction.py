@@ -106,13 +106,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
-        paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
-                            "seller_email": seller_email,
-                            'record_type': 'Paddle'},
-                            {'$inc': {
-                                'starting_sequence': 1}},
-                            return_document=pymongo.ReturnDocument.AFTER,
-                            upsert=True)
         if registeration_type['registration_type'] == 'Email only':
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
@@ -125,6 +118,13 @@ def register_auction(event, context):
                 logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
+            paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+                            "seller_email": seller_email,
+                            'record_type': 'Paddle'},
+                            {'$inc': {
+                                'starting_sequence': 1}},
+                            return_document=pymongo.ReturnDocument.AFTER,
+                            upsert=True)
             print(start_time,start_date,title,first_name,seller_name)
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
@@ -159,8 +159,15 @@ def register_auction(event, context):
                             "status":register_status,
                             'created_at': datetime.utcnow(),
                             'marketing': marketing
-                            }
-        auction_register.insert_one(data_to_insert)
+                   }
+        result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
+        if result is None:
+            auction_register.insert_one(data_to_insert)
+        else:
+            reg_status=result['status']
+            if reg_status == 'Rejected':
+                register_status='Pending'
+                auction_register.update_one({"auction_id": auction_id,'email_address':email_address },{"$set":{"status":register_status}})
         return {
                     "statusCode": 204,
                     'headers': headers,

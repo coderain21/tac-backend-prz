@@ -4,7 +4,7 @@ import os
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-
+import re
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -57,6 +57,7 @@ def view_list_lots(event, context):
         search_keyword = data.get('search')
         search_criteria={}
         if search_keyword:
+            search_keyword = re.escape(search_keyword)
             search_criteria = {
                 "$or": [
                     {"title1": {"$regex": f".*{search_keyword}.*", "$options": "i"}},
