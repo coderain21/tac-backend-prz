@@ -72,7 +72,7 @@ def paddle_number(event, context):
             result=paddle['paddle']
         except Exception:
             return {
-                "statusCode": 204,
+                "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "paddle not found "})
             }

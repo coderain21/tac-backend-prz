@@ -102,7 +102,7 @@ def register_auction(event, context):
             {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
         if status is not None and status['status'] == 'Pending':
             return {
-                "statusCode": 400,
+                "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
