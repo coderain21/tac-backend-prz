@@ -37,7 +37,6 @@ def register_auction(event, context):
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
@@ -67,7 +66,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        print(data)
         if 'status' in data and data['status'] == 'True':
             result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
             status=result['status']
@@ -93,7 +91,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "buyer doesnt exist"})
             }
-        print(buyer)
         first_name=buyer['first_name']
         last_name=buyer['last_name']
         marketing = buyer['newsletter_notification']
@@ -125,7 +122,6 @@ def register_auction(event, context):
                                 'starting_sequence': 1}},
                             return_document=pymongo.ReturnDocument.AFTER,
                             upsert=True)
-            print(start_time,start_date,title,first_name,seller_name)
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,

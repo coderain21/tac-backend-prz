@@ -47,7 +47,6 @@ def view_list_lots(event, context):
             "seller_email": 1
         }
         result = collection.find_one({"_id": _id}, projection)
-        print(result)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -87,7 +86,6 @@ def view_list_lots(event, context):
                                                   'seller_email': seller_email, **search_criteria}
                                                     ).sort('lot_number',1)
         lots_list = list(search_result)
-        print(144,lots_list)
         return {
             "statusCode": 200,
             "headers": headers,

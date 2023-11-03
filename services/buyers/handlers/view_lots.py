@@ -51,7 +51,6 @@ def lot_details(event, context):
         result['font']=auction_details['font']
         result['terms_and_condition']= auction_details['terms_and_condition']
         result['menu_links']= auction_details['menu_links']
-        print(result)
         client.close()
         if result is None:
             return {
