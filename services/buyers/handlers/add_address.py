@@ -16,9 +16,7 @@ headers = {
 def add_address(event, context):
     try:
         try:
-            print(event)
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
@@ -37,10 +35,8 @@ def add_address(event, context):
         collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
         update_data={}
-        print(data)
         if 'update' in data:
             if data['update'] == 'True':
-                print(1)
                 body = json.loads(event['body'])
                 try:
                     update_data['address_line1']=body['address_line1']
@@ -48,7 +44,6 @@ def add_address(event, context):
                     update_data['town/city']= body['town/city']
                     update_data['postal_code']= body['postal_code']
                     update_data['is_manual']=body['is_manual']
-                    print(update_data)
                 except Exception as e:
                     return {
                         "statusCode": 404,
@@ -68,7 +63,6 @@ def add_address(event, context):
                 update_data['county']= ""
                 update_data['address_line2'] = ""
                 update_data['is_manual'] = ""
-                print(update_data)
                 result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
         result= collection.find_one({'email_address':email_address},

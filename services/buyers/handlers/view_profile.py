@@ -28,9 +28,7 @@ def view_profile(event, context):
     """
     try:
         try:
-            print(event)
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
@@ -51,7 +49,6 @@ def view_profile(event, context):
         collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
         if data['update'] == 'True':
-            print(1)
             body = json.loads(event['body'])
             update_data={}
             try:
@@ -59,7 +56,6 @@ def view_profile(event, context):
                 update_data['first_name']= body['first_name']
                 # update_data['last_name']= data['last_name']
                 update_data['phone_number']= body['phone_number']
-                print(update_data)
             except Exception:
                 return {
                     "statusCode": 404,

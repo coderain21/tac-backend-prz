@@ -30,7 +30,6 @@ def paddle_number(event, context):
     """
     try:
         try:
-            print(event)
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
@@ -72,7 +71,7 @@ def paddle_number(event, context):
             result=paddle['paddle']
         except Exception:
             return {
-                "statusCode": 204,
+                "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "paddle not found "})
             }
