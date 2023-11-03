@@ -74,7 +74,7 @@ def paddle_number(event, context):
             return {
                 "statusCode": 204,
                 "headers": headers,
-                "body": json.dumps({"message": "paddle not found"})
+                "body": json.dumps({"message": "paddle not found "})
             }
         client.close()
         if result is None:
