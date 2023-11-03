@@ -319,6 +319,33 @@ functions:
           path: /profile
           method: patch
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  
+  add_address:
+    handler: handlers/add_address.add_address
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /add-address
+          method: patch
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number

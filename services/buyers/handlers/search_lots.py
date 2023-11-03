@@ -3,7 +3,6 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',

@@ -110,7 +110,6 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-        print(result['start_date'])
         start_time= result['start_date']
         end_time= result['end_date']
         # Get the timezone from the result
@@ -136,7 +135,6 @@ def view(event, context):
 
         # Convert time_zone_str to a time zone object using the dictionary
         if time_zone_str in time_zones:
-            print(time_zone)
             start_time = datetime.fromtimestamp(int(start_time.timestamp()),
                                                  tz=pytz.timezone(time_zone))
             end_time = datetime.fromtimestamp(int(end_time.timestamp()),
@@ -165,8 +163,6 @@ def view(event, context):
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
-        print(result["make_your_auction_private"])
-        print(result["passcode"])
         if result["make_your_auction_private"] is True and passcode is None:
             data = {}
             data["menu_links"] = result.get("menu_links")
@@ -201,8 +197,7 @@ def view(event, context):
             "headers": headers,
             "body": json.dumps(body, cls=Encoder)
         }
-    except Exception as err:
-        print(err)
+    except Exception as e:
         return {
             "headers": headers,
             "statusCode": 500,

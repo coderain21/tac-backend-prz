@@ -1,4 +1,4 @@
-'''this api will list the detail of the lot id passed in the parameter'''
+'''this api will get the paddle number of the buyer for a particular auction'''
 import json
 import os
 from pymongo import MongoClient
@@ -30,7 +30,6 @@ def paddle_number(event, context):
     """
     try:
         try:
-            print(event)
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
@@ -74,7 +73,7 @@ def paddle_number(event, context):
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "paddle not found"})
+                "body": json.dumps({"message": "paddle not found "})
             }
         client.close()
         if result is None:
