@@ -4,7 +4,6 @@ import os
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-import re
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
