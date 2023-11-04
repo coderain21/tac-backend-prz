@@ -9,8 +9,8 @@ init: false
 custom: {}
 names: false
 only: []
-reporter: []
-output: ['./test-results/apis.txt']
+reporter: ['html']
+output: ['../../test-results/users-apis.html']
 header: []
 sorted: false
 user: null

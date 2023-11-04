@@ -8,6 +8,7 @@ import boto3
 
 client = boto3.client('pinpoint-email',region_name = os.environ['REGION'])
 def send_pinpoint_email(to_email,from_email,template_data,template_arn):
+    print('im here',template_data)
     response = client.send_email(
         FromEmailAddress = from_email,
         Destination = {
@@ -22,7 +23,8 @@ def send_pinpoint_email(to_email,from_email,template_data,template_arn):
             }
         }
     )
-    print(response)
+    print("response",response)
+    return response
 
 def encrypt_with_time_validation(data, secret_key):
     secret_key = secret_key.encode('utf-8')

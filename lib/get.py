@@ -5,9 +5,9 @@ This module provides a function for retrieving admin details by email from Mongo
 
 """
 import os
+from bson import ObjectId
 from pymongo import MongoClient
 
-# 
 
 def get_by_email(email,collection):
     """
@@ -31,6 +31,76 @@ def get_by_email(email,collection):
         client.close()
         if query_result:
             return query_result
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
+
+def fetch_seller_data_from_auction(auction_id):
+    """
+    Fetch the seller's email from the auction collection in MongoDB.
+
+    Args:
+        auction_id (str): The unique identifier of the auction.
+
+    Returns:
+        str: The seller's email associated with the given auction_id or None if not found.
+    """
+    try:
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        data = auction_collection.find_one({"_id":ObjectId(auction_id)})
+        client.close()
+        if data:
+            return data
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
+    
+def fetch_user_pool_data(email):
+    """
+    Fetch the seller's userpool data from the user pool collection in MongoDB.
+
+    Args:
+        email (str): The unique identifier of the pool.
+
+    """
+    try:
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["USERPOOLS_MONGO"]]
+        data = auction_collection.find_one({"email_address":email})
+        client.close()
+        if data:
+            return data
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
+
+def fetch_buyer_data(seller_email,buyer_email):
+    """
+    Fetch the seller's email from the auction collection in MongoDB.
+
+    Args:
+        auction_id (str): The unique identifier of the auction.
+
+    Returns:
+        str: The seller's email associated with the given auction_id or None if not found.
+    """
+    try:
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["BUYER_COLLECTION"]]
+        data = auction_collection.find_one({"email_address": buyer_email,"seller_email": seller_email})
+        client.close()
+        if data:
+            return data
         return None
     except BaseException as err:
         client.close()
