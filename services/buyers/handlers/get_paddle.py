@@ -1,9 +1,9 @@
-'''this api will list the detail of the lot id passed in the parameter'''
+'''this api will get the paddle number of the buyer for a particular auction'''
 import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.common_helper import Encoder
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -13,7 +13,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def lot_details(event, context):
+def paddle_number(event, context):
     """
     The function `list_lots` retrieves details of a lot from a MongoDB database based on the provided
     lot_id.
@@ -29,39 +29,63 @@ def lot_details(event, context):
     response depends on the execution path of the code.
     """
     try:
+        try:
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            email_address = cognito_data['email']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+        }
         # Parse query parameters from the event
         data = event['queryStringParameters']
-        if data is None or "lot_id" not in data:
+        if data is None or "auction_id" not in data:
             return {
                 "statusCode": 400,
                 "headers": headers,
-                "body": json.dumps({"message": "Please provide lot_id"})
+                "body": json.dumps({"message": "Please provide auction_id"})
             }
-        lot_id= data['lot_id']
-        lot_id= ObjectId(lot_id)
+        auction_id= data['auction_id']
+        auction_id= ObjectId(auction_id)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        result= collection.find_one({'_id': lot_id})
-        auction_details= auction.find_one({'auction_id': result['auction_id'],
-                                            'seller_email': result['seller_email']},
-                                          {'faq':1,'terms_and_condition':1,'menu_links':1,'font':1})
-        result['faq']=auction_details['faq']
-        result['font']=auction_details['font']
-        result['terms_and_condition']= auction_details['terms_and_condition']
-        result['menu_links']= auction_details['menu_links']
+        auction_details= auction.find_one({'_id':auction_id})
+        paddle=buyer.find_one({"seller_email":auction_details['seller_email'],
+                               'email_address':email_address,'auction_id':auction_id})
+        if paddle is None:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "paddle not found"})
+            }
+        try:
+            result=paddle['paddle']
+        except Exception:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "paddle not found "})
+            }
         client.close()
         if result is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "Lot not found"})
+                "body": json.dumps({"message": "data not found"})
             }
         return {
             'headers': headers,
             "statusCode": 200,
-            "body": json.dumps({'data':result},cls=Encoder)
+            "body": json.dumps({'data':{'paddle':result}})
         }
     except Exception as e:
         return {

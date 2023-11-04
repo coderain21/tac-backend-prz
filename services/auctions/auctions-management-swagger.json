@@ -3,10 +3,6 @@
   "info": {
     "title": "Auction Management APIs",
     "description": "Auction APIs to create the API's",
-    "contact": {
-      "name": "no-reply@indy.auction",
-      "email": "no-reply@indy.auction"
-    },
     "version": "1.0.0"
   },
   "servers": [

@@ -3,10 +3,6 @@
   "info": {
     "title": "Buyers Management APIs",
     "description": "APIs to manage buyer side of the auction",
-    "contact": {
-      "name": "no-reply@indy.auction",
-      "email": "no-reply@indy.auction"
-    },
     "version": "1.0.0"
   },
   "servers": [
@@ -341,8 +337,8 @@
       }
     },
     "/view-lots": {
-      "patch": {
-        "tags": ["Lots"],
+      "get": {
+        "tags": ["Lots Management"],
         "summary": "view lots",
         "description": "view lots",
         "parameters": [
@@ -548,7 +544,7 @@
     },
     "/verify-captcha": {
       "post": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "verify recaptcha",
         "requestBody": {
           "content": {
@@ -687,7 +683,7 @@
     },
     "/otp-validation": {
       "post": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "Validating OTP",
         "requestBody": {
           "content": {
@@ -836,7 +832,7 @@
     },
     "/": {
       "get": {
-        "tags": ["Users"],
+        "tags": ["Buyers Management"],
         "summary": "Get authentication parameters",
         "parameters": [
           {
@@ -930,6 +926,117 @@
         }
       }
     },
+    "/approval": {
+      "patch": {
+        "tags": ["Buyers Management"],
+        "summary": "accepting and rejecting buyers",
+        "parameters": [
+          {
+            "required": true,
+            "name": "auction_id",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6540c0beca765df3f80d2275"
+          },
+          {
+            "required": true,
+            "name": "status",
+            "in": "query",
+            "description": "Approved or Rejected",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Approved"
+          },
+          {
+            "required": true,
+            "name": "buyer_id",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6540c17d9cc11ec0bf466b84"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json ": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide auction_id"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Please register"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Invalid Status"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auction-register": {
       "get": {
         "tags": ["Auction"],
@@ -943,7 +1050,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "651e4e7f699d157561d20788"
+            "example": "64facdcb8e305feab49525dd"
           }
         ],
         "responses": {
@@ -971,7 +1078,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json": {
+              "application/json ": {
                 "schema": {
                   "type": "object",
                   "properties": {
@@ -1039,218 +1146,29 @@
         }
       }
     },
-    "/search-lots":{
-    "get": {
-      "tags": [
-        "Lots"
-      ],
-      "summary": "search lots",
-      "description": "search lots",
-      "parameters": [
-        {
-          "name": "auction_id",
-          "in": "query",
-          "description": "to determine the which auction lots to be displayed ",
-          "schema": {
-            "type": "string"
-          },
-          "example": "651e8bed56250b9d9bfa495e"
-        },
-        {
-          "name": "search",
-          "in": "query",
-          "description": "Sort by key",
-          "schema": {
-            "type": "string"
-          },
-          "example": "asparagus"
-        }
-  
-      ],
-      "responses": {
-        "200": {
-          "description": "Successfully retrieved lots",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { 
-                  "data": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "auction_id":{
-                          "type":"string"
-                        },
-                        "seller_email":{
-                          "type":"string"
-                        },
-                        "title1":{
-                          "type":"integer"
-                        },
-                        "title2":{
-                          "type":"string"
-                        },
-                        "description":{
-                          "type":"string"
-                        },
-                        "starting_price":{
-                          "type":"integer"
-                        },
-                        "low_estimate":{
-                          "type":"integer"
-                        },
-                        "high_estimate":{
-                          "type":"integer"
-                        },
-                        "shipping_details":{
-                          "type":"string"
-                        },
-                        "current_bid":{
-                          "type":"integer"
-                        },
-                        "tags": {
-                          "type": "array",
-                          "items": {
-                            "type": "string"
-                          }
-                        },
-                        "images": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "url": {
-                                "type": "string"
-                              },
-                              "featured": {
-                                "type": "boolean"
-                              }
-                            }
-                          }
-                        },
-                        "lot_number":{
-                          "type": "integer"
-                        }
-
-                      }
-                    }
-                  }
-              },
-              "example": {
-                "data": [
-                  {
-                    "auction_id": "A0006",
-                    "seller_email": "shrinit.poojary@7edge.com",
-                    "title1": "asparagus",
-                    "title2": "",
-                    "description": "<p>veggies</p>",
-                    "starting_price": 111,
-                    "low_estimate": 0,
-                    "high_estimate": 0,
-                    "shipping_details": "",
-                    "current_bid": 0,
-                    "tags": [
-                      "hi",
-                      "hello",
-                      "fellow"
-                    ],
-                    "images": [
-                      {
-                        "url": "DomainName/Auctions/lots/images/0cd698b3-1a2c-3314-07c4-83502068c3e8/4.png",
-                        "featured": true
-                      }
-                    ],
-                    "lot_number": 1
-                  }
-                ]
-              }
-              
-            }
-          }
-        }
-      },
-        "400": {
-          "description": "Bad request",
-          "content": {
-            "application/json": {
-              "examples": {
-                "example1": {
-                  "value": {
-                      "example": "Please provide the auction_id"
-                    
-                  }
-                }    
-              }
-            }
-          }
-        },
-        "403": {
-          "description": "forbidden",
-          "content": {
-            "application/json": {
-              "examples": {
-                "example1": {
-                  "value": {
-                      "example": "forbidden"
-                    
-                  }
-                }    
-              }
-            }
-          }
-        },
-        "404": {
-          "description": "Not Found",
-          "content": {
-            "application/json": {
-              "examples": {
-                "example1": {
-                  "value": {
-                      "example": "Lots not found"
-                    
-                  }
-                }    
-              }
-            }
-          }
-        },
-        "500": {
-          "description": "Internal Server Error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "example": "Internal server error"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    },
-    "/lot-details":{
+    "/search-lots": {
       "get": {
-        "tags": [
-          "Lots"
-        ],
+        "tags": ["Lots Management"],
         "summary": "search lots",
         "description": "search lots",
         "parameters": [
           {
-            "name": "lot_id",
+            "name": "auction_id",
             "in": "query",
             "description": "to determine the which auction lots to be displayed ",
             "schema": {
               "type": "string"
             },
-            "example": "651eb2ccacc69f23a3de2001"
+            "example": "651e8bed56250b9d9bfa495e"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "asparagus"
           }
         ],
         "responses": {
@@ -1260,39 +1178,41 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { 
+                  "properties": {
                     "data": {
+                      "type": "array",
+                      "items": {
                         "type": "object",
                         "properties": {
-                          "auction_id":{
-                            "type":"string"
+                          "auction_id": {
+                            "type": "string"
                           },
-                          "seller_email":{
-                            "type":"string"
+                          "seller_email": {
+                            "type": "string"
                           },
-                          "title1":{
-                            "type":"integer"
+                          "title1": {
+                            "type": "integer"
                           },
-                          "title2":{
-                            "type":"string"
+                          "title2": {
+                            "type": "string"
                           },
-                          "description":{
-                            "type":"string"
+                          "description": {
+                            "type": "string"
                           },
-                          "starting_price":{
-                            "type":"integer"
+                          "starting_price": {
+                            "type": "integer"
                           },
-                          "low_estimate":{
-                            "type":"integer"
+                          "low_estimate": {
+                            "type": "integer"
                           },
-                          "high_estimate":{
-                            "type":"integer"
+                          "high_estimate": {
+                            "type": "integer"
                           },
-                          "shipping_details":{
-                            "type":"string"
+                          "shipping_details": {
+                            "type": "string"
                           },
-                          "current_bid":{
-                            "type":"integer"
+                          "current_bid": {
+                            "type": "integer"
                           },
                           "tags": {
                             "type": "array",
@@ -1314,43 +1234,38 @@
                               }
                             }
                           },
-                          "lot_number":{
+                          "lot_number": {
                             "type": "integer"
                           }
-  
                         }
                       }
                     }
-                },
-                "example": {
-                  "data": 
-                    {
-                      "auction_id": "A0006",
-                      "seller_email": "shrinit.poojary@7edge.com",
-                      "title1": "asparagus",
-                      "title2": "",
-                      "description": "<p>veggies</p>",
-                      "starting_price": 111,
-                      "low_estimate": 0,
-                      "high_estimate": 0,
-                      "shipping_details": "",
-                      "current_bid": 0,
-                      "tags": [
-                        "hi",
-                        "hello",
-                        "fellow"
-                      ],
-                      "images": [
-                        {
-                          "url": "DomainName/Auctions/lots/images/0cd698b3-1a2c-3314-07c4-83502068c3e8/4.png",
-                          "featured": true
-                        }
-                      ],
-                      "lot_number": 1
-                    }
-                  
+                  },
+                  "example": {
+                    "data": [
+                      {
+                        "auction_id": "A0006",
+                        "seller_email": "shrinit.poojary@7edge.com",
+                        "title1": "asparagus",
+                        "title2": "",
+                        "description": "<p>veggies</p>",
+                        "starting_price": 111,
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "current_bid": 0,
+                        "tags": ["hi", "hello", "fellow"],
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/0cd698b3-1a2c-3314-07c4-83502068c3e8/4.png",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 1
+                      }
+                    ]
+                  }
                 }
-                
               }
             }
           },
@@ -1361,10 +1276,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "Please provide the lot_id"
-                      
+                      "example": "Please provide the auction_id"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -1376,10 +1290,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "forbidden"
-                      
+                      "example": "forbidden"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -1391,10 +1304,864 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "Lot not found"
-                      
+                      "example": "Lots not found"
                     }
-                  }    
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lot-details": {
+      "get": {
+        "tags": ["Lots Management"],
+        "summary": "lots details",
+        "description": "lots details",
+        "parameters": [
+          {
+            "name": "lot_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "651eb2ccacc69f23a3de2001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "auction_id": {
+                          "type": "string"
+                        },
+                        "seller_email": {
+                          "type": "string"
+                        },
+                        "title1": {
+                          "type": "integer"
+                        },
+                        "title2": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "starting_price": {
+                          "type": "integer"
+                        },
+                        "low_estimate": {
+                          "type": "integer"
+                        },
+                        "high_estimate": {
+                          "type": "integer"
+                        },
+                        "shipping_details": {
+                          "type": "string"
+                        },
+                        "current_bid": {
+                          "type": "integer"
+                        },
+                        "tags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "images": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": "string"
+                              },
+                              "featured": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        },
+                        "lot_number": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "auction_id": "A0006",
+                    "seller_email": "shrinit.poojary@7edge.com",
+                    "title1": "asparagus",
+                    "title2": "",
+                    "description": "<p>veggies</p>",
+                    "starting_price": 111,
+                    "low_estimate": 0,
+                    "high_estimate": 0,
+                    "shipping_details": "",
+                    "current_bid": 0,
+                    "tags": ["hi", "hello", "fellow"],
+                    "images": [
+                      {
+                        "url": "DomainName/Auctions/lots/images/0cd698b3-1a2c-3314-07c4-83502068c3e8/4.png",
+                        "featured": true
+                      }
+                    ],
+                    "lot_number": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "Please provide the lot_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "Lot not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/update-password": {
+      "post": {
+        "tags": ["Buyers Management"],
+        "summary": "updating users password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old_password": {
+                    "type": "string"
+                  },
+                  "new_password": {
+                    "type": "string"
+                  },
+                  "confirm_password": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  },
+                  "auction_id": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "old_password": "Aish@1234",
+                "new_password": "Aish@134",
+                "confirm_password": "Aish@134",
+                "domain": "www-dev",
+                "auction_id": "A0011"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Password updated successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Current password is incorrect. The password update cannot be completed"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "new password is same as old password"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Current password and new password not matching"
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                      "message": "Something went wrong.Please try again"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/forgot_password": {
+      "post": {
+        "tags": ["Buyers Management"],
+        "summary": "Sends the password reset link to the email.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email_address": {
+                    "type": "string"
+                  },
+                  "logo_image": {
+                    "type": "string"
+                  },
+                  "auction_id": {
+                    "type": "string"
+                  },
+                  "domain": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "logo_image": "https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png",
+                  "auction_id": "6520008e74542648a5819807",
+                  "email_address": "aishwarya+vt@7edge.com",
+                  "domain": "www-dev"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Password Reset Instructions sent successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Please provide auction_id"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "There was an error while resetting password, Please try again!"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Invalid or Unregistered email_address"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/reset_password": {
+      "x-dredd": "skip",
+      "post": {
+        "tags": ["Buyers Management"],
+        "summary": "reseting users password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "_id": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbF9hZGRyZXNzIjoiYWlzaHdhcnlhK3Z0QDdlZGdlLmNvbSIsImV4cCI6MTY5ODI0MTYyNH0.e3zR8w3g49nZe6AkUgnvVRkTWhDmHvyOHZDYjvB5y_k",
+                "_id": "6520008e74542648a5819807",
+                "password": "Aishu7007"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Token expired"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Invalid Token"
+                    }
+                  }
+                }
+              }
+            }
+          },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Please provide token"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Password must be 8-16 characters"
+                      }
+                    },
+                    "example3":{
+                      "value":{
+                        "message":"Invalid password"
+                      }
+                    }
+                  }
+                }
+              }
+
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Seller doesn't exists"
+                      }
+                    },
+                    "example2":{
+                      "value":{
+                        "message":"Invalid or Unregistered email_address"
+                      }
+                    }
+                  }
+                }
+              }
+
+            },
+          "500": {
+            "description": "There was an error while resetting password, Please try again",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+     },
+     "/add-address": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "add and delete address",
+        "description": "add and delete address",
+        "parameters": [
+          {
+            "name": "update",
+            "in": "query",
+            "description": "to update the address",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+          },
+          {
+            "name": "delete",
+            "in": "query",
+            "description": "to delete the address",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "address_line1": {
+                    "type": "string"
+                  },
+                  "address_line2":{
+                    "type": "string"
+                  },
+                  "town/city": {
+                    "type": "string"
+                  },
+                  "county":{
+                    "type": "string"
+                  },  
+                  "country": {
+                    "type": "string"
+                  },
+                  "postal code":{
+                     "type": "string"
+                  }
+              }
+            }
+          }
+        }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "address_line1": {
+                          "type": "string"
+                        },
+                        "address_line2": {
+                          "type": "string"
+                        },
+                        "town/city": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        },
+                        "county": {
+                          "type": "string"
+                        },
+                        "postal_code": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "email_address": "aishwarya@7edge.com",
+                    "first_name": "Aishwarya",
+                    "last_name": "K"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "user not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile": {
+      "patch": {
+        "tags": ["Users"],
+        "summary": "View buyer profile",
+        "description": "View auction profile",
+        "parameters": [
+          {
+            "name": "update",
+            "in": "query",
+            "description": "to display and update the profile ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "phone_number":{
+                    "type": "string"
+                },
+                "country_code":{
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "email_address": {
+                          "type": "string"
+                        },
+                        "first_name": {
+                          "type": "string"
+                        },
+                        "last_name": {
+                          "type": "string"
+                        },
+                        "phone_no": {
+                          "type": "string"
+                        },
+                        "address_line1": {
+                          "type": "string"
+                        },
+                        "address_line2": {
+                          "type": "string"
+                        },
+                        "city": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string"
+                        },
+                        "country": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "email_address": "aishwarya@7edge.com",
+                    "first_name": "Aishwarya",
+                    "last_name": "K"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "user not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/paddle": {
+      "get": {
+        "tags": ["Buyers Management"],
+        "summary": "displaying paddle ",
+        "description": "displaying paddle",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65363ffe6ecaedfb6ffef6eb"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "paddle": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "paddle": "22"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "Please provide the lot_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "paddle not found"
+                    }
+                  }
                 }
               }
             }
@@ -1419,7 +2186,6 @@
       }
     }
   },
- 
   "components": {
     "schemas": {
       "Auction": {

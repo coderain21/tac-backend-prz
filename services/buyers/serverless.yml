@@ -46,7 +46,15 @@ provider:
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
+    BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
+      Fn::GetAtt:
+      - "sesTemplate"
+      - "Arn"
     
+    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+    TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
+    BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    CDN_LINK: ${env:CDN_LINK}
     
   http:
     cors: true
@@ -176,7 +184,7 @@ functions:
       - http:
           cors: true
           path: /view-lots
-          method: patch
+          method: get
   
   search_lots:
     handler: handlers/search_lots.lot_search
@@ -196,7 +204,7 @@ functions:
 
               
   view_lot_details:
-    handler: handlers/view_lots.list_lots
+    handler: handlers/view_lots.lot_details
     runtime: python3.8
     layers:
     - ${env:COMMON_PYTHON_LIB_ARN}
@@ -210,6 +218,53 @@ functions:
           cors: true
           path: /lot-details
           method: get
+
+  acceting_buyer:
+      handler: handlers/accept_buyer.accept_buyer
+      runtime: python3.8
+      layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+        - sg-0882c1da39e729097
+        subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+      events:
+        - http:
+            cors: true
+            path: /approval
+            method: patch
+            authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+  
+  update_password:
+    handler: handlers/update_password.update_password
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          path: /update-password
+          method: post
+  
+
 
   auction_register:
     handler: handlers/register_auction.register_auction
@@ -236,7 +291,122 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          # authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
+  view_profile:
+    handler: handlers/view_profile.view_profile
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /profile
+          method: patch
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  
+  add_address:
+    handler: handlers/add_address.add_address
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /add-address
+          method: patch
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+      
+  paddle_number:
+    handler: handlers/get_paddle.paddle_number
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /paddle
+          method: get
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
+
+  send-reset-link:
+    handler: handlers/send_reset_link.send_reset_link
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /forgot_password
+          method: post
+
+  update-new-password:
+    handler: handlers/reset.password_reset
+    runtime: python3.8
+    layers: 
+      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${env:ENCRYPTION_LAYER}
+    vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /reset_password
+          method: post
 
 resources:
    Resources:
@@ -249,6 +419,15 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+
+     sesTemplate:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties:
+        HtmlPart: ${file(./template/paddle.html)}
+        Subject: "{{subject}}"
+        TemplateDescription: Test
+        TemplateName: paddle_${opt:stage, 'dev'}
+        TextPart: ${file(./template/paddle.html)}
 
 plugins:
   - serverless-offline
