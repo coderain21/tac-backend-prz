@@ -1,24 +1,20 @@
-'''this function validates the '''
+# '''this function validates the '''
 import json
 import stripe
 from pymongo import MongoClient
 import os
 
 
-# Initialize MongoDB connection
+# # Initialize MongoDB connection
 client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 collection = db['dev-credit_card']
 def credit_card(event, context):
     # # Parse the request body to get the token
     request_body = json.loads(event['body'])
-    # token = request_body['token']
-    stripe.api_key = os.environ['STRIPE_API_KEY']
-    print(11)
-    token=stripe.Token.create(
-    card=request_body,
-    )
-    print(44,token)
+    token = request_body['token']
+    # stripe.api_key = os.environ['STRIPE_API_KEY']
+    stripe.api_key = 'sk_test_51Nb00kSFIyzeA4NAfngqSbNEuIJh7fjMnkvL7nxtAgbxc3Vncw7ZJde6BlMTAGVxDwJNL6j2h0b9MlUCsSxNybpx00HZ4PqRNu'
     try:
         # Create a customer
         print(22)
