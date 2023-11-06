@@ -37,7 +37,6 @@ def register_auction(event, context):
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
@@ -67,7 +66,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        print(data)
         if 'status' in data and data['status'] == 'True':
             result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
             status=result['status']
@@ -93,7 +91,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "buyer doesnt exist"})
             }
-        print(buyer)
         first_name=buyer['first_name']
         last_name=buyer['last_name']
         marketing = buyer['newsletter_notification']
@@ -102,17 +99,10 @@ def register_auction(event, context):
             {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
         if status is not None and status['status'] == 'Pending':
             return {
-                "statusCode": 400,
+                "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
-        paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
-                            "seller_email": seller_email,
-                            'record_type': 'Paddle'},
-                            {'$inc': {
-                                'starting_sequence': 1}},
-                            return_document=pymongo.ReturnDocument.AFTER,
-                            upsert=True)
         if registeration_type['registration_type'] == 'Email only':
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
@@ -125,7 +115,13 @@ def register_auction(event, context):
                 logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
-            print(start_time,start_date,title,first_name,seller_name)
+            paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+                            "seller_email": seller_email,
+                            'record_type': 'Paddle'},
+                            {'$inc': {
+                                'starting_sequence': 1}},
+                            return_document=pymongo.ReturnDocument.AFTER,
+                            upsert=True)
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
@@ -159,8 +155,15 @@ def register_auction(event, context):
                             "status":register_status,
                             'created_at': datetime.utcnow(),
                             'marketing': marketing
-                            }
-        auction_register.insert_one(data_to_insert)
+                   }
+        result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
+        if result is None:
+            auction_register.insert_one(data_to_insert)
+        else:
+            reg_status=result['status']
+            if reg_status == 'Rejected':
+                register_status='Pending'
+                auction_register.update_one({"auction_id": auction_id,'email_address':email_address },{"$set":{"status":register_status}})
         return {
                     "statusCode": 204,
                     'headers': headers,
