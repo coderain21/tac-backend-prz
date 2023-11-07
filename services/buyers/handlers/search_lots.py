@@ -42,6 +42,7 @@ def lot_search(event, context):
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
         auction_id = data.get("auction_id")
         search_keyword = data.get('search')
+        
         print(auction_id, search_keyword)
         if auction_id is not None:
             _id = ObjectId(auction_id)

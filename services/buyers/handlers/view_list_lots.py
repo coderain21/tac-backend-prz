@@ -4,6 +4,8 @@ import os
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
+import urllib.parse
+import re
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -55,10 +57,12 @@ def view_list_lots(event, context):
         search_keyword = data.get('search')
         search_criteria={}
         if search_keyword:
+            decoded_search_keyword = urllib.parse.unquote(search_keyword)
+            escaped_search_keyword = re.escape(decoded_search_keyword)
             search_criteria = {
                 "$or": [
-                    {"title1": {"$regex": f".*{search_keyword}.*", "$options": "i"}},
-                    {"tags": {"$elemMatch": {"$regex": f".*{search_keyword}.*", "$options": "i"}}}
+                    {"title1": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}},
+                    {"tags": {"$elemMatch": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}}}
                 ]
             }
         search_result = lot_collection.find({"auction_id": auction_id,
