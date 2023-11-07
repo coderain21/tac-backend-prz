@@ -26,11 +26,15 @@ def credit_card(event, context):
         # Create a customer
         print(22)
         customer = stripe.Customer.create(source=token)
+        
+        customer['name']='Shrinit'
+        customer['address']='teyscberfa'
         print(33,customer)
         payment_intent = stripe.PaymentIntent.create(
             amount=100,  # Replace with the actual amount
             currency='usd',
-            customer=customer.id,  # Replace with the customer ID
+            customer=customer.id,# Replace with the customer ID
+            description='Card verification charge'
         )
         print(11111, payment_intent)
         customer_data = {
