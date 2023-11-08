@@ -1,3 +1,4 @@
+'''this api will validate the credit card'''
 import json
 import stripe
 from pymongo import MongoClient
@@ -14,10 +15,9 @@ headers = {
 
 def credit_card(event, context):
     # Parse the request body to get the token and buyer_id
-    request_body = json.loads(event['body'])
-    token = request_body['token']
     data = event['queryStringParameters']
     buyer_id= data['buyer_id']
+    buyer_id= ObjectId(buyer_id)
     # Set your Stripe API key
     stripe.api_key = 'sk_test_51Nb00kSFIyzeA4NAfngqSbNEuIJh7fjMnkvL7nxtAgbxc3Vncw7ZJde6BlMTAGVxDwJNL6j2h0b9MlUCsSxNybpx00HZ4PqRNu'
 
@@ -26,15 +26,30 @@ def credit_card(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db['dev-credit_card']
+        buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        buyer= buyer_collection.find_one({'_id':buyer_id})
+        if buyer is None:
+            return {
+                    'statusCode': 404,
+                    'headers': headers,
+                    'body': json.dumps({'message':"buyer not found"})
+                    }
         if 'set' in data:
             if data['set'] == 'True':
-                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'Pending'})
+                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'Card Pending'})
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'result':result})
+                    }
+        request_body = json.loads(event['body'])
+        token = request_body['token']
 
         if 'status' in data:
             if data['status'] == 'True':
                 result = collection.find_one({'buyer_id': buyer_id})
                 if result is not None:
-                    response = {
+                    return {
                     'statusCode': 200,
                     'headers': headers,
                     'body': json.dumps({'result':result})
@@ -65,7 +80,7 @@ def credit_card(event, context):
         }})
         client.close()
 
-        response = {
+        return{
             'statusCode': 200,
             'headers': headers,
             'body': json.dumps({'message': 'Card verification initiated successfully',
@@ -73,16 +88,14 @@ def credit_card(event, context):
         }
     except stripe.error.StripeError as e:
         # Handle specific Stripe errors
-        response = {
+        return {
             'statusCode': 400,
             'headers': headers,
             'body': json.dumps({'message': 'Card verification failed: ' + str(e)})
         }
     except Exception as e:
-        response = {
+        return {
             'statusCode': 500,
             'headers': headers,
             'body': json.dumps({'message': 'Error verifying card'})
         }
-
-    return response
