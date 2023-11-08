@@ -131,7 +131,7 @@ def update_password(event, context):
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({
-                "message": "Current password is incorrect. The password update cannot be completed"
+                "message": " Current password is incorrect. The password update cannot be completed "
                })
             }
         update_password = new_password
