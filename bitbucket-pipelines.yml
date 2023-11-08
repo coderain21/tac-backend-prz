@@ -147,6 +147,8 @@ definitions:
               AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
               AWS_DEFAULT_REGION: $AWS_REGION
               DISTRIBUTION_ID: $DISTRIBUTION_ID
+        artifacts:
+          - test-results/**
         
     - step: &DAST 
         name: Dynamic Application Security Testing (DAST) 
