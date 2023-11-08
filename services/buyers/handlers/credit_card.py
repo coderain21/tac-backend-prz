@@ -1,3 +1,4 @@
+''' this api will validate the credit card'''
 import json
 import stripe
 from pymongo import MongoClient
@@ -15,7 +16,6 @@ def credit_card(event, context):
     """
     The `credit_card` function handles the verification and storage of credit card information using the
     Stripe API.
-    
     :param event: The `event` parameter is a dictionary that contains information about the HTTP request
     that triggered the function. It typically includes details such as the request method, headers,
     query parameters, and request body
