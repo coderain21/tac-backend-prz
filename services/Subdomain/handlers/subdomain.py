@@ -3,7 +3,7 @@ import os
 from pymongo import MongoClient
 import boto3
 
-amplify_client = boto3.client('amplify')
+amplify_client = boto3.client('amplify',region_name= 'eu-west-2')
 
 
 headers = {
@@ -15,7 +15,6 @@ headers = {
 }
 
 def subdomain(event, context):
-    try:
         # try:
         #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
         #     email_address = cognito_data['email']
@@ -34,14 +33,16 @@ def subdomain(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         subdomain_collection = db['dev-subdomain']
-        existing_domain_record= subdomain_collection.find_one({"buyer_email":"aishwarya+30@7edge.com"})
-        subdomain= 'antique'
+        existing_domain_record= subdomain_collection.find_one({"seller_email":"aishwarya+30@7edge.com"})
+        subdomain= 'antique2'
         plan= 'pro'
         
         if plan == 'pro':
-            response = client.get_domain_association(
+            print(1,os.environ['AMPLIFY_APP_ID'])
+            print(2,os.environ['AMPLIFY_DOMAIN_NAME'])
+            response = amplify_client.get_domain_association(
                     appId=os.environ['AMPLIFY_APP_ID'],
-                    domainName= os.environ['DOMAIN_NAME']
+                    domainName= os.environ['AMPLIFY_DOMAIN_NAME']
                 )
             existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
             check_existance = [domain['prefix'] for domain in existing_subdomains]
@@ -56,28 +57,25 @@ def subdomain(event, context):
                         })
                     response = amplify_client.update_domain_association(
                     appId=os.environ['AMPLIFY_APP_ID'],
-                    domainName=os.environ['DOMAIN_NAME'],
+                    domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
                     enableAutoSubDomain=True,
                     subDomainSettings=existing_subdomains,
                 )
                 else:
-                    update_mapping = [domain if domain['prefix'] != existing_domain_record['subdomain'] for domain in existing_subdomains]
+                    update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
                     update_mapping.append({
                             'prefix': subdomain,
                             'branchName': 'develop'
                         })
-                    existing_subdomains.append({
-                            'prefix': subdomain,
-                            'branchName': 'develop'
-                        })
+                    print(update_mapping)
                     response = amplify_client.update_domain_association(
                         appId=os.environ['AMPLIFY_APP_ID'],
-                        domainName=os.environ['DOMAIN_NAME'],
+                        domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
                         enableAutoSubDomain=True,
-                        subDomainSettings=existing_subdomains,
+                        subDomainSettings=update_mapping,
                     )
             return {
                         'statusCode': 200,
                         'headers': headers,
-                        'body': json.dumps({'result':result})
+                        'body': json.dumps({'result':result},cls=)
                         }

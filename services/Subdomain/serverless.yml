@@ -49,6 +49,10 @@ provider:
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    AMPLIFY_APP_ID: ${env:AMPLIFY_APP_ID}
+    AMPLIFY_DOMAIN_NAME: ${env:AMPLIFY_DOMAIN_NAME}
+
+
     
   http:
     cors: true
@@ -70,6 +74,7 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
+            - amplify:*
           Resource: "*"
  
 package:
@@ -99,7 +104,7 @@ custom:
 
 functions: 
   sub-domain:
-    handler: handlers/view.view
+    handler: handlers/subdomain.subdomain
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
