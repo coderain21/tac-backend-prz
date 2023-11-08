@@ -1,0 +1,41 @@
+{
+  "name": "prw-chat-socket-apis",
+  "version": "1.0.0",
+  "description": "PRW Backend Application to initiate chat with partner",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js",
+    "eslint": "eslint ./src/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://ashwath-prabhu-7edge@bitbucket.org/7EDGE/prw-customer-chat-apis.git"
+  },
+  "author": "7edge",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://bitbucket.org/7EDGE/prw-customer-chat-apis/issues"
+  },
+  "homepage": "https://bitbucket.org/7EDGE/prw-customer-chat-apis#readme",
+  "dependencies": {
+    "body-parser": "^1.19.1",
+    "express": "^4.17.2",
+    "fcm-node": "^1.6.1",
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "moment": "^2.29.1",
+    "mongoose": "^5.9.18",
+    "socket.io": "^4.4.1",
+    "superagent": "^7.1.1"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "nodemon": "^1.19.4"
+  }
+}

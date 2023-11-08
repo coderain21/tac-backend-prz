@@ -49,33 +49,33 @@ io.on('connection', (socket) => {
 
     // Event listener for 'connect-to-auction'
     socket.on('connect-to-auction', async (data) => {
-        console.log('entering');
-        const connection = await connectM(); // Await the connection
+        console.log('entering')
+        const connection = await connectM() // Await the connection
         if (connection) {
             // Parse the data back into an object
             const parsedData = JSON.parse(data)
             console.log(parsedData)
-            const database = connection.connection.db; // Access the database
-            const collection = database.collection('dev-register-auction'); // Replace with your collection name
+            const database = connection.connection.db // Access the database
+            const collection = database.collection('dev-register-auction') // Replace with your collection name
 
             // Query documents based on the email address
-            const query = { email_address: parsedData.buyer_id };
-            const documents = await collection.find(query).toArray(); // Await the query result
-            console.log(documents, 'DDD');
-            if (documents.length > 0 && mongoose.Types.ObjectId(parsedData.auction_id).equals(documents[0].auction_id)) {
-                socket.emit('connect-to-client', 'Authentication Success');
+            const query = { email_address: parsedData.buyer_id }
+            const documents = await collection.find(query).toArray() // Await the query result
+            console.log(documents, 'DDD')
+            if (documents.length > 0) {
+                socket.emit('connect-to-client', 'Authentication Success')
             } else {
-                socket.disconnect(true);
+                socket.disconnect(true)
             }
         }
-    });
+    })
 
     socket.on('disconnect', () => {
-        console.log('Socket Connection is Disconnected');
+        console.log('Socket Connection is Disconnected')
     })
-});
+})
 
 // Listen on the specified port
 http.listen(port, () => {
     console.log(`Server Is Running on Port: ${port}`)
-});
+})
