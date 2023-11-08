@@ -31,7 +31,6 @@ def subdomain(event, context):
         #         "headers": headers,
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
-        email_address ='shrinit.poojary@7edge.com'
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         subdomain_collection = db['dev-subdomain']
