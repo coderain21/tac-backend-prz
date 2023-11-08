@@ -34,7 +34,7 @@ def subdomain(event, context):
         db = client[os.environ['DATABASE']]
         subdomain_collection = db['dev-subdomain']
         existing_domain_record= subdomain_collection.find_one({"seller_email":"aishwarya+30@7edge.com"})
-        subdomain= 'antique2'
+        subdomain= 'test2'
         plan= 'pro'
         
         if plan == 'pro':
@@ -74,8 +74,9 @@ def subdomain(event, context):
                         enableAutoSubDomain=True,
                         subDomainSettings=update_mapping,
                     )
+                    print(response)
             return {
                         'statusCode': 200,
                         'headers': headers,
-                        'body': json.dumps({'result':result},cls=)
+                        'body': json.dumps({})
                         }
