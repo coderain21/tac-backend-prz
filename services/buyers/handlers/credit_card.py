@@ -26,6 +26,10 @@ def credit_card(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db['dev-credit_card']
+        if 'set' in data:
+            if data['set'] == 'True':
+                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'Pending'})
+
         if 'status' in data:
             if data['status'] == 'True':
                 result = collection.find_one({'buyer_id': buyer_id})
@@ -52,10 +56,13 @@ def credit_card(event, context):
         # Store the SetupIntent ID along with the buyer's ID
         customer_data = {
             'setup_intent_id': setup_intent.id,
-            'customer_id': customer.id,
-            'buyer_id': ObjectId(buyer_id)
+            'customer_id': customer.id
         }
-        collection.insert_one(customer_data)
+        collection.update_one({'buyer_id':buyer_id},{"$set": {
+            'setup_intent_id': setup_intent.id,
+            'customer_id': customer.id,
+            'registration_status': "Approved"
+        }})
         client.close()
 
         response = {

@@ -70,7 +70,7 @@ def view_profile(event, context):
                       { "password": 0,
                       "terms_and_condition": 0,
                       "user_type":0,
-                      "newsletter_notification":0,'_id': 0})
+                      "newsletter_notification":0,'_id': 1})
         client.close()
         if result is None:
             return {
