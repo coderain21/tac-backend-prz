@@ -51,6 +51,9 @@ provider:
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     AMPLIFY_APP_ID: ${env:AMPLIFY_APP_ID}
     AMPLIFY_DOMAIN_NAME: ${env:AMPLIFY_DOMAIN_NAME}
+    DEFAULT_INDENTITY_POOL_ID: ${env:DEFAULT_INDENTITY_POOL_ID}
+    DEFAULT_IDENTITY_POOL_NAME: ${env:DEFAULT_IDENTITY_POOL_NAME}
+    DEFAULT_BUYER_USERPOOL_ID: ${env:DEFAULT_BUYER_USERPOOL_ID}
 
 
     
@@ -106,6 +109,7 @@ functions:
   sub-domain:
     handler: handlers/subdomain.subdomain
     runtime: python3.8
+    timeout: 100
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
