@@ -1,3 +1,4 @@
+''' this api will validate the credit card'''
 import json
 import stripe
 from pymongo import MongoClient
@@ -11,29 +12,34 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-
 def credit_card(event, context):
+    """
+    The `credit_card` function handles the verification and storage of credit card information using the
+    Stripe API.
+    :param event: The `event` parameter is a dictionary that contains information about the HTTP request
+    that triggered the function. It typically includes details such as the request method, headers,
+    query parameters, and request body
+    :param context: The `context` parameter is an object that provides information about the runtime
+    environment of the function. It includes details such as the AWS request ID, the function name, the
+    function version, and more. This parameter is typically not used in the code you provided, but it
+    can be useful for logging or
+    :return: a JSON response with a status code, headers, and a body. The specific response depends on
+    the execution path of the code. Here are the possible return values:
+    """
     # Parse the request body to get the token and buyer_id
     data = event['queryStringParameters']
-    print(data)
     buyer_id= data['buyer_id']
+    buyer_id = ObjectId(buyer_id)
     # Set your Stripe API key
     stripe.api_key = os.environ['CREDIT_CARD_STRIPE_API_KEY']
-
     try:
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
-        print(1)
         db = client[os.environ['DATABASE']]
-        print(2)
         collection = db['dev-credit_card']
-        print(data)
         if 'set' in data:
-            print(3)
             if data['set'] == 'True':
-                print(4)
-                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'Pending'})
-                print(result)
+                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'card_pending'})
                 return {
                     'statusCode': 204,
                     'headers': headers,
@@ -41,12 +47,17 @@ def credit_card(event, context):
                     }
         if 'status' in data:
             if data['status'] == 'True':
-                result = collection.find_one({'buyer_id': buyer_id})
+                result = collection.find_one({'buyer_id': buyer_id},{'_id':0})
                 if result is not None:
-                    response = {
+                    return {
                     'statusCode': 200,
                     'headers': headers,
-                    'body': json.dumps({'result':result})
+                    'body': json.dumps({'status':result['registration_status']})
+                    }
+                return {
+                    'statusCode': 404,
+                    'headers': headers,
+                    'body': json.dumps({"message":"buyer is not registered"})
                     }
         request_body = json.loads(event['body'])
         token = request_body['token']
@@ -54,16 +65,13 @@ def credit_card(event, context):
             type='card',
             card={'token': token}
         )
-        print(111111111111,payment_method)
         setup_intent = stripe.SetupIntent.create(
             payment_method=payment_method.id,
             usage='off_session'  # or 'on_session' as needed
         )
-        print(2222222, setup_intent)
         customer = stripe.Customer.create(
             payment_method=payment_method.id
         )
-        
         # Store the SetupIntent ID along with the buyer's ID
         customer_data = {
             'setup_intent_id': setup_intent.id,
@@ -75,8 +83,7 @@ def credit_card(event, context):
             'registration_status': "Approved"
         }})
         client.close()
-
-        response = {
+        return{
             'statusCode': 200,
             'headers': headers,
             'body': json.dumps({'message': 'Card verification initiated successfully',
@@ -84,16 +91,14 @@ def credit_card(event, context):
         }
     except stripe.error.StripeError as e:
         # Handle specific Stripe errors
-        response = {
+        return{
             'statusCode': 400,
             'headers': headers,
             'body': json.dumps({'message': 'Card verification failed: ' + str(e)})
         }
     except Exception as e:
-        response = {
+        return{
             'statusCode': 500,
             'headers': headers,
             'body': json.dumps({'message': 'Error verifying card'})
         }
-
-    return response

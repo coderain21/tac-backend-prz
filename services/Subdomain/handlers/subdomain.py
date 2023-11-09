@@ -73,7 +73,6 @@ def subdomain(event, context):
         if subdomain in check_existance:
             return 'already exist'
         else:
-            result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
             if existing_domain_record['default'] is True:
                 userpoolid=os.environ['DEFAULT_BUYER_USERPOOL_ID']
                 userpool_client=create_app_client(userpoolid, seller_email.split('@')[0],subdomain)
@@ -95,12 +94,14 @@ def subdomain(event, context):
                         },
                     ]
                 )
+                result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False,'client_id':client_id}})
                 response = amplify_client.update_domain_association(
                 appId=os.environ['AMPLIFY_APP_ID'],
                 domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
                 enableAutoSubDomain=True,
                 subDomainSettings=existing_subdomains,
-            )
+                )
+
             else:
                 update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
                 update_mapping.append({
