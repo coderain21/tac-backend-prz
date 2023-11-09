@@ -55,6 +55,7 @@ provider:
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     CDN_LINK: ${env:CDN_LINK}
+    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
     
   http:
     cors: true
@@ -218,6 +219,22 @@ functions:
           cors: true
           path: /lot-details
           method: get
+          
+  credit_card:
+    handler: handlers/credit_card.credit_card
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /verify-card
+          method: post
 
   acceting_buyer:
       handler: handlers/accept_buyer.accept_buyer
