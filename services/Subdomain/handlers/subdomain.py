@@ -1,3 +1,4 @@
+'''this api will update the subdomain for the seller'''
 import json
 import os
 from pymongo import MongoClient
@@ -18,7 +19,7 @@ headers = {
 def create_app_client(userpoolid,client_name,subdomain):
     callback_url=[f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"]
     if os.environ.get("STAGE")=="dev":
-         callback_url.append('http://localhost:3000/register')
+        callback_url.append('http://localhost:3000/register')
     response = cognito_client.create_user_pool_client(
         UserPoolId=userpoolid,
         ClientName=client_name,
@@ -54,6 +55,19 @@ def create_app_client(userpoolid,client_name,subdomain):
     return response
 
 def subdomain(event, context):
+    """
+    The `subdomain` function is a Python function that handles requests related to subdomains, including
+    creating and updating subdomains for a seller.
+    :param event: The `event` parameter is the input event data that triggers the function. It contains
+    information about the request that was made to the function, such as the HTTP method, headers, and
+    body
+    :param context: The `context` parameter is typically used to provide information about the runtime
+    environment of the function. It can include details such as the AWS request ID, the function name,
+    and the function version. In this code snippet, the `context` parameter is not used, so it can be
+    removed from the
+    :return: The code is returning a JSON response with a status code, headers, and a body. The specific
+    response depends on the execution path of the code. Some possible responses include:
+    """
     try:
         print(event)
         seller_email = event['requestContext']['authorizer']['claims']['email']
@@ -75,7 +89,8 @@ def subdomain(event, context):
     subdomain_collection = db['dev-subdomain']
     data = event['queryStringParameters']
     existing_domain_record= subdomain_collection.find_one({"seller_email":seller_email})
-    if 'view' in data:
+    if data is not None:
+        if 'view' in data:
             if data['view'] == 'True':
                 subdomain=existing_domain_record['subdomain']
                 return {
@@ -87,14 +102,11 @@ def subdomain(event, context):
     subdomain = request_body['subdomain']
     plan= request_body['plan']
     if plan == 'Pro':
-        print(1,os.environ['AMPLIFY_APP_ID'])
-        print(2,os.environ['AMPLIFY_DOMAIN_NAME'])
         response = amplify_client.get_domain_association(
                 appId=os.environ['AMPLIFY_APP_ID'],
                 domainName= os.environ['AMPLIFY_DOMAIN_NAME']
             )
         existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
-        print(11,existing_subdomains)
         check_existance = [domain['prefix'] for domain in existing_subdomains]
         if subdomain in check_existance:
             return {
@@ -138,7 +150,6 @@ def subdomain(event, context):
                         'prefix': subdomain,
                         'branchName': 'develop'
                     })
-                print(update_mapping)
                 result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
                 response = amplify_client.update_domain_association(
                     appId=os.environ['AMPLIFY_APP_ID'],
