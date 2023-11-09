@@ -73,7 +73,16 @@ def subdomain(event, context):
     client = MongoClient(os.environ['MONGO_CLIENT'])
     db = client[os.environ['DATABASE']]
     subdomain_collection = db['dev-subdomain']
+    data = event['queryStringParameters']
     existing_domain_record= subdomain_collection.find_one({"seller_email":seller_email})
+    if 'view' in data:
+            if data['view'] == 'True':
+                subdomain=existing_domain_record['subdomain']
+                return {
+                    'statusCode': 200,
+                    'headers': headers,
+                    'body': json.dumps({'subdomain':subdomain})
+                    }
     request_body = json.loads(event['body'])
     subdomain = request_body['subdomain']
     plan= request_body['plan']
