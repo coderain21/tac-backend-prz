@@ -13,7 +13,7 @@ fi
 email_domain="${email##*@}"
 
 # Check if the email domain matches the company domain
-if [ "$email_domain" == "7edge.com" ]; then
+if [ "$email_domain" == "7edge.com" ] || [ "$email_domain" == "theauctioncollective.com" ]; then
   echo "You are using the company domain as your email, proceeding with committing."
   exit 0
 else
