@@ -1,4 +1,4 @@
-service: bids
+service: Subdomain
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -78,6 +78,8 @@ provider:
             - dynamodb:*
             - execute-api:*
             - amplify:*
+            - route53:*
+            - cognito-identity:UpdateIdentityPool
           Resource: "*"
  
 package:
@@ -122,6 +124,8 @@ functions:
           cors: true
           path: /subdomain
           method: patch
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
 
 
 resources:

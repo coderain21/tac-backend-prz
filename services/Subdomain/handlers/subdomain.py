@@ -34,12 +34,28 @@ def create_app_client(userpoolid,client_name,subdomain):
         AccessTokenValidity=5,
         IdTokenValidity=5,
         RefreshTokenValidity=3650,
-        CallbackURLs= [f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"]
+        CallbackURLs=[
+        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/'
+        ],
+        LogoutURLs=[
+            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/'
+        ],
+        SupportedIdentityProviders=[
+        'COGNITO','Facebook','Google'
+        ],
+        AllowedOAuthFlows=[
+        'code','implicit'
+         ],
+        AllowedOAuthScopes=[
+            'phone','email','openid','profile','aws.cognito.signin.user.admin'
+        ],
+        AllowedOAuthFlowsUserPoolClient=True
     )
     return response
 
 def subdomain(event, context):
     try:
+        print(event)
         seller_email = event['requestContext']['authorizer']['claims']['email']
         if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
             return {
@@ -61,7 +77,7 @@ def subdomain(event, context):
     request_body = json.loads(event['body'])
     subdomain = request_body['subdomain']
     plan= request_body['plan']
-    if plan == 'pro':
+    if plan == 'Pro':
         print(1,os.environ['AMPLIFY_APP_ID'])
         print(2,os.environ['AMPLIFY_DOMAIN_NAME'])
         response = amplify_client.get_domain_association(
@@ -69,9 +85,14 @@ def subdomain(event, context):
                 domainName= os.environ['AMPLIFY_DOMAIN_NAME']
             )
         existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
+        print(11,existing_subdomains)
         check_existance = [domain['prefix'] for domain in existing_subdomains]
         if subdomain in check_existance:
-            return 'already exist'
+            return {
+                    'statusCode': 404,
+                    'headers': headers,
+                    'body': json.dumps({'message':'already exists'})
+                    }
         else:
             if existing_domain_record['default'] is True:
                 userpoolid=os.environ['DEFAULT_BUYER_USERPOOL_ID']
@@ -109,6 +130,7 @@ def subdomain(event, context):
                         'branchName': 'develop'
                     })
                 print(update_mapping)
+                result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
                 response = amplify_client.update_domain_association(
                     appId=os.environ['AMPLIFY_APP_ID'],
                     domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
