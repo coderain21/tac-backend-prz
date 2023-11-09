@@ -171,7 +171,6 @@ definitions:
 
 pipelines:
   custom: 
-   
     DAST:
       - step: *DAST
   pull-requests:  
@@ -237,7 +236,7 @@ pipelines:
             name: Testing and DEV Deployment
             deployment: develop
             steps:
-              - step: *DevDeploy
+              - step: *Deploy
       - step: *APITesting
 
       
