@@ -18,12 +18,7 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '404' or
         transaction['expected']['statusCode'] == '403' or
         transaction['expected']['statusCode'] == '400' or
-        '/verify-captcha' in transaction['request']['uri'] or
-        '/otp-validation' in transaction['request']['uri'] or
-        '/www-dev' in transaction['request']['uri'] or 
-        '/auction-register' in transaction['request']['uri'] or 
-        '/update-password' in transaction['request']['uri'] or 
-        '/reset_password' in transaction['request']['uri']
+        '/subdomain' in transaction['request']['uri']
     ):
         transaction['skip'] = True
 
