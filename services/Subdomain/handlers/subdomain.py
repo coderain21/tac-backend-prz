@@ -160,5 +160,5 @@ def subdomain(event, context):
         return {
                     'statusCode': 200,
                     'headers': headers,
-                    'body': json.dumps({})
+                    'body': json.dumps({"Subdomain updated"})
                     }
