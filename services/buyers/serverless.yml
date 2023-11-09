@@ -56,6 +56,7 @@ provider:
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     CDN_LINK: ${env:CDN_LINK}
     STRIPE_API_KEY: ${env:STRIPE_API_KEY}
+    CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
     
   http:
     cors: true
