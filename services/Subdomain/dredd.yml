@@ -10,7 +10,7 @@ custom: {}
 names: false
 only: []
 reporter: ['html']
-output: ['../../test-results/Subdomain-apis.html']
+output: ['../../test-results/subdomain-apis.html']
 header: []
 sorted: false
 user: null
