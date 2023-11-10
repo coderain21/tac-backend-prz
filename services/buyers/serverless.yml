@@ -441,7 +441,7 @@ functions:
       - ${env:COMMON_LIB_ARN}
     events:
       - cognitoUserPool:
-          pool: ${env:DEFAULT_USERPOOL_ID}
+          pool: ${env:DEFAULT_USERPOOL_NAME}
           trigger: PreSignUp
           existing: true
 
