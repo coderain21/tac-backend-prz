@@ -221,7 +221,7 @@ def get_user_pool_data(username, sub_domain_name):
     """
     client = MongoClient(os.environ['MONGO_CLIENT'])
     db = client[os.environ['DATABASE']]
-    user_pools_collection = db[os.environ["SUB_DOMAIN_COLLECTION"]]
+    user_pools_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
     user_pool_data = user_pools_collection.find_one({
         'seller_email': username,
         'subdomain': sub_domain_name

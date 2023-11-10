@@ -120,7 +120,7 @@ def fetch_seller_data_from_subdomain(auction_id):
     try:
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        auction_collection = db[os.environ["SUB_DOMAIN_COLLECTION"]]
+        auction_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
         seller_data = fetch_seller_data_from_auction(auction_id)
         email_address = seller_data.get("seller_email","")
         data = auction_collection.find_one({"seller_email": email_address})
