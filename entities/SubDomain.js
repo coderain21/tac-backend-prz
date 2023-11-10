@@ -15,18 +15,16 @@ and is_first_time_login. The schema also includes some options such as trim, def
 required fields. The schema is then used to create a Mongoose model named AdminUser, which can be
 used to interact with the corresponding MongoDB collection. */
 const UserSchema = new Schema({
-    user_type: {
+    seller_email: {
         type: String, trim: true, required: true,
     },
-    password: { type: String, trim: true, required: true },
-    email_address: { type: String, trim: true },
-    newsletter_notification: { type: Boolean, default: false },
-    terms_and_condition: { type: Boolean, default: false },
-    first_name: { type: String, trim: true, default: '' },
-    last_name: { type: String, trim: true, default: '' },
-    registered_through: { type: String, trim: true, default: '' },
+    subdomain: { type: String, trim: true },
+    default: { type: Boolean, default: false },
+    client_id: { type: String, trim: true },
+    group_name: { type: String, trim: true },
+
 })
 
 UserSchema.plugin(mongoosePaginate)
-const buyersManagement = mongoose.model(`${stage}-buyers`, UserSchema, `${stage}-buyers`)
-module.exports = buyersManagement
+const domainManagement = mongoose.model(`${stage}-subdomain`, UserSchema, `${stage}-subdomain`)
+module.exports = domainManagement

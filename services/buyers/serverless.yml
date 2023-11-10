@@ -55,8 +55,12 @@ provider:
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     CDN_LINK: ${env:CDN_LINK}
+    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    SUB_DOMAIN_COLLECTION: ${env:SUB_DOMAIN_COLLECTION}
+    DEFAULT_COGNITO_DOMAIN: ${env:DEFAULT_COGNITO_DOMAIN}
     STRIPE_API_KEY: ${env:STRIPE_API_KEY}
     CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
     
   http:
     cors: true
@@ -425,6 +429,16 @@ functions:
           cors: true
           path: /reset_password
           method: post
+
+  cognito-pre-auth:
+    handler: handlers/pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    layers:
+      - ${env:COMMON_LIB_ARN}
 
 resources:
    Resources:
