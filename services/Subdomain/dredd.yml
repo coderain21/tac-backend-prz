@@ -10,7 +10,7 @@ custom: {}
 names: false
 only: []
 reporter: ['html']
-output: ['../../test-results/buyers-apis.html']
+output: ['../../test-results/subdomain-apis.html']
 header: []
 sorted: false
 user: null
@@ -29,7 +29,7 @@ hooks-worker-term-retry: 500
 hooks-worker-handler-host: 127.0.0.1
 hooks-worker-handler-port: 61321
 config: ./dredd.yml 
-blueprint: buyers-swagger.json
-endpoint: 'https://apis.indyauction.net/dev/v1/buyers'
+blueprint: subdomain-swagger.json
+endpoint: 'https://apis.indyauction.net/dev/v1/Subdomain'
 
 

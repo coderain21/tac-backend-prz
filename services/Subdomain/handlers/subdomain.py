@@ -69,96 +69,112 @@ def subdomain(event, context):
     response depends on the execution path of the code. Some possible responses include:
     """
     try:
-        print(event)
-        seller_email = event['requestContext']['authorizer']['claims']['email']
-        if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-            return {
-            "statusCode": 403,
-            "headers": headers,
-            "body": json.dumps({"message": "You do not have access to perform this API action"})
-        }
-        print('email', seller_email)
-    except:
-        return {
-            "statusCode": 403,
-            "headers": headers,
-            "body": json.dumps({"message": "You do not have access to perform this API action"})
-        }
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    subdomain_collection = db['dev-subdomain']
-    data = event['queryStringParameters']
-    existing_domain_record= subdomain_collection.find_one({"seller_email":seller_email})
-    if data is not None:
-        if 'view' in data:
-            if data['view'] == 'True':
-                subdomain=existing_domain_record['subdomain']
+        try:
+            print(event)
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
                 return {
-                    'statusCode': 200,
-                    'headers': headers,
-                    'body': json.dumps({'subdomain':subdomain})
-                    }
-    request_body = json.loads(event['body'])
-    subdomain = request_body['subdomain']
-    plan= request_body['plan']
-    if plan == 'Pro':
-        response = amplify_client.get_domain_association(
-                appId=os.environ['AMPLIFY_APP_ID'],
-                domainName= os.environ['AMPLIFY_DOMAIN_NAME']
-            )
-        existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
-        check_existance = [domain['prefix'] for domain in existing_subdomains]
-        if subdomain in check_existance:
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+            print('email', seller_email)
+        except:
             return {
-                    'statusCode': 404,
-                    'headers': headers,
-                    'body': json.dumps({'message':'already exists'})
-                    }
-        else:
-            if existing_domain_record['default'] is True:
-                userpoolid=os.environ['DEFAULT_BUYER_USERPOOL_ID']
-                userpool_client=create_app_client(userpoolid, seller_email.split('@')[0],subdomain)
-                client_id= userpool_client['UserPoolClient']['ClientId']
-                existing_subdomains.append({
-                        'prefix': subdomain,
-                        'branchName': 'develop'
-                    })
-                identity_pool_client = boto3.client('cognito-identity')
-                identity_response = identity_pool_client.update_identity_pool(
-                    IdentityPoolId=os.environ.get('DEFAULT_INDENTITY_POOL_ID'),
-                    IdentityPoolName=os.environ.get('DEFAULT_IDENTITY_POOL_NAME'),
-                    AllowUnauthenticatedIdentities=True,
-                    AllowClassicFlow=True,
-                    CognitoIdentityProviders=[
-                        {
-                            'ProviderName': f'cognito-idp.eu-west-2.amazonaws.com/{userpoolid}',
-                            'ClientId': client_id,
-                        },
-                    ]
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
+        data = event['queryStringParameters']
+        seller_collection = db[os.environ['SELLERS_TABLE']]
+        existing_domain_record= subdomain_collection.find_one({"seller_email":seller_email})
+        if data is not None:
+            if 'view' in data:
+                if data['view'] == 'True':
+                    subdomain=existing_domain_record['subdomain']
+                    return {
+                        'statusCode': 200,
+                        'headers': headers,
+                        'body': json.dumps({'subdomain':subdomain})
+                        }
+        request_body = json.loads(event['body'])
+        subdomain = request_body['subdomain']
+        plan= request_body['plan']
+        seller= seller_collection.find_one({'email_address':seller_email})
+        plan = seller['plan_type']
+        if plan == 'Pro':
+            response = amplify_client.get_domain_association(
+                    appId=os.environ['AMPLIFY_APP_ID'],
+                    domainName= os.environ['AMPLIFY_DOMAIN_NAME']
                 )
-                result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False,'client_id':client_id}})
-                response = amplify_client.update_domain_association(
-                appId=os.environ['AMPLIFY_APP_ID'],
-                domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
-                enableAutoSubDomain=True,
-                subDomainSettings=existing_subdomains,
-                )
-
+            existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
+            check_existance = [domain['prefix'] for domain in existing_subdomains]
+            if subdomain in check_existance:
+                return {
+                        'statusCode': 404,
+                        'headers': headers,
+                        'body': json.dumps({'message':'already exists'})
+                        }
             else:
-                update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
-                update_mapping.append({
-                        'prefix': subdomain,
-                        'branchName': 'develop'
-                    })
-                result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
-                response = amplify_client.update_domain_association(
+                if existing_domain_record['default'] is True:
+                    userpoolid=os.environ['DEFAULT_BUYER_USERPOOL_ID']
+                    userpool_client=create_app_client(userpoolid, seller_email.split('@')[0],subdomain)
+                    client_id= userpool_client['UserPoolClient']['ClientId']
+                    existing_subdomains.append({
+                            'prefix': subdomain,
+                            'branchName': 'develop'
+                        })
+                    identity_pool_client = boto3.client('cognito-identity')
+                    identity_response = identity_pool_client.update_identity_pool(
+                        IdentityPoolId=os.environ.get('DEFAULT_INDENTITY_POOL_ID'),
+                        IdentityPoolName=os.environ.get('DEFAULT_IDENTITY_POOL_NAME'),
+                        AllowUnauthenticatedIdentities=True,
+                        AllowClassicFlow=True,
+                        CognitoIdentityProviders=[
+                            {
+                                'ProviderName': f'cognito-idp.eu-west-2.amazonaws.com/{userpoolid}',
+                                'ClientId': client_id,
+                            },
+                        ]
+                    )
+                    result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False,'client_id':client_id}})
+                    response = amplify_client.update_domain_association(
                     appId=os.environ['AMPLIFY_APP_ID'],
                     domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
                     enableAutoSubDomain=True,
-                    subDomainSettings=update_mapping,
-                )
+                    subDomainSettings=existing_subdomains,
+                    )
+
+                else:
+                    update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
+                    update_mapping.append({
+                            'prefix': subdomain,
+                            'branchName': 'develop'
+                        })
+                    result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
+                    response = amplify_client.update_domain_association(
+                        appId=os.environ['AMPLIFY_APP_ID'],
+                        domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
+                        enableAutoSubDomain=True,
+                        subDomainSettings=update_mapping,
+                    )
+            return {
+                        'statusCode': 200,
+                        'headers': headers,
+                        'body': json.dumps({"message":"Subdomain updated"})
+                        }
+        else:
+            return {
+                        'statusCode': 404,
+                        'headers': headers,
+                        'body': json.dumps({'message':"please upgrade your plan"})
+                        }
+    except:
         return {
-                    'statusCode': 200,
+                    'statusCode': 500,
                     'headers': headers,
-                    'body': json.dumps({"Subdomain updated"})
+                    'body': json.dumps({'message':"Internal server error"})
                     }
