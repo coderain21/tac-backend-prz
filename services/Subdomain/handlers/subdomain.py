@@ -125,7 +125,7 @@ def subdomain(event, context):
                     client_id= userpool_client['UserPoolClient']['ClientId']
                     existing_subdomains.append({
                             'prefix': subdomain,
-                            'branchName': 'develop'
+                            'branchName': os.environ["AMPLIFY_BRANCH"]
                         })
                     identity_pool_client = boto3.client('cognito-identity')
                     identity_response = identity_pool_client.update_identity_pool(
@@ -152,7 +152,7 @@ def subdomain(event, context):
                     update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
                     update_mapping.append({
                             'prefix': subdomain,
-                            'branchName': 'develop'
+                            'branchName': os.environ["AMPLIFY_BRANCH"]
                         })
                     result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
                     response = amplify_client.update_domain_association(
