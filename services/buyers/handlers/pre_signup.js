@@ -33,7 +33,6 @@ exports.handler = async (event, context, callback) => {
             console.log('params', params)
 
             const result = await new Promise((resolve, reject) => cognito.listUsers(params, (err, data) => {
-                
                 if (err) {
                     reject(err)
                     return
@@ -70,7 +69,7 @@ exports.handler = async (event, context, callback) => {
             const connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
             console.log(user)
-            const cognitoResponse = await cognitoHelper.buyerCognitoCreate(userData,event.userPoolId)
+            const cognitoResponse = await cognitoHelper.buyerCognitoCreate(userData, event.userPoolId)
             console.log(cognitoResponse)
             await connection.disconnect()
             await linkUser(event.request.userAttributes.email, event)
@@ -109,14 +108,14 @@ exports.handler = async (event, context, callback) => {
                 reject(err)
                 return
             }
-            
+
             console.log('Successfully linked users.', result)
             return resolve(result)
         }))
     }
     console.log('event', JSON.stringify(event))
 
-    if (event.triggerSource === 'PreSignUp_ExternalProvider' ) {
+    if (event.triggerSource === 'PreSignUp_ExternalProvider') {
         console.log('111111111111111111')
         try {
             const result = await checkForExistingUsers(event, true)

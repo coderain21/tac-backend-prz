@@ -18,7 +18,6 @@ const helpers = require('../lib/helper')
 const Users = require('../entities/Users')
 const SubDomain = require('../entities/SubDomain')
 
-
 const mongoConnection = require('../lib/mongodb_helper')
 
 AWS.config.update({ region: process.env.REGION })

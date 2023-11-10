@@ -439,6 +439,11 @@ functions:
         - subnet-0ff05c7c2bd2a3f87
     layers:
       - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:DEFAULT_USERPOOL_ID}
+          trigger: PreSignUp
+          existing: true
 
 resources:
    Resources:
