@@ -36,10 +36,10 @@ def create_app_client(userpoolid,client_name,subdomain):
         IdTokenValidity=5,
         RefreshTokenValidity=3650,
         CallbackURLs=[
-        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/'
+        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
         ],
         LogoutURLs=[
-            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/'
+            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
         ],
         SupportedIdentityProviders=[
         'COGNITO','Facebook','Google'
