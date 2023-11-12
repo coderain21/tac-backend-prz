@@ -41,7 +41,7 @@ def credit_card(event, context):
         collection = db['dev-credit_card']
         if 'set' in data:
             if data['set'] == 'True':
-                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'card_pending'})
+                result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'card_pending','auction_id':auction_id})
                 return {
                     'statusCode': 204,
                     'headers': headers,
