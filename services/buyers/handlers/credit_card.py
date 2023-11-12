@@ -30,6 +30,8 @@ def credit_card(event, context):
     data = event['queryStringParameters']
     buyer_id= data['buyer_id']
     buyer_id = ObjectId(buyer_id)
+    auction_id = data['auction_id']
+    auction_id =ObjectId(auction_id)
     # Set your Stripe API key
     stripe.api_key = os.environ['CREDIT_CARD_STRIPE_API_KEY']
     try:
@@ -47,7 +49,7 @@ def credit_card(event, context):
                     }
         if 'status' in data:
             if data['status'] == 'True':
-                result = collection.find_one({'buyer_id': buyer_id},{'_id':0})
+                result = collection.find_one({'buyer_id': buyer_id,'auction_id':auction_id},{'_id':0})
                 if result is not None:
                     return {
                     'statusCode': 200,
@@ -80,7 +82,8 @@ def credit_card(event, context):
         collection.update_one({'buyer_id':buyer_id},{"$set": {
             'setup_intent_id': setup_intent.id,
             'customer_id': customer.id,
-            'registration_status': "Approved"
+            'registration_status': "Approved",
+            "auction_id": auction_id
         }})
         client.close()
         return{
