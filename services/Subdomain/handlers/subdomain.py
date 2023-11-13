@@ -54,6 +54,24 @@ def create_app_client(userpoolid,client_name,subdomain):
     )
     return response
 
+def update_app_client(userpoolid,client_id,client_name,subdomain):
+    callback_url=[f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"]
+    if os.environ.get("STAGE")=="dev":
+        callback_url.append('http://localhost:3000/register')
+    response = cognito_client.update_user_pool_client(
+        UserPoolId=userpoolid,
+        ClientId= client_id,
+        ClientName=client_name,
+        CallbackURLs=[
+        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
+        ],
+        LogoutURLs=[
+            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
+        ]
+    )
+    return response
+
+
 def subdomain(event, context):
     """
     The `subdomain` function is a Python function that handles requests related to subdomains, including
@@ -150,11 +168,13 @@ def subdomain(event, context):
 
                 else:
                     update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
+                    userpoolid=os.environ['DEFAULT_BUYER_USERPOOL_ID']
                     update_mapping.append({
                             'prefix': subdomain,
                             'branchName': os.environ["AMPLIFY_BRANCH"]
                         })
                     result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False}})
+                    response_update_client = update_app_client(userpoolid,existing_domain_record["client_id"],seller_email.split('@')[0],request_body['subdomain'])
                     response = amplify_client.update_domain_association(
                         appId=os.environ['AMPLIFY_APP_ID'],
                         domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
@@ -172,7 +192,8 @@ def subdomain(event, context):
                         'headers': headers,
                         'body': json.dumps({'message':"please upgrade your plan"})
                         }
-    except:
+    except Exception as err:
+        print(err)
         return {
                     'statusCode': 500,
                     'headers': headers,
