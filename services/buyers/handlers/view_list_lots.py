@@ -63,8 +63,6 @@ def view_list_lots(event, context):
         search_keyword = data.get('search')
         search_criteria={}
         if search_keyword:
-            # decoded_search_keyword = urllib.parse.unquote(search_keyword)
-            # escaped_search_keyword = re.escape(decoded_search_keyword)
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
             search_criteria = {
