@@ -62,12 +62,33 @@ def update_app_client(userpoolid,client_id,client_name,subdomain):
         UserPoolId=userpoolid,
         ClientId= client_id,
         ClientName=client_name,
+        TokenValidityUnits={
+        'AccessToken': 'minutes',
+        'IdToken': 'minutes',
+        'RefreshToken': 'days'
+        },
+        ExplicitAuthFlows=[
+        'ALLOW_ADMIN_USER_PASSWORD_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_PASSWORD_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_REFRESH_TOKEN_AUTH'
+        ],
+        AccessTokenValidity=5,
+        IdTokenValidity=5,
+        RefreshTokenValidity=3650,
         CallbackURLs=[
         'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
         ],
         LogoutURLs=[
             'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
-        ]
+        ],
+        SupportedIdentityProviders=[
+        'COGNITO','Facebook','Google'
+        ],
+        AllowedOAuthFlows=[
+        'code','implicit'
+         ],
+        AllowedOAuthScopes=[
+            'phone','email','openid','profile','aws.cognito.signin.user.admin'
+        ],
+        AllowedOAuthFlowsUserPoolClient=True
     )
     return response
 
