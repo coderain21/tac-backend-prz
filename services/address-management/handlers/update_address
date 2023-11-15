@@ -11,8 +11,7 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-def add_shipping_address(event, context):
-    # Parse the request body to get the token and buyer_
+def update_address(event, context):
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
@@ -36,34 +35,21 @@ def add_shipping_address(event, context):
         request_body = json.loads(event['body'])
         data = event['queryStringParameters']
         try:
-            address_line1=request_body['address_line1']
-            address_line2= request_body['address_line2']
-            city=request_body['city']
-            state=request_body['state']
-            postal_code=request_body['postal_code']
-            country=request_body['country']
-            type= request_body['type']
-            same= request_body['same']
+            address_id=data['address_id']
         except:
             return {
                 "statusCode": 404,
-                "headers": headers,
-                "body": json.dumps({"message": "please provide the required fields"})
+                'headers': headers,
+                "body": json.dumps({"message": "please provide the address_id."})
             }
-        request_body= request_body.pop('same')
-        address = collection.find_one({'email_address':email_address})
-        if address is None:
-            default = True
-        else:
-            default= False
-        if type =='shipping' or same == 'True':
-            result= collection.insert_one({'email_address':email_address,'shipping_address':request_body,'default': default})
-        if type == 'billing' or same == 'True':
-            result= collection.insert_one({'email_address':email_address,'billing_address':request_body, 'default':default})
+        type= request_body['type']
+        result = collection.update_one({'email_address':email_address,'default':True,'type':type},{'$set':{'default':False}})
+        result = collection.update_one({'_id':ObjectId(address_id)},{'$set':{'default':True}})
+        result = collection.find_one({'email_address':email_address})
         return {
-                    "statusCode": 204,
+                    "statusCode": 200,
                     'headers': headers,
-                    "body": json.dumps({'message': "sucessfull"})
+                    "body": json.dumps({"result":result})
                 }
     except Exception as e:
         return {
@@ -71,4 +57,3 @@ def add_shipping_address(event, context):
             "headers": headers,
             "body": json.dumps({"message": e}, cls=Encoder)
             }
-

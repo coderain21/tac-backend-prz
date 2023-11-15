@@ -2,8 +2,6 @@ import json
 from pymongo import MongoClient
 import os
 from lib.common_helper import Encoder
-from bson import ObjectId
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -11,8 +9,17 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-def add_shipping_address(event, context):
-    # Parse the request body to get the token and buyer_
+def view_address(event, context):
+    """
+    The function "view_address" is used to handle an event and context in Python.
+    
+    :param event: The `event` parameter is an object that contains information about the event that
+    triggered the function. This can include details such as the event type, event source, and any data
+    associated with the event
+    :param context: The `context` parameter in the `view_address` function is an object that provides
+    information about the runtime environment of the function. It includes details such as the AWS
+    request ID, function name, and other contextual information
+    """
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
@@ -34,36 +41,11 @@ def add_shipping_address(event, context):
         db = client[os.environ['DATABASE']]
         collection = db['dev-address-management']
         request_body = json.loads(event['body'])
-        data = event['queryStringParameters']
-        try:
-            address_line1=request_body['address_line1']
-            address_line2= request_body['address_line2']
-            city=request_body['city']
-            state=request_body['state']
-            postal_code=request_body['postal_code']
-            country=request_body['country']
-            type= request_body['type']
-            same= request_body['same']
-        except:
-            return {
-                "statusCode": 404,
-                "headers": headers,
-                "body": json.dumps({"message": "please provide the required fields"})
-            }
-        request_body= request_body.pop('same')
-        address = collection.find_one({'email_address':email_address})
-        if address is None:
-            default = True
-        else:
-            default= False
-        if type =='shipping' or same == 'True':
-            result= collection.insert_one({'email_address':email_address,'shipping_address':request_body,'default': default})
-        if type == 'billing' or same == 'True':
-            result= collection.insert_one({'email_address':email_address,'billing_address':request_body, 'default':default})
+        result = collection.find_one({'email_address':email_address})
         return {
-                    "statusCode": 204,
+                    "statusCode": 200,
                     'headers': headers,
-                    "body": json.dumps({'message': "sucessfull"})
+                    "body": json.dumps({"result":result})
                 }
     except Exception as e:
         return {
@@ -71,4 +53,3 @@ def add_shipping_address(event, context):
             "headers": headers,
             "body": json.dumps({"message": e}, cls=Encoder)
             }
-

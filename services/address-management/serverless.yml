@@ -1,4 +1,4 @@
-service: Subdomain
+service: buyers
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -45,19 +45,22 @@ provider:
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}    
+    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
+    BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
+      Fn::GetAtt:
+      - "sesTemplate"
+      - "Arn"
+    
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    AMPLIFY_APP_ID: ${env:AMPLIFY_APP_ID}
-    AMPLIFY_DOMAIN_NAME: ${env:AMPLIFY_DOMAIN_NAME}
-    DEFAULT_INDENTITY_POOL_ID: ${env:DEFAULT_INDENTITY_POOL_ID}
-    DEFAULT_IDENTITY_POOL_NAME: ${env:DEFAULT_IDENTITY_POOL_NAME}
-    DEFAULT_BUYER_USERPOOL_ID: ${env:DEFAULT_BUYER_USERPOOL_ID}
-    SUBDOMAIN_COLLECTION: ${env:SUB_DOMAIN_TABLE}
-    AMPLIFY_BRANCH: ${env:AMPLIFY_BRANCH}
-
-
+    CDN_LINK: ${env:CDN_LINK}
+    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${env:DEFAULT_COGNITO_DOMAIN}
+    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
+    CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     
   http:
     cors: true
@@ -79,9 +82,6 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
-            - amplify:*
-            - route53:*
-            - cognito-identity:UpdateIdentityPool
           Resource: "*"
  
 package:
@@ -109,26 +109,85 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
-functions: 
-  sub-domain:
-    handler: handlers/subdomain.subdomain
+functions:   
+  add_shipping_address:
+    handler: handlers/add_shipping_address.add_shipping_address
     runtime: python3.8
-    timeout: 100
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+      - sg-0882c1da39e729097
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+      - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
-          path: /subdomain
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /address
+          method: post
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  view_address:
+    handler: handlers/view_address.view_address
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /address
+          method: get
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  update_address:
+    handler: handlers/update_address.update_address
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /address
           method: patch
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
-
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:
@@ -141,7 +200,6 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
-
 
 plugins:
   - serverless-offline
