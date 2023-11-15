@@ -60,6 +60,7 @@ module.exports.getAllBidders = async (document) => {
         return false
     }
 }
+
 module.exports.changeStatus = async (allBidders) => {
     try {
         const connectionData = await this.connect()
@@ -86,6 +87,30 @@ module.exports.changeStatus = async (allBidders) => {
         return err
     }
 }
+
+module.exports.changeStartingBid = async (data) => {
+    console.log('1111111111111111111111111111111111111')
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db // Access the database
+        const collection = database.collection('dev-lots')
+        await collection.updateOne(
+            { _id: new ObjectId(data.lot_id) },
+            {
+                $set: {
+                    starting_price_status: 'Changed', current_bid: data.current_bid,
+                },
+            },
+        )
+
+        await connectionData.disconnect()
+        return true
+    } catch (err) {
+        console.log(err)
+        return err
+    }
+}
+
 
 module.exports.updateTopBidder = async (data, updateInformation) => {
     try {

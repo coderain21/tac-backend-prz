@@ -10,6 +10,7 @@ const mongoose = require('mongoose')
 const redis = require('redis')
 
 const mongodbHelper = require('../utilities/mongodb_helper')
+const helper = require('../utilities/auto_bid')
 
 
 
@@ -32,23 +33,21 @@ const bidInformationSchema = new mongoose.Schema({
     bid_status: String,
     created_at: Date,
     updated_at: Date,
+    base_price: Number,
 })
 
 const BidInformation = mongoose.model('dev-bid-information', bidInformationSchema)
 
 async function getAllRecordsForAuctionId(data, client) {
     try {
-        console.log('data', data)
         const key = `auction:${data.auction_id}`
         const excludedIds = [`${data.buyer_id}`]
     
         const recordsHash = await client.hGetAll(key)
-        console.log('recordsHash', recordsHash)
         const records = []
       
         for (const field in recordsHash) {
             const record = JSON.parse(recordsHash[field])
-            console.log('record', record)  
             // Check if the buyer ID is in the list of excluded IDs
             if (!excludedIds.includes(record.buyer_id)) {
                 records.push(record)
@@ -61,10 +60,6 @@ async function getAllRecordsForAuctionId(data, client) {
         return err
     }
 }
-  
-
-
-  
 
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
@@ -72,66 +67,64 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // Use const for client since it doesn't change
         const client = redis.createClient()
         const hSetAsync = promisify(client.hSet).bind(client)
-
         if (!client.isOpen) {
             // Reconnect to Redis
             await client.connect()
         }
         const allBidders = await getAllRecordsForAuctionId(data, client)
-        console.log('all', allBidders)
-        let message = 'Congratulations, you won the bid!'
-        let bidStatus = 'Not Winning'
-        
+        const checkForAutoBid = await helper.checkAutoBid(data, allBidders)
+        console.log('checkForAutoBid', checkForAutoBid)
+        const { message } = checkForAutoBid
+        const { bidStatus } = checkForAutoBid
 
         // Connect to MongoDB outside the try block to ensure proper disconnection in case of an error
         const connectionData = await mongodbHelper.connect()
-        if (allBidders.length > 0) {
-            const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
-            const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
-
-            // await mongodbHelper.updateTopBidder(data, highestBidder)
-
-            if (data.max_bid > highestBid) {
-                bidStatus = 'Winning'
-            } else {
-                message = 'You did not win the bid'
-            }
-        } else {
-            const highestBid = {
-                Top_bidder: data.buyer_id,
-                paddle_number: data.paddle_number,
-                current_bid: data.max_bid,
-            }
-            // await mongodbHelper.updateTopBidder(data, highestBid)
-            bidStatus = 'Winning'
-        }
-        data.bid_status = bidStatus
+        // if (allBidders.length > 0) {
+        //     const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
+        //     const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
+        //     // await mongodbHelper.updateTopBidder(data, highestBidder)
+        //     if (checkForAutoBid.max_bid > highestBid) {
+        //         bidStatus = 'Winning'
+        //     } else {
+        //         message = 'You did not win the bid'
+        //     }
+        // } else {
+        //     const highestBid = {
+        //         Top_bidder: checkForAutoBid.buyer_id,
+        //         paddle_number: checkForAutoBid.paddle_number,
+        //         current_bid: checkForAutoBid.max_bid,
+        //     }
+        //     // await mongodbHelper.updateTopBidder(data, highestBid)
+        //     bidStatus = 'Winning'
+        // }
+        
+        checkForAutoBid.bid_status = bidStatus
         const criteria = {
-            buyer_id: data.buyer_id,
-            auction_id: data.auction_id,
-            lot_id: data.lot_id,
+            buyer_id: checkForAutoBid.buyer_id,
+            auction_id: checkForAutoBid.auction_id,
+            lot_id: checkForAutoBid.lot_id,
         }
         
         const existingRecord = await BidInformation.findOne(criteria)
         if (existingRecord) {
-            existingRecord.set(data)
+            existingRecord.set(checkForAutoBid)
             await existingRecord.save()
         } else {
-            const bidDoc = new BidInformation(data)
+            const bidDoc = new BidInformation(checkForAutoBid)
             await bidDoc.save()
         }
-        const redisRecordKey = `auction:${data.auction_id}`
-        const existingRedisRecord = await client.hGet(redisRecordKey, data.buyer_id)
+        const redisRecordKey = `auction:${checkForAutoBid.auction_id}`
+        const existingRedisRecord = await client.hGet(redisRecordKey, checkForAutoBid.buyer_id)
         const isNewRecord = !existingRedisRecord    
         if (isNewRecord) {
             // If no existing record is found, create a new record in Redis
-            await client.hSet(redisRecordKey, data.buyer_id, JSON.stringify(data))
+            await client.hSet(redisRecordKey, checkForAutoBid.buyer_id, JSON.stringify(checkForAutoBid))
         } else {
             // If an existing record is found, update it in Redis
-            await client.hSet(redisRecordKey, data.buyer_id, JSON.stringify(data))
+            await client.hSet(redisRecordKey, checkForAutoBid.buyer_id, JSON.stringify(checkForAutoBid))
         }
         console.log('bid status', bidStatus)
-        
+        io.to(socket.id).emit('placeBid', { success: true, message })
         if (bidStatus === 'Winning') {
             const winningBidders = allBidders.filter((bidder) => bidder.bid_status === 'Winning')
             console.log('winn', winningBidders)
@@ -139,7 +132,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 const taskListBatch = []
 
                 winningBidders.forEach((record) => {
-                    console.log('record', record.bid_status)
                     if (record.bid_status === 'Winning') {
                         console.log('entering')
                         // Assuming 'auction_id' is a unique identifier for your records in Redis
@@ -164,7 +156,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         }
 
         await connectionData.disconnect()
-        io.to(socket.id).emit('placeBid', { success: true, message })
     } catch (err) {
         console.error(err)
     }
