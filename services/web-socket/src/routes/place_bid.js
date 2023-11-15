@@ -81,6 +81,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         console.log('all', allBidders)
         let message = 'Congratulations, you won the bid!'
         let bidStatus = 'Not Winning'
+        
 
         // Connect to MongoDB outside the try block to ensure proper disconnection in case of an error
         const connectionData = await mongodbHelper.connect()
