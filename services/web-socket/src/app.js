@@ -6,9 +6,8 @@ const { placeBid } = require('./routes/place_bid')
 // const { listMessages } = require('./routes/list_messages')
 // const config = require('./config/beta')
 
-
 module.exports.initiateEvents = async (socket, io, userData, users) => {
-	console.log('hello initiate')
+    console.log('hello initiate')
     /**
 	 * @channel - CREATE_CHAT
 	 * @channelDescription -

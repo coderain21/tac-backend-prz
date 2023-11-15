@@ -4,10 +4,14 @@
 /* eslint-disable no-trailing-spaces */
 /* eslint-disable no-multiple-empty-lines */
 /* eslint-disable import/no-extraneous-dependencies */
+const { promisify } = require('util')
+
 const mongoose = require('mongoose')
 const redis = require('redis')
 
 const mongodbHelper = require('../utilities/mongodb_helper')
+
+
 
 // Check if the client is closed
 
@@ -33,27 +37,32 @@ const bidInformationSchema = new mongoose.Schema({
 const BidInformation = mongoose.model('dev-bid-information', bidInformationSchema)
 
 async function getAllRecordsForAuctionId(data, client) {
-    const key = `auction:${data.auction_id}`
-    const excludedIds = [`${data.buyer_id}`]
-
-    const recordsHash = await client.hGetAll(key)
-    console.log('record hash first', recordsHash)
-    const records = []
-  
-    for (const field in recordsHash) {
-        const record = JSON.parse(recordsHash[field])
-        console.log('recordsHash 1234',record)
-
-  
-        // Check if the buyer ID is in the list of excluded IDs
-        if (!excludedIds.includes(record.buyer_id)) {
-            records.push(record)
+    try {
+        console.log('data', data)
+        const key = `auction:${data.auction_id}`
+        const excludedIds = [`${data.buyer_id}`]
+    
+        const recordsHash = await client.hGetAll(key)
+        console.log('recordsHash', recordsHash)
+        const records = []
+      
+        for (const field in recordsHash) {
+            const record = JSON.parse(recordsHash[field])
+            console.log('record', record)  
+            // Check if the buyer ID is in the list of excluded IDs
+            if (!excludedIds.includes(record.buyer_id)) {
+                records.push(record)
+            }
         }
+      
+        return records
+    } catch (err) {
+        console.log('err', err)
+        return err
     }
-  
-    return records
 }
   
+
 
   
 
@@ -62,6 +71,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         data.socket_id = socket.id
         // Use const for client since it doesn't change
         const client = redis.createClient()
+        const hSetAsync = promisify(client.hSet).bind(client)
+
         if (!client.isOpen) {
             // Reconnect to Redis
             await client.connect()
@@ -70,7 +81,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         console.log('all', allBidders)
         let message = 'Congratulations, you won the bid!'
         let bidStatus = 'Not Winning'
-        
+
         // Connect to MongoDB outside the try block to ensure proper disconnection in case of an error
         const connectionData = await mongodbHelper.connect()
         if (allBidders.length > 0) {
@@ -119,34 +130,38 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await client.hSet(redisRecordKey, data.buyer_id, JSON.stringify(data))
         }
         console.log('bid status', bidStatus)
+        
         if (bidStatus === 'Winning') {
             const winningBidders = allBidders.filter((bidder) => bidder.bid_status === 'Winning')
             console.log('winn', winningBidders)
             if (winningBidders.length > 0) {
-                // winningBidders.forEach((bidder) => {
-                //     io.to(bidder.socket_id).emit('placeBid', { success: true, message })
-                // })
+                const taskListBatch = []
+
                 winningBidders.forEach((record) => {
                     console.log('record', record.bid_status)
                     if (record.bid_status === 'Winning') {
                         console.log('entering')
                         // Assuming 'auction_id' is a unique identifier for your records in Redis
-                        const redisKey = `auction:${record.auction_id}`
+                        const redisKey = `auction:${record.auction_id}:${record.buyer_id}:${record.lot_id}`
                         const redisField = 'bid_status'
-                        const redisValue = 'Not Winning'
-                  
+                        const redisValue = JSON.stringify({ bid_status: 'Not Winning' })
+
                         // Update the record in Redis
-                        client.hSet(redisKey, redisField, redisValue, (err, reply) => {
-                            if (err) {
-                                console.error(err)
-                            } else {
-                                console.log(`Updated ${redisKey} - ${redisField} to ${redisValue}`)
-                            }
-                        })
+                        taskListBatch.push(hSetAsync(redisKey, redisField, redisValue))
+
+                        console.log(`Updated ${redisKey} - ${redisField} to ${redisValue}`)
                     }
                 })
+
+                try {
+                    const results = await Promise.all(taskListBatch)
+                    console.log('Results:', results)
+                } catch (error) {
+                    console.error('Error updating records in Redis:', error)
+                }
             }
         }
+
         await connectionData.disconnect()
         io.to(socket.id).emit('placeBid', { success: true, message })
     } catch (err) {
