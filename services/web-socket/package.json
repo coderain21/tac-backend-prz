@@ -19,6 +19,7 @@
   },
   "homepage": "https://bitbucket.org/7EDGE/prw-customer-chat-apis#readme",
   "dependencies": {
+    "@redis/client": "^1.5.11",
     "body-parser": "^1.19.1",
     "express": "^4.17.2",
     "fcm-node": "^1.6.1",
@@ -26,6 +27,7 @@
     "https": "^1.0.0",
     "moment": "^2.29.1",
     "mongoose": "^5.9.18",
+    "redis": "^4.6.10",
     "socket.io": "^4.4.1",
     "superagent": "^7.1.1"
   },

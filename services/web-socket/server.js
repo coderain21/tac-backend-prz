@@ -59,6 +59,7 @@ io.on('connection', async (socket) => {
     })
 
     users.addUser(socket.id, obj.userId)
+    console.log('users', users)
     /**
 	 * @event - CONNECTION_INITIATE
 	 * @eventDescription -

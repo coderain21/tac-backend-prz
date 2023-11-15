@@ -3,6 +3,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 const mongoose = require('mongoose')
+const { ObjectId } = require('mongodb')
+const { MongoClient } = require('mongodb')
+
 // eslint-disable-next-line import/no-extraneous-dependencies
 require('dotenv').config()
 
@@ -18,8 +21,6 @@ module.exports.connect = async () => {
     try {
         const URL = 'mongodb://develop:develop!7edge@indy-auction.cimvoiv4bc2g.eu-west-2.docdb.amazonaws.com:27017/indyauction-develop?directConnection=true&authMechanism=DEFAULT&authSource=indyauction-develop&retryWrites=false'
         const connection = await mongoose.connect(URL, { useNewUrlParser: true })
-        // eslint-disable-next-line no-console
-        console.log('MongoDB connected successfully')
         return connection
     } catch (err) {
         console.log('MongoDB connection error:', err)
@@ -35,10 +36,75 @@ specified schema. */
 module.exports.save = async (document, Schema) => {
     try {
         const schema = new Schema(document)
-        console.log('schd', schema)
-        const s = await schema.save()
-        console.log('s', s)
+        await schema.save()
         return true
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+
+module.exports.getAllBidders = async (document) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db// Access the database
+        const collection = database.collection('dev-bid-informations') // Replace with your collection name
+        const query = {
+            seller_email: document.seller_email, auction_id: document.auction_id, lot_id: document.lot_id, buyer_id: document.buyer_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+        } // Corrected 'document.buyer_id'
+        const documents = await collection.find(query).toArray() // Await the query result
+        connectionData.disconnect()
+        return documents
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+module.exports.changeStatus = async (allBidders) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db // Access the database
+        const collection = database.collection('dev-bid-informations')
+        const winningBuyers = allBidders.filter((bid) => bid.bid_status === 'Winning')
+        if (winningBuyers.length > 0) {
+            const updateResult = await collection.updateMany(
+                { buyer_id: { $in: winningBuyers.map((bid) => bid.buyer_id) } },
+                { $set: { bid_status: 'Not Winning' } },
+            )
+
+            if (updateResult.modifiedCount > 0) {
+                console.log(`Status updated to 'Not Winning' for ${updateResult.modifiedCount} buyers.`)
+            } else {
+                console.log('Status not updated. No matching documents found.')
+            }
+        } else {
+            console.log('No bidders with Winning status found.')
+        }
+        await connectionData.disconnect()
+        return true
+    } catch (err) {
+        return err
+    }
+}
+
+module.exports.updateTopBidder = async (data, updateInformation) => {
+    try {
+        const client = await this.connect()
+        const database = client.connection.db // Access the database
+        const collection = database.collection('dev-lots') //
+        const updateResult = await collection.updateOne(
+            { _id: new ObjectId(data.lot_id) },
+            {
+                $set: {
+                    Top_bidder: updateInformation.buyer_id, paddle_number: updateInformation.paddle_number, current_bid: data.max_bid,
+                },
+                $push: {
+                    bidder_socket_id: data.socket_id,
+                },
+            },
+        )
+        client.disconnect()
+        return updateResult
     } catch (error) {
         console.log(error)
         return false
