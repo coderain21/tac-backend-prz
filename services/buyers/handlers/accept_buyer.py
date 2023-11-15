@@ -23,7 +23,6 @@ def accept_buyer(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform  this API action"})
             }
-            print('email', seller_email)
         except:
             return {
                 "statusCode": 403,

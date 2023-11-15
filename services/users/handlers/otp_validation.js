@@ -16,6 +16,7 @@ const cognitoHelper = require('../lib/cognito_helper')
 // eslint-disable-next-line import/order
 const helpers = require('../lib/helper')
 const Users = require('../entities/Users')
+const SubDomain = require('../entities/SubDomain')
 
 const mongoConnection = require('../lib/mongodb_helper')
 
@@ -24,6 +25,18 @@ AWS.config.update({ region: process.env.REGION })
 const cognito = new AWS.CognitoIdentityServiceProvider()
 
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
+
+const createGroup = async (username, userPoolId) => {
+    try {
+        const response = await cognito.createGroup({
+            GroupName: username,
+            UserPoolId: userPoolId,
+        }).promise()
+        console.log('Group created:', response)
+    } catch (error) {
+        console.error('Error creating group:', error)
+    }
+}
 
 const schema = Joi.object().keys({
     otp: Joi.string().required().messages({
@@ -99,6 +112,15 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     userData.password = ciphertext
                     const connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
+                    const domainInfo = {
+                        seller_email: userData.email_address,
+                        subdomain: process.env.DEFAULT_SUB_DOMAIN,
+                        default: true,
+                        client_id: process.env.DEFAULT_CLIENT_ID,
+                        group_name: userData.email_address.split('@')[0],
+                    }
+                    const domain = await mongoConnection.save(domainInfo, SubDomain)
+                    await createGroup(userData.email_address.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
                     await connection.disconnect()
                     const template_data = {
                         url: process.env.DASHBOARD_URL,

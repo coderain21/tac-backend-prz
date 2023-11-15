@@ -55,6 +55,12 @@ provider:
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     CDN_LINK: ${env:CDN_LINK}
+    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${env:DEFAULT_COGNITO_DOMAIN}
+    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
+    CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     
   http:
     cors: true
@@ -218,6 +224,22 @@ functions:
           cors: true
           path: /lot-details
           method: get
+          
+  credit_card:
+    handler: handlers/credit_card.credit_card
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /verify-card
+          method: post
 
   acceting_buyer:
       handler: handlers/accept_buyer.accept_buyer
@@ -407,6 +429,21 @@ functions:
           cors: true
           path: /reset_password
           method: post
+
+  cognito-pre-auth:
+    handler: handlers/pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${env:DEFAULT_USERPOOL_NAME}
+          trigger: PreSignUp
+          existing: true
 
 resources:
    Resources:

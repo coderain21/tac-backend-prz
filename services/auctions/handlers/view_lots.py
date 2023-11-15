@@ -2,6 +2,7 @@
 import os
 import json
 import pymongo
+import re
 
 headers = {
     'Content-Type': 'application/json',
@@ -10,6 +11,15 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+def prepend_backslash(text):
+    # Define a regular expression pattern to match special characters
+    special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
+
+    # Use re.sub to replace each match with a backslash followed by the matched character
+    modified_text = re.sub(special_chars_pattern, r'\\\1', text)
+
+    return modified_text
 
 def list_lots(event, context):
     """
@@ -56,7 +66,9 @@ def list_lots(event, context):
         # Query the MongoDB collection to find lots matching the seller email and auction ID
         search_criteria = {}
         if search_keyword:
-            search_criteria['title1'] = {"$regex": f".*{search_keyword}.*", "$options": "i"}
+            escaped_search_keyword = prepend_backslash(search_keyword)
+            print(escaped_search_keyword)
+            search_criteria['title1'] = {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}
 
         # Combine the search and sort criteria
         query = {"seller_email": seller_email, "auction_id": auction_id, **search_criteria}

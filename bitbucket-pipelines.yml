@@ -6,6 +6,10 @@ options:
 definitions:
   caches:
     sonar: ~/.sonar/cache
+  services:
+    docker-high-memory:
+      memory: 7128
+      type: docker
 
   steps:
     - step: &BuildStep
@@ -144,11 +148,33 @@ definitions:
               AWS_DEFAULT_REGION: $AWS_REGION
               DISTRIBUTION_ID: $DISTRIBUTION_ID
         artifacts:
-          - test-results/**  
-
+          - test-results/**
+        
+    - step: &DAST 
+        name: Dynamic Application Security Testing (DAST) 
+        image: softwaresecurityproject/zap-stable
+        services:
+          - docker-high-memory
+        size: 2x
+        script:
+          - docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+          - sleep 60
+          - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
+          - mkdir test_results
+          - pip3 install boto3
+          - export NODE_OPTIONS=--max-old-space-size=8192
+          - pip3 install python-dotenv
+          - pip3 install GitPython
+          - python3 dast.py
+        artifacts:
+          - test_results/**
 
 pipelines:
-  pull-requests:    
+  custom: 
+   
+    DAST:
+      - step: *DAST
+  pull-requests:  
     feature/**:
       - parallel:
           fail-fast: true
@@ -160,7 +186,8 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-    
+      - step: *APITesting
+      - step: *DAST
       
         
       
@@ -175,6 +202,8 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+      - step: *APITesting
+      - step: *DAST
   
       
      
@@ -210,6 +239,8 @@ pipelines:
             steps:
               - step: *DevDeploy
       - step: *APITesting
+
+      
 
     staging:
       - parallel:

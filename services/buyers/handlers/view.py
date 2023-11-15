@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
 import pytz
+from lib.get import fetch_seller_data_from_subdomain
 
 headers = {
     'Content-Type': 'application/json',
@@ -42,6 +43,7 @@ def view(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
+        domain_data = fetch_seller_data_from_subdomain(auction_id)
         if auction_id is not None:
             auction_id = ObjectId(auction_id)
         projection = {
@@ -110,7 +112,6 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-        print(result['start_date'])
         start_time= result['start_date']
         end_time= result['end_date']
         # Get the timezone from the result
@@ -136,7 +137,6 @@ def view(event, context):
 
         # Convert time_zone_str to a time zone object using the dictionary
         if time_zone_str in time_zones:
-            print(time_zone)
             start_time = datetime.fromtimestamp(int(start_time.timestamp()),
                                                  tz=pytz.timezone(time_zone))
             end_time = datetime.fromtimestamp(int(end_time.timestamp()),
@@ -165,8 +165,6 @@ def view(event, context):
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()
-        print(result["make_your_auction_private"])
-        print(result["passcode"])
         if result["make_your_auction_private"] is True and passcode is None:
             data = {}
             data["menu_links"] = result.get("menu_links")
@@ -174,6 +172,8 @@ def view(event, context):
             data["header"] = result.get("header")
             data["font"] = result.get("font")
             data["buttons"] = result.get("buttons")
+            if domain_data is not None:
+                data["sub_domain"] = domain_data["subdomain"]
             return {
                 "headers": headers,
                 "statusCode": 400,
@@ -193,6 +193,8 @@ def view(event, context):
                 }
         result["status"] = updated_status
         del result["passcode"]
+        if domain_data is not None:
+            result["sub_domain"] = domain_data["subdomain"]
         body = {
             "data": result,
         }
@@ -201,8 +203,7 @@ def view(event, context):
             "headers": headers,
             "body": json.dumps(body, cls=Encoder)
         }
-    except Exception as err:
-        print(err)
+    except Exception as e:
         return {
             "headers": headers,
             "statusCode": 500,

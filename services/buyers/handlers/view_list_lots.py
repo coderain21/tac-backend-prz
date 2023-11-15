@@ -4,6 +4,7 @@ import os
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
+import re
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -11,7 +12,14 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+def prepend_backslash(text):
+    # Define a regular expression pattern to match special characters
+    special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
 
+    # Use re.sub to replace each match with a backslash followed by the matched character
+    modified_text = re.sub(special_chars_pattern, r'\\\1', text)
+
+    return modified_text
 
 def view_list_lots(event, context):
     """
@@ -47,7 +55,6 @@ def view_list_lots(event, context):
             "seller_email": 1
         }
         result = collection.find_one({"_id": _id}, projection)
-        print(result)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -56,10 +63,12 @@ def view_list_lots(event, context):
         search_keyword = data.get('search')
         search_criteria={}
         if search_keyword:
+            escaped_search_keyword = prepend_backslash(search_keyword)
+            print(escaped_search_keyword)
             search_criteria = {
                 "$or": [
-                    {"title1": {"$regex": f".*{search_keyword}.*", "$options": "i"}},
-                    {"tags": {"$elemMatch": {"$regex": f".*{search_keyword}.*", "$options": "i"}}}
+                    {"title1": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}},
+                    {"tags": {"$elemMatch": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}}}
                 ]
             }
         search_result = lot_collection.find({"auction_id": auction_id,
@@ -87,7 +96,6 @@ def view_list_lots(event, context):
                                                   'seller_email': seller_email, **search_criteria}
                                                     ).sort('lot_number',1)
         lots_list = list(search_result)
-        print(144,lots_list)
         return {
             "statusCode": 200,
             "headers": headers,
