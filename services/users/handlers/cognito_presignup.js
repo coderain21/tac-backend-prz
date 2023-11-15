@@ -16,9 +16,22 @@ const AWS = require('aws-sdk')
 
 const cognito = new AWS.CognitoIdentityServiceProvider()
 const Users = require('../entities/Users')
+const SubDomain = require('../entities/SubDomain')
 const mongoConnection = require('../lib/mongodb_helper')
+
 const cognitoHelper = require('../lib/cognito_helper')
 
+const createGroup = async (username, userPoolId) => {
+    try {
+        const response = await cognito.createGroup({
+            GroupName: username,
+            UserPoolId: userPoolId,
+        }).promise()
+        console.log('Group created:', response)
+    } catch (error) {
+        console.error('Error creating group:', error)
+    }
+}
 exports.handler = async (event, context, callback) => {
     async function checkForExistingUsers(event, linkToExistingUser) {
         console.log('Executing checkForExistingUsers')
@@ -57,8 +70,17 @@ exports.handler = async (event, context, callback) => {
                 is_first_time_login: true,
                 user_type: 'seller',
             }
+            const domainInfo = {
+                seller_email: event.request.userAttributes.email,
+                subdomain: process.env.DEFAULT_SUB_DOMAIN,
+                default: true,
+                client_id: process.env.DEFAULT_CLIENT_ID,
+                group_name: event.request.userAttributes.email.split('@')[0],
+            }
             const connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
+            const domain = await mongoConnection.save(domainInfo, SubDomain)
+            await createGroup(event.request.userAttributes.email.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
             console.log(user)
             const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
             console.log(cognitoResponse)
