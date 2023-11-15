@@ -10,6 +10,11 @@ provider:
   environment:
     STAGE: ${self:provider.stage}
     REGION: ${env:REGION}
+    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
+    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
+    MONGO_CLIENT: ${env:MONGO_CLIENT}
+    DATABASE: ${env:DATABASE}
+    
 
   iam:
     role:
@@ -21,12 +26,20 @@ provider:
           Resource: "*"
                  
 package:
-  patterns:
-    - '!./**'
+   patterns:
     - '!./node_modules/**'
-    - ./utils/**
     - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
     - ./assets/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
 
 functions:
   lambda-authorizer:
@@ -38,6 +51,18 @@ functions:
         - subnet-0ff05c7c2bd2a3f87
     layers:
       - ${env:LAMBDA_LAYER}
+
+
+resources:
+   Resources:
+     UserPoolInvokePreAuth:
+      Type: AWS::Lambda::Permission
+      Properties:
+        Action: lambda:invokeFunction
+        Principal: cognito-idp.amazonaws.com
+        FunctionName: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:buyers-${self:provider.stage}-cognito-pre-auth
+        SourceArn: arn:aws:cognito-idp:${env:REGION}:${env:ACCOUNT_ID}:userpool/${env:DEFAULT_USERPOOL_ID}
+
 
 plugins:
   - serverless-package-external

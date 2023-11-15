@@ -15,26 +15,14 @@ const uuid = require('uuid')
 const AWS = require('aws-sdk')
 
 const cognito = new AWS.CognitoIdentityServiceProvider()
-const Users = require('../entities/Users')
-const SubDomain = require('../entities/SubDomain')
+const Users = require('../entities/Buyers')
 const mongoConnection = require('../lib/mongodb_helper')
-
 const cognitoHelper = require('../lib/cognito_helper')
 
-const createGroup = async (username, userPoolId) => {
-    try {
-        const response = await cognito.createGroup({
-            GroupName: username,
-            UserPoolId: userPoolId,
-        }).promise()
-        console.log('Group created:', response)
-    } catch (error) {
-        console.error('Error creating group:', error)
-    }
-}
 exports.handler = async (event, context, callback) => {
+    console.log('event', JSON.stringify(event))
     async function checkForExistingUsers(event, linkToExistingUser) {
-        console.log('Executing checkForExistingUsers')
+        console.log('Executing checkForExistingUsers', event)
 
         try {
             const params = {
@@ -42,6 +30,7 @@ exports.handler = async (event, context, callback) => {
                 AttributesToGet: ['sub', 'email'],
                 Filter: `email = "${event.request.userAttributes.email}"`,
             }
+            console.log('params', params)
 
             const result = await new Promise((resolve, reject) => cognito.listUsers(params, (err, data) => {
                 if (err) {
@@ -50,6 +39,7 @@ exports.handler = async (event, context, callback) => {
                 }
                 resolve(data)
             }))
+            console.log('result', result)
 
             if (result.Users && result.Users.length > 0 && result.Users[0].Username && linkToExistingUser) {
                 console.log('Found existing users: ', result.Users)
@@ -61,28 +51,25 @@ exports.handler = async (event, context, callback) => {
                 return result
             }
             let newPassword = process.env.SELLER_GOOGLE_PASSWORD// Change the length as needed
+            console.log('newPassword', newPassword)
+            console.log('skey', process.env.PASSWORD_SECRET_KEY)
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
-
+            console.log('event - >', event)
             const userData = {
-                user_name: event.request.userAttributes.email,
+                first_name: '',
+                last_name: '',
+                registered_through: 'federated',
                 email_address: event.request.userAttributes.email,
                 password: newPassword,
-                is_first_time_login: true,
-                user_type: 'seller',
-            }
-            const domainInfo = {
-                seller_email: event.request.userAttributes.email,
-                subdomain: process.env.DEFAULT_SUB_DOMAIN,
-                default: true,
-                client_id: process.env.DEFAULT_CLIENT_ID,
-                group_name: event.request.userAttributes.email.split('@')[0],
+                terms_and_condition: true,
+                user_type: 'buyer',
+                newsletter_notification: false,
+
             }
             const connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
-            const domain = await mongoConnection.save(domainInfo, SubDomain)
-            await createGroup(event.request.userAttributes.email.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
             console.log(user)
-            const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
+            const cognitoResponse = await cognitoHelper.buyerCognitoCreate(userData, event.userPoolId)
             console.log(cognitoResponse)
             await connection.disconnect()
             await linkUser(event.request.userAttributes.email, event)
@@ -121,17 +108,19 @@ exports.handler = async (event, context, callback) => {
                 reject(err)
                 return
             }
-            console.log('Successfully linked users.')
-            resolve(result)
+
+            console.log('Successfully linked users.', result)
+            return resolve(result)
         }))
     }
-
-    console.log(JSON.stringify(event))
+    console.log('event', JSON.stringify(event))
 
     if (event.triggerSource === 'PreSignUp_ExternalProvider') {
+        console.log('111111111111111111')
         try {
             const result = await checkForExistingUsers(event, true)
-            console.log('Completed looking up users and linking them: ', result)
+            console.log('res', result)
+            console.log('Completed looking up users and linking them: ', event)
             callback(null, event)
         } catch (error) {
             console.log('Error checking for existing users: ', error)
@@ -139,6 +128,7 @@ exports.handler = async (event, context, callback) => {
             callback(null, event)
         }
     } else {
+        console.log('elseeee')
         callback(null, event)
     }
 }

@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Get the email from Git configuration
+email=$(git config --get user.email)
+
+# Check if email is not set
+if [ -z "$email" ]; then
+  echo "Git user email is not configured. Please set it before committing."
+  exit 1
+fi
+
+# Extract the domain from the email address
+email_domain="${email##*@}"
+
+# Check if the email domain matches the company domain
+if [ "$email_domain" == "7edge.com" ] || [ "$email_domain" == "theauctioncollective.com" ]; then
+  echo "You are using the company domain as your email, proceeding with committing."
+  exit 0
+else
+  echo "You are using a non-company domain as your email. This commit will not be recorded. Please change it and then commit again. Email: $email  Domain: $email_domain"
+  exit 1
+fi
