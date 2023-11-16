@@ -78,30 +78,32 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         }
         const allBidders = await getAllRecordsForAuctionId(data, client)
         const checkForAutoBid = await helper.checkAutoBid(data, allBidders)
-        console.log('checkForAutoBid', checkForAutoBid)
-        const { message } = checkForAutoBid
-        const { bidStatus } = checkForAutoBid
+        console.log('chec', checkForAutoBid)
+        // const { message } = checkForAutoBid
+        // const { bidStatus } = checkForAutoBid
+        let message = 'Congratulations, you won the bid!'
+        let bidStatus
 
         // Connect to MongoDB outside the try block to ensure proper disconnection in case of an error
         const connectionData = await mongodbHelper.connect()
-        // if (allBidders.length > 0) {
-        //     const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
-        //     const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
-        //     // await mongodbHelper.updateTopBidder(data, highestBidder)
-        //     if (checkForAutoBid.max_bid > highestBid) {
-        //         bidStatus = 'Winning'
-        //     } else {
-        //         message = 'You did not win the bid'
-        //     }
-        // } else {
-        //     const highestBid = {
-        //         Top_bidder: checkForAutoBid.buyer_id,
-        //         paddle_number: checkForAutoBid.paddle_number,
-        //         current_bid: checkForAutoBid.max_bid,
-        //     }
-        //     // await mongodbHelper.updateTopBidder(data, highestBid)
-        //     bidStatus = 'Winning'
-        // }
+        if (allBidders.length > 0) {
+            const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
+            const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
+            // await mongodbHelper.updateTopBidder(data, highestBidder)
+            if (checkForAutoBid.max_bid > highestBid) {
+                bidStatus = 'Winning'
+            } else {
+                message = 'You did not win the bid'
+            }
+        } else {
+            const highestBid = {
+                Top_bidder: checkForAutoBid.buyer_id,
+                paddle_number: checkForAutoBid.paddle_number,
+                current_bid: checkForAutoBid.max_bid,
+            }
+            // await mongodbHelper.updateTopBidder(data, highestBid)
+            bidStatus = 'Winning'
+        }
         
         checkForAutoBid.bid_status = bidStatus
         const criteria = {
@@ -128,14 +130,11 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             // If an existing record is found, update it in Redis
             await client.hSet(redisRecordKey, checkForAutoBid.record.buyer_id, JSON.stringify(checkForAutoBid.record))
         }
-        console.log('bid status', bidStatus)
-        io.to(socket.id).emit('placeBid', { success: true, message })
+        console.log('bid status', message)
         if (bidStatus === 'Winning') {
             const winningBidders = allBidders.filter((bidder) => bidder.bid_status === 'Winning')
-            console.log('winn', winningBidders)
             if (winningBidders.length > 0) {
                 const taskListBatch = []
-
                 winningBidders.forEach((record) => {
                     if (record.bid_status === 'Winning') {
                         console.log('entering')
@@ -159,7 +158,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 }
             }
         }
-
+        console.log('Before emitting placeBid event')
+        io.to(socket.id).emit('placeBid', { success: true, message })
+        console.log('After emitting placeBid event')
         await connectionData.disconnect()
     } catch (err) {
         console.error(err)

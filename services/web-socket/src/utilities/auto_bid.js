@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 /* eslint-disable camelcase */
 const mongodbHelper = require('./mongodb_helper')
 
@@ -36,33 +37,37 @@ async function calculateNextBid(currentBid) {
 module.exports.checkAutoBid = async (record, all_bidders) => {
     const maxBidAmount = record.max_bid
     let message
-    let bidStatus = 'Not Winning'
     try {
         const getNextAmount = await calculateNextBid(record.starting_bid)
         if (all_bidders.length > 0) {
             const highestBid = Math.max(...all_bidders.map((bid) => bid.max_bid))
             const highestBidder = all_bidders.find((bid) => bid.max_bid === highestBid)
+            console.log('his', highestBidder)
             if (highestBidder.base_price > record.max_bid) {
                 const amount = await calculateNextBid(record.max_bid)
                 record.max_bid = amount
                 record.base_price = highestBidder.base_price
                 record.current_bid = amount
-            }
-            if (record.buyer_id === highestBidder.buyer_id) {
-                message = 'Congratulations, you won the bid!'
-                bidStatus = 'Winning'
+                if (record.buyer_id === highestBidder.buyer_id) {
+                    record.higghest_bidder = record.buyer_id
+                } else {
+                    record.higghest_bidder = highestBidder.buyer_id
+                }
             } else {
-                message = 'Not Winning'
+                const amount = await calculateNextBid(record.max_bid)
+                record.higghest_bidder = record.buyer_id
+                record.max_bid = record.max_bid
+                record.base_price = record.max_bid
+                record.current_bid = amount
             }
         } else if (getNextAmount !== record.max_bid) {
-            message = 'Congratulations, you won the bid!'
-            bidStatus = 'Winning'
             record.max_bid = getNextAmount
             record.base_price = maxBidAmount
             record.current_bid = getNextAmount
+            // record.bid_status = bidStatus
         }
         await mongodbHelper.changeStartingBid(record)
-        return { record, message, bidStatus }
+        return { record, message }
     } catch (error) {
         console.error(error)
         return false
