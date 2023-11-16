@@ -24,8 +24,15 @@ server.listen(port, () => {
     console.log(`http://localhost:${port}`)
 })
 
-app.use(cors())
-const io = socketIO(server)
+app.use()
+// const io = socketIO(server)
+const io = require('socket.io')(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST'],
+    },
+})
+
 const users = new AppUsers()
 
 io.on('connection', async (socket) => {
