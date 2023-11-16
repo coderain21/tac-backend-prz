@@ -65,7 +65,12 @@ module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         data.socket_id = socket.id
         // Use const for client since it doesn't change
-        const client = redis.createClient()
+        // const client = redis.createClient()
+        const client = redis.createClient({
+            host: 'dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com',
+            port: 6379,
+            // Add any other necessary configuration options here
+        })
         const hSetAsync = promisify(client.hSet).bind(client)
         if (!client.isOpen) {
             // Reconnect to Redis

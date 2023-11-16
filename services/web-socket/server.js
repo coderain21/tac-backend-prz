@@ -24,12 +24,7 @@ server.listen(port, () => {
     console.log(`http://localhost:${port}`)
 })
 
-app.use(cors({
-    origin: `http://localhost:${port}`,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-    optionsSuccessStatus: 204,
-}))
+app.use(cors())
 const io = socketIO(server)
 const users = new AppUsers()
 
