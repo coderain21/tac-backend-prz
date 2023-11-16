@@ -12,6 +12,20 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 def update_address(event, context):
+    """
+    The `update_address` function updates the default address for a user in a MongoDB collection based
+    on the provided address ID and user email.
+    
+    :param event: The `event` parameter is a dictionary that contains information about the event that
+    triggered the function. It typically includes details such as the HTTP request, headers, body, and
+    other relevant data
+    :param context: The `context` parameter is an object that provides information about the runtime
+    environment of the function. It includes details such as the AWS request ID, function name, and
+    other contextual information. In this code snippet, the `context` parameter is not used, so it can
+    be removed from the function signature
+    :return: The code is returning a JSON response with a status code, headers, and a body. The specific
+    response depends on the execution path of the code.
+    """
     try:
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])

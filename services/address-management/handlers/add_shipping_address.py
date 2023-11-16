@@ -12,6 +12,18 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 def add_shipping_address(event, context):
+    """
+    The `add_shipping_address` function is used to add a shipping or billing address to a user's
+    profile.
+    
+    :param event: The `event` parameter is the input event data that triggers the function. It contains
+    information about the HTTP request that was made to invoke the function
+    :param context: The `context` parameter is a context object that provides information about the
+    runtime environment of the function. It includes details such as the AWS request ID, function name,
+    and other metadata
+    :return: a JSON response with a status code, headers, and a message. The specific response depends
+    on the execution path and any errors encountered.
+    """
     # Parse the request body to get the token and buyer_
     try:
         try:
