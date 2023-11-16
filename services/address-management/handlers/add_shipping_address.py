@@ -50,16 +50,20 @@ def add_shipping_address(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "please provide the required fields"})
             }
-        request_body= request_body.pop('same')
+        request_body.pop('same')
+        request_body['email_address']= email_address
         address = collection.find_one({'email_address':email_address})
         if address is None:
             default = True
         else:
             default= False
+        request_body['default']=default
         if type =='shipping' or same == 'True':
-            result= collection.insert_one({'email_address':email_address,'shipping_address':request_body,'default': default})
+            request_body['type']= 'shipping'
+            result= collection.insert_one(request_body)
         if type == 'billing' or same == 'True':
-            result= collection.insert_one({'email_address':email_address,'billing_address':request_body, 'default':default})
+            request_body['type']= 'billing'
+            result= collection.insert_one(request_body)
         return {
                     "statusCode": 204,
                     'headers': headers,
@@ -71,4 +75,3 @@ def add_shipping_address(event, context):
             "headers": headers,
             "body": json.dumps({"message": e}, cls=Encoder)
             }
-

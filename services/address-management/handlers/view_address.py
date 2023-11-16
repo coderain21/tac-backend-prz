@@ -41,11 +41,12 @@ def view_address(event, context):
         db = client[os.environ['DATABASE']]
         collection = db['dev-address-management']
         request_body = json.loads(event['body'])
-        result = collection.find_one({'email_address':email_address})
+        type= request_body['type']
+        result = collection.find({'email_address':email_address,'type':type})
         return {
                     "statusCode": 200,
                     'headers': headers,
-                    "body": json.dumps({"result":result})
+                    "body": json.dumps({"result":list(result)},cls=Encoder)
                 }
     except Exception as e:
         return {
