@@ -4,23 +4,32 @@
 /**
  * @description - NPM Dependencies
  */
-const app = require('express')()
+const express = require('express')
 const http = require('http')
 const bodyParser = require('body-parser')
 const socketIO = require('socket.io')
+const cors = require('cors') // Add this line
 
-const { mobileAuthenticated } = require('./src/utilities/authService')
 const { initiateEvents } = require('./src/app')
 const { AppUsers } = require('./src/models/AppConnection')
 
 const port = process.env.PORT || 8080
+const app = express() // Change this line
+app.use(cors()) // Add this line
 app.use(bodyParser.urlencoded({ extended: true }))
+
 const server = http.createServer(app)
 
 server.listen(port, () => {
     console.log(`http://localhost:${port}`)
 })
 
+app.use(cors({
+    origin: `http://localhost:${port}`,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    optionsSuccessStatus: 204,
+}))
 const io = socketIO(server)
 const users = new AppUsers()
 

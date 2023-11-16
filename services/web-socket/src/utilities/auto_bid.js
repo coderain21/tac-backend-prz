@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 const mongodbHelper = require('./mongodb_helper')
 
 /* eslint-disable no-param-reassign */
@@ -33,7 +34,6 @@ async function calculateNextBid(currentBid) {
 }
 
 module.exports.checkAutoBid = async (record, all_bidders) => {
-    console.log('enteringggg', record)
     const maxBidAmount = record.max_bid
     let message
     let bidStatus = 'Not Winning'
@@ -42,7 +42,6 @@ module.exports.checkAutoBid = async (record, all_bidders) => {
         if (all_bidders.length > 0) {
             const highestBid = Math.max(...all_bidders.map((bid) => bid.max_bid))
             const highestBidder = all_bidders.find((bid) => bid.max_bid === highestBid)
-            console.log('higgesr', highestBidder)
             if (highestBidder.base_price > record.max_bid) {
                 const amount = await calculateNextBid(record.max_bid)
                 record.max_bid = amount
@@ -56,7 +55,6 @@ module.exports.checkAutoBid = async (record, all_bidders) => {
                 message = 'Not Winning'
             }
         } else if (getNextAmount !== record.max_bid) {
-            console.log('entreryu')
             message = 'Congratulations, you won the bid!'
             bidStatus = 'Winning'
             record.max_bid = getNextAmount
@@ -64,7 +62,6 @@ module.exports.checkAutoBid = async (record, all_bidders) => {
             record.current_bid = getNextAmount
         }
         await mongodbHelper.changeStartingBid(record)
-
         return { record, message, bidStatus }
     } catch (error) {
         console.error(error)

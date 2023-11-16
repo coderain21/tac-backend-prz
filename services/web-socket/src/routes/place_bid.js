@@ -100,28 +100,28 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         
         checkForAutoBid.bid_status = bidStatus
         const criteria = {
-            buyer_id: checkForAutoBid.buyer_id,
-            auction_id: checkForAutoBid.auction_id,
-            lot_id: checkForAutoBid.lot_id,
+            buyer_id: checkForAutoBid.record.buyer_id,
+            auction_id: checkForAutoBid.record.auction_id,
+            lot_id: checkForAutoBid.record.lot_id,
         }
         
         const existingRecord = await BidInformation.findOne(criteria)
         if (existingRecord) {
-            existingRecord.set(checkForAutoBid)
+            existingRecord.set(checkForAutoBid.record)
             await existingRecord.save()
         } else {
-            const bidDoc = new BidInformation(checkForAutoBid)
+            const bidDoc = new BidInformation(checkForAutoBid.record)
             await bidDoc.save()
         }
-        const redisRecordKey = `auction:${checkForAutoBid.auction_id}`
-        const existingRedisRecord = await client.hGet(redisRecordKey, checkForAutoBid.buyer_id)
+        const redisRecordKey = `auction:${checkForAutoBid.record.auction_id}`
+        const existingRedisRecord = await client.hGet(redisRecordKey, checkForAutoBid.record.buyer_id)
         const isNewRecord = !existingRedisRecord    
         if (isNewRecord) {
             // If no existing record is found, create a new record in Redis
-            await client.hSet(redisRecordKey, checkForAutoBid.buyer_id, JSON.stringify(checkForAutoBid))
+            await client.hSet(redisRecordKey, checkForAutoBid.record.buyer_id, JSON.stringify(checkForAutoBid.record))
         } else {
             // If an existing record is found, update it in Redis
-            await client.hSet(redisRecordKey, checkForAutoBid.buyer_id, JSON.stringify(checkForAutoBid))
+            await client.hSet(redisRecordKey, checkForAutoBid.record.buyer_id, JSON.stringify(checkForAutoBid.record))
         }
         console.log('bid status', bidStatus)
         io.to(socket.id).emit('placeBid', { success: true, message })
