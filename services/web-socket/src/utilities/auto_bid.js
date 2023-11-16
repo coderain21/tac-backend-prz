@@ -36,7 +36,6 @@ async function calculateNextBid(currentBid) {
 
 module.exports.checkAutoBid = async (record, all_bidders, client) => {
     const maxBidAmount = record.max_bid
-    console.log('all', all_bidders)
     let message
     try {
         const getNextAmount = await calculateNextBid(record.starting_bid)
@@ -55,7 +54,6 @@ module.exports.checkAutoBid = async (record, all_bidders, client) => {
                     // If no existing record is found, create a new record in Redis
                     await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
                 } else {
-                    console.log('entryyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
                     // If an existing record is found, update it in Redis
                     await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
                     const getBuyer = await mongodbHelper.getAllBidders(highestBidder)

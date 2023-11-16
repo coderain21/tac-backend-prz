@@ -156,3 +156,40 @@ module.exports.updateTopBidder = async (data, updateInformation) => {
         return false
     }
 }
+
+module.exports.getAuction = async (document) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db// Access the database
+        const collection = database.collection('dev-auctions') // Replace with your collection name
+        const query = {
+            seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+        } // Corrected 'document.buyer_id'
+        const documents = await collection.find(query).toArray() // Await the query result
+        connectionData.disconnect()
+        return documents
+    } catch (err) {
+        return false
+    }
+}
+
+module.exports.getAllLots = async (document) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db// Access the database
+        const collection = database.collection('dev-lots') // Replace with your collection name
+        const query = {
+            seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+        } // Corrected 'document.buyer_id'
+        const documents = await collection.find(query).toArray() // Await the query result
+        const updateResult = await collection.updateMany(
+            { _id: { $in: documents.map((lot) => ObjectId(lot._id)) } },
+            { $set: { extension_time_between_lots: document.extension_time } },
+        )
+        connectionData.disconnect()
+        return documents
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}

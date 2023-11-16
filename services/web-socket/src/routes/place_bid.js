@@ -136,7 +136,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await client.hSet(redisRecordKey, checkForAutoBid.record.buyer_id, JSON.stringify(checkForAutoBid.record))
         }
         console.log('bid status', message)
-        if (bidStatus === 'Winning') {
+        if (bidStatus) {
             const winningBidders = allBidders.filter((bidder) => bidder.bid_status === 'Winning')
             if (winningBidders.length > 0) {
                 const taskListBatch = []
@@ -147,14 +147,18 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                         const redisKey = `auction:${record.auction_id}:${record.buyer_id}:${record.lot_id}`
                         const redisField = 'bid_status'
                         const redisValue = JSON.stringify({ bid_status: 'Not Winning' })
-
+          
                         // Update the record in Redis
-                        taskListBatch.push(hSetAsync(redisKey, redisField, redisValue))
-
+                        taskListBatch.push(
+                            hSetAsync(redisKey, redisField, redisValue).catch((error) => {
+                                console.error(`Error updating record '${redisKey}':`, error)
+                            }),
+                        )
+          
                         console.log(`Updated ${redisKey} - ${redisField} to ${redisValue}`)
                     }
                 })
-
+          
                 try {
                     const results = await Promise.all(taskListBatch)
                     console.log('Results:', results)
@@ -163,6 +167,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 }
             }
         }
+          
         console.log('Before emitting placeBid event')
         io.to(socket.id).emit('placeBid', { success: true, message })
         console.log('After emitting placeBid event')
