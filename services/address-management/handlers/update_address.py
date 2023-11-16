@@ -45,11 +45,11 @@ def update_address(event, context):
         type= request_body['type']
         result = collection.update_one({'email_address':email_address,'default':True,'type':type},{'$set':{'default':False}})
         result = collection.update_one({'_id':ObjectId(address_id)},{'$set':{'default':True}})
-        result = collection.find_one({'email_address':email_address})
+        result = collection.find_one({'email_address':email_address,"type":type})
         return {
                     "statusCode": 200,
                     'headers': headers,
-                    "body": json.dumps({"result":result})
+                    "body": json.dumps({"result":result},cls=Encoder)
                 }
     except Exception as e:
         return {

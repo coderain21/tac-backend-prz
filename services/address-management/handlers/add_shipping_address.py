@@ -52,7 +52,7 @@ def add_shipping_address(event, context):
             }
         request_body.pop('same')
         request_body['email_address']= email_address
-        address = collection.find_one({'email_address':email_address})
+        address = collection.find_one({'email_address':email_address,'type':type})
         if address is None:
             default = True
         else:
