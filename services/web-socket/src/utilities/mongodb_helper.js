@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-self-import */
 /* eslint-disable camelcase */
 /* eslint-disable import/no-extraneous-dependencies */
@@ -61,6 +62,27 @@ module.exports.getAllBidders = async (document) => {
     }
 }
 
+module.exports.updatingBuyer = async (document, amount) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db// Access the database
+        const collection = database.collection('dev-bid-informations') // Replace with your collection name
+        await collection.updateOne(
+            { _id: new ObjectId(document._id) },
+            {
+                $set: {
+                    max_bid: amount,
+                },
+            },
+        )
+        connectionData.disconnect()
+        return true
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+
 module.exports.changeStatus = async (allBidders) => {
     try {
         const connectionData = await this.connect()
@@ -110,7 +132,6 @@ module.exports.changeStartingBid = async (data) => {
         return err
     }
 }
-
 
 module.exports.updateTopBidder = async (data, updateInformation) => {
     try {

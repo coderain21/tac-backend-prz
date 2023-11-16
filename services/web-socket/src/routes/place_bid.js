@@ -31,8 +31,8 @@ const bidInformationSchema = new mongoose.Schema({
     high_estimate: String,
     top_bidder: String,
     bid_status: String,
-    created_at: Date,
-    updated_at: Date,
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
     base_price: Number,
 })
 
@@ -77,7 +77,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await client.connect()
         }
         const allBidders = await getAllRecordsForAuctionId(data, client)
-        const checkForAutoBid = await helper.checkAutoBid(data, allBidders)
+        const checkForAutoBid = await helper.checkAutoBid(data, allBidders, client)
         console.log('chec', checkForAutoBid)
         // const { message } = checkForAutoBid
         // const { bidStatus } = checkForAutoBid
@@ -88,12 +88,16 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const connectionData = await mongodbHelper.connect()
         if (allBidders.length > 0) {
             const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
+            console.log('highest', highestBid)
             const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
+            console.log('higgestbider', highestBidder)
+            console.log('checking', data.max_bid > highestBidder.base_price)
             // await mongodbHelper.updateTopBidder(data, highestBidder)
-            if (checkForAutoBid.max_bid > highestBid) {
+            if (data.max_bid > highestBidder.base_price) {
                 bidStatus = 'Winning'
             } else {
                 message = 'You did not win the bid'
+                bidStatus = 'Not Winning'
             }
         } else {
             const highestBid = {
@@ -105,7 +109,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus = 'Winning'
         }
         
-        checkForAutoBid.bid_status = bidStatus
+        checkForAutoBid.record.bid_status = bidStatus
+        console.log('last response', checkForAutoBid)
         const criteria = {
             buyer_id: checkForAutoBid.record.buyer_id,
             auction_id: checkForAutoBid.record.auction_id,

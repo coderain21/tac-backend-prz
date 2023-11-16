@@ -34,8 +34,9 @@ async function calculateNextBid(currentBid) {
     }
 }
 
-module.exports.checkAutoBid = async (record, all_bidders) => {
+module.exports.checkAutoBid = async (record, all_bidders, client) => {
     const maxBidAmount = record.max_bid
+    console.log('all', all_bidders)
     let message
     try {
         const getNextAmount = await calculateNextBid(record.starting_bid)
@@ -45,9 +46,23 @@ module.exports.checkAutoBid = async (record, all_bidders) => {
             console.log('his', highestBidder)
             if (highestBidder.base_price > record.max_bid) {
                 const amount = await calculateNextBid(record.max_bid)
-                record.max_bid = amount
-                record.base_price = highestBidder.base_price
                 record.current_bid = amount
+                const redisRecordKey = `auction:${record.auction_id}`
+                const existingRedisRecord = await client.hGet(redisRecordKey, highestBidder.buyer_id)
+                const isNewRecord = !existingRedisRecord
+                if (isNewRecord) {
+                    console.log('iffff')
+                    // If no existing record is found, create a new record in Redis
+                    await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
+                } else {
+                    console.log('entryyyyyyyyyyyyyyyyyyyyyyyyyyyyy')
+                    // If an existing record is found, update it in Redis
+                    await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
+                    const getBuyer = await mongodbHelper.getAllBidders(highestBidder)
+                    console.log('update', getBuyer)
+                    const updateBuyer = await mongodbHelper.updatingBuyer(getBuyer[0], amount)
+                    console.log('update', updateBuyer)
+                }
                 if (record.buyer_id === highestBidder.buyer_id) {
                     record.higghest_bidder = record.buyer_id
                 } else {
@@ -66,7 +81,7 @@ module.exports.checkAutoBid = async (record, all_bidders) => {
             record.current_bid = getNextAmount
             // record.bid_status = bidStatus
         }
-        await mongodbHelper.changeStartingBid(record)
+        // await mongodbHelper.changeStartingBid(record)
         return { record, message }
     } catch (error) {
         console.error(error)
