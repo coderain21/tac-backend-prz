@@ -28,7 +28,7 @@ headers = {
 def view_address(event, context):
     """
     The function "view_address" is used to handle an event and context in Python.
-    
+
     :param event: The `event` parameter is an object that contains information about the event that
     triggered the function. This can include details such as the event type, event source, and any data
     associated with the event
@@ -58,11 +58,11 @@ def view_address(event, context):
         address_collection = db[os.environ['ADDRESS_COLLECTION']]
         print(event["queryStringParameters"])
         request_body = event["queryStringParameters"]
-        
+
         type= request_body['type']
         result = address_collection.find({'email_address':email_address,'type':type})
         if result is None:
-            {
+            return {
                     "statusCode": 404,
                     'headers': headers,
                     "body": json.dumps({"message":"No addresses found"})
