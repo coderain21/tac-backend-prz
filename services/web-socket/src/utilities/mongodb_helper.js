@@ -187,7 +187,11 @@ module.exports.getAllLots = async (document) => {
         console.log(documents[0], 'got lots')
         const updateResult = await collection.updateMany(
             { _id: { $in: documents.map((lot) => ObjectId(lot._id)) } },
-            { $set: { is_extended: true, extension_time: document.extension_time,  } },
+            {
+                $set: {
+                    is_extended: true, extension_time: document.extension_time, start_date: document.start_date, end_date: document.end_date,
+                },
+            },
         )
         connectionData.disconnect()
         return true

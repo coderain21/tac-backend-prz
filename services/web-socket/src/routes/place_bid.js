@@ -69,8 +69,28 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         data.socket_id = socket.id
         // const checkExtension = await checkExtensionType(data)
         // console.log('check', checkExtension)
+        const token = 'ExponentPushToken[ExponentPushTokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]'
+        const VAPID_SUBJECT = 'https://www.mypushnotificationapp.com'
+        // Ensure VAPID_SUBJECT is defined before calling webpush.setVapidDetails()
+        webpush.setVapidDetails(
+            'sandhyashri@7edge.com',
+            'BCoBeZarzs7pJkmbWdI42ZXCKQ2X5j8w6zOUUg6MvYa0dVm1onUxo9rIU0VcmW4rg0Ni4Py2_x9AJikTxgjUNZc',
+            'Wp0NfsuQPrY26tFu91k6XOWCtDdkIGVHPt-9fK-z3SQ',
+            VAPID_SUBJECT,
+        )
+        const payload = JSON.stringify({
+            title: 'Bid-Placed',
+            body: 'You won the bid',
+            // stage: 'dev',
+            // web_push_type: notification.data.web_push_type,
+            // data: notification.data,
+        })
+        const pushresponse = await webpush.sendNotification(token, payload)
+        console.log('push response', pushresponse)
 
-        
+        return
+
+
         // const client = redis.createClient({
         //     host: 'dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com',
         //     port: 6379,
@@ -177,7 +197,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
           
         console.log('Before emitting placeBid event')
         io.to(socket.id).emit('placeBid', { success: true, message })
-        // webpush.setVapidDetails(process.env.WEBPUSH_EMAIL, process.env.PUBLIC_VAPID_KEY, process.env.PRIVATE_VAPID_KEY)
+        // webpush.setVapidDetails(process.env.WEBPUSH_EMAIL, 'BCoBeZarzs7pJkmbWdI42ZXCKQ2X5j8w6zOUUg6MvYa0dVm1onUxo9rIU0VcmW4rg0Ni4Py2_x9AJikTxgjUNZc', 'Wp0NfsuQPrY26tFu91k6XOWCtDdkIGVHPt-9fK-z3SQ'
         // const payload = JSON.stringify({
         //     title: notification.title,
         //     body: notification.description,
