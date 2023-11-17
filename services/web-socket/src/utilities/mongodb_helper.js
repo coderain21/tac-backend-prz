@@ -165,6 +165,7 @@ module.exports.getAuction = async (document) => {
         const query = {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
+        console.log('query', query)
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
         return documents
@@ -175,6 +176,7 @@ module.exports.getAuction = async (document) => {
 
 module.exports.getAllLots = async (document) => {
     try {
+        console.log('document', document)
         const connectionData = await this.connect()
         const database = connectionData.connection.db// Access the database
         const collection = database.collection('dev-lots') // Replace with your collection name
@@ -182,12 +184,13 @@ module.exports.getAllLots = async (document) => {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
         const documents = await collection.find(query).toArray() // Await the query result
+        console.log(documents[0], 'got lots')
         const updateResult = await collection.updateMany(
             { _id: { $in: documents.map((lot) => ObjectId(lot._id)) } },
-            { $set: { extension_time_between_lots: document.extension_time } },
+            { $set: { is_extended: true, extension_time: document.extension_time,  } },
         )
         connectionData.disconnect()
-        return documents
+        return true
     } catch (error) {
         console.log(error)
         return false

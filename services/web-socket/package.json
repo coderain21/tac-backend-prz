@@ -32,7 +32,8 @@
     "npm": "^10.2.4",
     "redis": "^4.6.10",
     "socket.io": "^4.4.1",
-    "superagent": "^7.1.1"
+    "superagent": "^7.1.1",
+    "web-push": "^3.6.6"
   },
   "devDependencies": {
     "eslint": "^7.32.0",

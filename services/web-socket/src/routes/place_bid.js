@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-param-reassign */
@@ -5,18 +6,20 @@
 /* eslint-disable no-multiple-empty-lines */
 /* eslint-disable import/no-extraneous-dependencies */
 const { promisify } = require('util')
+const webpush = require('web-push')
+
 
 const mongoose = require('mongoose')
 const redis = require('redis')
 
 const mongodbHelper = require('../utilities/mongodb_helper')
 const helper = require('../utilities/auto_bid')
+const { checkExtensionType } = require('../utilities/extension_lots')
+
 
 
 
 // Check if the client is closed
-
-
 const bidInformationSchema = new mongoose.Schema({
     socket_id: String,
     buyer_id: String,
@@ -64,13 +67,18 @@ async function getAllRecordsForAuctionId(data, client) {
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         data.socket_id = socket.id
-        // Use const for client since it doesn't change
-        // const client = redis.createClient()
-        const client = redis.createClient({
-            host: 'dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com',
-            port: 6379,
-            // Add any other necessary configuration options here
-        })
+        // const checkExtension = await checkExtensionType(data)
+        // console.log('check', checkExtension)
+
+        
+        // const client = redis.createClient({
+        //     host: 'dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com',
+        //     port: 6379,
+        // })
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+          
         const hSetAsync = promisify(client.hSet).bind(client)
         if (!client.isOpen) {
             // Reconnect to Redis
@@ -78,7 +86,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         }
         const allBidders = await getAllRecordsForAuctionId(data, client)
         const checkForAutoBid = await helper.checkAutoBid(data, allBidders, client)
-        console.log('chec', checkForAutoBid)
         // const { message } = checkForAutoBid
         // const { bidStatus } = checkForAutoBid
         let message = 'Congratulations, you won the bid!'
@@ -170,6 +177,16 @@ module.exports.placeBid = async (socket, data, io, userData) => {
           
         console.log('Before emitting placeBid event')
         io.to(socket.id).emit('placeBid', { success: true, message })
+        // webpush.setVapidDetails(process.env.WEBPUSH_EMAIL, process.env.PUBLIC_VAPID_KEY, process.env.PRIVATE_VAPID_KEY)
+        // const payload = JSON.stringify({
+        //     title: notification.title,
+        //     body: notification.description,
+        //     stage: process.env.STAGE,
+        //     web_push_type: notification.data.web_push_type,
+        //     data: notification.data,
+        // })
+        // const pushresponse = await webpush.sendNotification(agent.data[0].agent_web_push_token, payload)
+
         console.log('After emitting placeBid event')
         await connectionData.disconnect()
     } catch (err) {
