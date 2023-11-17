@@ -19,6 +19,127 @@
 
   "paths": {
     "/address": {
+      "post": {
+        "tags": ["Address management"],
+        "summary": "add address",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "address_line1": {
+                    "type": "string"
+                  },
+                  "address_line2": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "first_name": "",
+                "last_name": "",
+                "address_line1": "410",
+                "address_line2": "dukes",
+                "state": "qwert",
+                "country": "usa",
+                "postal_code": "000000",
+                "city": "anti",
+                "type": "billing",
+                "default": true
+            }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "adding address successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Address added successfully!"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while adding the address"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": ["Address management"],
         "summary": "listing the all address",
@@ -38,7 +159,7 @@
           "200": {
             "description": "listing addresses",
             "content": {
-              "application/json ": {
+              "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
@@ -94,18 +215,18 @@
                 "example": {
                   "result": [
                     {
-                      "_id": "6554be79645bd9762a7d8b51",
-                      "address_line1": "202",
-                      "first_name": "",
-                      "last_name": "",
-                      "address_line2": "gulmohar",
-                      "state": "anda",
-                      "country": "usa",
-                      "postal_code": "000000",
-                      "city": "anti",
-                      "type": "billing",
-                      "email_address": "shrinit.poojary+5645@7edge.com",
-                      "default": false
+                        "_id": "65574b01cfaec8f35e3d7a5a",
+                        "first_name": "",
+                        "last_name": "",
+                        "address_line1": "410",
+                        "address_line2": "dukes",
+                        "city": "anti",
+                        "state": "qwert",
+                        "postal_code": "000000",
+                        "country": "usa",
+                        "type": "billing",
+                        "default": false,
+                        "email_address": "sthuthi+test@7edge.com"
                     }
                   ]
                 }
@@ -115,7 +236,7 @@
           "403": {
             "description": "Forbidden",
             "content": {
-              "application/json ": {
+              "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
@@ -137,7 +258,7 @@
           "404": {
             "description": "Not found",
             "content": {
-              "application/json ": {
+              "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
@@ -192,7 +313,7 @@
             "schema": {
               "type": "string"
             },
-            "example": ""
+            "example": "65574b01cfaec8f35e3d7a5a"
           }
         ],
         "requestBody": {
@@ -222,7 +343,7 @@
           "400": {
             "description": "Bad request",
             "content": {
-              "application/json ": {
+              "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
@@ -301,127 +422,6 @@
                   "example1": {
                     "value": {
                       "message": "There was an error while updating the address"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": ["Address management"],
-        "summary": "add address",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "first_name": {
-                    "type": "string"
-                  },
-                  "last_name": {
-                    "type": "string"
-                  },
-                  "address_line1": {
-                    "type": "string"
-                  },
-                  "address_line2": {
-                    "type": "string"
-                  },
-                  "state": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "country": {
-                    "type": "string"
-                  },
-                  "postal_code": {
-                    "type": "string"
-                  },
-                  "city": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "first_name": "",
-                "last_name": "",
-                "address_line1": "410",
-                "address_line2": "dukes",
-                "state": "qwert",
-                "country": "usa",
-                "postal_code": "000000",
-                "city": "anti",
-                "type": "billing",
-                "default": true
-            }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "adding address successful",
-            "content": {
-              "application/json ": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "example": {
-                    "message": "Address added successfully!"
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json ": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "You do not have access to perform this API action"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "There was an error while adding the address"
                     }
                   }
                 }
