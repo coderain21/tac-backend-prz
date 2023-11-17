@@ -12,30 +12,31 @@ const buyerConnectionSchema = new mongoose.Schema({
     connected: Boolean,
 })
 
-const BidInformation = mongoose.model('dev-buyer-connection', buyerConnectionSchema)
+const BidInformation = mongoose.model('dev-active-connection', buyerConnectionSchema)
 
 module.exports.checkAuthentication = async (socket, data) => {
     const checkUser = await checkBuyerAuthentication(data)
     let response = 'User Not Authenticated'
-    let connection = false
     const connectionData = await mongodbHelper.connect()
     if (checkUser) {
         response = 'User Authenticated'
-        connection = true
+        const criteria = {
+            buyer_id: data.buyer_id,
+            auction_id: data.auction_id,
+            socket_id: socket.id,
+            seller_email: data.seller_email,
+
+        }
+        criteria.connected = true
+        const existingRecord = await BidInformation.findOne(criteria)
+        if (existingRecord) {
+            existingRecord.set(criteria)
+            await existingRecord.save()
+        } else {
+            const bidDoc = new BidInformation(criteria)
+            await bidDoc.save()
+        }
+        await connectionData.disconnect()
     }
     socket.emit('checkAuthentication', { status: true, data: response })
-    const criteria = {
-        buyer_id: data.buyer_id,
-        auction_id: data.auction_id,
-    }
-    data.connected = connection
-    const existingRecord = await BidInformation.findOne(criteria)
-    if (existingRecord) {
-        existingRecord.set(data)
-        await existingRecord.save()
-    } else {
-        const bidDoc = new BidInformation(data)
-        await bidDoc.save()
-    }
-    await connectionData.disconnect()
 }

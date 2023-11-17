@@ -67,34 +67,6 @@ async function getAllRecordsForAuctionId(data, client) {
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         data.socket_id = socket.id
-        // const checkExtension = await checkExtensionType(data)
-        // console.log('check', checkExtension)
-        const token = 'ExponentPushToken[ExponentPushTokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]'
-        const VAPID_SUBJECT = 'https://www.mypushnotificationapp.com'
-        // Ensure VAPID_SUBJECT is defined before calling webpush.setVapidDetails()
-        webpush.setVapidDetails(
-            'sandhyashri@7edge.com',
-            'BCoBeZarzs7pJkmbWdI42ZXCKQ2X5j8w6zOUUg6MvYa0dVm1onUxo9rIU0VcmW4rg0Ni4Py2_x9AJikTxgjUNZc',
-            'Wp0NfsuQPrY26tFu91k6XOWCtDdkIGVHPt-9fK-z3SQ',
-            VAPID_SUBJECT,
-        )
-        const payload = JSON.stringify({
-            title: 'Bid-Placed',
-            body: 'You won the bid',
-            // stage: 'dev',
-            // web_push_type: notification.data.web_push_type,
-            // data: notification.data,
-        })
-        const pushresponse = await webpush.sendNotification(token, payload)
-        console.log('push response', pushresponse)
-
-        return
-
-
-        // const client = redis.createClient({
-        //     host: 'dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com',
-        //     port: 6379,
-        // })
         const client = await redis.createClient({
             url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
@@ -115,10 +87,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const connectionData = await mongodbHelper.connect()
         if (allBidders.length > 0) {
             const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
-            console.log('highest', highestBid)
             const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
-            console.log('higgestbider', highestBidder)
-            console.log('checking', data.max_bid > highestBidder.base_price)
+            console.log('higgest', highestBidder)
             // await mongodbHelper.updateTopBidder(data, highestBidder)
             if (data.max_bid > highestBidder.base_price) {
                 bidStatus = 'Winning'
@@ -127,17 +97,15 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 bidStatus = 'Not Winning'
             }
         } else {
-            const highestBid = {
-                Top_bidder: checkForAutoBid.buyer_id,
-                paddle_number: checkForAutoBid.paddle_number,
-                current_bid: checkForAutoBid.max_bid,
-            }
+            // const highestBid = {
+            //     Top_bidder: checkForAutoBid.buyer_id,
+            //     paddle_number: checkForAutoBid.paddle_number,
+            //     current_bid: checkForAutoBid.max_bid,
+            // }
             // await mongodbHelper.updateTopBidder(data, highestBid)
             bidStatus = 'Winning'
-        }
-        
+        }        
         checkForAutoBid.record.bid_status = bidStatus
-        console.log('last response', checkForAutoBid)
         const criteria = {
             buyer_id: checkForAutoBid.record.buyer_id,
             auction_id: checkForAutoBid.record.auction_id,
@@ -162,14 +130,12 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             // If an existing record is found, update it in Redis
             await client.hSet(redisRecordKey, checkForAutoBid.record.buyer_id, JSON.stringify(checkForAutoBid.record))
         }
-        console.log('bid status', message)
         if (bidStatus) {
             const winningBidders = allBidders.filter((bidder) => bidder.bid_status === 'Winning')
             if (winningBidders.length > 0) {
                 const taskListBatch = []
                 winningBidders.forEach((record) => {
                     if (record.bid_status === 'Winning') {
-                        console.log('entering')
                         // Assuming 'auction_id' is a unique identifier for your records in Redis
                         const redisKey = `auction:${record.auction_id}:${record.buyer_id}:${record.lot_id}`
                         const redisField = 'bid_status'
@@ -178,11 +144,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                         // Update the record in Redis
                         taskListBatch.push(
                             hSetAsync(redisKey, redisField, redisValue).catch((error) => {
-                                console.error(`Error updating record '${redisKey}':`, error)
                             }),
                         )
-          
-                        console.log(`Updated ${redisKey} - ${redisField} to ${redisValue}`)
                     }
                 })
           
@@ -194,20 +157,30 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 }
             }
         }
-          
-        console.log('Before emitting placeBid event')
-        io.to(socket.id).emit('placeBid', { success: true, message })
-        // webpush.setVapidDetails(process.env.WEBPUSH_EMAIL, 'BCoBeZarzs7pJkmbWdI42ZXCKQ2X5j8w6zOUUg6MvYa0dVm1onUxo9rIU0VcmW4rg0Ni4Py2_x9AJikTxgjUNZc', 'Wp0NfsuQPrY26tFu91k6XOWCtDdkIGVHPt-9fK-z3SQ'
+        const checkExtension = await checkExtensionType(data)
+        const auctionExtended = checkExtension
+        io.to(socket.id).emit('placeBid', {
+            success: true, message, is_auction_extended: auctionExtended, current_bid: checkForAutoBid.current_bid, 
+        })
+        // const token = 'ExponentPushToken[ExponentPushTokenXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]'
+        // const VAPID_SUBJECT = 'https://www.mypushnotificationapp.com'
+        // // Ensure VAPID_SUBJECT is defined before calling webpush.setVapidDetails()
+        // webpush.setVapidDetails(
+        //     'sandhyashri@7edge.com',
+        //     'BCoBeZarzs7pJkmbWdI42ZXCKQ2X5j8w6zOUUg6MvYa0dVm1onUxo9rIU0VcmW4rg0Ni4Py2_x9AJikTxgjUNZc',
+        //     'Wp0NfsuQPrY26tFu91k6XOWCtDdkIGVHPt-9fK-z3SQ',
+        //     VAPID_SUBJECT,
+        // )
         // const payload = JSON.stringify({
-        //     title: notification.title,
-        //     body: notification.description,
-        //     stage: process.env.STAGE,
-        //     web_push_type: notification.data.web_push_type,
-        //     data: notification.data,
+        //     title: 'Bid-Placed',
+        //     body: 'You won the bid',
+        //     // stage: 'dev',
+        //     // web_push_type: notification.data.web_push_type,
+        //     // data: notification.data,
         // })
-        // const pushresponse = await webpush.sendNotification(agent.data[0].agent_web_push_token, payload)
+        // const pushresponse = await webpush.sendNotification(token, payload)
+        // console.log('push response', pushresponse)
 
-        console.log('After emitting placeBid event')
         await connectionData.disconnect()
     } catch (err) {
         console.error(err)

@@ -4,11 +4,13 @@ const mongodbHelper = require('./mongodb_helper')
 async function checkExtension(docs) {
     try {
         if (docs.extension_type === 'All Lots') {
-            const allLots = await mongodbHelper.getAllLots(docs)
-            console.log('allLots', allLots)
-        } else if (docs.extension_type === 'Individual Lots') {
-            const allLots = await mongodbHelper.updateLots(docs)
+            await mongodbHelper.getAllLots(docs)
+        } else if (docs.extension_type === 'Individual') {
+            await mongodbHelper.updateLots(docs)
+        } else {
+            // cascaded
         }
+        return true
     } catch (err) {
         return err
     }
@@ -21,11 +23,12 @@ module.exports.checkExtensionType = async (documents) => {
         const oneMinuteBeforeEndDate = new Date(currentDate.getTime() - (60 * 1000))
         const endDate = new Date(getAuctionDetails[0].end_date)
         if (oneMinuteBeforeEndDate.toISOString() !== endDate.toISOString()) {
-            const updateLots = await checkExtension(getAuctionDetails[0])
-        } else {
-            // Your else block
+            await checkExtension(getAuctionDetails[0])
+            return true
         }
+        return false
     } catch (err) {
         // Handle errors
+        return err
     }
 }

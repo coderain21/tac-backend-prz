@@ -42,7 +42,6 @@ module.exports.checkAutoBid = async (record, all_bidders, client) => {
         if (all_bidders.length > 0) {
             const highestBid = Math.max(...all_bidders.map((bid) => bid.max_bid))
             const highestBidder = all_bidders.find((bid) => bid.max_bid === highestBid)
-            console.log('his', highestBidder)
             if (highestBidder.base_price > record.max_bid) {
                 const amount = await calculateNextBid(record.max_bid)
                 record.current_bid = amount
@@ -50,16 +49,13 @@ module.exports.checkAutoBid = async (record, all_bidders, client) => {
                 const existingRedisRecord = await client.hGet(redisRecordKey, highestBidder.buyer_id)
                 const isNewRecord = !existingRedisRecord
                 if (isNewRecord) {
-                    console.log('iffff')
                     // If no existing record is found, create a new record in Redis
                     await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
                 } else {
                     // If an existing record is found, update it in Redis
                     await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
                     const getBuyer = await mongodbHelper.getAllBidders(highestBidder)
-                    console.log('update', getBuyer)
-                    const updateBuyer = await mongodbHelper.updatingBuyer(getBuyer[0], amount)
-                    console.log('update', updateBuyer)
+                    await mongodbHelper.updatingBuyer(getBuyer[0], amount)
                 }
                 if (record.buyer_id === highestBidder.buyer_id) {
                     record.higghest_bidder = record.buyer_id
@@ -79,10 +75,9 @@ module.exports.checkAutoBid = async (record, all_bidders, client) => {
             record.current_bid = getNextAmount
             // record.bid_status = bidStatus
         }
-        // await mongodbHelper.changeStartingBid(record)
+        await mongodbHelper.changeStartingBid(record)
         return { record, message }
     } catch (error) {
-        console.error(error)
-        return false
+        return error
     }
 }
