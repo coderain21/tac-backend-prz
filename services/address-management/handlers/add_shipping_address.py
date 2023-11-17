@@ -61,43 +61,29 @@ def add_shipping_address(event, context):
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db[os.environ['ADDRESS_COLLECTION']]
+        address_collection = db[os.environ['ADDRESS_COLLECTION']]
         request_body = json.loads(event['body'])
-        data = event['queryStringParameters']
-        try:
-            address_line1 = request_body['address_line1']
-            address_line2 = request_body['address_line2']
-            city = request_body['city']
-            state = request_body['state']
-            postal_code = request_body['postal_code']
-            country = request_body['country']
-            type = request_body['type']
-            same = request_body['same']
-        except:
-            return {
-                "statusCode": 404,
-                "headers": headers,
-                "body": json.dumps({"message": "please provide the required fields"})
-            }
-        request_body.pop('same')
+
         request_body['email_address'] = email_address
-        address = collection.find_one(
-            {'email_address': email_address, 'type': type})
-        if address is None:
-            default = True
-        else:
-            default = False
-        request_body['default'] = default
-        if type == 'shipping' or same == 'True':
-            request_body['type'] = 'shipping'
-            result = collection.insert_one(request_body)
-        if type == 'billing' or same == 'True':
-            request_body['type'] = 'billing'
-            result = collection.insert_one(request_body)
+        insert_data = {
+            "first_name" : request_body.get('first_name',""),
+            "last_name" : request_body.get('last_name',""),
+            "address_line1" : request_body.get('address_line1',""),
+            "address_line2" : request_body.get('address_line2',""),
+            "city" : request_body.get('city',""),
+            "state" : request_body.get('state',""),
+            "postal_code" : request_body('postal_code',""),
+            "country" : request_body.get('country',""),
+            "type" : request_body.get('type',"shipping"),
+            "default" : request_body.get('default',"False")
+
+        }
+        insert_data["email_address"] = email_address
+        result = address_collection.insert_one(insert_data)
         return {
-            "statusCode": 204,
+            "statusCode": 201,
             'headers': headers,
-            "body": json.dumps({'message': "sucessfull"})
+            "body": json.dumps({'message': "Address added successfully!"})
         }
     except Exception as e:
         return {
