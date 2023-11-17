@@ -63,31 +63,34 @@ def add_shipping_address(event, context):
         db = client[os.environ['DATABASE']]
         address_collection = db[os.environ['ADDRESS_COLLECTION']]
         request_body = json.loads(event['body'])
+        insert_data = {}
 
-        request_body['email_address'] = email_address
-        insert_data = {
-            "first_name" : request_body.get('first_name',""),
-            "last_name" : request_body.get('last_name',""),
-            "address_line1" : request_body.get('address_line1',""),
-            "address_line2" : request_body.get('address_line2',""),
-            "city" : request_body.get('city',""),
-            "state" : request_body.get('state',""),
-            "postal_code" : request_body('postal_code',""),
-            "country" : request_body.get('country',""),
-            "type" : request_body.get('type',"shipping"),
-            "default" : request_body.get('default',"False")
+        insert_data["first_name"] = request_body.get('first_name',"")
+        insert_data["last_name"] = request_body.get('last_name',"")
+        insert_data["address_line1"] = request_body.get('address_line1',"")
+        insert_data["address_line2"] = request_body.get('address_line2',"")
+        insert_data["city"] = request_body.get('city',"")
+        insert_data["state"] = request_body.get('state',"")
+        insert_data["postal_code"] = request_body.get('postal_code',"")
+        insert_data["country"] = request_body.get('country',"")
+        insert_data["type"] = request_body.get('type',"shipping")
+        insert_data["default"] = request_body.get('default',"False")
 
-        }
         insert_data["email_address"] = email_address
+
+        if insert_data["default"] == True:
+            result = address_collection.update_many(
+            {'email_address': email_address, 'default': True, 'type': insert_data["type"]}, {'$set': {'default': False}})
         result = address_collection.insert_one(insert_data)
         return {
             "statusCode": 201,
             'headers': headers,
             "body": json.dumps({'message': "Address added successfully!"})
         }
-    except Exception as e:
+    except Exception as err:
+        print(err)
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": e}, cls=Encoder)
+            "body": json.dumps({"message": "There was an error while adding the address"}, cls=Encoder)
         }
