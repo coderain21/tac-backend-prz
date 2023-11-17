@@ -17,4 +17,7 @@ services:
   Subdomain:
     path: services/Subdomain
     config: ${env:config}
+  address-management:
+    path: services/address-management
+    config: ${env:config}
     
