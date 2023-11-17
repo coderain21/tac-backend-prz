@@ -43,7 +43,7 @@ def hash_password(password):
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 
-def admin_create_user(userData, userpool_id):
+def admin_create_user(userData, userpool_id,seller_email,default):
     """Create a new user in Amazon Cognito and add them to a Cognito User Group.
 
     Args:
@@ -78,12 +78,17 @@ def admin_create_user(userData, userpool_id):
         }
         cognito_client.admin_set_user_password(**password_params)
         if user:
+
             cognito_client.admin_add_user_to_group(
-                GroupName=userData['user_type'],
+                GroupName= seller_email.split('@')[0],
                 UserPoolId=userpool_id,
                 Username=userData['email_address']
             )
-
+            cognito_client.admin_add_user_to_group(
+                GroupName= userData["user_type"],
+                UserPoolId=userpool_id,
+                Username=userData['email_address']
+            )
             return {
                 'success_status': True,
                 'message': 'User added successfully'
@@ -120,7 +125,7 @@ def validate(event, context):
         otp = int(data.get('otp'))
         domain = data.get('domain')
         auction_id = data.get('id')
-
+        default = domain == os.environ["DEFAULT_SUB_DOMAIN"]
         if not encrypted_token or not otp or not domain or not auction_id:
             return {
                 'statusCode': 400,
@@ -166,13 +171,14 @@ def validate(event, context):
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         seller_email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
 
-        userpool_id = user_pools_collection.find_one(
-            {"sub_domain_name": domain,"email_address":seller_email}, {"user_pool_id": 1})
+        # userpool_id = user_pools_collection.find_one(
+        #     {"sub_domain_name": domain,"email_address":seller_email}, {"user_pool_id": 1})
 
         print(seller_email)
+        user_pool_id = os.environ["DEFAULT_USERPOOL_ID"]
         # Your code to create the user in Cognito
         response = admin_create_user(
-            decrypted_data, userpool_id["user_pool_id"])
+            decrypted_data, user_pool_id,seller_email,default)
         if response and response["success_status"] == True:
             # Your code to store the decrypted token data in MongoDB
             collection = db[os.environ["BUYER_COLLECTION"]]
@@ -185,7 +191,6 @@ def validate(event, context):
             insert_data["terms_and_condition"] = decrypted_data["terms_and_condition"]
             insert_data["user_type"] = decrypted_data["user_type"]
             insert_data["newsletter_notification"] = decrypted_data["newsletter_notification"]
-            insert_data["sub_domain"] = domain
             insert_data["seller_email"] = seller_email
             collection.insert_one(insert_data)
             client.close()

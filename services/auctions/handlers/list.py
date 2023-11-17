@@ -15,7 +15,14 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+def prepend_backslash(text):
+    # Define a regular expression pattern to match special characters
+    special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
 
+    # Use re.sub to replace each match with a backslash followed by the matched character
+    modified_text = re.sub(special_chars_pattern, r'\\\1', text)
+
+    return modified_text
 
 def list_auction(event, context):
     """
@@ -163,7 +170,8 @@ def list_auction(event, context):
 
         # Check if keyword is provided
         if keyword:
-            keyword_condition = {"title": {"$regex": keyword,
+            escaped_search_keyword = prepend_backslash(keyword)
+            keyword_condition = {"title": {"$regex": escaped_search_keyword,
                                            "$options": "i"}}  # Case-insensitive search
             query_conditions.append(keyword_condition)
         queries = []
