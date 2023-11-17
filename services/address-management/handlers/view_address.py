@@ -1,3 +1,19 @@
+"""
+Module: address_management_api
+
+AWS Lambda function `view_address` retrieves user addresses from a MongoDB collection based on the provided
+type (shipping or billing). Handles HTTP requests, validates permissions via Amazon Cognito, and returns a
+JSON response with the user's address information.
+
+Dependencies:
+- json: Parsing JSON data.
+- pymongo: MongoDB driver.
+- os: Accessing environment variables.
+- lib.common_helper.Encoder: Custom JSON encoder.
+
+Response Structure:
+- JSON response with status code, headers, and a body containing the user's address information.
+"""
 import json
 from pymongo import MongoClient
 import os
@@ -39,7 +55,7 @@ def view_address(event, context):
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db['dev-address-management']
+        collection = db[os.environ['ADDRESS_COLLECTION']]
         request_body = json.loads(event['body'])
         type= request_body['type']
         result = collection.find({'email_address':email_address,'type':type})
