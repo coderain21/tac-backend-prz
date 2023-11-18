@@ -44,8 +44,7 @@ const BidInformation = mongoose.model('dev-bid-information', bidInformationSchem
 async function getAllRecordsForAuctionId(data, client) {
     try {
         const key = `auction:${data.auction_id}`
-        const excludedIds = [`${data.buyer_id}`]
-    
+        const excludedIds = [] // Remove sandhyashri@7edge.com    
         const recordsHash = await client.hGetAll(key)
         const records = []
       
@@ -56,7 +55,6 @@ async function getAllRecordsForAuctionId(data, client) {
                 records.push(record)
             }
         }
-      
         return records
     } catch (err) {
         console.log('err', err)
@@ -64,31 +62,29 @@ async function getAllRecordsForAuctionId(data, client) {
     }
 }
 
+
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         data.socket_id = socket.id
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-          
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redis.createClient()
         const hSetAsync = promisify(client.hSet).bind(client)
         if (!client.isOpen) {
-            // Reconnect to Redis
             await client.connect()
         }
         const allBidders = await getAllRecordsForAuctionId(data, client)
+        console.log('all', allBidders)
         const checkForAutoBid = await helper.checkAutoBid(data, allBidders, client)
-        // const { message } = checkForAutoBid
-        // const { bidStatus } = checkForAutoBid
         let message = 'Congratulations, you won the bid!'
         let bidStatus
 
         // Connect to MongoDB outside the try block to ensure proper disconnection in case of an error
-        const connectionData = await mongodbHelper.connect()
+        // const connectionData = await mongodbHelper.connect()
         if (allBidders.length > 0) {
             const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
             const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
-            console.log('higgest', highestBidder)
             // await mongodbHelper.updateTopBidder(data, highestBidder)
             if (data.max_bid > highestBidder.base_price) {
                 bidStatus = 'Winning'
@@ -112,14 +108,14 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             lot_id: checkForAutoBid.record.lot_id,
         }
         
-        const existingRecord = await BidInformation.findOne(criteria)
-        if (existingRecord) {
-            existingRecord.set(checkForAutoBid.record)
-            await existingRecord.save()
-        } else {
-            const bidDoc = new BidInformation(checkForAutoBid.record)
-            await bidDoc.save()
-        }
+        // const existingRecord = await BidInformation.findOne(criteria)
+        // if (existingRecord) {
+        //     existingRecord.set(checkForAutoBid.record)
+        //     await existingRecord.save()
+        // } else {
+        //     const bidDoc = new BidInformation(checkForAutoBid.record)
+        //     await bidDoc.save()
+        // }
         const redisRecordKey = `auction:${checkForAutoBid.record.auction_id}`
         const existingRedisRecord = await client.hGet(redisRecordKey, checkForAutoBid.record.buyer_id)
         const isNewRecord = !existingRedisRecord    
@@ -136,6 +132,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 const taskListBatch = []
                 winningBidders.forEach((record) => {
                     if (record.bid_status === 'Winning') {
+                        console.log('enteringggg')
                         // Assuming 'auction_id' is a unique identifier for your records in Redis
                         const redisKey = `auction:${record.auction_id}:${record.buyer_id}:${record.lot_id}`
                         const redisField = 'bid_status'
@@ -181,7 +178,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // const pushresponse = await webpush.sendNotification(token, payload)
         // console.log('push response', pushresponse)
 
-        await connectionData.disconnect()
+        // await connectionData.disconnect()
     } catch (err) {
         console.error(err)
     }

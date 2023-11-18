@@ -41,21 +41,28 @@ module.exports.checkAutoBid = async (record, all_bidders, client) => {
         const getNextAmount = await calculateNextBid(record.starting_bid)
         if (all_bidders.length > 0) {
             const highestBid = Math.max(...all_bidders.map((bid) => bid.max_bid))
+            console.log('highet', highestBid)
             const highestBidder = all_bidders.find((bid) => bid.max_bid === highestBid)
+            console.log('higgest', highestBidder)
             if (highestBidder.base_price > record.max_bid) {
+                console.log('insidee')
                 const amount = await calculateNextBid(record.max_bid)
-                record.current_bid = amount
+                let saveBidder = record
+                saveBidder.max_bid = amount
+                saveBidder.buyer_id = highestBidder.buyer_id
+                const userAmount = await calculateNextBid(amount)
+                saveBidder.current_bid = userAmount
                 const redisRecordKey = `auction:${record.auction_id}`
                 const existingRedisRecord = await client.hGet(redisRecordKey, highestBidder.buyer_id)
                 const isNewRecord = !existingRedisRecord
                 if (isNewRecord) {
                     // If no existing record is found, create a new record in Redis
-                    await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
+                    await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(saveBidder))
                 } else {
                     // If an existing record is found, update it in Redis
-                    await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(record))
-                    const getBuyer = await mongodbHelper.getAllBidders(highestBidder)
-                    await mongodbHelper.updatingBuyer(getBuyer[0], amount)
+                    await client.hSet(redisRecordKey, highestBidder.buyer_id, JSON.stringify(saveBidder))
+                    // const getBuyer = await mongodbHelper.getAllBidders(highestBidder)
+                    // await mongodbHelper.updatingBuyer(getBuyer[0], amount)
                 }
                 if (record.buyer_id === highestBidder.buyer_id) {
                     record.higghest_bidder = record.buyer_id
@@ -63,19 +70,23 @@ module.exports.checkAutoBid = async (record, all_bidders, client) => {
                     record.higghest_bidder = highestBidder.buyer_id
                 }
             } else {
-                const amount = await calculateNextBid(record.max_bid)
+                console.log('entryyy')
+                const amount = await calculateNextBid(highestBidder.max_bid)
+                const amount2 = await calculateNextBid(highestBidder.current_bid)
                 record.higghest_bidder = record.buyer_id
-                record.max_bid = record.max_bid
-                record.base_price = record.max_bid
-                record.current_bid = amount
+                record.max_bid = amount
+                record.base_price = maxBidAmount
+                record.current_bid = amount2
             }
         } else if (getNextAmount !== record.max_bid) {
+            const amounts = await calculateNextBid(getNextAmount)
+            console.log('heyyyyyy')
             record.max_bid = getNextAmount
             record.base_price = maxBidAmount
-            record.current_bid = getNextAmount
+            record.current_bid = amounts
             // record.bid_status = bidStatus
         }
-        await mongodbHelper.changeStartingBid(record)
+        // await mongodbHelper.changeStartingBid(record)
         return { record, message }
     } catch (error) {
         return error
