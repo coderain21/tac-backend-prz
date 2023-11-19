@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-restricted-syntax */
@@ -86,7 +87,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
             const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
             // await mongodbHelper.updateTopBidder(data, highestBidder)
-            if (data.max_bid > highestBidder.base_price) {
+            if (highestBidder.base_price > data.max_bid) {
                 bidStatus = 'Winning'
             } else {
                 message = 'You did not win the bid'
@@ -102,6 +103,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus = 'Winning'
         }        
         checkForAutoBid.record.bid_status = bidStatus
+        console.log('checksfir', checkForAutoBid)
         const criteria = {
             buyer_id: checkForAutoBid.record.buyer_id,
             auction_id: checkForAutoBid.record.auction_id,
@@ -127,33 +129,42 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await client.hSet(redisRecordKey, checkForAutoBid.record.buyer_id, JSON.stringify(checkForAutoBid.record))
         }
         if (bidStatus) {
-            const winningBidders = allBidders.filter((bidder) => bidder.bid_status === 'Winning')
-            if (winningBidders.length > 0) {
-                const taskListBatch = []
-                winningBidders.forEach((record) => {
-                    if (record.bid_status === 'Winning') {
-                        console.log('enteringggg')
-                        // Assuming 'auction_id' is a unique identifier for your records in Redis
-                        const redisKey = `auction:${record.auction_id}:${record.buyer_id}:${record.lot_id}`
-                        const redisField = 'bid_status'
-                        const redisValue = JSON.stringify({ bid_status: 'Not Winning' })
-          
-                        // Update the record in Redis
-                        taskListBatch.push(
-                            hSetAsync(redisKey, redisField, redisValue).catch((error) => {
-                            }),
-                        )
+            try {
+                const allBidders2 = await getAllRecordsForAuctionId(data, client)
+                console.log('222222222222', allBidders2)
+                
+                const winningBidders = allBidders2.filter((bidder) => bidder.buyer_id !== data.buyer_id)
+                console.log('winning', winningBidders)
+        
+                if (winningBidders.length > 0) {
+                    const updates = {}
+                    
+                    for (const record of winningBidders) {
+                        const bidKey = `auction:${record.auction_id}`
+                        updates[bidKey] = { bid_status: 'Not Winning' }
+        
+                        const existingRedisRecords = await client.hGet(bidKey, record.buyer_id)
+                        const isNewRecord = !existingRedisRecords
+                        console.log('recordsss', isNewRecord)
+        
+                        const newRecord = {
+                            ...record,
+                            bid_status: isNewRecord ? 'Winning' : 'Not Winning',
+                        }
+        
+                        console.log(isNewRecord ? 'newww' : 'Updating an existing record in Redis')
+        
+                        await client.hSet(bidKey, record.buyer_id, JSON.stringify(newRecord))
                     }
-                })
-          
-                try {
-                    const results = await Promise.all(taskListBatch)
-                    console.log('Results:', results)
-                } catch (error) {
-                    console.error('Error updating records in Redis:', error)
+        
+                    return true
                 }
+            } catch (err) {
+                console.error('Error:', err)
+                return err
             }
         }
+        
         const checkExtension = await checkExtensionType(data)
         const auctionExtended = checkExtension
         io.to(socket.id).emit('placeBid', {
