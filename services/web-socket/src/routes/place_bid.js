@@ -29,55 +29,162 @@ const bidInformationSchema = new mongoose.Schema({
     seller_email: String,
     paddle_number: Number,
     starting_bid: Number,
-    max_bid: Number,
+    bid_amount: Number,
     lot_id: String,
-    current_bid_amount: Number,
+    next_bid_amount: Number,
     low_estimate: String,
     high_estimate: String,
     top_bidder: String,
     bid_status: String,
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
-    base_price: Number,
+    max_bid: Number,
 })
 
 const BidInformation = mongoose.model('dev-bid-information', bidInformationSchema)
 
-async function getAllRecordsForAuctionId(data, client) {
-    try {
-        const key = `auction:${data.auction_id}`
-        const excludedIds = [] // Remove sandhyashri@7edge.com    
-        const recordsHash = await client.hGetAll(key)
-        const records = []
-      
-        for (const field in recordsHash) {
-            const record = JSON.parse(recordsHash[field])
-            // Check if the buyer ID is in the list of excluded IDs
-            if (!excludedIds.includes(record.buyer_id)) {
-                records.push(record)
-            }
-        }
-        return records
-    } catch (err) {
-        return err
+async function calculateNextAmont(currentBid) {
+    console.log('next amony', currentBid)
+    const firstDigit = parseInt(currentBid.toString()[0], 10)
+    let nextBid
+
+    if (firstDigit === 1) {
+        nextBid = currentBid + 10
+    } else if (firstDigit === 2) {
+        nextBid = currentBid + 20
+    } else if (firstDigit === 3 || firstDigit === 4) {
+        const lastDigit = parseInt(currentBid.toString().slice(-1), 10)
+        const pattern = [0, 2, 5, 8]
+        const nextDigit = pattern[(pattern.indexOf(lastDigit) + 1) % pattern.length]
+        nextBid = currentBid + (nextDigit - lastDigit)
+    } else if (firstDigit >= 5 && firstDigit <= 9) {
+        nextBid = currentBid + 5
+    } else {
+        nextBid = currentBid + 1
     }
+
+    return nextBid
 }
 
+const redisHelper = {
+    async getOtherBidders(auctionId, currentBidderId, client) {
+        const allBidders = await client.hGetAll(`auction:${auctionId}`)
+        console.log('all bidder', allBidders)
+        // Filter out the current bidder and return an array
+        return Object.values(allBidders || {}).filter((bidder) => {
+            const parsedBidder = JSON.parse(bidder)
+            return parsedBidder.buyer_id !== currentBidderId
+        })
+    },
+    async getBidders(auctionId, currentBidderId, highestBidderId, client) {
+        const allBidders = await client.hGetAll(`auction:${auctionId}`)
+        console.log('all bidder', allBidders)
+        // Filter out the current bidder and return an array
+        return Object.values(allBidders || {}).filter((bidder) => {
+            const parsedBidder = JSON.parse(bidder)
+            return parsedBidder.buyer_id !== currentBidderId && parsedBidder.buyer_id !== highestBidderId
+        })
+    },
+    async  getCurrentBidder(bidderData, client) {
+        const allBidders = await client.hGetAll(`auction:${bidderData.auction_id}`);    
+        // Parse each string value into an object
+        const parsedBidders = Object.values(allBidders || {}).map((bidder) => JSON.parse(bidder));
+    
+        // Find the current bidder by buyer_id
+        return parsedBidders.find((parsedBidder) => parsedBidder.buyer_id === bidderData.buyer_id);
+    },
+    async changeStatus(getBidders, updateRequest, client) {
+        if (getBidders.length > 0) {
+            const updates = {}
+            
+            for (const record of getBidders) {
+                const bidKey = `auction:${record.auction_id}`
+                updates[bidKey] = updateRequest
+                const newRecord = {
+                    ...record,
+                    bid_status: updateRequest.bid_status,
+                    next_bid_amount: updateRequest.next_bid_amount,
+                }        
+                await client.hSet(bidKey, record.buyer_id, JSON.stringify(newRecord))
+            }
+            return true
+        }
+        return true
+    },
+    async saveCurrentBidder(bidder, client) {
+        await client.hSet(`auction:${bidder.auction_id}`, bidder.buyer_id, JSON.stringify(bidder))
+    },
+    async saveOtherBidder(bidder, client) {
+        await client.hSet(`auction:${bidder.auction_id}`, bidder.buyer_id, JSON.stringify(bidder))
+    },
+    async saveBidder(currentBidder, client, allBidder) {
+        if (allBidder.length > 0) {
+            const highestBid = allBidder.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidder[0].max_bid)
+            let highestBidder = allBidder.find((bid) => bid.max_bid === highestBid)
+            highestBidder = JSON.parse(highestBidder)
+            const currentBidderData = await this.getCurrentBidder(currentBidder, client)
+            let maxBid
+            if (currentBidderData.max_bid !== undefined && currentBidder.max_bid > currentBidder.bid_amount) {
+                maxBid = currentBidder.max_bid
+            } else {
+                maxBid = currentBidder.bid_amount
+            }
+            if (highestBidder.max_bid > currentBidder.bid_amount && highestBidder.max_bid > maxBid) {
+                console.log('inside')
+                highestBidder.bid_status = 'Winning'
+                highestBidder.bid_amount = highestBidder.max_bid > currentBidder.bid_amount ? await calculateNextAmont(currentBidder.bid_amount) : await calculateNextAmont(currentBidder.max_bid)
+                highestBidder.next_bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+                console.log('before save highest bidder', highestBidder)
+                const updateHighestBidder = await this.saveOtherBidder(highestBidder, client)
+                currentBidder.bid_status = 'Not Winning'
+                currentBidder.next_bid_amount = highestBidder.next_bid_amount
+                console.log('before current user save', currentBidder)
+                const updateCurrentBidder = await this.saveCurrentBidder(currentBidder, client)
+                const getBidders = await this.getBidders(currentBidder.auction_id, currentBidder.buyer_id, highestBidder.buyer_id, client)
+                const updateOtherBidder = await this.changeStatus(getBidders, { bid_status: 'Not Winning', next_bid_amount: highestBidder.next_bid_amount }, client)
+            } else if (highestBidder.max_bid < currentBidder.bid_amount && highestBidder.max_bid < maxBid) {
+                highestBidder.bid_status = 'Not Winning'
+                currentBidder.bid_status = 'Winning'
+                currentBidder.bid_amount = await calculateNextAmont(highestBidder.max_bid)
+                currentBidder.next_bid_amount = await calculateNextAmont(currentBidder.bid_amount)
+                highestBidder.next_bid_amount = currentBidder.next_bid_amount 
+                console.log('before save highest bidder', highestBidder)
+                console.log('before current user save', currentBidder)
+                const updateHighestBidder = await this.saveOtherBidder(highestBidder, client)
+                const updateCurrentBidder = await this.saveCurrentBidder(currentBidder, client)
+                const getBidders = await this.getBidders(currentBidder.auction_id, currentBidder.buyer_id, highestBidder.buyer_id, client)
+                const updateOtherBidder = await this.changeStatus(getBidders, { bid_status: 'Not Winning', next_bid_amount: currentBidder.next_bid_amount}, client)
+            } else {
+                console.log('nothinggg')
+            }
+        } else {
+            console.log('current', currentBidder)
+            // Only one bidder
+            currentBidder.bid_status = 'Winning'
+            currentBidder.max_bid = currentBidder.bid_amount > currentBidder.starting_bid ? currentBidder.bid_amount : 0
+            currentBidder.bid_amount = currentBidder.bid_amount > currentBidder.starting_bid ? await calculateNextAmont(currentBidder.starting_bid) : currentBidder.bid_amount
+            currentBidder.next_bid_amount = await calculateNextAmont(currentBidder.bid_amount)
+            const saveData = await this.saveCurrentBidder(currentBidder, client)
+        }
+    },
+}
 
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
-        console.log('socket', socket)
+        console.log('socket', data)
         data.socket_id = socket.id
-        const saveBid = await historyHelper.saveBidHistory(data)
         // const client = await redis.createClient({
         //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
         // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         const client = await redis.createClient()
-        const hSetAsync = promisify(client.hSet).bind(client)
         if (!client.isOpen) {
             await client.connect()
         }
-        const allBidders = await getAllRecordsForAuctionId(data, client)
+        const allBidders = await redisHelper.getOtherBidders(data.auction_id, data.buyer_id, client)
+        const saveBidder = await redisHelper.saveBidder(data, client, allBidders)
+        const saveBid = await historyHelper.saveBidHistory(data)
+
+        return
         const checkForAutoBid = await helper.checkAutoBid(data, allBidders, client)
         console.log('checkForAutoBid', checkForAutoBid)
         let message = 'Congratulations, you won the bid!'
@@ -87,7 +194,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         if (allBidders.length > 0) {
             const highestBid = allBidders.reduce((maxBid, bid) => (bid.max_bid > maxBid ? bid.max_bid : maxBid), allBidders[0].max_bid)
             const highestBidder = allBidders.find((bid) => bid.max_bid === highestBid)
-            console.log('highest bidder',highestBidder,  highestBidder.base_price,data.max_bid )
+            console.log('highest bidder', highestBidder, highestBidder.base_price, data.max_bid)
             // await mongodbHelper.updateTopBidder(data, highestBidder)
             if (highestBidder.base_price > data.max_bid) {
                 message = 'You did not win the bid'

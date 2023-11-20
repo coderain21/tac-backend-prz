@@ -37,7 +37,10 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
 	 *    - @param {string} chatReceiverId Receiver of the chat list.
 	 * @return {array} [] Channel emits "getMyChatList" event containing list of chats
 	 */
-    socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
+    socket.on('placeBid', (message, callback) => {
+		console.log('message, ', message)
+		return placeBid(socket, message, io, userData)
+	})
 
     socket.on('joinBidRoom', (bidId) => {
         console.log('inside')
