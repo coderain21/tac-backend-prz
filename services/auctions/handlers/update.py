@@ -18,7 +18,7 @@ def has_kyb_or_kyc_completed(email_address):
     if seller_data is not None:
         kyc_completed = "kyc_status" in seller_data and seller_data["kyc_status"] == "completed"
         kyb_completed = "kyb_status" in seller_data and seller_data["kyb_status"] == "completed"
-        
+
         return kyc_completed or kyb_completed
     else:
         return False
@@ -130,7 +130,7 @@ def update_auction(event, context):
             }
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            if not kyc_kyb_review is True:
+            if kyc_kyb_review is not True:
                 return {
                         "statusCode": 400,
                         'headers': headers,
