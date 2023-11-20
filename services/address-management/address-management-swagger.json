@@ -1,417 +1,490 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "Address-Management APIs",
-      "description": "APIs to manage Address for the Buyers",
-      "version": "1.0.0"
-    },
-    "servers": [
-      {
-        "url": "https://apis.indyauction.net/dev/v1/address-management"
-      }
-    ],
-    "tags": [
-      {
-        "name": "Address Management",
-        "description": "APIs to manage the address"
-      }
-    ],
-    
-    "paths": {
-        "/address":{
-          "get": {
-            "tags": ["address Management"],
-            "summary": "listing the all address",
-            "responses": {
-              "200": {
-                "description": "listing addresses",
-                "content": {
-                    "application/json ": {
-                      "schema": {
-                        "type": "object",
-                        "properties": {
-                          "result": {
-                            "type": "object",
-                            "properties": {
-                              "_id": {
-                                "type": "string"
-                              },
-                              "address_line1": {
-                                "type": "string"
-                              },
-                              "address_line2": {
-                                "type": "string"
-                              },
-                              "state": {
-                                "type": "string"
-                              },
-                              "status": {
-                                "type": "string"
-                              },
-                              "country": {
-                                "type": "string"
-                              },
-                              "postal_code": {
-                                "type": "string"
-                              },
-                              "city": {
-                                "type": "string"
-                              },
-                              "type": {
-                                "type": "string"
-                              },
-                              "email_address": {
-                                "type": "string"
-                              },
-                              "default": {
-                                "type": "boolean"
-                              }
-                            }
-                          }
-                        }
-                      },
-                        "example":{
-                          "result": [
-                            {
-                              "_id": "6554be79645bd9762a7d8b51",
-                              "address_line1": "202",
-                              "address_line2": "gulmohar",
-                              "state": "anda",
-                              "country": "usa",
-                              "postal_code": "000000",
-                              "city": "anti",
-                              "type": "billing",
-                              "email_address": "shrinit.poojary+5645@7edge.com",
-                              "default": false
-                            },
-                            {
-                              "_id": "6554bea2645bd9762a7d8b55",
-                              "address_line1": "404",
-                              "address_line2": "dukes",
-                              "state": "qwert",
-                              "country": "usa",
-                              "postal_code": "000000",
-                              "city": "anti",
-                              "type": "billing",
-                              "email_address": "shrinit.poojary+5645@7edge.com",
-                              "default": true
-                            }
-                          ]
-                        }
-                      }
-                    }
-                },
-              "403": {
-                "description": "Forbidden",
-                "content": {
-                  "application/json ": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "examples": {
-                      "example1": {
-                        "value": {
-                          "message": "You do not have access to perform this API action"
-                        }
-                      }
-                    }
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Address-Management APIs",
+    "description": "APIs to manage Address for the Buyers",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.indyauction.net/dev/v1/address-management"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Address management",
+      "description": "APIs to manage the address"
+    }
+  ],
+
+  "paths": {
+    "/address": {
+      "post": {
+        "tags": ["Address management"],
+        "summary": "add address",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "first_name": {
+                    "type": "string"
+                  },
+                  "last_name": {
+                    "type": "string"
+                  },
+                  "address_line1": {
+                    "type": "string"
+                  },
+                  "address_line2": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "country": {
+                    "type": "string"
+                  },
+                  "postal_code": {
+                    "type": "string"
+                  },
+                  "city": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
                   }
                 }
               },
-              "500": {
-                "description": "Internal Server Error",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "message": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "examples": {
-                      "example1": {
-                        "value": {
-                          "message": "Internal server error"
-                        }
-                      }
+              "example": {
+                "first_name": "",
+                "last_name": "",
+                "address_line1": "410",
+                "address_line2": "dukes",
+                "state": "qwert",
+                "country": "usa",
+                "postal_code": "000000",
+                "city": "anti",
+                "type": "billing",
+                "default": true
+            }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "adding address successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Address added successfully!"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
                     }
                   }
                 }
               }
             }
           },
-            "patch": {
-                "tags": ["address Management"],
-                "summary": "updating the default address",
-                "parameters": [
-                  {
-                    "required": false,
-                    "name": "address_id",
-                    "in": "query",
-                    "description": "Get authentication parameters",
-                    "schema": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
                       "type": "string"
-                    },
-                    "example": ""
+                    }
                   }
-                ],
-                "requestBody": {
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string"
-                            },
-                            "plan":{
-                              "type": "string"
-                          }
-                          }
-                        },
-                        "example":{
-                            "type":"billing"
-                        }
-                      }
-                    }
-                  },
-                "responses": {
-                  "200": {
-                    "description": "address Updated",
-                    "content": {
-                        "application/json ": {
-                          "schema": {
-                            "type": "object",
-                            "properties": {
-                              "message": {
-                                "type": "string"
-                              }
-                            },
-                            "example":{
-                                "message":"address Updated"
-                            }
-                          }
-                  }
-                }
-            },
-                  "403": {
-                    "description": "Forbidden",
-                    "content": {
-                      "application/json ": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "examples": {
-                          "example1": {
-                            "value": {
-                              "message": "You do not have access to perform this API action"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "404": {
-                    "description": "Not Found",
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "examples": {
-                          "example1": {
-                            "value": {
-                              "message": "please provide the required fields"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "500": {
-                    "description": "Internal Server Error",
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "examples": {
-                          "example1": {
-                            "value": {
-                              "message": "Internal server error"
-                            }
-                          }
-                        }
-                      }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while adding the address"
                     }
                   }
                 }
-              },
-            "post": {
-                "tags": ["address Management"],
-                "summary": "add address",
-                "requestBody": {
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "address_line1": {
-                              "type": "string"
-                            },
-                            "address_line2": {
-                              "type": "string"
-                            },
-                            "state": {
-                              "type": "string"
-                            },
-                            "status": {
-                              "type": "string"
-                            },
-                            "country": {
-                              "type": "string"
-                            },
-                            "postal_code": {
-                              "type": "string"
-                            },
-                            "city": {
-                              "type": "string"
-                            },
-                            "type": {
-                              "type": "string"
-                            },
-                            "same":{
-                              "type":"string"
-                            }
-                          }
-                        },
-                        "example":{
-                            "type":"billing"
-                        }
-                      }
-                    }
-                  },
-                "responses": {
-                  "200": {
-                    "description": "adding address successful",
-                    "content": {
-                        "application/json ": {
-                          "schema": {
-                            "type": "object",
-                            "properties": {
-                              "message": {
-                                "type": "string"
-                              }
-                            },
-                            "example":{
-                                "message":"address added"
-                            }
-                          }
-                  }
-                }
-            },
-                  "403": {
-                    "description": "Forbidden",
-                    "content": {
-                      "application/json ": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "examples": {
-                          "example1": {
-                            "value": {
-                              "message": "You do not have access to perform this API action"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "404": {
-                    "description": "Not found",
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "examples": {
-                          "example1": {
-                            "value": {
-                              "message": "address_id not found"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "500": {
-                    "description": "Internal Server Error",
-                    "content": {
-                      "application/json": {
-                        "schema": {
-                          "type": "object",
-                          "properties": {
-                            "message": {
-                              "type": "string"
-                            }
-                          }
-                        },
-                        "examples": {
-                          "example1": {
-                            "value": {
-                              "message": "Internal server error"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-        },
-        "components": {
-            "securitySchemes": {
-              "BearerAuth": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header",
-                "description": "Bearer Token"
               }
             }
           }
-
-
+        }
+      },
+      "get": {
+        "tags": ["Address management"],
+        "summary": "listing the all address",
+        "parameters": [
+          {
+            "required": false,
+            "name": "type",
+            "in": "query",
+            "description": "Type of address to list",
+            "schema": {
+              "type": "string"
+            },
+            "example": "billing"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "listing addresses",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "address_line1": {
+                            "type": "string"
+                          },
+                          "address_line2": {
+                            "type": "string"
+                          },
+                          "first_name": {
+                            "type": "string"
+                          },
+                          "last_name": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "country": {
+                            "type": "string"
+                          },
+                          "postal_code": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "email_address": {
+                            "type": "string"
+                          },
+                          "default": {
+                            "type": "boolean"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "result": [
+                    {
+                        "_id": "65574b01cfaec8f35e3d7a5a",
+                        "first_name": "",
+                        "last_name": "",
+                        "address_line1": "410",
+                        "address_line2": "dukes",
+                        "city": "anti",
+                        "state": "qwert",
+                        "postal_code": "000000",
+                        "country": "usa",
+                        "type": "billing",
+                        "default": false,
+                        "email_address": "sthuthi+test@7edge.com"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "No addresses found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error getting addresses"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Address management"],
+        "summary": "updating the default address",
+        "parameters": [
+          {
+            "required": false,
+            "name": "address_id",
+            "in": "query",
+            "description": "Get authentication parameters",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65574b01cfaec8f35e3d7a5a"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "plan": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "type": "billing"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Address updated"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "please provide the address_id."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json ": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Address with given address_id not found."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while updating the address"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  },
+  "components": {
+    "schemas": {
+      "Address": {
+      "type" : "object",
+      "properties": {
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "address_line1": {
+          "type": "string"
+        },
+        "address_line2": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "postal_code": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}

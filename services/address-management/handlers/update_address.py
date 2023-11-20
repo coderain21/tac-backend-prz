@@ -72,25 +72,32 @@ def update_address(event, context):
             address_id = data['address_id']
         except:
             return {
-                "statusCode": 404,
+                "statusCode": 400,
                 'headers': headers,
                 "body": json.dumps({"message": "please provide the address_id."})
             }
+        address_data = collection.find_one({'_id': ObjectId(address_id)})
+        if address_data is None:
+            return {
+                "statusCode": 404,
+                'headers': headers,
+                "body": json.dumps({"message": "Address with given address_id not found."})
+            }
         type = request_body['type']
-        result = collection.update_one(
+        result = collection.update_many(
             {'email_address': email_address, 'default': True, 'type': type}, {'$set': {'default': False}})
         result = collection.update_one({'_id': ObjectId(address_id)}, {
                                        '$set': {'default': True}})
-        result = collection.find_one(
-            {'email_address': email_address, "type": type})
+
         return {
-            "statusCode": 200,
+            "statusCode": 204,
             'headers': headers,
-            "body": json.dumps({"result": result}, cls=Encoder)
+            "body": json.dumps({})
         }
-    except Exception as e:
+    except Exception as err:
+        print(err)
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": e}, cls=Encoder)
+            "body": json.dumps({"message": "There was an error while updating the address"}, cls=Encoder)
         }
