@@ -134,7 +134,7 @@ module.exports.changeStartingBid = async (data) => {
     }
 }
 
-module.exports.updateTopBidder = async (data, updateInformation) => {
+module.exports.updateTopBidder = async (updateInformation) => {
     try {
         const client = await this.connect()
         const database = client.connection.db // Access the database
@@ -143,10 +143,7 @@ module.exports.updateTopBidder = async (data, updateInformation) => {
             { _id: new ObjectId(data.lot_id) },
             {
                 $set: {
-                    Top_bidder: updateInformation.buyer_id, paddle_number: updateInformation.paddle_number, current_bid: data.max_bid,
-                },
-                $push: {
-                    bidder_socket_id: data.socket_id,
+                    Top_bidder: updateInformation.buyer_id, paddle_number: updateInformation.paddle_number, current_bid: updateInformation.bid_amount,
                 },
             },
         )
