@@ -3,6 +3,7 @@ import os
 import json
 import pymongo
 from datetime import datetime, timezone
+from lib.get import get_by_email
 
 headers = {
     'Content-Type': 'application/json',
@@ -11,6 +12,16 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+def has_kyb_or_kyc_completed(email_address):
+    seller_data = get_by_email(email_address, os.environ["SELLERS_TABLE"])
+    if seller_data is not None:
+        kyc_completed = "kyc_status" in seller_data and seller_data["kyc_status"] == "completed"
+        kyb_completed = "kyb_status" in seller_data and seller_data["kyb_status"] == "completed"
+        
+        return kyc_completed or kyb_completed
+    else:
+        return False
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
 
@@ -118,6 +129,13 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
         if published_status == 'true':
+            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
+            if not kyc_kyb_review is True:
+                return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
+                    }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             const_date = datetime(1970, 1, 1, 0, 0)
