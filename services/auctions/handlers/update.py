@@ -12,6 +12,38 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+def has_images_for_auction_and_seller(auction_id, seller_email):
+    # Assuming you have a MongoDB connection
+    client = pymongo.MongoClient('mongodb://develop:develop!7edge@indy-auction.cimvoiv4bc2g.eu-west-2.docdb.amazonaws.com:27017/indyauction-develop?authMechanism=DEFAULT&authSource=indyauction-develop&retryWrites=false')
+    db = client["indyauction-develop"]
+    collection = db["dev-lots"]
+
+    # Aggregation pipeline to check for non-empty images array
+    pipeline = [
+        {
+            "$match": {
+                "auction_id": auction_id,
+                "seller_email": seller_email
+            }
+        },
+        {
+            "$redact": {
+                "$cond": {
+                    "if": {"$eq": [{"$size": "$images"}, 0]},
+                    "then": "$$PRUNE",
+                    "else": "$$KEEP"
+                }
+            }
+        },
+        {
+            "$limit": 1
+        }
+    ]
+
+    # Execute the aggregation pipeline
+    result = list(collection.aggregate(pipeline))
+
+    return bool(result)  # True if at least one lot has non-empty images array
 
 def convert_timestamp_to_date(timestamp):
     # Convert the timestamp to seconds
