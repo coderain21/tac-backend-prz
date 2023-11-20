@@ -38,4 +38,10 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
 	 * @return {array} [] Channel emits "getMyChatList" event containing list of chats
 	 */
     socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
+
+    socket.on('joinBidRoom', (bidId) => {
+        console.log('inside')
+        // Join a specific bid room
+        socket.join(bidId)
+    })
 }
