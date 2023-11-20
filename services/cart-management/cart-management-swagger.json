@@ -1,0 +1,106 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Address-Management APIs",
+      "description": "APIs to manage Address for the Buyers",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/address-management"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Address Management",
+        "description": "APIs to manage the address"
+      }
+    ],
+    
+    "paths": {
+        "/cart":{
+          "get": {
+            "tags": ["cart Management"],
+            "summary": "listing the all lots in the cart",
+            "responses": {
+              "200": {
+                "description": "listing successful",
+                "content": {
+                    "application/json ": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "result": {
+                            "type": "object",
+                            "properties": {
+                              
+                            }
+                          }
+                        }
+                      },
+                        "example":{
+                        }
+                      }
+                    }
+                },
+              "403": {
+                "description": "Forbidden",
+                "content": {
+                  "application/json ": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "You do not have access to perform this API action"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal Server Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "Internal server error"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+            }
+        },
+        "components": {
+            "securitySchemes": {
+              "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "Bearer Token"
+              }
+            }
+          }
+
+
+    }

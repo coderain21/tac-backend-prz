@@ -40,7 +40,10 @@ def view(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['CART_COLLECTION']]
-        cart_details= collection.find({'email_address':email_address, 'auction_id':auction_id, })
+        request_body = json.loads(event['body'])
+        request_body['email_address']= email_address
+        request_body['auction_id']= auction_id
+        cart_details= collection.insert_one({request_body })
         if cart_details is None:
             return {
                 "statusCode": 404,
