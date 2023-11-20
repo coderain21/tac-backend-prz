@@ -13,10 +13,10 @@ headers = {
 }
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
-    # Assuming you have a MongoDB connection
-    client = pymongo.MongoClient('mongodb://develop:develop!7edge@indy-auction.cimvoiv4bc2g.eu-west-2.docdb.amazonaws.com:27017/indyauction-develop?authMechanism=DEFAULT&authSource=indyauction-develop&retryWrites=false')
-    db = client["indyauction-develop"]
-    collection = db["dev-lots"]
+
+    client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+    db = client[os.environ['DATABASE']]
+    collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 
     # Aggregation pipeline to check for non-empty images array
     pipeline = [
@@ -41,7 +41,7 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     ]
 
     # Execute the aggregation pipeline
-    result = list(collection.aggregate(pipeline))
+    result = list(collection_lot.aggregate(pipeline))
 
     return bool(result)  # True if at least one lot has non-empty images array
 
@@ -135,6 +135,7 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty"})
                 }
+
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
@@ -152,6 +153,16 @@ def update_auction(event, context):
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            result = has_images_for_auction_and_seller(auction_id, seller_email)
+            if result:
+                print("All lots have images.")
+            else:
+                print("At least one lot has an empty array of images.")
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
             if total_lots < 1:
                 return {
