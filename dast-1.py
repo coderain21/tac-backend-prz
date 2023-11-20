@@ -24,12 +24,15 @@ print(last_commit_sha, 'last commit')
 # Get the parent commit SHAs of the last commit
 parent_commit_shas = [parent.hexsha for parent in repo.commit(last_commit_sha).parents]
 print("Parent commit SHAs:", parent_commit_shas)
+aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
+region = os.environ['AWS_REGION']
 
 # Initialize a boto3 session with your AWS credentials
 session = boto3.Session(
-    aws_access_key_id = 'AKIA5QZYLFWFE6TXB756', #os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = '+A+0r0+n8qBJyb6cU1cvZZmtEaSJJbxeKfI314B8',#os.environ.get('AWS_SECRET_ACCESS_KEY')
-    region_name = 'eu-west-2'
+    aws_access_key_id = aws_access_key_id, #os.environ.get('AWS_ACCESS_KEY_ID')
+    aws_secret_access_key = aws_secret_access_key,#os.environ.get('AWS_SECRET_ACCESS_KEY')
+    region_name = region
 )
 
 # Initialize the Cognito client
@@ -71,16 +74,16 @@ async def generate_cognito_token(user_type):
     try:
         
         if user_type == 'USER':
-            user_pool_id = 'eu-west-2_kqcLIvA4D'#os.environ['COGNITO_USER_POOL_ID']
-            client_id = '3duudq593a3j7jpp7afv1vbmuc'#os.environ['COGNITO_SELLER_CLIENT_ID']
-            username = 'anusha.k+indyauction@7edge.com'#os.environ['API_USERNAME']
-            password = 'Seller@123'
+            user_pool_id = os.environ['COGNITO_USER_POOL_ID']
+            client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
+            username = 'anusha.k+indyauction@7edge.com'
+            password = os.environ['PASSWORD']
 
         if user_type == 'BUYERS':
-            user_pool_id='eu-west-2_72rz6biiL'
-            client_id='2r05ed12tabft8ueojtaf6hgp4'
-            username='sthuthi+test@7edge.com'
-            password='Sthu127'
+            user_pool_id = os.environ['BUYER_COGNITO_USER_POOL_ID']
+            client_id = os.environ['BUYER_COGNITO_SELLER_CLIENT_ID']
+            username = os.environ['BUYER_API_USERNAME']
+            password = os.environ['BUYER_PASSWORD']
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
