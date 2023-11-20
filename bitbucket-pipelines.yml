@@ -238,6 +238,7 @@ pipelines:
             deployment: develop
             steps:
               - step: *DevDeploy
+              - step: *DAST
       - step: *APITesting
 
       
