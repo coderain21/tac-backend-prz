@@ -62,10 +62,3 @@ def view(event, context):
             "statusCode": 500,
             "body": json.dumps({"message": "There was an error "})
         }
-    
-
-
-
-
-
-    { "_id": { "$oid": "65408b0df6e44ea2431c62f0" }, "auction_id": "A0076", "seller_email": "sthuthi@7edge.com", "title1": "Beach", "title2": "Beach picture", "description": "<p>This is a beach picture.</p><p>i want to paint it hhjgh</p><p>jhvjvjv</p><p>jbkhbh jfhhg fjghgh</p><p>bhgjhg hgj</p><p>hello</p>", "starting_price": 127, "low_estimate": 0, "high_estimate": 0, "shipping_details": "", "current_bid": 0, "tags": [ "vbvh" ], "images": [ { "url": "DomainName/Auctions/lots/images/f37d71b5-3179-481b-3c64-f1a71d1072a8/james-dimas-1xvtRcLbLeM-unsplash.jpg", "featured": true } ], "lot_number": 1 }

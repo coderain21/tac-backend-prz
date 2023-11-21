@@ -7,7 +7,7 @@
     },
     "servers": [
       {
-        "url": "https://apis.indyauction.net/dev/v1/address-management"
+        "url": "https://apis.indyauction.net/dev/v1/cart-management"
       }
     ],
     "tags": [
@@ -33,14 +33,48 @@
                           "result": {
                             "type": "object",
                             "properties": {
-                              
+                              "data": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "_id":{
+                                      "type":"string"
+                                    },
+                                    "seller_email":{
+                                      "type": "string"
+                                    },
+                                    "lot_number":{
+                                      "type": "integer"
+                                    },
+                                    "email_address":{
+                                      "type":"string"
+                                    },
+                                    "name":{
+                                      "type": "string"
+                                    },
+                                    "auction_id": {
+                                      "type": "string"
+                                    },
+                                    "price": {
+                                      "type": "integer"
+                                    },
+                                    
+                                    "add_buyer_fees": {
+                                      "type": "string"
+                                    },
+                                    "fees": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         }
                       },
                         "example":{
-                        }
-                      }
+                         
                     }
                 },
               "403": {

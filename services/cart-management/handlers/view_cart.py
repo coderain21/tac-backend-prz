@@ -2,6 +2,8 @@ import json
 import os
 from pymongo import MongoClient
 from lib.common_helper import Encoder
+from bson import ObjectId
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -29,18 +31,12 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        data = event['queryStringParameters']
-        if data is None or "auction_id" not in data:
-            return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({"message": "Please provide auction_id"})
-            }
-        auction_id=data['auction_id']
+        
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['CART_COLLECTION']]
-        cart_details= collection.find({'email_address':email_address, 'auction_id':auction_id, })
+        cart_details= collection.find({'email_address':email_address})
+        print(3333,cart_details)
         if cart_details is None:
             return {
                 "statusCode": 404,
@@ -50,7 +46,7 @@ def view(event, context):
         return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({"data":cart_details})
+                "body": json.dumps({"data":list(cart_details)})
             }
     except Exception as err:
         print(err)
