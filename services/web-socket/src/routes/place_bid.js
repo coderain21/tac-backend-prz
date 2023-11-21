@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-operators */
 /* eslint-disable consistent-return */
 /* eslint-disable no-self-assign */
 /* eslint-disable no-console */
@@ -48,28 +49,54 @@ const bidInformationSchema = new mongoose.Schema({
 const BidInformation = mongoose.model('dev-bid-information', bidInformationSchema)
 
 async function calculateNextAmont(currentBid) {
-    console.log('next amony', currentBid)
     const firstDigit = parseInt(currentBid.toString()[0], 10)
     let nextBid
 
     if (firstDigit === 1) {
-        nextBid = currentBid + 10
+        nextBid = parseInt(currentBid, 10) + 10
     } else if (firstDigit === 2) {
-        nextBid = currentBid + 20
+        nextBid = parseInt(currentBid, 10) + 20
     } else if (firstDigit === 3 || firstDigit === 4) {
-        const lastDigit = parseInt(currentBid.toString().slice(-1), 10)
-        const pattern = [0, 2, 5, 8]
-        const nextDigit = pattern[(pattern.indexOf(lastDigit) + 1) % pattern.length]
-        nextBid = currentBid + (nextDigit - lastDigit)
+        let increment
+        let lastDigit
+        if (currentBid.length === 1) {
+            lastDigit = parseInt(currentBid.toString().slice(-1), 10)
+        } else {
+            lastDigit = parseInt(currentBid.toString()[1], 10)
+        }
+        if (lastDigit < 2) {
+            increment = 2
+        } else if (lastDigit < 5) {
+            increment = 5
+        } else if (lastDigit < 8) {
+            increment = 8
+        } else {
+            increment = 10
+        }
+        if (increment <= 8) {
+            const multiplier = 10 ** (currentBid.length - 2) // return remainingBid * multiplier;
+            nextBid = currentBid.toString()[0] + (increment * multiplier).toString()
+        } else if (currentBid[1] === '5') {
+            const roundedBid = 10 ** (currentBid.length - 1)
+            nextBid = Math.ceil(parseInt(currentBid, 10) / roundedBid) * roundedBid
+        } else {
+            const number = parseInt(currentBid, 10)
+            let roundedValue = Math.ceil(number / 500) * 500
+    
+            while (roundedValue % 10000 !== 5000) {
+                roundedValue += 500
+            }
+                
+            nextBid = roundedValue
+        }
     } else if (firstDigit >= 5 && firstDigit <= 9) {
-        nextBid = currentBid + 5
+        const increment = 5 - (parseInt(currentBid, 10) % 10) % 5
+        nextBid = parseInt(currentBid, 10) + increment
     } else {
-        nextBid = currentBid + 1
+        nextBid = parseInt(currentBid, 10) + 1
     }
-
-    return nextBid
+    return parseInt(nextBid, 10)
 }
-
 const mongodbHelper = {
     async saveToMongoDB(bidderInfo) {
         await BidInformation.findOneAndUpdate(
@@ -155,8 +182,9 @@ const redisHelper = {
             let highestBidder = allBidder.find((bid) => bid.max_bid === highestBid)
             highestBidder = JSON.parse(highestBidder)
             const currentBidderData = await this.getCurrentBidder(currentBidder, client)
+            console.log('currentBidderData', currentBidderData)
             let maxBid
-            if (currentBidderData && currentBidderData.max_bid !== undefined && currentBidder.max_bid > currentBidder.bid_amount) {
+            if (currentBidderData && currentBidderData.max_bid !== undefined && currentBidderData.max_bid > currentBidder.bid_amount) {
                 maxBid = currentBidder.max_bid
             } else {
                 maxBid = currentBidder.bid_amount
@@ -165,7 +193,7 @@ const redisHelper = {
                 highestBidder.max_bid = highestBidder.max_bid
                 highestBidder.bid_status = 'Winning'
                 highestBidder.bid_amount = highestBidder.max_bid > currentBidder.bid_amount ? await calculateNextAmont(currentBidder.bid_amount) : await calculateNextAmont(currentBidder.max_bid)
-                highestBidder.next_bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+                highestBidder.next_bid_amount = highestBidder.bid_amount
                 console.log('before save highest bidder', highestBidder)
                 const updateHighestBidder = await this.saveOtherBidder(highestBidder, client)
                 await mongodbHelper.updateOtherBidder(highestBidder)
@@ -187,7 +215,7 @@ const redisHelper = {
                 currentBidder.bid_status = 'Winning'
                 currentBidder.max_bid = currentBidder.bid_amount
                 currentBidder.bid_amount = await calculateNextAmont(highestBidder.max_bid)
-                currentBidder.next_bid_amount = await calculateNextAmont(currentBidder.bid_amount)
+                currentBidder.next_bid_amount = currentBidder.bid_amount
                 highestBidder.next_bid_amount = currentBidder.next_bid_amount 
                 console.log('before save highest bidder', highestBidder)
                 console.log('before current user save', currentBidder)
@@ -207,7 +235,7 @@ const redisHelper = {
             currentBidder.bid_status = 'Winning'
             currentBidder.max_bid = currentBidder.bid_amount > currentBidder.starting_bid ? currentBidder.bid_amount : currentBidder.bid_amount
             currentBidder.bid_amount = currentBidder.bid_amount > currentBidder.starting_bid ? await calculateNextAmont(currentBidder.starting_bid) : currentBidder.bid_amount
-            currentBidder.next_bid_amount = await calculateNextAmont(currentBidder.bid_amount)
+            currentBidder.next_bid_amount = currentBidder.bid_amount
             const saveData = await this.saveCurrentBidder(currentBidder, client)
             const saveMongoDB = await mongodbHelper.saveToMongoDB(currentBidder)
             return currentBidder
@@ -218,11 +246,13 @@ const redisHelper = {
 
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
+        const connectionData = await mongodbHelpers.connect()
         data.socket_id = socket.id
-        // const client = await redis.createClient({
-        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        const client = await redis.createClient()
+        const currentDate = new Date()
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // const client = await redis.createClient()
         if (!client.isOpen) {
             await client.connect()
         }
@@ -230,11 +260,17 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const saveBidder = await redisHelper.saveBidder(data, client, allBidders)
         console.log('saving ouput', saveBidder)
         const saveBid = await historyHelper.saveBidHistory(data)
+        const checkAuctionEnd = await mongodbHelpers.getAuction(data)
+        console.log('checkAuctionEnd', checkAuctionEnd)
         const message = saveBidder
+        // if (currentDate.getTime() === checkAuctionEnd.end_date.getTime()) {
+        //     message = 'Congratulations you Won the Bid'
+        // }
         // const updateTopBidder = await mongodbHelpers.updateTopBidder(saveBidder)
         io.to(data.lot_id).emit('placeBid', {
             success: true, message,
         })
+        await connectionData.disconnect()
     } catch (err) {
         console.error(err)
     }
