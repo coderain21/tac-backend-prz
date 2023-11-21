@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-      "title": "Address-Management APIs",
-      "description": "APIs to manage Address for the Buyers",
+      "title": "Cart-Management APIs",
+      "description": "APIs to manage the buyer cart",
       "version": "1.0.0"
     },
     "servers": [
@@ -12,8 +12,8 @@
     ],
     "tags": [
       {
-        "name": "Address Management",
-        "description": "APIs to manage the address"
+        "name": "Cart Management",
+        "description": "APIs to manage the Buyer Cart"
       }
     ],
     
@@ -76,7 +76,9 @@
                         "example":{
                          
                     }
-                },
+                }
+              }
+            },
               "403": {
                 "description": "Forbidden",
                 "content": {
