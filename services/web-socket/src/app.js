@@ -3,6 +3,7 @@
 /* eslint-disable no-tabs */
 const { checkAuthentication } = require('./routes/check-authentication')
 const { placeBid } = require('./routes/place_bid')
+const { listBidHistory } = require('./routes/bid_history')
 // const { listMessages } = require('./routes/list_messages')
 // const config = require('./config/beta')
 
@@ -38,6 +39,7 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
 	 * @return {array} [] Channel emits "getMyChatList" event containing list of chats
 	 */
     socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
+	socket.on('BidHistory', (message, callback) => listBidHistory(socket, message, io, userData))
 
     socket.on('joinBidRoom', (bidId) => {
         console.log('inside')

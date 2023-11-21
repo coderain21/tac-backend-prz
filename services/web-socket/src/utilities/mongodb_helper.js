@@ -134,6 +134,21 @@ module.exports.changeStartingBid = async (data) => {
     }
 }
 
+module.exports.updateSignleLot = async (document) => {
+    const client = await this.connect()
+    const database = client.connection.db // Access the database
+    const collection = database.collection('dev-lots') //
+    const updateResult = await collection.updateOne(
+        { _id: new ObjectId(document.lot_id) },
+        {
+            $set: {
+                is_extended: true, extension_time: document.extension_time, start_date: document.start_date, end_date: document.end_date,
+            },
+        },
+    )
+    client.disconnect()
+    return updateResult
+}
 module.exports.updateTopBidder = async (updateInformation) => {
     try {
         const client = await this.connect()
