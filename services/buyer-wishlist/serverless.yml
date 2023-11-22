@@ -18,6 +18,7 @@ provider:
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     LOTS_TABLE_NAME: ${opt:stage, self:provider.stage}-lots
+    BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
     REGION: ${env:REGION}
@@ -109,8 +110,10 @@ functions:
 
   create:
     handler: handlers/add-to-wishlist.create
+    runtime: python3.8
+    memorySize: 128
     layers:
-      - ${env:COMMON_LIB_ARN}
+        - ${env:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - sg-0882c1da39e729097
@@ -131,8 +134,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /
           method: post
-          authorizer:
-            arn: ${env:BUYER_COGNITO_AUTH_ARN}
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
   list:
     handler: handlers/list-wishlist.list
     layers:
@@ -157,8 +160,25 @@ functions:
               - Access-Control-Allow-Headers
           path: /
           method: get
-          authorizer:
-            arn: ${env:BUYER_COGNITO_AUTH_ARN}
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  
+  
+  # remove-wishlist:
+  #     handler: handlers/remove-wishlist.remove_wishlist
+  #     runtime: python3.8
+  #     layers:
+  #       - ${env:PYTHON_LIB_ARN}
+  #     vpc:
+  #       securityGroupIds:
+  #         - sg-0882c1da39e729097
+  #       subnetIds:
+  #         - subnet-0ff05c7c2bd2a3f87
+  #     events:
+  #       - http:
+  #           cors: true
+  #           path: /
+  #           method: delete
+  #           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:
