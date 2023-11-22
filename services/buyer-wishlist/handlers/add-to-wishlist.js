@@ -1,8 +1,5 @@
-/* eslint-disable no-undef */
-/* eslint-disable camelcase */
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable import/no-unresolved */
 /* eslint-disable import/extensions */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable no-console */
 const Joi = require('joi')
 const helpers = require('../lib/helper')
@@ -21,10 +18,20 @@ const schema = Joi.object().keys({
         'any.required': 'Seller email is a required field',
     }),
 })
-
+/**
+ * Create a buyer wishlist entry based on received data.
+ *
+ * This function handles the creation of a buyer wishlist entry. It parses incoming data,
+ * validates it against a schema, and saves the wishlist entry to the database.
+ * The entry includes buyer-specific details retrieved from the authorization context.
+ *
+ * @param {Object} event - The AWS Lambda event object containing wishlist data.
+ * @returns {Object} - An HTTP response object indicating success or failure of the operation.
+ */
 module.exports.create = async (event) => {
     try {
         const buyerWishlistData = JSON.parse(event.body)
+        console.log('in')
         const validationResult = schema.validate(buyerWishlistData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please fill in all the mandatory fields' : validationResult.error.message
@@ -49,10 +56,6 @@ module.exports.create = async (event) => {
                 body: JSON.stringify({ message: 'There was an error while adding the lot to wishlist' }),
             }
         }
-        // else {
-
-        //     LOTS_TABLE_NAME
-        // }
         await connection.disconnect()
         return {
             statusCode: 201,

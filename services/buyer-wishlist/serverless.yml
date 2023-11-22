@@ -118,11 +118,47 @@ functions:
         - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
           path: /
           method: post
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+            arn: ${env:BUYER_COGNITO_AUTH_ARN}
+  list:
+    handler: handlers/list-wishlist.list
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /
+          method: get
+          authorizer:
+            arn: ${env:BUYER_COGNITO_AUTH_ARN}
 
 resources:
    Resources:
