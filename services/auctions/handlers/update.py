@@ -3,6 +3,7 @@ import os
 import json
 import pymongo
 from datetime import datetime, timezone
+from lib.get import get_by_email
 
 headers = {
     'Content-Type': 'application/json',
@@ -12,6 +13,48 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+def has_kyb_or_kyc_completed(email_address):
+    seller_data = get_by_email(email_address, os.environ["SELLERS_TABLE"])
+    if seller_data is not None:
+        kyc_completed = "kyc_status" in seller_data and seller_data["kyc_status"] == "completed"
+        kyb_completed = "kyb_status" in seller_data and seller_data["kyb_status"] == "completed"
+
+        return kyc_completed or kyb_completed
+    else:
+        return False
+
+def has_images_for_auction_and_seller(auction_id, seller_email):
+
+    client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+    db = client[os.environ['DATABASE']]
+    collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+
+    # Aggregation pipeline to check for non-empty images array
+    pipeline = [
+        {
+            "$match": {
+                "auction_id": auction_id,
+                "seller_email": seller_email
+            }
+        },
+        {
+            "$redact": {
+                "$cond": {
+                    "if": {"$eq": [{"$size": "$images"}, 0]},
+                    "then": "$$PRUNE",
+                    "else": "$$KEEP"
+                }
+            }
+        },
+        {
+            "$limit": 1
+        }
+    ]
+
+    # Execute the aggregation pipeline
+    result = list(collection_lot.aggregate(pipeline))
+
+    return bool(result)  # True if at least one lot has non-empty images array
 
 def convert_timestamp_to_date(timestamp):
     # Convert the timestamp to seconds
@@ -86,6 +129,13 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
         if published_status == 'true':
+            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
+            if kyc_kyb_review is not True:
+                return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
+                    }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             const_date = datetime(1970, 1, 1, 0, 0)
@@ -103,6 +153,7 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty"})
                 }
+
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
@@ -120,6 +171,16 @@ def update_auction(event, context):
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
+                }
+            result = has_images_for_auction_and_seller(auction_id, seller_email)
+            if result:
+                print("All lots have images.")
+            else:
+                print("At least one lot has an empty array of images.")
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
             if total_lots < 1:
                 return {

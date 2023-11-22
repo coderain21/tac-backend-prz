@@ -158,6 +158,7 @@
       "get": {
         "tags": [
           "Auction"
+          
         ],
         "summary": "Listing auction",
         "description": "Listing auction",
@@ -1715,6 +1716,47 @@
         "responses": {
           "204": {
             "description": "Update successful"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "required and cannot be empty."
+                      
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                        "message": "required fields are missing or empty"
+                      
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                        "message": "Some lots are missing lot images"
+                      
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                        "message": "Please complete the Individual or Business verification before publishing the auction."
+                      
+                    }
+                  }       
+                }
+              }
+            }
           },
           "403": {
             "description": "forbidden",

@@ -12,10 +12,13 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+
 def update_address(event, context):
     """
     The `update_address` function updates the default address for a user in a MongoDB collection based
     on the provided address ID and user email.
+    
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, body, and
     other relevant data
@@ -28,14 +31,15 @@ def update_address(event, context):
     """
     try:
         try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            cognito_data = json.loads(
+                event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         except:
             return {
                 "statusCode": 403,
@@ -45,29 +49,39 @@ def update_address(event, context):
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db['dev-address-management']
+        collection = db[os.environ['ADDRESS_COLLECTION']]
         request_body = json.loads(event['body'])
         data = event['queryStringParameters']
         try:
-            address_id=data['address_id']
+            address_id = data['address_id']
         except:
             return {
-                "statusCode": 404,
+                "statusCode": 400,
                 'headers': headers,
                 "body": json.dumps({"message": "please provide the address_id."})
             }
-        type= request_body['type']
-        result = collection.update_one({'email_address':email_address,'default':True,'type':type},{'$set':{'default':False}})
-        result = collection.update_one({'_id':ObjectId(address_id)},{'$set':{'default':True}})
-        result = collection.find_one({'email_address':email_address,"type":type})
+        address_data = collection.find_one({'_id': ObjectId(address_id)})
+        if address_data is None:
+            return {
+                "statusCode": 404,
+                'headers': headers,
+                "body": json.dumps({"message": "Address with given address_id not found."})
+            }
+        type = request_body['type']
+        result = collection.update_many(
+            {'email_address': email_address, 'default': True, 'type': type}, {'$set': {'default': False}})
+        result = collection.update_one({'_id': ObjectId(address_id)}, {
+                                       '$set': {'default': True}})
+
         return {
-                    "statusCode": 200,
-                    'headers': headers,
-                    "body": json.dumps({"result":result},cls=Encoder)
-                }
-    except Exception as e:
+            "statusCode": 204,
+            'headers': headers,
+            "body": json.dumps({})
+        }
+    except Exception as err:
+        print(err)
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": e}, cls=Encoder)
-            }
+            "body": json.dumps({"message": "There was an error while updating the address"}, cls=Encoder)
+        }
