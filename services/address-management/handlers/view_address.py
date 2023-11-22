@@ -58,9 +58,8 @@ def view_address(event, context):
         address_collection = db[os.environ['ADDRESS_COLLECTION']]
         print(event["queryStringParameters"])
         request_body = event["queryStringParameters"]
-
         type= request_body['type']
-        result = address_collection.find({'email_address':email_address,'type':type})
+        result = address_collection.find({'email_address':email_address,'type':type}).sort('created_at',-1)
         if result is None:
             return {
                     "statusCode": 404,

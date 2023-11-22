@@ -463,7 +463,7 @@ resources:
         HtmlPart: ${file(./template/paddle.html)}
         Subject: "{{subject}}"
         TemplateDescription: Test
-        TemplateName: paddle_${opt:stage, 'dev'}
+        TemplateName: ${opt:stage, 'dev'}_paddle
         TextPart: ${file(./template/paddle.html)}
 
 plugins:

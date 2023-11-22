@@ -17,6 +17,7 @@ import json
 from pymongo import MongoClient
 import os
 from lib.common_helper import Encoder
+import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -75,6 +76,7 @@ def add_shipping_address(event, context):
         insert_data["country"] = request_body.get('country',"")
         insert_data["type"] = request_body.get('type',"shipping")
         insert_data["default"] = request_body.get('default',"False")
+        insert_data["created_at"]= datetime.datetime.utcnow()
 
         insert_data["email_address"] = email_address
 
