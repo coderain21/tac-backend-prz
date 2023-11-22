@@ -119,8 +119,8 @@ def update_password(event, context):
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         seller_email = auction_collection.find_one({"_id": ObjectId(auction_id)},
                                                 {'seller_email': 1}).get('seller_email')
-        userpool_id = user_pools_collection.find_one(
-            {"sub_domain_name": domain, "email_address": seller_email}, {"user_pool_id": 1})
+
+        userpool_id = os.environ["DEFAULT_USERPOOL_ID"]
         buyer = buyer_collection.find_one(
             {'seller_email': seller_email, 'email_address': email_address})
         password = buyer['password']
@@ -131,7 +131,7 @@ def update_password(event, context):
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({
-                "message": "Current password is incorrect. The password update cannot be completed"
+                "message": " Current password is incorrect. The password update cannot be completed "
                })
             }
         update_password = new_password
@@ -151,7 +151,8 @@ def update_password(event, context):
             }
         print(4)
         userdata= {'email_address':email_address, 'password': update_password}
-        success_status = admin_set_password(userdata, userpool_id["user_pool_id"])
+        print(5)
+        success_status = admin_set_password(userdata, userpool_id)
         print(212,success_status)
         if success_status['success_status'] is not True:
             return {
@@ -173,3 +174,4 @@ def update_password(event, context):
             'headers': headers,
             "body": json.dumps({"message": "Internal server error"})
         }
+        

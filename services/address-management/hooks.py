@@ -17,30 +17,21 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '500' or
         transaction['expected']['statusCode'] == '404' or
         transaction['expected']['statusCode'] == '403' or
-        transaction['expected']['statusCode'] == '400' or
-        '/verify-captcha' in transaction['request']['uri'] or
-        '/otp-validation' in transaction['request']['uri'] or
-        '/www-dev' in transaction['request']['uri'] or 
-        '/auction-register' in transaction['request']['uri'] or 
-        '/update-password' in transaction['request']['uri'] or 
-        '/reset_password' in transaction['request']['uri'] or
-        '/verify-card' in transaction['request']['uri']
+        transaction['expected']['statusCode'] == '400'
     ):
         transaction['skip'] = True
 
 
 @before_each
 def set_authorization(transaction):
-    token_buyers = str(os.environ.get('BUYERS'))
-    token_seller = str(os.environ.get('USER'))
+    token = str(os.environ.get('BUYERS'))
     print('s', transaction['expected']['statusCode'] == '400')
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])
 
-    if transaction['expected']['statusCode'] != '401' and '/approval' in transaction['request']['uri']:
-        transaction['request']['headers']['Authorization'] = f'Bearer {token_seller}'
-    else:
-        transaction['request']['headers']['Authorization'] = f'Bearer {token_buyers}'
+    if transaction['expected']['statusCode'] != '401':
+        transaction['request']['headers']['Authorization'] = f'Bearer {token}'
+
 
     # if transaction['expected']['statusCode'] == '400':
     #     transaction['request']['body'] = json.dumps({

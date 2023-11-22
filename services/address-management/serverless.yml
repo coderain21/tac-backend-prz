@@ -1,4 +1,4 @@
-service: bids
+service: address-management
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -45,11 +45,15 @@ provider:
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}    
+    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    CDN_LINK: ${env:CDN_LINK}
+    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
+    ADDRESS_COLLECTION: ${env:ADDRESS_COLLECTION}
     
   http:
     cors: true
@@ -98,42 +102,85 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
-functions: 
-  list:
-    handler: handlers/list.list_bidders
+functions:   
+  add_shipping_address:
+    handler: handlers/add_shipping_address.add_shipping_address
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+      - sg-0882c1da39e729097
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+      - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
-          path: /
-          method: get
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
-  
-  add-to-group:
-    handler: handlers/update.update_user
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /address
+          method: post
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  view_address:
+    handler: handlers/view_address.view_address
     runtime: python3.8
-    layers: 
-      - ${env:COMMON_PYTHON_LIB_ARN}
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
-          path: /update
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /address
+          method: get
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  update_address:
+    handler: handlers/update_address.update_address
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /address
           method: patch
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
-
 
 resources:
    Resources:
@@ -146,7 +193,6 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
-
 
 plugins:
   - serverless-offline

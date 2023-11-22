@@ -16,6 +16,7 @@
       "description": "APIs to manage the auctions"
     }
   ],
+  
   "paths": {
     "/view": {
       "get": {
@@ -42,6 +43,7 @@
             "example": 1234
           }
         ],
+        
         "responses": {
           "200": {
             "description": "Successfully retrieved auction details",
@@ -939,7 +941,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "6540c0beca765df3f80d2275"
+            "example": "655740aa211a354b8d3853b5"
           },
           {
             "required": true,
@@ -2095,7 +2097,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65363ffe6ecaedfb6ffef6eb"
+            "example": "655740aa211a354b8d3853b5"
           }
         ],
         "responses": {
@@ -2118,7 +2120,7 @@
                 },
                 "example": {
                   "data": {
-                    "paddle": "22"
+                    "paddle": "1"
                   }
                 }
               }
@@ -2160,6 +2162,125 @@
                   "example1": {
                     "value": {
                       "example": "paddle not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/verify-card": {
+      "post": {
+        "tags": ["Buyers Management"],
+        "summary": "verify credit card ",
+        "description": "verify credit card",
+        "parameters": [
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65363ffe6ecaedfb6ffef6eb"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "token": ""
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "verification successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "setup_intent_id":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "message": "Card verification initiated successfully",
+                    "setup_intent_id":""
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "Card verification failed"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "forbidden"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "buyer not found"
                     }
                   }
                 }

@@ -106,3 +106,29 @@ def fetch_buyer_data(seller_email,buyer_email):
         client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
+
+def fetch_seller_data_from_subdomain(auction_id):
+    """
+    Fetch the seller's email from the auction collection in MongoDB.
+
+    Args:
+        auction_id (str): The unique identifier of the auction.
+
+    Returns:
+        str: The seller's email associated with the given auction_id or None if not found.
+    """
+    try:
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
+        seller_data = fetch_seller_data_from_auction(auction_id)
+        email_address = seller_data.get("seller_email","")
+        data = auction_collection.find_one({"seller_email": email_address})
+        client.close()
+        if data:
+            return data
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
