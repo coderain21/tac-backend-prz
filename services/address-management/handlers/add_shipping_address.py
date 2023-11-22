@@ -17,7 +17,7 @@ import json
 from pymongo import MongoClient
 import os
 from lib.common_helper import Encoder
-from bson import ObjectId
+import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -65,6 +65,7 @@ def add_shipping_address(event, context):
         address_collection = db[os.environ['ADDRESS_COLLECTION']]
         request_body = json.loads(event['body'])
         insert_data = {}
+
         insert_data["first_name"] = request_body.get('first_name',"")
         insert_data["last_name"] = request_body.get('last_name',"")
         insert_data["address_line1"] = request_body.get('address_line1',"")
@@ -76,7 +77,9 @@ def add_shipping_address(event, context):
         insert_data["type"] = request_body.get('type',"shipping")
         insert_data["default"] = request_body.get('default',"False")
         insert_data["created_at"]= datetime.datetime.utcnow()
+
         insert_data["email_address"] = email_address
+
         if insert_data["default"] == True:
             result = address_collection.update_many(
             {'email_address': email_address, 'default': True, 'type': insert_data["type"]}, {'$set': {'default': False}})
