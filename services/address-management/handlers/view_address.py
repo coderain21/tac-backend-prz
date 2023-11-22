@@ -1,3 +1,19 @@
+"""
+Module: address_management_api
+
+AWS Lambda function `view_address` retrieves user addresses from a MongoDB collection based on the provided
+type (shipping or billing). Handles HTTP requests, validates permissions via Amazon Cognito, and returns a
+JSON response with the user's address information.
+
+Dependencies:
+- json: Parsing JSON data.
+- pymongo: MongoDB driver.
+- os: Accessing environment variables.
+- lib.common_helper.Encoder: Custom JSON encoder.
+
+Response Structure:
+- JSON response with status code, headers, and a body containing the user's address information.
+"""
 import json
 from pymongo import MongoClient
 import os
@@ -12,7 +28,7 @@ headers = {
 def view_address(event, context):
     """
     The function "view_address" is used to handle an event and context in Python.
-    
+
     :param event: The `event` parameter is an object that contains information about the event that
     triggered the function. This can include details such as the event type, event source, and any data
     associated with the event
@@ -39,18 +55,28 @@ def view_address(event, context):
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db['dev-address-management']
-        request_body = json.loads(event['body'])
+        address_collection = db[os.environ['ADDRESS_COLLECTION']]
+        print(event["queryStringParameters"])
+        request_body = event["queryStringParameters"]
         type= request_body['type']
-        result = collection.find({'email_address':email_address,'type':type})
-        return {
-                    "statusCode": 200,
+        result = address_collection.find({'email_address':email_address,'type':type}).sort('created_at',-1)
+        if result is None:
+            return {
+                    "statusCode": 404,
                     'headers': headers,
-                    "body": json.dumps({"result":list(result)},cls=Encoder)
-                }
-    except Exception as e:
+                    "body": json.dumps({"message":"No addresses found"})
+            }
+        else:
+            return {
+                        "statusCode": 200,
+                        'headers': headers,
+                        "body": json.dumps({"result":list(result)},cls=Encoder)
+                    }
+    except Exception as err:
+        print(err)
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": e}, cls=Encoder)
+            "body": json.dumps({"message": "There was an error getting addresses"})
             }
+    

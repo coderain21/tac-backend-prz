@@ -1,3 +1,4 @@
+'''this api will update the shipping and billing address'''
 import json
 from pymongo import MongoClient
 import os
@@ -15,7 +16,6 @@ def update_address(event, context):
     """
     The `update_address` function updates the default address for a user in a MongoDB collection based
     on the provided address ID and user email.
-    
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, body, and
     other relevant data
