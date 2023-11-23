@@ -5,7 +5,7 @@ import stripe
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-from lib.get import get_by_email,fetch_seller_data_from_auction
+from lib.get import get_by_email,fetch_seller_data_from_auction,fetch_buyer_data
 
 headers = {
     'Content-Type': 'application/json',
@@ -14,7 +14,11 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-stripe.api_key = "sk_test_51NSrthFdWS7wL4EMgIaIlyzCIPY2387pcfibXJdCWsVJWg1dHrjAHZIoeKTrOCNcUNqkAmEuGNQti3q0mcE3hThb00CCZpfg5S"
+stripe.api_key = os.environ["STRIPE_API_KEY"]
+
+def calculate_application_fee():
+    pass
+
 def generate_client_secret(account_id,amount,currency,application_fee):
     session  = stripe.PaymentIntent.create(
         amount=amount,
@@ -55,25 +59,39 @@ def create_intent(event, context):
                     "body": json.dumps(
                         {"message": f"Please provide {','.join(fields_not_found)}"})
                     }
-        
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["BUYER_COLLECTION"]]
+
+
         sub_domain = data.get("domain")
         auction_id = data.get("id")
+        amount = data.get("amount")
         seller_data_of_auction = fetch_seller_data_from_auction(auction_id)
-        if seller_email
-        seller_data = get_by_email(seller_email,os.environ['SELLER_TABLE'])
-        if result is None:
+        if seller_data_of_auction is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "user not found"})
+                "body": json.dumps({"message": "Auction doesn't exists"})
             }
-        return{
+        seller_data = get_by_email(seller_data_of_auction["seller_email"],os.environ['SELLER_TABLE'])
+        if seller_data is None:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Seller not found"})
+            }
+        account_id = seller_data["stripe_connected_id"]
+        account_status = seller_data.get("stripe_status","")
+        if account_status!="connected":
+            return {
+            "statusCode": 400,
+            "headers": headers,
+            "body": json.dumps({'message':'Seller has disconnected their stripe account,please connect'},cls=Encoder)
+            }
+        application_fee = calculate_application_fee()
+        client_secret = generate_client_secret(account_id,amount,seller_data_of_auction["currency"],application_fee)
+        return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data':result},cls=Encoder)
+            "body": json.dumps({'data':client_secret},cls=Encoder)
             }
     except Exception as e:
         return {
