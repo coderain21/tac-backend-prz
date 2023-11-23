@@ -27,3 +27,11 @@ module.exports.saveBidHistory = async (data) => {
         return err
     }
 }
+
+module.exports.joinBidRoom = async (socket, lotID) => {
+    try {
+        socket.join(lotID)
+    } catch (err) {
+        return err
+    }
+}
