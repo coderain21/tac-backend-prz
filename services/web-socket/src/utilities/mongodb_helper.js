@@ -184,6 +184,22 @@ module.exports.getAuction = async (document) => {
         return false
     }
 }
+module.exports.getLot = async (document) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db// Access the database
+        const collection = database.collection('dev-lots') // Replace with your collection name
+        const query = {
+            seller_email: document.seller_email, auction_id: document.auction_id, _id: ObjectId(document.lot_id)// Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+        } // Corrected 'document.buyer_id'
+        console.log('seller', query)
+        const documents = await collection.find(query).toArray() // Await the query result
+        connectionData.disconnect()
+        return documents
+    } catch (err) {
+        return false
+    }
+}
 
 module.exports.getAllLots = async (document) => {
     try {

@@ -1,3 +1,7 @@
+/* eslint-disable no-lonely-if */
+/* eslint-disable camelcase */
+/* eslint-disable no-multi-assign */
+/* eslint-disable no-unused-expressions */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-mixed-operators */
 /* eslint-disable consistent-return */
@@ -98,25 +102,34 @@ async function calculateNextAmont(currentBid) {
     return parseInt(nextBid, 10)
 }
 
-const mongodbHelper = {
-    async saveToMongoDB(bidderInfo) {
-        await BidInformation.findOneAndUpdate(
-            { auction_id: bidderInfo.auction_id, buyer_id: bidderInfo.buyer_id },
-            { $set: bidderInfo },
-            { upsert: true, new: true },
-        )
-    },
-    async updateOtherBidder(bidder) {
-        // Create or update MongoDB document
-        await BidInformation.findOneAndUpdate(
-            { auction_id: bidder.auction_id, buyer_id: bidder.buyer_id },
-            { $set: bidder },
-            { upsert: true, new: true },
-        )
-    },
-}
+// const mongodbHelper = {
+//     async saveToMongoDB(bidderInfo) {
+//         await BidInformation.findOneAndUpdate(
+//             { auction_id: bidderInfo.auction_id, buyer_id: bidderInfo.buyer_id },
+//             { $set: bidderInfo },
+//             { upsert: true, new: true },
+//         )
+//     },
+//     async updateOtherBidder(bidder) {
+//         // Create or update MongoDB document
+//         await BidInformation.findOneAndUpdate(
+//             { auction_id: bidder.auction_id, buyer_id: bidder.buyer_id },
+//             { $set: bidder },
+//             { upsert: true, new: true },
+//         )
+//     },
+// }
 
 const redisHelper = {
+    async getLotData(redisKey, client) {
+        const allBidders = await client.hGetAll(redisKey)
+        console.log('all bidder', allBidders)
+        // Filter out the current bidder and return an array
+        return Object.values(allBidders || {}).filter((bidder) => {
+            const parsedBidder = JSON.parse(bidder)
+            return parsedBidder
+        })
+    },
     async getOtherBidders(auctionId, currentBidderId, client) {
         const allBidders = await client.hGetAll(`auction:${auctionId}`)
         console.log('all bidder', allBidders)
@@ -126,13 +139,13 @@ const redisHelper = {
             return parsedBidder.buyer_id !== currentBidderId
         })
     },
-    async getBidders(auctionId, currentBidderId, client) {
-        const allBidders = await client.hGetAll(`auction:${auctionId}`)
+    async getLotDeatils(rediskey, client) {
+        const allBidders = await client.hGetAll(rediskey)
         console.log('all bidder', allBidders)
         // Filter out the current bidder and return an array
         return Object.values(allBidders || {}).filter((bidder) => {
             const parsedBidder = JSON.parse(bidder)
-            return parsedBidder.buyer_id !== currentBidderId 
+            return parsedBidder
         })
     },
     async  getCurrentBidder(bidderData, client) {
@@ -177,7 +190,7 @@ const redisHelper = {
         await client.hSet(`auction:${bidder.auction_id}`, bidder.buyer_id, JSON.stringify(bidder))
     },
     async saveBidder(currentBidder, client, allBidder) {
-        const connectionData = await mongodbHelpers.connect()
+        // const connectionData = await mongodbHelpers.connect()
         if (allBidder.length > 0) {
             console.log('all bidders', allBidder)
             const bidderObjects = allBidder.map(JSON.parse)
@@ -203,44 +216,47 @@ const redisHelper = {
                 highestBidder.next_bid_amount = highestBidder.bid_amount
                 console.log('before save highest bidder', highestBidder)
                 const updateHighestBidder = await this.saveOtherBidder(highestBidder, client)
-                await mongodbHelper.updateOtherBidder(highestBidder)
+                // await mongodbHelper.updateOtherBidder(highestBidder)
 
                 currentBidder.bid_status = 'Not Winning'
                 currentBidder.next_bid_amount = highestBidder.next_bid_amount
                 currentBidder.max_bid = currentBidder.bid_amount
                 console.log('before current user save', currentBidder)
                 const updateCurrentBidder = await this.saveCurrentBidder(currentBidder, client)
-                await mongodbHelper.saveToMongoDB(currentBidder)
+                // await mongodbHelper.saveToMongoDB(currentBidder)
                 // let getBidders = await this.getBidders(currentBidder.auction_id, currentBidder.buyer_id, highestBidder.buyer_id, client)
                 // console.log('gett', getBidders)
                 // getBidders = JSON.parse(getBidders)
                 // const updateOtherBidder = await this.changeStatus(getBidders, { bid_status: 'Not Winning', next_bid_amount: highestBidder.next_bid_amount }, client)
-                const getBidders = await this.getOtherBidders(currentBidder.auction_id, currentBidder.buyer_id, client)
-                console.log('getttt', getBidders)
-                const all_bidders = []
-                for (let i = 0; i < getBidders.length; i++) {
-                    all_bidders.push(JSON.parse(getBidders[i]))
-                }
-                const updateOtherBidder = await this.changeStatus(all_bidders, { bid_status: 'Not Winning', next_bid_amount: currentBidder.next_bid_amount }, client)
+                // const getBidders = await this.getOtherBidders(currentBidder.auction_id, currentBidder.buyer_id, client)
+                // console.log('getttt', getBidders)
+                // const all_bidders = []
+                // for (let i = 0; i < getBidders.length; i++) {
+                //     all_bidders.push(JSON.parse(getBidders[i]))
+                // }
+                // const updateOtherBidder = await this.changeStatus(all_bidders, { bid_status: 'Not Winning', next_bid_amount: currentBidder.next_bid_amount }, client)
                 return highestBidder
             } if ((highestBidder === undefined) || highestBidder.max_bid < currentBidder.bid_amount && highestBidder.max_bid < maxBid) {
                 console.log('else idf')
+                let x
                 if (highestBidder === undefined) {
                     currentBidder.max_bid = currentBidder.bid_amount
+                    x = currentBidder.bid_amount
                 } else {
                     currentBidder.max_bid = highestBidder.max_bid
+                    x = highestBidder.max_bid 
                 }
                 // highestBidder.bid_status = 'Not Winning'
                 currentBidder.bid_status = 'Winning'
-                currentBidder.bid_amount = await calculateNextAmont(highestBidder.max_bid)
+                currentBidder.bid_amount = await calculateNextAmont(x)
                 currentBidder.next_bid_amount = currentBidder.bid_amount
                 // highestBidder.next_bid_amount = currentBidder.next_bid_amount 
                 console.log('before save highest bidder', highestBidder)
                 console.log('before current user save', currentBidder)
-                const updateHighestBidder = await this.saveOtherBidder(highestBidder, client)
-                await mongodbHelper.updateOtherBidder(highestBidder)
+                // const updateHighestBidder = await this.saveOtherBidder(highestBidder, client)
+                // await mongodbHelper.updateOtherBidder(highestBidder)
                 const updateCurrentBidder = await this.saveCurrentBidder(currentBidder, client)
-                await mongodbHelper.saveToMongoDB(currentBidder)
+                // await mongodbHelper.saveToMongoDB(currentBidder)
 
                 const getBidders = await this.getOtherBidders(currentBidder.auction_id, currentBidder.buyer_id, client)
                 console.log('getttt', getBidders)
@@ -248,7 +264,6 @@ const redisHelper = {
                 for (let i = 0; i < getBidders.length; i++) {
                     all_bidders.push(JSON.parse(getBidders[i]))
                 }
-
 
                 const updateOtherBidder = await this.changeStatus(all_bidders, { bid_status: 'Not Winning', next_bid_amount: currentBidder.next_bid_amount }, client)
                 return currentBidder
@@ -261,48 +276,158 @@ const redisHelper = {
             currentBidder.bid_amount = currentBidder.bid_amount > currentBidder.starting_bid ? await calculateNextAmont(currentBidder.starting_bid) : currentBidder.bid_amount
             currentBidder.next_bid_amount = currentBidder.bid_amount
             const saveData = await this.saveCurrentBidder(currentBidder, client)
-            const saveMongoDB = await mongodbHelper.saveToMongoDB(currentBidder)
+            // const saveMongoDB = await mongodbHelper.saveToMongoDB(currentBidder)
             return currentBidder
         }
-        await connectionData.disconnect()
+        // await connectionData.disconnect()
     },
 }
 
+// module.exports.placeBid = async (socket, data, io, userData) => {
+//     try {
+//         // const connectionData = await mongodbHelpers.connect()
+//         data.socket_id = socket.id
+//         // const client = await redis.createClient({
+//         //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+//         // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+//         const client = await redis.createClient()
+//         if (!client.isOpen) {
+//             await client.connect()
+//         }
+//         // const checkAuctionEnd = await mongodbHelpers.getAuction(data)
+//         const currentDateTime = new Date()
+//         const allBidders = await redisHelper.getOtherBidders(data.auction_id, data.buyer_id, client)
+//         const saveBidder = await redisHelper.saveBidder(data, client, allBidders)
+//         // if (checkAuctionEnd.end_date === new Date(currentDateTime.getTime())) {
+//         //     saveBidder.auction_status = 'Ended'
+//         // } else {
+//         //     saveBidder.auction_status = 'Not Ended'
+//         // }
+//         const message = saveBidder
+//         // await client.hSet(`lot:${data.lot_id}`, JSON.stringify(data))
+//         // const saveBid = await historyHelper.saveBidHistory(data)
+//         console.log('curre', currentDateTime)
+//         // const oneMinuteAgo = new Date(currentDateTime.getTime() - 60000)
+//         // console.log('nnd', oneMinuteAgo)
+//         // if (checkAuctionEnd.end_date === oneMinuteAgo) {
+//         //     const extension = await checkExtensionType(data)
+//         // }
+//         // const updateTopBidder = await mongodbHelpers.updateTopBidder(saveBidder)
+//         io.to(data.lot_id).emit('placeBid', {
+//             success: true, message,
+//         })
+//         // await connectionData.disconnect()
+//     } catch (err) {
+//         console.error(err)
+//     }
+// }
+
+
+
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
-        const connectionData = await mongodbHelpers.connect()
-        data.socket_id = socket.id
-        // const client = await redis.createClient({
-        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // step1 : get current lot info from redis
         const client = await redis.createClient()
         if (!client.isOpen) {
             await client.connect()
         }
+        const redisKey = `lot:${data.auction_id}#${data.lot_id}`
+        const getLotHistoryDetails = await redisHelper.getLotData(`lot:${data.lot_id}`, client)
+        data.time_stamp = new Date().getTime()
+        const saveBidHistory = await client.hSet(`lot:${data.lot_id}`, data.buyer_id, JSON.stringify(data))
+        const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
+        const get_lot = []
+        for (let i = 0; i < getLotDetails.length; i++) {
+            get_lot.push(JSON.parse(getLotDetails[i]))
+        }
+        console.log('get', get_lot)
         const checkAuctionEnd = await mongodbHelpers.getAuction(data)
-        const currentDateTime = new Date()
-        const allBidders = await redisHelper.getOtherBidders(data.auction_id, data.buyer_id, client)
-        const saveBidder = await redisHelper.saveBidder(data, client, allBidders)
-        // if (checkAuctionEnd.end_date === new Date(currentDateTime.getTime())) {
-        //     saveBidder.auction_status = 'Ended'
-        // } else {
-        //     saveBidder.auction_status = 'Not Ended'
-        // }
-        const message = saveBidder
-        // await client.hSet(`lot:${data.lot_id}`, JSON.stringify(data))
-        const saveBid = await historyHelper.saveBidHistory(data)
-        console.log('curre', currentDateTime)
-        // const oneMinuteAgo = new Date(currentDateTime.getTime() - 60000)
-        // console.log('nnd', oneMinuteAgo)
-        // if (checkAuctionEnd.end_date === oneMinuteAgo) {
-        //     const extension = await checkExtensionType(data)
-        // }
-        // const updateTopBidder = await mongodbHelpers.updateTopBidder(saveBidder)
+        const getLotData = await mongodbHelpers.getLot(data)
+        // if lot is active, then store   history for current bid
+        if (getLotDetails.length <= 0) {
+            getLotData[0].start_date = checkAuctionEnd[0].start_date
+            getLotData[0].end_date = checkAuctionEnd[0].end_date
+            getLotData[0].status = checkAuctionEnd[0].status
+            const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(getLotData[0]))
+            get_lot[0] = getLotData[0]
+        } 
+        const currentLotDetails = get_lot[0]
+        if (getLotHistoryDetails.length <= 0) {
+            console.log('111')
+            //  if  no, then max bid and currentbid and buyer id
+            currentLotDetails.max_bid = data.bid_amount
+            currentLotDetails.bid_amount = await calculateNextAmont(100) // (getLotData[0].starting_bid)
+            currentLotDetails.winning_user = data.buyer_id       
+        }
+        // check if there are any bid exist
+        else if (getLotHistoryDetails.length === 1) {
+            console.log('222222')
+            const all_bidders = []
+            for (let i = 0; i < getLotHistoryDetails.length; i++) {
+                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+            }
+            if (data.buyer_id === all_bidders[0].buyer_id) {
+                currentLotDetails.max_bid = data.bid_amount
+            } else {
+                console.log('22222 else', currentLotDetails)
+                // const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[0])
+                // console.log('hbidde', highestBidder)
+                if (data.bid_amount > currentLotDetails.max_bid) {
+                    currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
+                    currentLotDetails.max_bid = data.bid_amount
+                    currentLotDetails.winning_user = data.buyer_id 
+                } else {
+                    currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.bid_amount) 
+                }
+            } 
+        } else {
+            console.log('333333')
+            const all_bidders = []
+            for (let i = 0; i < getLotHistoryDetails.length; i++) {
+                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+            }
+            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[0])
+            if (data.buyer_id === highestBidder.buyer_id) {
+                currentLotDetails.max_bid = data.bid_amount
+            } else {
+                if (data.bid_amount > currentLotDetails.max_bid) {
+                    currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
+                    currentLotDetails.max_bid = data.bid_amount
+                    currentLotDetails.winning_user = data.buyer_id 
+                } else {
+                    currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.bid_amount) 
+                }
+            } 
+        }
+        const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(currentLotDetails))
+        console.log('currentLotDetails', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
-            success: true, message,
+            success: true, currentLotDetails,
         })
-        await connectionData.disconnect()
+       
+        // const saveBidHistory = await client.hSet(`lot:${data.lot_id}`, data.buyer_id, JSON.stringify(data))
+
+
+        // const auction
+        // lotData.max_bid = data.bid_amount > lotData.starting_bid ?  data.bid_amount 
+            
+
+        // const x = await client.hSet(redisKey, data.buyer_id, JSON.stringify(lotData))
+        // console.log('xxxx', x)
+        // } else {
+        //     max_bid = 
+        // }
     } catch (err) {
-        console.error(err)
+        return err
     }
+    // step1 : get current lot info from redis ------
+    // step2: check for lot status = complete/ornot
+    // if lot is active, then store   history for current bid
+    // check if there are any bid exist
+    //  if  no, then max bid and currentbid and buyer id
+    // if yes,  if only one history, then current bid amount is greater than max_bid then store current bid amount =  new bid amount and max_bid = new_bid_amount
+    // if yes, if only one history,then current bid amount is less than max_bid dont do anything
+    //  if more than one history get the greatest max_bid from redis $200
+    // if there are more unique bidders, then current bid amount is greater than max_bid then store current bid amount = nextIncrement(max_bid) old max_bidder and max_bid = new_bid_amount
+    // if i get mx bid of more than one  users  on the same timestamp then we will be considering 1st registered bidder and concurrent_user = [other bidders]
 }
