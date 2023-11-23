@@ -2,6 +2,7 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
+from lib.common_helper import Encoder
 
 headers = {
     'Content-Type': 'application/json',
@@ -11,6 +12,12 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+class MongoEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return super().default(o)
 
 def create(event, context):
     try:
@@ -37,14 +44,14 @@ def create(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        buyer_collection = db[os.environ['BUYER_COLLECTION']]
         wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
         lot_detail = lot_collection.find_one({'_id': lot_id})
         seller_email = lot_detail['seller_email']
         auction_name = body['auction_name']
         insert_data = {
             'seller_email': seller_email,
-            'lot_id': str(lot_id),  # Convert ObjectId to string for consistency
+            'lot_id': lot_id,
             'email_address': email_address,
             'auction_name': auction_name,
             'auction_id': lot_detail['auction_id']
@@ -56,25 +63,36 @@ def create(event, context):
         similar_lots = lot_collection.aggregate([
             {"$match": {"seller_email": seller_email}},
             {"$lookup": {
-                "from": wish_list,
+                "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
                 "localField": "_id",
                 "foreignField": "lot_id",
                 "as": "wishlist"
             }},
             {"$addFields": {
-                "is_wishlisted": {"$gt": [{"$size": "$wishlist"}, 0]}
+                "is_wishlisted": {
+                    "$cond": {
+                        "if": {
+                            "$in": ["$_id", "$wishlist.lot_id"]
+                        },
+                        "then": True,
+                        "else": False
+                    }
+                }
             }},
-            {"$project": {"wishlist": 0}}
+            {"$project": {"wishlist": 0}}  # Remove the wishlist field from the result
         ])
+
+
         
+
         # Convert the aggregation result to a list for JSON serialization
         similar_lots = list(similar_lots)
-
+        print("Aggregation Result:", similar_lots)
         client.close()
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({"message": "Lot added to wishlist successfully", "similar_lots": similar_lots})
+            "body": json.dumps({"message": "Lot added to wishlist successfully", "similar_lots": similar_lots}, cls=MongoEncoder)
         }
 
     except Exception as e:
