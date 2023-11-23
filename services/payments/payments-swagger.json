@@ -1,0 +1,490 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Payments Management APIs",
+      "description": "APIs to manage payments for the lot purchase",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/payments"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Payment Management",
+        "description": "APIs to manage the payments"
+      }
+    ],
+    
+    "paths": {
+      "/stripe": {
+        "get": {
+          "tags": ["Lots Management"],
+          "summary": "view lots",
+          "description": "view lots",
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "to determine the which auction lots to be displayed ",
+              "schema": {
+                "type": "string"
+              },
+              "example": "651e448f536806fbf8037c3c"
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort by key",
+              "schema": {
+                "type": "string"
+              },
+              "example": "highest_price"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved lots",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "schema": {
+                              "$ref": "#/components/schemas/Lots"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "data": [
+                      {
+                        "auction_id": "A0922",
+                        "seller_email": "anusha.k+indyauction@7edge.com",
+                        "title1": "lot sample",
+                        "title2": "",
+                        "description": "<p>lot descripton</p>",
+                        "starting_price": 2332332,
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "current_bid": 5,
+                        "tags": ["ss"],
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/d7dc51af-b34e-27fb-12fa-bb0eb16f425e/Screenshot from 2023-10-03 17-41-16.png",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 1,
+                        "starting_bid": 5
+                      },
+                      {
+                        "title1": "Human' Nature",
+                        "title2": "New To The Scene",
+                        "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                        "starting_price": 4500,
+                        "low_estimate": 6000,
+                        "high_estimate": 50000,
+                        "shipping_details": "Lorem Ipsum",
+                        "tags": ["Recommended", "Paintings"],
+                        "auction_id": "A0922",
+                        "seller_email": "anusha.k+indyauction@7edge.com",
+                        "starting_bid": 1,
+                        "current_bid": 0,
+                        "Top_bidder": "",
+                        "images": [],
+                        "lot_number": 5
+                      },
+                      {
+                        "title1": "Ceramics & Craft |",
+                        "title2": "Down Stairs",
+                        "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                        "starting_price": 3002,
+                        "low_estimate": 5000,
+                        "high_estimate": 40000,
+                        "shipping_details": "Lorem Ipsum",
+                        "tags": ["Recommended", "Paintings"],
+                        "auction_id": "A0922",
+                        "seller_email": "anusha.k+indyauction@7edge.com",
+                        "starting_bid": 6,
+                        "current_bid": 0,
+                        "Top_bidder": "",
+                        "images": [],
+                        "lot_number": 4
+                      },
+                      {
+                        "title1": "Opportunities for Artists",
+                        "title2": "Snowdrops In A Stripey Mug",
+                        "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                        "starting_price": 2000,
+                        "low_estimate": 3000,
+                        "high_estimate": 400005,
+                        "shipping_details": "Lorem Ipsum",
+                        "tags": ["Recommended", "Paintings"],
+                        "auction_id": "A0922",
+                        "seller_email": "anusha.k+indyauction@7edge.com",
+                        "starting_bid": 3,
+                        "current_bid": 0,
+                        "Top_bidder": "",
+                        "images": [],
+                        "lot_number": 3
+                      },
+                      {
+                        "title1": "Out of the Margins",
+                        "title2": "Sonia Barton",
+                        "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                        "starting_price": 1500,
+                        "low_estimate": 2000,
+                        "high_estimate": 404000,
+                        "shipping_details": "Lorem Ipsum",
+                        "tags": ["Recommended", "Paintings"],
+                        "auction_id": "A0922",
+                        "seller_email": "anusha.k+indyauction@7edge.com",
+                        "starting_bid": 4,
+                        "current_bid": 0,
+                        "Top_bidder": "",
+                        "images": [],
+                        "lot_number": 2
+                      },
+                      {
+                        "title1": "The Jaka Project",
+                        "title2": "Father and Child",
+                        "description": "Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum",
+                        "starting_price": 1393,
+                        "low_estimate": 2900,
+                        "high_estimate": 46000,
+                        "shipping_details": "Lorem Ipsum",
+                        "tags": ["Recommended", "Paintings"],
+                        "auction_id": "A0922",
+                        "seller_email": "anusha.k+indyauction@7edge.com",
+                        "starting_bid": 2,
+                        "current_bid": 0,
+                        "Top_bidder": "",
+                        "images": [],
+                        "lot_number": 6
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not Found",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "example": "Please provide auction_id"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Auction": {
+          "type": "object",
+          "properties": {
+            "seller_email": {
+              "type": "string"
+            },
+            "auction_id": {
+              "type": "string"
+            },
+            "template_name": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            },
+            "menu_links": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string"
+                  },
+                  "link_url": {
+                    "type": "string"
+                  },
+                  "dropdown": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "link_url": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "logo_image": {
+              "type": "string"
+            },
+            "logo_redirection_url": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "auction_image": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "start_date": {
+              "type": "number"
+            },
+            "end_date": {
+              "type": "number"
+            },
+            "extension_type": {
+              "type": "string"
+            },
+            "extension_time": {
+              "type": "string"
+            },
+            "extension_time_between_lots": {
+              "type": "string"
+            },
+            "registration_type": {
+              "type": "string"
+            },
+            "add_buyer_fees": {
+              "type": "number"
+            },
+            "time_zone": {
+              "type": "string"
+            },
+            "faq": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string"
+                  },
+                  "answer": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "terms_and_condition": {
+              "type": "string"
+            },
+            "publish_auction_result": {
+              "type": "boolean"
+            },
+            "show_bidder_location_in_bidder_history": {
+              "type": "boolean"
+            },
+            "make_your_auction_private": {
+              "type": "boolean"
+            },
+            "passcode": {
+              "type": "string"
+            },
+            "font": {
+              "type": "object"
+            },
+            "button": {
+              "type": "object"
+            },
+            "header": {
+              "type": "object"
+            },
+            "content_area": {
+              "type": "object"
+            },
+            "footer": {
+              "type": "object"
+            },
+            "paddle": {
+              "type": "object"
+            },
+            "status": {
+              "type": "string"
+            }
+          }
+        },
+        "User": {
+          "type": "object",
+          "properties": {
+            "email_address": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "terms_and_condition": {
+              "type": "boolean"
+            },
+            "user_type": {
+              "type": "string"
+            },
+            "newsletter_notification": {
+              "type": "boolean"
+            },
+            "sub_domain": {
+              "type": "string"
+            },
+            "seller_email": {
+              "type": "string"
+            }
+          }
+        },
+        "Error": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "Lots": {
+          "type": "object",
+          "properties": {
+            "auction_id": {
+              "type": "string"
+            },
+            "seller_email": {
+              "type": "string"
+            },
+            "lot_number": {
+              "type": "integer"
+            },
+            "lot_title": {
+              "type": "string"
+            },
+            "starting_bid": {
+              "type": "integer"
+            },
+            "current_bid": {
+              "type": "integer"
+            },
+            "Top_bidder": {
+              "type": "string"
+            },
+            "images": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "feature": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "title1": {
+              "type": "string"
+            },
+            "title2": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "starting_price": {
+              "type": "integer"
+            },
+            "low_estimate": {
+              "type": "integer"
+            },
+            "high_estimate": {
+              "type": "integer"
+            },
+            "shipping_details": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "tags_name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
