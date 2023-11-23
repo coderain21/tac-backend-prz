@@ -17,6 +17,7 @@ provider:
   layers: ${env:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    BUYER_WISHLIST_TABLE_NAME: ${env:BUYER_WISHLIST_TABLE_NAME}
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
     REGION: ${env:REGION}

@@ -71,30 +71,144 @@ def view_list_lots(event, context):
                     {"tags": {"$elemMatch": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}}}
                 ]
             }
-        search_result = lot_collection.find({"auction_id": auction_id,
-                                             'seller_email': seller_email,
-                                               **search_criteria}).sort('lot_number',1)
+        search_result = lot_collection.aggregate([
+                {"$match": {"auction_id": auction_id, 'seller_email': seller_email, **search_criteria}},
+                {"$lookup": {
+                    "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                    "localField": "_id",
+                    "foreignField": "lot_id",
+                    "as": "wishlist"
+                }},
+                {"$addFields": {
+                    "is_wishlisted": {
+                        "$cond": {
+                            "if": {
+                                "$in": ["$_id", "$wishlist.lot_id"]
+                            },
+                            "then": True,
+                            "else": False
+                        }
+                    }
+                }},
+                {"$project": {"wishlist": 0}},  # Remove the wishlist field from the result
+                {"$sort": {"current_bid": 1}}  # 1 for ascending order, -1 for descending order
+            ])
         sort_param = data.get("sort_by", "")
         if sort_param == "highest_price":
-            search_result = lot_collection.find({"auction_id": auction_id,
-                                            'seller_email': seller_email, **search_criteria}
-                                            ).sort("starting_price", -1)
+            search_result = lot_collection.aggregate([
+                {"$match": {"auction_id": auction_id, 'seller_email': seller_email}},
+                {"$lookup": {
+                    "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                    "localField": "_id",
+                    "foreignField": "lot_id",
+                    "as": "wishlist"
+                }},
+                {"$addFields": {
+                    "is_wishlisted": {
+                        "$cond": {
+                            "if": {
+                                "$in": ["$_id", "$wishlist.lot_id"]
+                            },
+                            "then": True,
+                            "else": False
+                        }
+                    }
+                }},
+                {"$project": {"wishlist": 0}},  # Remove the wishlist field from the result
+                {"$sort": {"starting_price": -1}}  # Sort by starting_price in descending order
+            ])
         elif sort_param == "lowest_price":
-            search_result = lot_collection.find({"auction_id": auction_id,
-                                             'seller_email': seller_email, **search_criteria}
-                                               ).sort("starting_price", 1)
+            search_result = lot_collection.aggregate([
+                {"$match": {"auction_id": auction_id, 'seller_email': seller_email}},
+                {"$lookup": {
+                    "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                    "localField": "_id",
+                    "foreignField": "lot_id",
+                    "as": "wishlist"
+                }},
+                {"$addFields": {
+                    "is_wishlisted": {
+                        "$cond": {
+                            "if": {
+                                "$in": ["$_id", "$wishlist.lot_id"]
+                            },
+                            "then": True,
+                            "else": False
+                        }
+                    }
+                }},
+                {"$project": {"wishlist": 0}},  # Remove the wishlist field from the result
+                {"$sort": {"starting_price": 1}}  # Sort by starting_price in ascending order
+            ])
         elif sort_param == "highest_bid":
-            search_result = lot_collection.find({"auction_id": auction_id,
-                                             'seller_email': seller_email, **search_criteria}
-                                               ).sort("current_bid", -1)
+            search_result = lot_collection.aggregate([
+                {"$match": {"auction_id": auction_id, 'seller_email': seller_email}},
+                {"$lookup": {
+                    "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                    "localField": "_id",
+                    "foreignField": "lot_id",
+                    "as": "wishlist"
+                }},
+                {"$addFields": {
+                    "is_wishlisted": {
+                        "$cond": {
+                            "if": {
+                                "$in": ["$_id", "$wishlist.lot_id"]
+                            },
+                            "then": True,
+                            "else": False
+                        }
+                    }
+                }},
+                {"$project": {"wishlist": 0}},  # Remove the wishlist field from the result
+                {"$sort": {"current_bid": -1}}  # Sort by current_bid in descending order
+            ])
         elif sort_param == "lowest_bid":
-            search_result = lot_collection.find({"auction_id": auction_id,
-                                            'seller_email': seller_email, **search_criteria}
-                                            ).sort("current_bid", 1)
+            search_result = lot_collection.aggregate([
+                {"$match": {"auction_id": auction_id, 'seller_email': seller_email}},
+                {"$lookup": {
+                    "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                    "localField": "_id",
+                    "foreignField": "lot_id",
+                    "as": "wishlist"
+                }},
+                {"$addFields": {
+                    "is_wishlisted": {
+                        "$cond": {
+                            "if": {
+                                "$in": ["$_id", "$wishlist.lot_id"]
+                            },
+                            "then": True,
+                            "else": False
+                        }
+                    }
+                }},
+                {"$project": {"wishlist": 0}},  # Remove the wishlist field from the result
+                {"$sort": {"current_bid": 1}}  # Sort by current_bid in ascending order
+            ])
         else:
-            search_result = lot_collection.find({"auction_id": auction_id,
-                                                  'seller_email': seller_email, **search_criteria}
-                                                    ).sort('lot_number',1)
+            search_result = lot_collection.aggregate([
+                {"$match": {"auction_id": auction_id, 'seller_email': seller_email}},
+                {"$lookup": {
+                    "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                    "localField": "_id",
+                    "foreignField": "lot_id",
+                    "as": "wishlist"
+                }},
+                {"$addFields": {
+                    "is_wishlisted": {
+                        "$cond": {
+                            "if": {
+                                "$in": ["$_id", "$wishlist.lot_id"]
+                            },
+                            "then": True,
+                            "else": False
+                        }
+                    }
+                }},
+                {"$project": {"wishlist": 0}},  # Remove the wishlist field from the result
+                {"$sort": {"lot_number": 1}}  # Sort by lot_number in ascending order
+            ])
         lots_list = list(search_result)
         return {
             "statusCode": 200,
@@ -103,6 +217,7 @@ def view_list_lots(event, context):
         }
 
     except Exception as e:
+        print(str(e))
         return {
             "statusCode": 500,
             "headers": headers,
