@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-self-import */
@@ -201,24 +202,96 @@ module.exports.getLot = async (lot_id) => {
     }
 }
 
-module.exports.getAllLots = async (document) => {
+function parseExtensionTime(extensionTimeString) {
+    console.log('string', extensionTimeString)
+    // Function to parse extension time string to milliseconds
+    const regex = /(\d+)\s*(\w*)/;
+    const match = extensionTimeString.match(regex)
+    console.log('match', match)
+
+    if (!match) {
+        throw new Error('Invalid extension time format')
+    }
+
+    const amount = parseInt(match[1], 10)
+    const unit = match[2].toLowerCase()
+    console.log('unit', unit)
+
+    const millisecondsInUnit = {
+        millisecond: 1,
+        second: 1000,
+        minute: 60 * 1000,
+        hour: 60 * 60 * 1000,
+        day: 24 * 60 * 60 * 1000,
+    }
+
+    if (!millisecondsInUnit.hasOwnProperty(unit)) {
+        throw new Error('Invalid time unit')
+    }
+
+    return amount * millisecondsInUnit[unit]
+}
+
+module.exports.getAllLots = async (document, lotData) => {
     try {
+        console.log('documnt data', document)
         const connectionData = await this.connect()
-        const database = connectionData.connection.db// Access the database
-        const collection = database.collection('dev-lots') // Replace with your collection name
+        const database = connectionData.connection.db
+        const collection = database.collection('dev-lots')
+
         const query = {
-            seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
-        } // Corrected 'document.buyer_id'
-        const sortOptions = { lot_number: 1 } // Sort by lot_number in ascending order
-        const documents = await collection.find(query).sort(sortOptions).toArray() // Await the query result
-        await collection.updateMany(
-            { _id: { $in: documents.map((lot) => ObjectId(lot._id)) } },
-            {
+            seller_email: document.seller_email,
+            auction_id: document.auction_id,
+        }
+
+        const extensionTimeInMilliseconds = parseExtensionTime(document.extension_time)
+
+        let documents
+
+        if (document.extension_type === 'All Lot') {
+            documents = await collection.find(query).toArray()
+            const updateQuery = {
                 $set: {
-                    is_extended: true, extension_time: document.extension_time, start_date: document.start_date, end_date: document.end_date,
+                    // end_date: documents.map((lot) => new Date(new Date(lot.end_date).getTime() + extensionTimeInMilliseconds)),
+                    end_date: new Date(new Date().getTime() + extensionTimeInMilliseconds),
+
                 },
-            },
-        )
+            }
+            await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
+        } else if (document.extension_type === 'Individual') {
+            const lotId = ObjectId(lotData.lot_id)
+            documents = await collection.find({ ...query, _id: lotId }).toArray()
+            const updateQuery = {
+                $set: {
+                    end_date: new Date(new Date(documents[0].end_date).getTime() + extensionTimeInMilliseconds),
+                },
+            }
+            await collection.updateMany({ _id: lotId }, updateQuery)
+        } else {
+            const sortOptions = { lot_number: 1 }
+            documents = await collection.find(query).sort(sortOptions).toArray()
+
+            let previousExtensionTime = 0
+            const bulkOperations = documents.map((lot) => {
+                const updatedExtensionTime = previousExtensionTime + extensionTimeInMilliseconds
+                previousExtensionTime = updatedExtensionTime
+
+                return {
+                    updateOne: {
+                        filter: { _id: ObjectId(lot._id) },
+                        update: {
+                            $set: {
+                                extension_time: updatedExtensionTime,
+                                end_date: document.end_date,
+                            },
+                        },
+                    },
+                }
+            })
+
+            await collection.bulkWrite(bulkOperations, { ordered: false })
+        }
+
         connectionData.disconnect()
         return true
     } catch (error) {

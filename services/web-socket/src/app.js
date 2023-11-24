@@ -40,13 +40,11 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
 	 */
     socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
     socket.on('BidHistory', (message, callback) => listBidHistory(socket, message, io, userData))
-	socket.on('joinBidRoom', (lotID, callback) => joinBidRoom(socket, lotID))
+    socket.on('joinBidRoom', (lotID, callback) => joinBidRoom(socket, lotID))
 
-
-    socket.on('joinBidRoom', (bidId) => {
-        console.log('inside')
-        // Join a specific bid room
-        socket.join(bidId)
-    })
-
+    // socket.on('joinBidRoom', (bidId) => {
+    //     console.log('inside')
+    //     // Join a specific bid room
+    //     socket.join(bidId)
+    // })
 }
