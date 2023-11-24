@@ -37,7 +37,7 @@
             "200": {
               "description": "listing successful",
               "content": {
-                  "application/json ": {
+                  "application/json": {
                     "schema": {
                       "type": "object",
                       "properties": {
@@ -52,6 +52,9 @@
                                   "_id":{
                                     "type":"string"
                                   },
+                                  "auction_id": {
+                                    "type": "string"
+                                  },
                                   "seller_email":{
                                     "type": "string"
                                   },
@@ -61,20 +64,16 @@
                                   "email_address":{
                                     "type":"string"
                                   },
-                                  "title1":{
-                                    "type": "string"
-                                  },
-                                  "auction_id": {
-                                    "type": "string"
-                                  },
                                   "price": {
                                     "type": "integer"
                                   },
-                                  
+                                  "fees": {
+                                    "type": "integer"
+                                  },
                                   "type": {
                                     "type": "string"
                                   },
-                                  "fees": {
+                                  "title1":{
                                     "type": "string"
                                   }
                                 }
@@ -106,7 +105,7 @@
             "403": {
               "description": "Forbidden",
               "content": {
-                "application/json ": {
+                "application/json": {
                   "schema": {
                     "type": "object",
                     "properties": {
