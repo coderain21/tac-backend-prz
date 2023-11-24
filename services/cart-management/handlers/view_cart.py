@@ -3,8 +3,6 @@ import os
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 from bson import ObjectId
-
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -12,8 +10,6 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-
-
 def view(event, context):
     try:
         try:
@@ -31,7 +27,6 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['CART_COLLECTION']]
