@@ -109,7 +109,7 @@ def view(event, context):
         if result["status"] not in ["Published", "Accepting bids", "Completed"]:
             return {
                 "headers": headers,
-                "statusCode": 400,
+                "statusCode": 404,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
         start_time= result['start_date']
