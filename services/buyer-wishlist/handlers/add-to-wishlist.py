@@ -44,7 +44,7 @@ def create(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
         wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
         lot_detail = lot_collection.find_one({'_id': lot_id})
         seller_email = lot_detail['seller_email']
@@ -56,43 +56,49 @@ def create(event, context):
             'auction_name': auction_name,
             'auction_id': lot_detail['auction_id']
         }
-
+        existing_wishlist_entry = wish_list.find_one(insert_data)
+        if existing_wishlist_entry:
+            return{
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Lot already exist in wishlist'})
+            }
         wish_list.insert_one(insert_data)
 
         # Find lots with the same seller email and check if they are present in the wishlist
-        similar_lots = lot_collection.aggregate([
-            {"$match": {"seller_email": seller_email}},
-            {"$lookup": {
-                "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
-                "localField": "_id",
-                "foreignField": "lot_id",
-                "as": "wishlist"
-            }},
-            {"$addFields": {
-                "is_wishlisted": {
-                    "$cond": {
-                        "if": {
-                            "$in": ["$_id", "$wishlist.lot_id"]
-                        },
-                        "then": True,
-                        "else": False
-                    }
-                }
-            }},
-            {"$project": {"wishlist": 0}}  # Remove the wishlist field from the result
-        ])
+        # similar_lots = lot_collection.aggregate([
+        #     {"$match": {"seller_email": seller_email}},
+        #     {"$lookup": {
+        #         "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+        #         "localField": "_id",
+        #         "foreignField": "lot_id",
+        #         "as": "wishlist"
+        #     }},
+        #     {"$addFields": {
+        #         "is_wishlisted": {
+        #             "$cond": {
+        #                 "if": {
+        #                     "$in": ["$_id", "$wishlist.lot_id"]
+        #                 },
+        #                 "then": True,
+        #                 "else": False
+        #             }
+        #         }
+        #     }},
+        #     {"$project": {"wishlist": 0}}  # Remove the wishlist field from the result
+        # ])
 
 
         
 
         # Convert the aggregation result to a list for JSON serialization
-        similar_lots = list(similar_lots)
-        print("Aggregation Result:", similar_lots)
+        # similar_lots = list(similar_lots)
+        # print("Aggregation Result:", similar_lots)
         client.close()
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({"message": "Lot added to wishlist successfully", "similar_lots": similar_lots}, cls=MongoEncoder)
+            "body": json.dumps({"message": "Lot added to wishlist successfully"})
         }
 
     except Exception as e:
