@@ -79,4 +79,3 @@ def view_address(event, context):
             "headers": headers,
             "body": json.dumps({"message": "There was an error getting addresses"})
             }
-    
