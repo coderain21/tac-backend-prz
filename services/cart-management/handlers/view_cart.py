@@ -35,8 +35,10 @@ def view(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['CART_COLLECTION']]
-        cart_details= collection.find({'email_address':email_address})
-        print(3333,cart_details)
+        data = event['queryStringParameters']
+        auction_id = data['auction_id']
+        auction_id= ObjectId(auction_id)
+        cart_details= collection.find({'email_address':email_address,'auction_id':auction_id})
         if cart_details is None:
             return {
                 "statusCode": 404,
@@ -46,7 +48,7 @@ def view(event, context):
         return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({"data":list(cart_details)})
+                "body": json.dumps({"data":list(cart_details)},cls = Encoder)
             }
     except Exception as err:
         print(err)
