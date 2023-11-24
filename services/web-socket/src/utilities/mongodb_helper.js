@@ -203,19 +203,15 @@ module.exports.getLot = async (lot_id) => {
 }
 
 function parseExtensionTime(extensionTimeString) {
-    console.log('string', extensionTimeString)
-    // Function to parse extension time string to milliseconds
-    const regex = /(\d+)\s*(\w*)/;
+    const regex = /^(\d+)\s*(\w*)$/
     const match = extensionTimeString.match(regex)
-    console.log('match', match)
 
     if (!match) {
         throw new Error('Invalid extension time format')
     }
 
     const amount = parseInt(match[1], 10)
-    const unit = match[2].toLowerCase()
-    console.log('unit', unit)
+    const unit = (match[2] || 'minute').toLowerCase() // Default to minute if unit is not provided
 
     const millisecondsInUnit = {
         millisecond: 1,
@@ -234,7 +230,6 @@ function parseExtensionTime(extensionTimeString) {
 
 module.exports.getAllLots = async (document, lotData) => {
     try {
-        console.log('documnt data', document)
         const connectionData = await this.connect()
         const database = connectionData.connection.db
         const collection = database.collection('dev-lots')
@@ -243,22 +238,22 @@ module.exports.getAllLots = async (document, lotData) => {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
         }
-
         const extensionTimeInMilliseconds = parseExtensionTime(document.extension_time)
-
+        console.log('%%%%%', extensionTimeInMilliseconds)
         let documents
-
-        if (document.extension_type === 'All Lot') {
+        if (document.extension_type === 'All Lots') {
+            console.log('1111111')
             documents = await collection.find(query).toArray()
             const updateQuery = {
                 $set: {
                     // end_date: documents.map((lot) => new Date(new Date(lot.end_date).getTime() + extensionTimeInMilliseconds)),
-                    end_date: new Date(new Date().getTime() + extensionTimeInMilliseconds),
+                    extended_time: extensionTimeInMilliseconds,
 
                 },
             }
             await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
         } else if (document.extension_type === 'Individual') {
+            console.log('22222222222222222')
             const lotId = ObjectId(lotData.lot_id)
             documents = await collection.find({ ...query, _id: lotId }).toArray()
             const updateQuery = {
@@ -268,6 +263,7 @@ module.exports.getAllLots = async (document, lotData) => {
             }
             await collection.updateMany({ _id: lotId }, updateQuery)
         } else {
+            console.log('233333333333333')
             const sortOptions = { lot_number: 1 }
             documents = await collection.find(query).sort(sortOptions).toArray()
 
@@ -282,7 +278,7 @@ module.exports.getAllLots = async (document, lotData) => {
                         update: {
                             $set: {
                                 extension_time: updatedExtensionTime,
-                                end_date: document.end_date,
+                                // end_date: document.end_date,
                             },
                         },
                     },
@@ -297,47 +293,5 @@ module.exports.getAllLots = async (document, lotData) => {
     } catch (error) {
         console.log(error)
         return false
-    }
-}
-
-module.exports.updateLots = async (document) => {
-    try {
-        const connectionData = await this.connect()
-        const database = connectionData.connection.db // Access the database
-        const collection = database.collection('dev-lots') // Replace with your collection name
-        const query = {
-            seller_email: document.seller_email,
-            auction_id: document.auction_id,
-        }
-        const sortOptions = { lot_number: 1 }
-        const documents = await collection.find(query).sort(sortOptions).toArray()
-        // Parse document.extension_time as a number
-        const extensionTimeNumeric = parseInt(document.extension_time, 10)
-
-        let previousExtensionTime = extensionTimeNumeric
-        const bulkOperations = []
-
-        for (const lot of documents) {
-            bulkOperations.push({
-                updateOne: {
-                    filter: { _id: ObjectId(lot._id) },
-                    update: {
-                        $set: {
-                            extension_time: previousExtensionTime,
-                            is_extended: true,
-                            start_date: document.start_date,
-                            end_date: document.end_date,
-
-                        },
-                    },
-                },
-            })
-            const updatedExtensionTime = previousExtensionTime + extensionTimeNumeric
-            previousExtensionTime = updatedExtensionTime
-        }
-        await collection.bulkWrite(bulkOperations, { ordered: false })
-        return true
-    } catch (err) {
-        return err
     }
 }

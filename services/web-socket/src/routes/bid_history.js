@@ -2,7 +2,7 @@ const redis = require('redis')
 
 async function getHistory(data) {
     const client = await redis.createClient()
-    const allBidders = await client.hGetAll(`auction:${data.auction_id}`, `lot:${data.lot_id}`)
+    const allBidders = await client.hGetAll(`auction:${data.auction_id}#${data.lot_id}`)
     console.log('all bidder', allBidders)
     // Filter out the current bidder and return an array
     return Object.values(allBidders || {}).filter((bidder) => {

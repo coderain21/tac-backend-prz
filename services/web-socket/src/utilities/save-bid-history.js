@@ -35,3 +35,15 @@ module.exports.joinBidRoom = async (socket, lotID) => {
         return err
     }
 }
+
+module.exports.listBidHistory = async (data) => {
+    try {
+        const connectionData = await mongodbHelper.connect()
+        data.bid_amount = data.max_bid
+        const bidDoc = new BidInformation(data)
+        await bidDoc.save()
+        await connectionData.disconnect()
+    } catch (err) {
+        return err
+    }
+}

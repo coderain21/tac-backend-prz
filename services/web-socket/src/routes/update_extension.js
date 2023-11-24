@@ -4,6 +4,7 @@ const mongodbHelper = require('../utilities/mongodb_helper')
 module.exports.checkExtensionType = async (documents) => {
     try {
         const getAuctionDetails = await mongodbHelper.getAuction(documents)
+        console.log('getAuctionDetails', getAuctionDetails)
         // const currentDate = new Date()
         // const oneMinuteBeforeEndDate = new Date(currentDate.getTime() - (60 * 1000))
         // const endDate = new Date(getAuctionDetails[0].end_date)
