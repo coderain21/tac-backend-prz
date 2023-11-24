@@ -355,16 +355,16 @@ async function getLotFromRedis(lot_id, client) {
 }
 
 module.exports.joinBidRoom = async (socket, lotID) => {
-    console.log('enteringgg', 'heyyy', lotID)
+    console.log('enteringgg', 'heyyy',socket, lotID)
     try {
-        // const client = await redis.createClient()
-        // if (!client.isOpen) {
-        //     await client.connect()
-        // }
+        const client = await redis.createClient()
+        if (!client.isOpen) {
+            await client.connect()
+        }
         socket.join(lotID)
-        // const lotDetails = await getLotFromRedis(lotID, client)
-        // console.log('lot', lotDetails)
-        // socket.emit('joinBidRoom', lotDetails)
+        const lotDetails = await getLotFromRedis(lotID, client)
+        console.log('lot', lotDetails)
+        socket.emit('joinBidRoom', lotDetails)
     } catch (err) {
         return err
     }
