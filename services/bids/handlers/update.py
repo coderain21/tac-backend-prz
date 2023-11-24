@@ -81,6 +81,7 @@ def update_user(event, context):
                     }
         auction_id = data.get("auction_id")
         group = data.get("group")
+        new = data.get("new",False)
         seller_email = fetch_seller_email_from_auction(auction_id)
         # Add user to the specified Cognito group
         cognito_client.admin_add_user_to_group(
@@ -109,16 +110,36 @@ def update_user(event, context):
                 {"email_address": email_address, "seller_email": seller_email})
 
             if buyer_data is None:
-                # Check if the user has an existing record without seller_email
-                buyer_data_without_seller = buyer_collection.find_one(
-                    {"email_address": email_address, "registered_through": "federated"})
-                print("-->", buyer_data_without_seller)
-                if buyer_data_without_seller is not None and "seller_email" not in buyer_data_without_seller:
-                    buyer_collection.update_one({"_id": buyer_data_without_seller["_id"]}, {
-                                                '$set': {"seller_email": seller_email, "registered_through": ""}})
+                if new is True:
+                    new_data = {
+                        "user_type": "buyer",
+                        "password": "",
+                        "email_address": email_address,
+                        "newsletter_notification": False,
+                        "seller_email": seller_email,
+                        "terms_and_condition": True,
+                        "first_name": "",
+                        "last_name": ""
+                    }
+                    buyer_data_new = buyer_collection.find_one(
+                        {"email_address": email_address},{"_id":0,"seller_email":0})
+                    if buyer_data_new is not None:
+                        buyer_data_new["seller_email"]=seller_email
+                        buyer_collection.insert_one(buyer_data_new)
+                    else:
+                        buyer_collection.insert_one(new_data)
+                    
+                else:
+                    # Check if the user has an existing record without seller_email
+                    buyer_data_without_seller = buyer_collection.find_one(
+                        {"email_address": email_address, "registered_through": "federated"})
+                    print("-->", buyer_data_without_seller)
+                    if buyer_data_without_seller is not None and "seller_email" not in buyer_data_without_seller:
+                        buyer_collection.update_one({"_id": buyer_data_without_seller["_id"]}, {
+                                                    '$set': {"seller_email": seller_email, "registered_through": ""}})
 
-                if buyer_data_without_seller == None:
-                    buyer_collection.insert_one(buyer_data_to_add)
+                    if buyer_data_without_seller == None:
+                        buyer_collection.insert_one(buyer_data_to_add)
 
             client.close()
             return {
