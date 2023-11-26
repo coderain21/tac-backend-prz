@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-tabs */
@@ -39,8 +40,8 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
 	 * @return {array} [] Channel emits "getMyChatList" event containing list of chats
 	 */
     socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
-    socket.on('BidHistory', (message, callback) => listBidHistory(socket, message, io, userData))
-    socket.on('joinBidRoom', (lotID, callback) => joinBidRoom(socket, lotID))
+    socket.on('listBidHistory', (message, callback) => listBidHistory(socket, message, io, userData))
+    socket.on('joinBidRoom', (lotID, buyer_id, callback) => joinBidRoom(socket, lotID, io))
 
     // socket.on('joinBidRoom', (bidId) => {
     //     console.log('inside')

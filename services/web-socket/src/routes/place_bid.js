@@ -30,8 +30,7 @@ const mongodbHelpers = require('../utilities/mongodb_helper')
 const historyHelper = require('../utilities/save-bid-history')
 const helper = require('../utilities/auto_bid')
 const { checkExtensionType } = require('./update_extension')
-
-
+const { listBidHistory } = require('./bid_history')
 
 
 // Check if the client is closed
@@ -338,6 +337,9 @@ async function getLotFromRedis(lot_id, client) {
         console.log('get', get_lot)
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
+            const connectionData = await mongodbHelpers.connect()
+
+            console.log('cc', connectionData)
             const getLotData = await mongodbHelpers.getLot(lot_id)
             console.log('getd234', getLotData)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
@@ -347,6 +349,42 @@ async function getLotFromRedis(lot_id, client) {
             getLotData[0].status = checkAuctionEnd[0].status
             const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(getLotData[0]))
             get_lot[0] = getLotData[0]
+            await connectionData.disconnect()
+            // get_lot = [{
+            //     _id: '6527ea63d0f71d56747f83f6',
+            //     auction_id: 'A0037',
+            //     seller_email: 'aishwarya+30@7edge.com',
+            //     title1: 'World',
+            //     title2: '',
+            //     description: '<p>LOtttt....</p>',
+            //     starting_price: 127,
+            //     low_estimate: 0,
+            //     high_estimate: 0,
+            //     shipping_details: '',
+            //     current_bid: 0,
+            //     tags: [
+            //         'lot',
+            //     ],
+            //     images: [
+            //         {
+            //             url: 'DomainName/Auctions/lots/images/760f7893-a884-2813-623a-2dde22c73f6d/mak-6-5rajeKe50-unsplash.jpg',
+            //             featured: true,
+            //         },
+            //         {
+            //             url: 'DomainName/Auctions/lots/images/4b3a62b0-e088-a1bf-c1f1-30957f431159/andrea-davis-SoRlz-tnWUM-unsplash.jpg',
+            //             featured: false,
+            //         },
+            //         {
+            //             url: 'DomainName/Auctions/lots/images/af3aa2d1-59dd-dc31-bcee-fc555c4f85cc/james-dimas-1xvtRcLbLeM-unsplash.jpg',
+            //             featured: false,
+            //         },
+            //         {
+            //             url: 'DomainName/Auctions/lots/images/931da454-0724-e822-a893-6188355fd31b/mak-6-5rajeKe50-unsplash.jpg',
+            //             featured: false,
+            //         },
+            //     ],
+            //     lot_number: 1,
+            // }]
         }
         return get_lot[0]
     } catch (err) {
@@ -354,9 +392,10 @@ async function getLotFromRedis(lot_id, client) {
     }
 }
 
-module.exports.joinBidRoom = async (socket, lotID) => {
+module.exports.joinBidRoom = async (socket, lotID, io) => {
     console.log('enteringgg', 'heyyy', lotID)
     try {
+        // const client = await redis.createClient()
         const client = await redis.createClient({
             url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
@@ -367,6 +406,11 @@ module.exports.joinBidRoom = async (socket, lotID) => {
         const lotDetails = await getLotFromRedis(lotID, client)
         console.log('lot', lotDetails)
         socket.emit('joinBidRoom', lotDetails)
+        const data = {
+            auction_id: lotDetails.auction_id,
+            lot_id: lotID,
+        }
+        const listHistory = await listBidHistory(socket, data, io)
     } catch (err) {
         console.log(err)
         return err
@@ -479,7 +523,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
         })
-       
+        const listHistory = await listBidHistory(socket, data, io)
+        
         // const saveBidHistory = await client.hSet(`lot:${data.lot_id}`, data.buyer_id, JSON.stringify(data))
 
 

@@ -22,8 +22,8 @@ connection to be established before returning the connection object or error. */
 
 module.exports.connect = async () => {
     try {
-        const URL = 'mongodb://develop:develop!7edge@indy-auction.cimvoiv4bc2g.eu-west-2.docdb.amazonaws.com:27017/indyauction-develop?directConnection=true&authMechanism=DEFAULT&authSource=indyauction-develop&retryWrites=false'
-        const connection = await mongoose.connect(URL, { useNewUrlParser: true })
+        const URL = 'mongodb://develop:develop!7edge@indy-auction.cimvoiv4bc2g.eu-west-2.docdb.amazonaws.com:27017/indyauction-develop'
+        const connection = await mongoose.connect(URL, { useNewUrlParser: true, connectTimeoutMS: 30000 })
         return connection
     } catch (err) {
         console.log('MongoDB connection error:', err)
