@@ -69,6 +69,7 @@ definitions:
         artifacts:
           - test-results/**  
 
+
     - step: &SecretChecking
         name: Secret Detection
         script:
