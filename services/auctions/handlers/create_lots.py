@@ -107,6 +107,9 @@ def lambda_handler(event, context):
                                                          'starting_sequence': 1}},
                                                      return_document=pymongo.ReturnDocument.AFTER,
                                                      upsert=True)
+        auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+        request_body['start_date'] = auction_record['start_date']
+        request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]
         request_body["seller_email"] = seller_email
         # Insert the lot data into the MongoDB collection
@@ -114,10 +117,6 @@ def lambda_handler(event, context):
 
         # After inserting the lot, update the total_lots count for the associated auction
         auction_id = request_body["auction_id"]
-
-        # Check if the auction record already has a "total_lots" field
-        auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
-
         if auction_record and "total_lots" in auction_record:
             # Increment the existing "total_lots" count
             auction_collection.update_one(

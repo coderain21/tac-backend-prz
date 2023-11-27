@@ -44,7 +44,8 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        except:
+        except Exception as e:
+            print(e)
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -75,6 +76,7 @@ def register_auction(event, context):
                 "body": json.dumps({'status':status})
             }
         registeration_type=auction.find_one({'_id':ObjectId(auction_id)})
+        print('regs', registeration_type)
         paddle_color= registeration_type['paddle']
         paddle_text_color= paddle_color["text_color"]
         paddle_background_color= paddle_color["background_color"]
@@ -83,8 +85,10 @@ def register_auction(event, context):
         if paddle_background_color == "":
             paddle_background_color = "#000000"
         seller_email= registeration_type['seller_email']
+        print('seller email', seller_email, email_address)
         buyer= buyer_collection.find_one(
             {'email_address':email_address,"seller_email":seller_email}, {'_id': 0})
+        print('buyer', buyer)
         if buyer is None:
             return {
                 "statusCode": 404,
@@ -106,9 +110,15 @@ def register_auction(event, context):
         if registeration_type['registration_type'] == 'Email only' or registeration_type['registration_type'] == 'Credit (bank) card validation' :
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
-            start_date_time= registeration_type['start_date']
-            start_date=start_date_time.date()
-            start_time=start_date_time.time()
+            print('seller 1234', seller)
+            start_date_time_in_milliseconds= registeration_type['start_date']
+            # Convert timestamp in milliseconds to datetime object
+            start_date_time_in_seconds = start_date_time_in_milliseconds / 1000
+            start_date_time = datetime.utcfromtimestamp(start_date_time_in_seconds)
+
+            # Extract date and time
+            start_date = start_date_time.date()
+            start_time = start_date_time.time()
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":
@@ -157,6 +167,7 @@ def register_auction(event, context):
                             'marketing': marketing
                    }
         result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
+        print('result', result)
         if result is None:
             auction_register.insert_one(data_to_insert)
         else:
