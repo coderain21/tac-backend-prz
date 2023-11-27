@@ -183,6 +183,99 @@
             }
           }
         }
+      },
+      "/update": {
+        "patch": {
+          "tags": ["Bidders Management"],
+          "summary": "Update Bidders data after social signup",
+          "description": "Update Bidders data after social signup",
+          "parameters": [
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "group": {
+                      "type": "string"
+                    },
+                    "auction_id":{
+                      "type": "string"
+                    }
+                }
+              },
+              "example": {
+                "group": "aishwarya+401",
+                "auction_id": "654cdc658f15384efe13b200"
+              }
+            }
+          }
+          },
+          "responses": {
+            "204": {
+              "description": "Bidder data updated"
+            },
+            "400": {
+              "description": "Bad Request",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Please provide auction_id"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "User does not exist"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error while adding to the group "
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
   },
     "components": {

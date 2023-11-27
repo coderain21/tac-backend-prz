@@ -103,7 +103,7 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
-        if registeration_type['registration_type'] == 'Email only':
+        if registeration_type['registration_type'] == 'Email only' or registeration_type['registration_type'] == 'Credit (bank) card validation' :
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
             start_date_time= registeration_type['start_date']

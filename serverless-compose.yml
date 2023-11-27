@@ -14,5 +14,10 @@ services:
   bids:
     path: services/bids
     config: ${env:config}
-
+  subdomain:
+    path: services/subdomain
+    config: ${env:config}
+  address-management:
+    path: services/address-management
+    config: ${env:config}
     

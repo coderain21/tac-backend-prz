@@ -1,4 +1,4 @@
-service: bids
+service: Subdomain
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -49,7 +49,15 @@ provider:
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    AMPLIFY_APP_ID: ${env:AMPLIFY_APP_ID}
+    AMPLIFY_DOMAIN_NAME: ${env:AMPLIFY_DOMAIN_NAME}
+    DEFAULT_INDENTITY_POOL_ID: ${env:DEFAULT_INDENTITY_POOL_ID}
+    DEFAULT_IDENTITY_POOL_NAME: ${env:DEFAULT_IDENTITY_POOL_NAME}
+    DEFAULT_BUYER_USERPOOL_ID: ${env:DEFAULT_BUYER_USERPOOL_ID}
+    SUBDOMAIN_COLLECTION: ${env:SUB_DOMAIN_TABLE}
+    AMPLIFY_BRANCH: ${env:AMPLIFY_BRANCH}
+
+
     
   http:
     cors: true
@@ -71,6 +79,9 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
+            - amplify:*
+            - route53:*
+            - cognito-identity:UpdateIdentityPool
           Resource: "*"
  
 package:
@@ -99,9 +110,10 @@ custom:
       endpointType: REGIONAL
 
 functions: 
-  list:
-    handler: handlers/list.list_bidders
+  sub-domain:
+    handler: handlers/subdomain.subdomain
     runtime: python3.8
+    timeout: 100
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
@@ -112,27 +124,10 @@ functions:
     events:
       - http:
           cors: true
-          path: /
-          method: get
+          path: /subdomain
+          method: patch
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
-  
-  add-to-group:
-    handler: handlers/update.update_user
-    runtime: python3.8
-    layers: 
-      - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
-          path: /update
-          method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
 resources:
