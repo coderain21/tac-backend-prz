@@ -128,7 +128,7 @@ def update_user(event, context):
                         buyer_collection.insert_one(buyer_data_new)
                     else:
                         buyer_collection.insert_one(new_data)
-                    
+
                 else:
                     # Check if the user has an existing record without seller_email
                     buyer_data_without_seller = buyer_collection.find_one(
