@@ -92,9 +92,9 @@ def add_payment_data_to_collection(insert_data):
         # MongoDB configuration
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection_sellers = db[os.environ['PAYMENTS_COLLECTION']]
+        payments_collection = db[os.environ['PAYMENTS_COLLECTION']]
         print(insert_data)
-        insert_result = collection_sellers.insert_one(insert_data)
+        insert_result = payments_collection.insert_one(insert_data)
         print(insert_result)
         client.close()
         if insert_result:
@@ -188,6 +188,7 @@ def create_intent(event, context):
             "id": stripe_data["id"],
             "client_secret": stripe_data["client_secret"],
             "status": stripe_data["status"],
+            "amount": amount*100,
             "application_amount": stripe_data["application_fee_amount"],
             "currency": stripe_data["currency"],
             "seller_email": seller_data_of_auction["seller_email"]
