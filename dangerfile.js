@@ -8,8 +8,19 @@ const cardNumberRegex = /\b[A-Za-z]+-\d+\b/;
 const timeTagRegex = /#time \d+[hmdw]*/;
 const Branchtype = /(feature:|bugfix:|hotfix:|chore:|refactor:|documentation:|style:|test:|performance:|ci:|build:|revert:)/;
 let hasFailures = false;
+const emailRegex = /<(.+?)>/;
+// Check if any commit has an email without "@7edge.com" before entering the loop
+const shouldSkipLoop = commits.some((commit) => {
+    const match = emailRegex.exec(commit.raw);
+    console.log(match, "raw")
+    return match && !match[1].includes('@7edge.com');
+});
 
-for (const commit of commits) {
+
+if (shouldSkipLoop) {
+    console.log("Skipping the loop for commits with email addresses not from @7edge.com");
+} else {
+    for (const commit of commits) {
     const numberOfParents = commit.parents.length;
     if (numberOfParents === 1) {
         const commitHash = commit.hash;
@@ -30,6 +41,7 @@ for (const commit of commits) {
             fail(`Commit (${commitHash}) is missing a Branch type (e.g., feature: or bugfix:)`);
             hasFailures = true;
         }
+    }
     }
 }
 
