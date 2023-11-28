@@ -63,14 +63,16 @@ def generate_client_secret(account_id, amount, currency, application_fee):
             currency=currency,
             automatic_payment_methods={"enabled": True},
             application_fee_amount=int(application_fee*100),
-            stripe_account=account_id,
+            stripe_account=account_id
+            # payment_method_types=["card"],
+            # confirm=True,
+            # return_url="https://auction-domain.indyauction.net/auctions/6520008e74542648a5819807"
         )
         print(session)
         return session
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}")
         raise
-
 
 def add_payment_data_to_collection(insert_data):
     """
