@@ -323,6 +323,11 @@ module.exports.placeBid = async (socket, data, io, userData) => {
 
         if (timeLeft <= 60000 && timeLeft > 0) {
             console.log('The bid is within the last minute before the auction ends.')
+            console.log('inside3333333333333333333 one minute')
+            await checkExtensionType(data)
+            extension_time = currentLotDetails.extension_time
+            extension_type = currentLotDetails.extension_type
+            extended = true
         } else {
             console.log('The bid is not within the last minute before the auction ends.')
         }
