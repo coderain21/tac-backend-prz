@@ -105,7 +105,7 @@ def view_list_lots(event, context):
             sort_param = data.get("sort_by", "")
             search_keyword = data.get('search', "")
 
-            lots_list = get_lots(auction_id, result['seller_email'], search_keyword, sort_param)
+            lots_list = get_lots(auction_id, seller_email, search_keyword, sort_param)
             print('============', lots_list)
 
             return {
