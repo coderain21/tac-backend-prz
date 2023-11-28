@@ -26,7 +26,7 @@ for (const commit of commits) {
             hasFailures = true;
         }
 
-        if (!branchTypeRegex.test(commitMessage)) {
+        if (!Branchtype.test(commitMessage)) {
             fail(`Commit (${commitHash}) is missing a Branch type (e.g., feature: or bugfix:)`);
             hasFailures = true;
         }
