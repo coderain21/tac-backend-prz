@@ -443,6 +443,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const currentTimestamp = new Date().getTime()
         console.log('currentTimestamp', currentTimestamp, currentLotDetails.end_date)
         if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+            console.log('insidee 123')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
@@ -474,6 +475,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         console.log('oneMinuteBeforeEndDate', oneMinuteBeforeEndDate)
         
         if (oneMinuteBeforeEndDate === currentLotDetails.end_date) {
+            console.log('inside3333333333333333333 one minute')
             await checkExtensionType(data)
             extension_time = JSON.parseInt(currentLotDetails.extension_time)
             extension_type = currentLotDetails.extension_type
