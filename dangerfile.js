@@ -4,6 +4,7 @@ import { danger, warn, fail } from "danger"
 const { execSync } = require("child_process");
 // const prDescription = danger.bitbucket_cloud.pr.description;
 const commits = danger.bitbucket_cloud.commits;
+console.log(commits, "commits")
 const cardNumberRegex = /\b[A-Za-z]+-\d+\b/;
 const timeTagRegex = /#time \d+[hmdw]*/;
 const Branchtype = /(feature:|bugfix:|hotfix:|chore:|refactor:|documentation:|style:|test:|performance:|ci:|build:|revert:)/;
