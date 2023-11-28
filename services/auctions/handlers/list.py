@@ -6,7 +6,7 @@ import csv
 import boto3
 from pymongo import MongoClient
 from lib.common_helper import Encoder
-from datetime import datetime, timedelta
+from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -140,10 +140,8 @@ def list_auction(event, context):
                 "status": 1
             }
         # Check if both start_date and end_date are provided
+        print(1)
         if start_date and end_date:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d")
-            end_date = datetime.strptime(end_date, "%Y-%m-%d")
-            end_date += timedelta(days=1)
             date_range_condition = {
                 "$or": [
                     {
@@ -162,12 +160,12 @@ def list_auction(event, context):
             }
 
             query_conditions.append(date_range_condition)
-
+        print(2)
         # Check if status is provided and not empty
         if status:
             status_condition = {"status": status}
             query_conditions.append(status_condition)
-
+        print(3)
         # Check if keyword is provided
         if keyword:
             escaped_search_keyword = prepend_backslash(keyword)
@@ -177,19 +175,22 @@ def list_auction(event, context):
         queries = []
         queries.append({"seller_email": email_address})
         queries.append(allowed_status)
-
+        print(4)
         # Create the final query using $and operator
         if query_conditions:
             query_conditions.append({"seller_email": email_address})
             query_conditions.append(allowed_status)
             results = collection.find({"$and": query_conditions}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
+            print(5)
             if export is not None and export == 1:
                 download_link = export_as_csv(list(collection.find(
                     {"$and": query_conditions}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
             total_records_count = collection.count_documents(
                 {"$and": query_conditions})
+            print(6)
         else:
+            print(7)
             results = collection.find({"$and": queries}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
             if export is not None and export == 1:
@@ -199,6 +200,7 @@ def list_auction(event, context):
                 {"$and": queries})
         total_auctions = collection.count_documents(
                 {"$and": queries})
+        print(8)
         paginated_results = list(results)
         client.close()
         body = {
@@ -239,7 +241,6 @@ def export_as_csv(auctions):
         Exception: If an error occurs during the export and upload process.
     """
     try:
-
         # Export QR codes as CSV and upload to S3
         csv_file = os.environ["CSV_FILE"]
         s3_key = f"exports/{csv_file}"
@@ -249,6 +250,7 @@ def export_as_csv(auctions):
             writer = csv.DictWriter(file, ["Auction ID", "Auction Name", "Auction Description", "Timezone", "Auction Start Date", "Auction Start Time", "Auction End Date", "Auction End Time",
                                     "Registration Type", "Currency", "Extension Type", "Extension mins", "Number of Lots", "Status"])
             writer.writeheader()
+            print(333)
 
             # Format the created_at field as dd-mm-year
             for auction in auctions:
@@ -257,10 +259,10 @@ def export_as_csv(auctions):
                 modified_auction["Auction Name"] = auction["title"]
                 modified_auction["Auction Description"] = re.sub(re.compile(r'<.*?>'), '', auction["description"])
                 modified_auction["Timezone"] = auction["time_zone"]
-                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None or datetime.fromisoformat(auction["start_date"]).year == 1970 else datetime.fromisoformat(auction["start_date"]).strftime("%d %B %Y")
-                modified_auction["Auction Start Time"] = "" if auction['start_date'] is None or datetime.fromisoformat(auction["start_date"]).year == 1970 else datetime.fromisoformat(auction["start_date"]).strftime("%H:%M")
-                modified_auction["Auction End Date"] = "" if auction['end_date'] is None or datetime.fromisoformat(auction["end_date"]).year == 1970 else datetime.fromisoformat(auction["end_date"]).strftime("%d %B %Y")
-                modified_auction["Auction End Time"] = "" if auction['end_date'] is None or datetime.fromisoformat(auction["end_date"]).year == 1970 else datetime.fromisoformat(auction["end_date"]).strftime("%H:%M")
+                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
+                modified_auction["Auction Start Time"] = "" if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%H:%M")
+                modified_auction["Auction End Date"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%d %B %Y")
+                modified_auction["Auction End Time"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%H:%M")
                 modified_auction["Registration Type"] = auction["registration_type"]
                 modified_auction["Currency"] = auction["currency"]
                 modified_auction["Extension Type"] = auction["extension_type"]
@@ -272,18 +274,19 @@ def export_as_csv(auctions):
 
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
+        print(89)
 
         # Generate signed URL
         s3_resource = boto3.resource("s3", region_name='eu-west-2')
         object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
         object_acl.put(ACL="public-read")
-
         s3_signed_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": s3_bucket, "Key": s3_key},
             # URL expiration time in seconds (adjust as needed)
             ExpiresIn=3600,
         )
+        print(888)
         return s3_signed_url
     except Exception as err:
         print(err)
