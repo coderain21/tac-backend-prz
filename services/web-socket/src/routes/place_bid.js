@@ -316,7 +316,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         if (oneMinuteBeforeEndDate === currentLotDetails.end_date) {
             console.log('inside3333333333333333333 one minute')
             await checkExtensionType(data)
-            extension_time = JSON.parseInt(currentLotDetails.extension_time)
+            extension_time = currentLotDetails.extension_time
             extension_type = currentLotDetails.extension_type
             extended = true
         }
@@ -358,11 +358,16 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
-            console.log('111highestBidder')
+            console.log('111highestBidder', highestBidder)
             if (data.buyer_id === highestBidder.buyer_id) {
                 currentLotDetails.max_bid = data.bid_amount
                 // added later
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+            } else if (data.bid_amount > currentLotDetails.max_bid) {
+                currentLotDetails.max_bid = data.bid_amount
+                // added later
+                currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+                currentLotDetails.winning_user = data.buyer_id
             } else {
                 console.log('4444444444444')
                 if (data.bid_amount > currentLotDetails.max_bid) {
@@ -387,7 +392,20 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails, extension: { extended, extension_type, extension_time },
         })
-        const listHistory = await listBidHistory(socket, data, io)
+        // webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
+        // // const payload = JSON.stringify({
+        // //     title: 'BID HAPPENING',
+        // //     body: 'YESS HAPPENED',
+        // //     stage: 'dev',
+        // //     web_push_type: 'BID',
+        // const dataS = {
+        //     status: 'Winning',
+        // }
+        // // })
+        // const payload = JSON.stringify({ title: 'Hello World', body: 'This is your first push notification' })
+        // const pushresponse = webpush.sendNotification(dataS, payload).catch(console.log)
+        // // const pushresponse = await webpush.sendNotification(, payload)
+        // const listHistory = await listBidHistory(socket, data, io)
     } catch (err) {
         console.log(err)
         return err
