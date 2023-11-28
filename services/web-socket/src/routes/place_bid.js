@@ -312,6 +312,20 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         
         const oneMinuteBeforeEndDate = oneMinuteAgo.getTime()
         console.log('oneMinuteBeforeEndDate', oneMinuteBeforeEndDate)
+        const auctionEndTimeEpoch = currentLotDetails.end_date // Example end time: January 1, 2023, at 18:00 (6:00 PM) in epoch timestamp
+
+        // Get current time in epoch timestamp (in seconds)
+        const currentTimeEpoch = Date.now()
+
+
+        // Calculate time left until auction end in seconds
+        const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
+
+        if (timeLeft <= 60000 && timeLeft > 0) {
+            console.log('The bid is within the last minute before the auction ends.')
+        } else {
+            console.log('The bid is not within the last minute before the auction ends.')
+        }
         
         if (oneMinuteBeforeEndDate === currentLotDetails.end_date) {
             console.log('inside3333333333333333333 one minute')
