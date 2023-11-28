@@ -57,7 +57,7 @@ const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|st
 
 // Get the branch name from the BITBUCKET_BRANCH environment variable
 const branchName = process.env.BITBUCKET_BRANCH;
-print(branchName,"branch")
+console.log(branchName,"branch")
 
 if (!branchNameRegex.test(branchName)) {
     fail(`Jira fix version is missing in branch name: ${branchName}`);
