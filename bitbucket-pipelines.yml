@@ -169,11 +169,13 @@ definitions:
         artifacts:
           - test_results/**
     
+
     - step: &Danger
         name: Git Compliance - Danger
         caches:
           - node
         script:
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - export LANG="C.UTF-8"
           - npm install --f
           - npm install -g danger

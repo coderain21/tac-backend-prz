@@ -9,54 +9,37 @@ const timeTagRegex = /#time \d+[hmdw]*/;
 const Branchtype = /(feature:|bugfix:|hotfix:|chore:|refactor:|documentation:|style:|test:|performance:|ci:|build:|revert:)/;
 let hasFailures = false;
 
-
-let commitIndex = 0;
-let foundCommitWithOneParent = false;
-
-while (commitIndex < commits.length && !foundCommitWithOneParent) {
-    const currentCommit = commits[commitIndex];
-    const numberOfParents = currentCommit.parents.length;
-
+for (const commit of commits) {
+    const numberOfParents = commit.parents.length;
     if (numberOfParents === 1) {
-        foundCommitWithOneParent = true;
-    } else {
-        // Move to the next commit
-        commitIndex++;
+        const commitHash = commit.hash;
+        console.log(`Checking commit (${commitHash}) with one parent.`);
+        const commitMessage = commit.message;
+
+        if (!cardNumberRegex.test(commitMessage)) {
+            fail(`Commit (${commitHash}) is missing Jira issue key (e.g., CARD-1234)`);
+            hasFailures = true;
+        }
+
+        if (!timeTagRegex.test(commitMessage)) {
+            fail(`Commit (${commitHash}) is missing a #time tag (e.g., #time 2h)`);
+            hasFailures = true;
+        }
+
+        if (!Branchtype.test(commitMessage)) {
+            fail(`Commit (${commitHash}) is missing a Branch type (e.g., feature: or bugfix:)`);
+            hasFailures = true;
+        }
     }
 }
 
 
-if (foundCommitWithOneParent) {
-    const latestCommit = commits[commitIndex];
-    console.log(latestCommit,'latest commit')
-    const commitHash = latestCommit.hash;
-    console.log(`Found commit (${commitHash}) with one parent.`);
-    const commitMessage = latestCommit.message;
+const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert)\/\d+(\.\d+)?\/[a-zA-Z0-9-]+$/
 
-    
-
-    if (!cardNumberRegex.test(commitMessage)) {
-        fail(`Latest commit (${commitHash}) is missing Jira issue key (e.g., CARD-1234)`);
-        hasFailures = true;
-    }
-    if (!timeTagRegex.test(commitMessage)) {
-        fail(`Latest commit (${commitHash}) is missing a #time tag (e.g., #time 2h)`);
-        hasFailures = true;
-    }
-    if (!Branchtype.test(commitMessage)) {
-        fail(`Latest commit (${commitHash}) is missing a Branch type (e.g., feature: or bugfix:)`);
-        hasFailures = true;
-    }
-    // Continue with your logic for the found commit...
-} else {
-    console.log("No commit with one parent found.");
-}
-
-
-const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert)\/\d+(\.\d+)?\/\w+$/;
 
 // Get the branch name from the BITBUCKET_BRANCH environment variable
 const branchName = process.env.BITBUCKET_BRANCH;
+console.log(branchName,"branch")
 
 if (!branchNameRegex.test(branchName)) {
     fail(`Jira fix version is missing in branch name: ${branchName}`);
