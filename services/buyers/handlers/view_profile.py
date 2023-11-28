@@ -36,14 +36,12 @@ def view_profile(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            # email_address='shrinitpoojary1234@gmail.com'
         except:
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # email_address= 'shrinit.poojary+100@7edge.com'
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
