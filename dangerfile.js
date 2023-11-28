@@ -8,7 +8,7 @@ const cardNumberRegex = /\b[A-Za-z]+-\d+\b/;
 const timeTagRegex = /#time \d+[hmdw]*/;
 const Branchtype = /(feature:|bugfix:|hotfix:|chore:|refactor:|documentation:|style:|test:|performance:|ci:|build:|revert:)/;
 let hasFailures = false;
-const emailRegex = /<(.+?)>/;
+const emailRegex = /<([^>]+?)>/;
 // Check if any commit has an email without "@7edge.com" before entering the loop
 const shouldSkipLoop = commits.some((commit) => {
     const match = emailRegex.exec(commit.raw);
