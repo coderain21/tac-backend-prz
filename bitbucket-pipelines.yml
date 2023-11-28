@@ -168,6 +168,16 @@ definitions:
           - python3 dast.py
         artifacts:
           - test_results/**
+    
+    - step: &Danger
+        name: Git Compliance - Danger
+        caches:
+          - node
+        script:
+          - export LANG="C.UTF-8"
+          - npm install --f
+          - npm install -g danger
+          - npx danger ci
 
 pipelines:
   custom: 
@@ -186,6 +196,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+            - step: *Danger
       - step: *APITesting
  
       
@@ -202,6 +213,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+            - step: *Danger
       - step: *APITesting
 
   
@@ -219,6 +231,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+            - step: *Danger
      
 
   branches:
