@@ -4,12 +4,25 @@ import { danger, warn, fail } from "danger"
 const { execSync } = require("child_process");
 // const prDescription = danger.bitbucket_cloud.pr.description;
 const commits = danger.bitbucket_cloud.commits;
+console.log(commits, "commits")
 const cardNumberRegex = /\b[A-Za-z]+-\d+\b/;
 const timeTagRegex = /#time \d+[hmdw]*/;
 const Branchtype = /(feature:|bugfix:|hotfix:|chore:|refactor:|documentation:|style:|test:|performance:|ci:|build:|revert:)/;
 let hasFailures = false;
+const emailRegex = /<([^>]+?)>/;
+// Check if any commit has an email without "@7edge.com" before entering the loop
+const shouldSkipLoop = commits.some((commit) => {
+    const authorRaw = commit.author.raw;
+    const match = emailRegex.exec(authorRaw); 
+    console.log(match, "raw")
+    return match && !match[1].includes('@7edge.com');
+});
 
-for (const commit of commits) {
+
+if (shouldSkipLoop) {
+    console.log("Skipping the loop for commits with email addresses not from @7edge.com");
+} else {
+    for (const commit of commits) {
     const numberOfParents = commit.parents.length;
     if (numberOfParents === 1) {
         const commitHash = commit.hash;
@@ -31,10 +44,12 @@ for (const commit of commits) {
             hasFailures = true;
         }
     }
+    }
 }
 
 
 const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert)\/\d+(\.\d+)?\/[a-zA-Z0-9-]+$/
+
 
 
 // Get the branch name from the BITBUCKET_BRANCH environment variable
