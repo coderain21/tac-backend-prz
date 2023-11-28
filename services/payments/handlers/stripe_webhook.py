@@ -1,7 +1,13 @@
+"""
+Module: stripe_webhook_handler
+
+This module defines a Stripe webhook handler implemented as an AWS Lambda function.
+The function is responsible for updating payment data in a MongoDB database based on
+events received from the Stripe payment system.
+"""
 import json
 import os
 import stripe
-import base64
 from pymongo import MongoClient
 
 stripe.api_key = os.environ["STRIPE_API_KEY"]
@@ -11,9 +17,22 @@ headers = {
     'Access-Control-Allow-Credentials': False,
 }
 # This is your Stripe CLI webhook secret for testing your endpoint locally.
-endpoint_secret = 'whsec_3nPHZY45QpYXFyJG4HGyPe9K1Ni2F4hI'
+endpoint_secret = os.environ['STRIPE_ENDPOINT_SECRET']
 
 def update_payment_data(id,update_data):
+    """
+    Update payment data in the MongoDB collection.
+
+    Parameters:
+    - id (str): Payment ID
+    - update_data (dict): Dictionary containing fields to update in the payment document
+
+    Returns:
+    - pymongo.results.UpdateResult or None: Result of the update operation or None if unsuccessful
+
+    Raises:
+    - BaseException: Any unexpected error during the update operation
+    """
     try:
         # MongoDB configuration
         client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -33,19 +52,31 @@ def update_payment_data(id,update_data):
         raise
 
 def update(event, context):
+    """
+    AWS Lambda function entry point for handling Stripe webhook events.
+
+    Parameters:
+    - event (dict): AWS Lambda event object containing details of the invocation
+    - context (object): AWS Lambda context object providing information about the runtime
+
+    Returns:
+    - dict: HTTP response containing status code, headers, and body
+
+    Note:
+    This function assumes the presence of the required environment variables and expects
+    the event to contain a valid Stripe webhook payload.
+    """
     try:
         print(event)
         # Lambda function entry point
         try:
             payload = event['body']
-            print(1,event['body'])
             sig_header = event['headers']['Stripe-Signature']
 
             # Verify the Stripe webhook signature
             event = stripe.Webhook.construct_event(
                 payload, sig_header, endpoint_secret
             )
-            print(3)
         except ValueError as e:
             print("Invalid payload")
             # Invalid payload
@@ -61,12 +92,10 @@ def update(event, context):
                 'statusCode': 400,
                 'body': json.dumps({'message': str(e)})
             }
-        print(2)
         event_body = payload
-        print(event_body)
-        print(0)
+
         data = json.loads(event_body)
-        print("data",data)
+
         data=data["data"]
         # Handle the event
         if data["object"]["object"] == "payment_intent":
