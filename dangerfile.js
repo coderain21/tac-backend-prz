@@ -28,7 +28,7 @@ while (commitIndex < commits.length && !foundCommitWithOneParent) {
 
 if (foundCommitWithOneParent) {
     const latestCommit = commits[commitIndex];
-    console.log(latestCommit,'latest commit')
+    // console.log(latestCommit,'latest commit')
     const commitHash = latestCommit.hash;
     console.log(`Found commit (${commitHash}) with one parent.`);
     const commitMessage = latestCommit.message;
@@ -57,6 +57,7 @@ const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|st
 
 // Get the branch name from the BITBUCKET_BRANCH environment variable
 const branchName = process.env.BITBUCKET_BRANCH;
+print(branchName,"branch")
 
 if (!branchNameRegex.test(branchName)) {
     fail(`Jira fix version is missing in branch name: ${branchName}`);
