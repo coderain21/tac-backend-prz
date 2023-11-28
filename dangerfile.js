@@ -22,6 +22,7 @@ if (shouldSkipLoop) {
 } else {
     for (const commit of commits) {
     const numberOfParents = commit.parents.length;
+    console.log(commit.raw, "email")
     if (numberOfParents === 1) {
         const commitHash = commit.hash;
         console.log(`Checking commit (${commitHash}) with one parent.`);
