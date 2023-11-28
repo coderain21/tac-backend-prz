@@ -104,6 +104,7 @@ def update(event, context):
                 "status": data["object"]["status"]
             }
             update_payment_data(payment_id,update_data)
+            print("-->>",data["object"]["payment_method"])
 
         return {
             "headers": headers,
