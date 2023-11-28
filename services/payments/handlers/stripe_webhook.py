@@ -95,7 +95,6 @@ def update(event, context):
         event_body = payload
 
         data = json.loads(event_body)
-
         data=data["data"]
         # Handle the event
         if data["object"]["object"] == "payment_intent":
