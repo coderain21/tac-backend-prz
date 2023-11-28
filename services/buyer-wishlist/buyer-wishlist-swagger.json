@@ -42,249 +42,24 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "auction_id": {
-                          "type": "string"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "start_date": {
-                          "type": "string"
-                        },
-                        "end_date": {
-                          "type": "string"
-                        },
-                        "status": {
-                          "type": "string"
-                        },
-                        "created_at": {
-                          "type": "string"
-                        },
-                        "auction_image": {
-                          "type": "string"
-                        },
-                        "description": {
-                          "type": "string"
-                        },
-                        "currency": {
-                          "type": "string"
-                        },
-                        "extension_type": {
-                          "type": "string"
-                        },
-                        "extension_time": {
-                          "type": "string"
-                        },
-                        "extension_time_between_lots": {
-                          "type": "string"
-                        },
-                        "registration_type": {
-                          "type": "string"
-                        },
-                        "add_buyer_fees": {
-                          "type": "string"
-                        },
-                        "time_zone": {
-                          "type": "string"
-                        },
-                        "make_your_auction_private": {
-                          "type": "string"
-                        },
-                        "passcode": {
-                          "type": "string"
-                        },
-                        "fees": {
-                          "type": "string"
-                        },
-                        "menu_links": {
-                          "type": "array"
-                        },
-                        "footer": {
-                          "type": "object"
-                        },
-                        "buttons": {
-                          "type": "object"
-                        },
-                        "content_area": {
-                          "type": "object"
-                        },
-                        "header": {
-                          "type": "object"
-                        },
-                        "font": {
-                          "type": "object"
-                        },
-                        "logo_image": {
-                          "type": "string"
-                        },
-                        "template_name": {
-                          "type": "string"
-                        },
-                        "logo_redirection_url": {
-                          "type": "string"
-                        },
-                        "faq": {
-                          "type": "string"
-                        },
-                        "terms_and_condition": {
-                          "type": "string"
-                        },
-                        "paddle": {
-                          "type": "string"
-                        },
-                        "show_bidder_location_in_bidder_history": {
-                          "type": "string"
-                        },
-                        "publish_auction_results": {
-                          "type": "string"
-                        }
-                      }
+                    "message": {
+                      "type": "string",
+                      "example": "Lot added to wishlist successfully"
                     }
-                  }
-                },
-                "example": {
-                  "data": {
-                    "_id": "651e1ace66254f2d0c0f22c6",
-                    "auction_id": "A0921",
-                    "template_name": "Single lot",
-                    "menu_links": [
-                      {
-                        "title": "Home",
-                        "link_url": "https://example.com/home",
-                        "dropdown": [
-                          {
-                            "title": "About Us",
-                            "link_url": "https://example.com/about"
-                          },
-                          {
-                            "title": "Contact Us",
-                            "link_url": "https://example.com/contact"
-                          }
-                        ]
-                      }
-                    ],
-                    "logo_image": "https://example.com/logo.png",
-                    "logo_redirection_url": "https://example.com",
-                    "title": "Auction Event",
-                    "auction_image": "https://example.com/auction-image.png",
-                    "description": "<p>Join our auction event!</p>",
-                    "currency": "USD",
-                    "start_date": "2023-10-04 18:30:00",
-                    "end_date": "2023-10-05 18:30:00",
-                    "extension_type": "Automatic",
-                    "extension_time": "5 minutes",
-                    "extension_time_between_lots": "2m",
-                    "registration_type": "Open",
-                    "faq": [
-                      {
-                        "question": "How do I participate?",
-                        "answer": "Register on our website and place bids."
-                      },
-                      {
-                        "question": "What payment methods are accepted?",
-                        "answer": "We accept credit cards and PayPal."
-                      }
-                    ],
-                    "time_zone": "UTC+5:30",
-                    "terms_and_condition": "By participating, you agree to our terms.",
-                    "publish_auction_results": true,
-                    "show_bidder_location_in_bidder_history": true,
-                    "make_your_auction_private": true,
-                    "font": {
-                      "hearder_font": "Arial",
-                      "body_font": "Helvetica"
-                    },
-                    "buttons": {
-                      "background_color": "#007BFF",
-                      "text_color": "#FFFFFF"
-                    },
-                    "header": {
-                      "background_color": "#F2F2F2",
-                      "text_color": "#333333"
-                    },
-                    "content_area": {
-                      "background_color": "#FFFFFF",
-                      "text_color": "#555555"
-                    },
-                    "footer": {
-                      "background_color": "#333333",
-                      "text_color": "#FFFFFF"
-                    },
-                    "paddle": {
-                      "background_color": "#FFD700",
-                      "text_color": "#333333"
-                    },
-                    "status": "Accepting bids"
-                  }
                 }
               }
             }
           },
           "400": {
-            "description": "Bad request",
+            "description": "Existing lot for a user",
             "content": {
               "application/json": {
-                "examples": {
-                  "example": {
-                    "value": {
-                      "message": "Please provide lot_id"
-                    }
-                  }
-                  },
-                  "example3": {
-                    "value": {
-                      "message": "Timezone is missing for this auction."
-                    }
-                  },
-                  "example4": {
-                    "value": {
-                      "message": "This is a private auction ,please provide passcode.",
-                      "data": {
-                        "menu_links": [
-                          {
-                            "title": "Home",
-                            "link_url": "https://example.com/home",
-                            "dropdown": [
-                              {
-                                "title": "About Us",
-                                "link_url": "https://example.com/about"
-                              },
-                              {
-                                "title": "Contact Us",
-                                "link_url": "https://example.com/contact"
-                              }
-                            ]
-                          }
-                        ],
-                        "logo_image": "https://example.com/logo.png"
-                      }
-                    }
-                  },
-                  "example5": {
-                    "value": {
-                      "message": "Invalid passcode.",
-                      "data": {
-                        "menu_links": [
-                          {
-                            "title": "Home",
-                            "link_url": "https://example.com/home",
-                            "dropdown": [
-                              {
-                                "title": "About Us",
-                                "link_url": "https://example.com/about"
-                              },
-                              {
-                                "title": "Contact Us",
-                                "link_url": "https://example.com/contact"
-                              }
-                            ]
-                          }
-                        ],
-                        "logo_image": "https://example.com/logo.png"
-                      }
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot already exist in wishlist"
                     }
                   }
                 }
@@ -324,266 +99,51 @@
         }
       }
     }
-  },
-  "components": {
-    "schemas": {
-      "Auction": {
-        "type": "object",
-        "properties": {
-          "seller_email": {
-            "type": "string"
-          },
-          "auction_id": {
-            "type": "string"
-          },
-          "template_name": {
-            "type": "string"
-          },
-          "note": {
-            "type": "string"
-          },
-          "menu_links": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "title": {
-                  "type": "string"
-                },
-                "link_url": {
-                  "type": "string"
-                },
-                "dropdown": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "title": {
-                        "type": "string"
-                      },
-                      "link_url": {
-                        "type": "string"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "logo_image": {
-            "type": "string"
-          },
-          "logo_redirection_url": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "auction_image": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "currency": {
-            "type": "string"
-          },
-          "start_date": {
-            "type": "number"
-          },
-          "end_date": {
-            "type": "number"
-          },
-          "extension_type": {
-            "type": "string"
-          },
-          "extension_time": {
-            "type": "string"
-          },
-          "extension_time_between_lots": {
-            "type": "string"
-          },
-          "registration_type": {
-            "type": "string"
-          },
-          "add_buyer_fees": {
-            "type": "number"
-          },
-          "time_zone": {
-            "type": "string"
-          },
-          "faq": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "question": {
-                  "type": "string"
-                },
-                "answer": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "terms_and_condition": {
-            "type": "string"
-          },
-          "publish_auction_result": {
-            "type": "boolean"
-          },
-          "show_bidder_location_in_bidder_history": {
-            "type": "boolean"
-          },
-          "make_your_auction_private": {
-            "type": "boolean"
-          },
-          "passcode": {
-            "type": "string"
-          },
-          "font": {
-            "type": "object"
-          },
-          "button": {
-            "type": "object"
-          },
-          "header": {
-            "type": "object"
-          },
-          "content_area": {
-            "type": "object"
-          },
-          "footer": {
-            "type": "object"
-          },
-          "paddle": {
-            "type": "object"
-          },
-          "status": {
-            "type": "string"
-          }
-        }
-      },
-      "User": {
-        "type": "object",
-        "properties": {
-          "email_address": {
-            "type": "string"
-          },
-          "first_name": {
-            "type": "string"
-          },
-          "last_name": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "terms_and_condition": {
-            "type": "boolean"
-          },
-          "user_type": {
-            "type": "string"
-          },
-          "newsletter_notification": {
-            "type": "boolean"
-          },
-          "sub_domain": {
-            "type": "string"
-          },
-          "seller_email": {
-            "type": "string"
-          }
-        }
-      },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
-          }
-        }
-      },
-      "Lots": {
-        "type": "object",
-        "properties": {
-          "auction_id": {
-            "type": "string"
-          },
-          "seller_email": {
-            "type": "string"
-          },
-          "lot_number": {
-            "type": "integer"
-          },
-          "lot_title": {
-            "type": "string"
-          },
-          "starting_bid": {
-            "type": "integer"
-          },
-          "current_bid": {
-            "type": "integer"
-          },
-          "Top_bidder": {
-            "type": "string"
-          },
-          "images": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "url": {
-                  "type": "string"
-                },
-                "feature": {
-                  "type": "boolean"
-                }
-              }
-            }
-          },
-          "title1": {
-            "type": "string"
-          },
-          "title2": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "starting_price": {
-            "type": "integer"
-          },
-          "low_estimate": {
-            "type": "integer"
-          },
-          "high_estimate": {
-            "type": "integer"
-          },
-          "shipping_details": {
-            "type": "string"
-          },
-          "tags": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "tags_name": {
-                  "type": "string"
-                }
-              }
+  }
+},
+"components": {
+  "schemas": {
+    "LotDetails": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "object",
+          "properties": {
+            "$oid": {
+              "type": "string"
             }
           }
+        },
+        "seller_email": {
+          "type": "string"
+        },
+        "lot_id": {
+          "type": "object",
+          "properties": {
+            "$oid": {
+              "type": "string"
+            }
+          }
+        },
+        "email_address": {
+          "type": "string"
+        },
+        "auction_name": {
+          "type": "string"
+        },
+        "auction_id": {
+          "type": "string"
         }
-      }
-    },
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "apiKey",
-        "name": "Authorization",
-        "in": "header",
-        "description": "Bearer Token"
       }
     }
+  },
+  "securitySchemes": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer Token"
+    }
   }
+}
 }

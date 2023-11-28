@@ -40,6 +40,12 @@ def create(event, context):
         body = json.loads(event['body'])
         data = event['queryStringParameters']
         lot = data['lot_id']
+        if not lot:
+            return{
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Please provide a lot id'})
+            }
         lot_id = ObjectId(lot)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
