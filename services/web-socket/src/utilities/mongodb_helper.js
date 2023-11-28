@@ -239,7 +239,6 @@ module.exports.getAllLots = async (document, lotData) => {
             auction_id: document.auction_id,
         }
         const extensionTimeInMilliseconds = parseExtensionTime(document.extension_time)
-        console.log('%%%%%', extensionTimeInMilliseconds)
         let documents
         if (document.extension_type === 'All Lots') {
             console.log('1111111')
@@ -253,7 +252,6 @@ module.exports.getAllLots = async (document, lotData) => {
             }
             await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
         } else if (document.extension_type === 'Individual') {
-            console.log('22222222222222222')
             const lotId = ObjectId(lotData.lot_id)
             documents = await collection.find({ ...query, _id: lotId }).toArray()
             const updateQuery = {
@@ -263,7 +261,6 @@ module.exports.getAllLots = async (document, lotData) => {
             }
             await collection.updateMany({ _id: lotId }, updateQuery)
         } else {
-            console.log('233333333333333')
             const sortOptions = { lot_number: 1 }
             documents = await collection.find(query).sort(sortOptions).toArray()
 
@@ -293,5 +290,20 @@ module.exports.getAllLots = async (document, lotData) => {
     } catch (error) {
         console.log(error)
         return false
+    }
+}
+
+module.exports.lotToCart = async (document) => {
+    try {
+        // Connect to the MongoDB server
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db
+        const collection = database.collection('dev-carts')
+        // The document to be inserted
+        // Insert the document into the collection
+        const result = await collection.insertOne(document)
+        return true
+    } catch (err) {
+        return err
     }
 }

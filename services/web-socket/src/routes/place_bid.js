@@ -29,8 +29,10 @@ const redis = require('redis')
 const mongodbHelpers = require('../utilities/mongodb_helper')
 const historyHelper = require('../utilities/save-bid-history')
 const helper = require('../utilities/auto_bid')
-const { checkExtensionType } = require('./update_extension')
+const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
+const { checkExtensionType } = require('./update_extension')
+
 
 
 // Check if the client is closed
@@ -338,17 +340,18 @@ async function getLotFromRedis(lot_id, client) {
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
             const connectionData = await mongodbHelpers.connect()
-
             console.log('cc', connectionData)
             const getLotData = await mongodbHelpers.getLot(lot_id)
             console.log('getd234', getLotData)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
             console.log('chec', checkAuctionEnd)
-            getLotData[0].start_date = checkAuctionEnd[0].start_date
-            getLotData[0].end_date = checkAuctionEnd[0].end_date
             getLotData[0].status = checkAuctionEnd[0].status
+            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
+            getLotData[0].percentage = checkAuctionEnd[0].percentage
+            getLotData[0].fees = checkAuctionEnd[0].fees
             const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(getLotData[0]))
             get_lot[0] = getLotData[0]
+            console.log('getLotData', getLotData)
             await connectionData.disconnect()
             // get_lot = [{
             //     _id: '6527ea63d0f71d56747f83f6',
@@ -428,34 +431,54 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         if (!client.isOpen) {
             await client.connect()
         }
+        let extended = false
+        let extension_time = 0
+        let extension_type = ''
         const redisKey = `lot:${data.lot_id}`
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
         data.time_stamp = new Date().getTime()
         const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
-        console.log('curr', currentLotDetails)
         // static values
-        // currentLotDetails.start_date = '1700841600000'
-        // currentLotDetails.end_date = '1700844660000'
-        // const currentTimestamp = new Date().getTime()
-        // if (currentLotDetails.end_date === currentTimestamp) {
-        //     const all_bidders = []
-        //     for (let i = 0; i < getLotHistoryDetails.length; i++) {
-        //         all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
-        //     }
-        //     const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
-        //     console.log('111highestBidder', highestBidder)
-        //     if (data.bid_amount > currentLotDetails.max_bid) {
-        //         console.log('if')
-        //         currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
-        //         currentLotDetails.max_bid = data.bid_amount
-        //         currentLotDetails.winning_user = data.buyer_id 
-        //     } else {
-        //         console.log('else data', highestBidder)
-        //         currentLotDetails.winning_user = highestBidder.buyer_id
-        //         currentLotDetails.bid_amount = highestBidder.bid_amount
-        //     }
-        // }
+        const currentTimestamp = new Date().getTime()
+        console.log('currentTimestamp', currentTimestamp, currentLotDetails.end_date)
+        if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+            const all_bidders = []
+            for (let i = 0; i < getLotHistoryDetails.length; i++) {
+                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+            }
+            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+            if (data.bid_amount > currentLotDetails.max_bid) {
+                console.log('if')
+                currentLotDetails.bid_amount = data.bid_amount 
+                currentLotDetails.max_bid = data.bid_amount
+                currentLotDetails.winning_user = data.buyer_id 
+            } else if (data.bid_amount < currentLotDetails.max_bid) {
+                console.log('else data', highestBidder)
+                currentLotDetails.winning_user = currentLotDetails.winning_user
+                currentLotDetails.bid_amount = currentLotDetails.bid_amount
+                currentLotDetails.max_bid = currentLotDetails.max_bid
+            }
+            currentLotDetails.lot_status = 'Ended'
+            currentLotDetails.email_address = currentLotDetails.winning_user
+            const saveToCart = await addToCart(currentLotDetails)
+            io.to(data.lot_id).emit('placeBid', {
+                success: true, currentLotDetails,
+            })
+            return true
+        }
+        const now = new Date()
+        const oneMinuteAgo = new Date(now - 60000) // Subtract 1 minute (60,000 milliseconds)
+        
+        const oneMinuteBeforeEndDate = oneMinuteAgo.getTime()
+        console.log('oneMinuteBeforeEndDate', oneMinuteBeforeEndDate)
+        
+        if (oneMinuteBeforeEndDate === currentLotDetails.end_date) {
+            await checkExtensionType(data)
+            extension_time = JSON.parseInt(currentLotDetails.extension_time)
+            extension_type = currentLotDetails.extension_type
+            extended = true
+        }
         if (getLotHistoryDetails.length <= 0) {
             console.log('111')
             //  if  no, then max bid and currentbid and buyer id
@@ -519,9 +542,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(currentLotDetails))
-        console.log('currentLotDetails', currentLotDetails, data.lot_id)
         io.to(data.lot_id).emit('placeBid', {
-            success: true, currentLotDetails,
+            success: true, currentLotDetails, extension: { extended, extension_type, extension_time }
         })
         const listHistory = await listBidHistory(socket, data, io)
         
