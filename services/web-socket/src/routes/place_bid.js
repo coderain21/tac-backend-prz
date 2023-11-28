@@ -329,6 +329,7 @@ const redisHelper = {
 
 async function getLotFromRedis(lot_id, client) {
     try {
+        console.log('hello345')
         const redisKey = `lot:${lot_id}`
         const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
         const get_lot = []
@@ -383,18 +384,21 @@ async function getLotFromRedis(lot_id, client) {
             //     lot_number: 1,
             // }]
         }
+        console.log('@@@@22', get_lot)
         return get_lot[0]
     } catch (err) {
+        console.log(err)
         return err
     }
 }
 
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
-        // const client = await redis.createClient()
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        console.log('hello13')
+        const client = await redis.createClient()
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         if (!client.isOpen) {
             await client.connect()
         }
@@ -414,12 +418,13 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 
 
 module.exports.placeBid = async (socket, data, io, userData) => {
+    console.log('placing bid')
     try {
         // step1 : get current lot info from redis
-        // const client = await redis.createClient()
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redis.createClient()
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         if (!client.isOpen) {
             await client.connect()
         }
@@ -428,9 +433,14 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         let extension_type = ''
         const redisKey = `lot:${data.lot_id}`
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
+        console.log('111111111111111111111111111')
         data.time_stamp = new Date().getTime()
-        const saveBidHistory = await client.hredisKeySet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
+        console.log('2222222222222222222222222222222222222222')
+        const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
+        console.log('33333333333333333333333333333333333333333333')
+
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
+        console.log('currentLotDetails', currentLotDetails)
         // static values
         const currentTimestamp = new Date().getTime()
         console.log('currentTimestamp', currentTimestamp, currentLotDetails.end_date)
@@ -441,6 +451,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+
             if (data.bid_amount > currentLotDetails.max_bid) {
                 console.log('if')
                 currentLotDetails.bid_amount = data.bid_amount 
@@ -455,6 +466,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             currentLotDetails.lot_status = 'Ended'
             currentLotDetails.email_address = currentLotDetails.winning_user
             const saveToCart = await addToCart(currentLotDetails)
+            console.log('endedddd', currentLotDetails)
             io.to(data.lot_id).emit('placeBid', {
                 success: true, currentLotDetails,
             })
@@ -536,8 +548,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(currentLotDetails))
+        console.log('currentLotDetails', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
-            success: true, currentLotDetails, extension: { extended, extension_type, extension_time }
+            success: true, currentLotDetails, extension: { extended, extension_type, extension_time },
         })
         const listHistory = await listBidHistory(socket, data, io)
         
@@ -554,6 +567,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         //     max_bid = 
         // }
     } catch (err) {
+        console.log(err)
         return err
     }
     // step1 : get current lot info from redis ------
