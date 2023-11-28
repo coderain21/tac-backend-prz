@@ -12,7 +12,8 @@ let hasFailures = false;
 const emailRegex = /<([^>]+?)>/;
 // Check if any commit has an email without "@7edge.com" before entering the loop
 const shouldSkipLoop = commits.some((commit) => {
-    const match = emailRegex.exec(commit.raw);
+    const authorRaw = commit.author.raw;
+    const match = emailRegex.exec(authorRaw); 
     console.log(match, "raw")
     return match && !match[1].includes('@7edge.com');
 });
@@ -23,7 +24,6 @@ if (shouldSkipLoop) {
 } else {
     for (const commit of commits) {
     const numberOfParents = commit.parents.length;
-    console.log(commit.raw, "email")
     if (numberOfParents === 1) {
         const commitHash = commit.hash;
         console.log(`Checking commit (${commitHash}) with one parent.`);
