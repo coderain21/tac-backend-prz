@@ -437,7 +437,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const redisKey = `lot:${data.lot_id}`
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
         data.time_stamp = new Date().getTime()
-        const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
+        const saveBidHistory = await client.hredisKeySet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
         // static values
         const currentTimestamp = new Date().getTime()
