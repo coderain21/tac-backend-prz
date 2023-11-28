@@ -196,7 +196,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            - step: *Danger
+            
       - step: *APITesting
  
       
@@ -213,7 +213,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            - step: *Danger
+
       - step: *APITesting
 
   
@@ -231,7 +231,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            - step: *Danger
+
      
 
   branches:
