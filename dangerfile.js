@@ -53,7 +53,8 @@ if (foundCommitWithOneParent) {
 }
 
 
-const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert)\/\d+(\.\d+)?$/;
+const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert)\/\d+(\.\d+)?\/[a-zA-Z0-9-]+$/
+
 
 // Get the branch name from the BITBUCKET_BRANCH environment variable
 const branchName = process.env.BITBUCKET_BRANCH;
