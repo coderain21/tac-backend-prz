@@ -293,6 +293,24 @@ module.exports.getAllLots = async (document, lotData) => {
     }
 }
 
+module.exports.getAuctionLots = async (document) => {
+    try {
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db
+        const collection = database.collection('dev-lots')
+
+        const query = {
+            seller_email: document.seller_email,
+            auction_id: document.auction_id,
+        }
+        const documents = await collection.find(query).toArray()
+        return documents
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+
 module.exports.lotToCart = async (document) => {
     try {
         // Connect to the MongoDB server

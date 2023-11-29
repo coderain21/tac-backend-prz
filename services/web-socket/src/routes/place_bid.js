@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-prototype-builtins */
 /* eslint-disable no-plusplus */
 /* eslint-disable brace-style */
 /* eslint-disable prefer-destructuring */
@@ -20,6 +22,8 @@
 /* eslint-disable no-multiple-empty-lines */
 /* eslint-disable import/no-extraneous-dependencies */
 const { promisify } = require('util')
+const { readSync } = require('fs')
+const { Console } = require('console')
 const webpush = require('web-push')
 
 
@@ -31,7 +35,7 @@ const historyHelper = require('../utilities/save-bid-history')
 const helper = require('../utilities/auto_bid')
 const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
-const { checkExtensionType } = require('./update_extension')
+const { checkExtensionType, extensionAlert } = require('./update_extension')
 
 
 
@@ -124,6 +128,32 @@ async function calculateNextAmont(currentBid) {
 //     },
 // }
 
+function parseExtensionTime(extensionTimeString) {
+    const regex = /^(\d+)\s*(\w*)$/
+    const match = extensionTimeString.match(regex)
+
+    if (!match) {
+        throw new Error('Invalid extension time format')
+    }
+
+    const amount = parseInt(match[1], 10)
+    const unit = (match[2] || 'minute').toLowerCase() // Default to minute if unit is not provided
+
+    const millisecondsInUnit = {
+        millisecond: 1,
+        second: 1000,
+        minute: 60 * 1000,
+        hour: 60 * 60 * 1000,
+        day: 24 * 60 * 60 * 1000,
+    }
+
+    if (!millisecondsInUnit.hasOwnProperty(unit)) {
+        throw new Error('Invalid time unit')
+    }
+
+    return amount * millisecondsInUnit[unit]
+}
+
 const redisHelper = {
     async getLotData(redisKey, client) {
         const allBidders = await client.hGetAll(redisKey)
@@ -160,6 +190,52 @@ const redisHelper = {
             return {}
         }
     },
+    async findAndUpdate(lots, currentLotDetails, client, io) {
+        console.log('lotssss', lots)
+        const updates = {}
+        const extensionTimeInMilliseconds = parseExtensionTime(currentLotDetails.extended_time)
+        if (currentLotDetails.extension_type === 'All Lots') {
+            for (const record of lots) {
+                const bidKey = `lot:${record._id}`
+                updates[bidKey] = { end_date: currentLotDetails.end_date + extensionTimeInMilliseconds }
+                const newRecord = {
+                    ...record,
+                    bidKey: currentLotDetails.end_date + extensionTimeInMilliseconds,
+                }
+                await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+                console.log('emitting extension before', record._id)
+                io.to(record._id).emit('extensionAlert', {
+                    success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
+                })
+                console.log('emitting extension after')
+            }
+        } else if (currentLotDetails.extension_type === 'Individual') {
+            const bidKey = `lot:${currentLotDetails.lot_id}`
+            currentLotDetails.end_date += extensionTimeInMilliseconds
+            const saveLotDetails = await client.hSet(bidKey, bidKey, JSON.stringify(currentLotDetails))
+            io.to(currentLotDetails.lot_id).emit('extensionAlert', {
+                success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
+            })
+        } else {
+            console.log('casceaded')
+            let previousExtensionTime = 0
+            for (const record of lots) {
+                const updatedExtensionTime = previousExtensionTime + extensionTimeInMilliseconds
+                previousExtensionTime = updatedExtensionTime
+                const bidKey = `lot:${record.lot_id}`
+                updates[bidKey] = { end_date: currentLotDetails.end_date + updatedExtensionTime }
+                const newRecord = {
+                    ...record,
+                    bidKey: currentLotDetails.end_date + updatedExtensionTime,
+                }
+                await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+                io.to(record._id).emit('extensionAlert', {
+                    success: true, extension: { extended: true, extended_time: updatedExtensionTime },
+                })
+            }
+        }
+    },
+
 }
 
 async function getLotFromRedis(lot_id, client) {
@@ -176,10 +252,13 @@ async function getLotFromRedis(lot_id, client) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
+            console.log('endedd', checkAuctionEnd)
             getLotData[0].status = checkAuctionEnd[0].status
             getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
+            getLotData[0].extended_time = checkAuctionEnd[0].extension_time
+            getLotData[0].extension_type = checkAuctionEnd[0].extension_type
             const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(getLotData[0]))
             get_lot[0] = getLotData[0]
             await connectionData.disconnect()
@@ -257,23 +336,20 @@ module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         // step1 : get current lot info from redis
         // const client = await redis.createClient()
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        if (!client.isOpen) {
-            await client.connect()
-        }
+        const redisKey = `lot:${data.lot_id}`
         let extended = false
         let extension_time = 0
         let extension_type = ''
-        const redisKey = `lot:${data.lot_id}`
-        const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
-        console.log('111111111111111111111111111')
-        data.time_stamp = new Date().getTime()
-        console.log('2222222222222222222222222222222222222222')
-        const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
-        console.log('33333333333333333333333333333333333333333333')
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
 
+        if (!client.isOpen) {
+            await client.connect()
+        }
+        const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
+        data.time_stamp = new Date().getTime()
+        const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
         console.log('currentLotDetails', currentLotDetails)
         // static values
@@ -322,22 +398,14 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
 
         if (timeLeft <= 60000 && timeLeft > 0) {
+        // if (timeLeft) {
             console.log('The bid is within the last minute before the auction ends.')
-            console.log('inside3333333333333333333 one minute')
-            await checkExtensionType(data)
-            extension_time = currentLotDetails.extension_time
+            extension_time = currentLotDetails.extended_time
             extension_type = currentLotDetails.extension_type
             extended = true
-        } else {
-            console.log('The bid is not within the last minute before the auction ends.')
-        }
-        
-        if (oneMinuteBeforeEndDate === currentLotDetails.end_date) {
-            console.log('inside3333333333333333333 one minute')
+            const auctionLots = await mongodbHelpers.getAuctionLots(data)
+            const updateExtension = await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io)
             await checkExtensionType(data)
-            extension_time = currentLotDetails.extension_time
-            extension_type = currentLotDetails.extension_type
-            extended = true
         }
         if (getLotHistoryDetails.length <= 0) {
             console.log('111')
