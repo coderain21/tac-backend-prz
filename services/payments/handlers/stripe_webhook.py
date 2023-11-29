@@ -103,8 +103,13 @@ def update(event, context):
             update_data= {
                 "status": data["object"]["status"]
             }
+            if data["object"]["last_payment_error"] is not None:
+                update_data["last_payment_error"]= {
+                    "message": data["object"]["last_payment_error"]["message"],
+                    "decline_code": data["object"]["last_payment_error"]["decline_code"]
+                }
+
             update_payment_data(payment_id,update_data)
-            print("-->>",data["object"]["payment_method"])
 
         return {
             "headers": headers,
