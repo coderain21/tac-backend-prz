@@ -61,6 +61,7 @@ provider:
     CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
     PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
+    BUYER_WISHLIST_TABLE_NAME: ${env:BUYER_WISHLIST_TABLE_NAME}
     
   http:
     cors: true
@@ -463,7 +464,7 @@ resources:
         HtmlPart: ${file(./template/paddle.html)}
         Subject: "{{subject}}"
         TemplateDescription: Test
-        TemplateName: paddle_${opt:stage, 'dev'}
+        TemplateName: ${opt:stage, 'dev'}_paddle
         TextPart: ${file(./template/paddle.html)}
 
 plugins:

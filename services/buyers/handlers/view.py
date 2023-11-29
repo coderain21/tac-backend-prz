@@ -109,12 +109,15 @@ def view(event, context):
         if result["status"] not in ["Published", "Accepting bids", "Completed"]:
             return {
                 "headers": headers,
-                "statusCode": 400,
+                "statusCode": 404,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-        start_time= result['start_date']
-        end_time= result['end_date']
+        start_date=result['start_date']
+        end_date = result['end_date']
+        start_time= datetime.utcfromtimestamp(start_date / 1000)
+        end_time = datetime.utcfromtimestamp(end_date / 1000)
         # Get the timezone from the result
+        print(start_time,end_time)
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
             return {
