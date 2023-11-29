@@ -168,6 +168,18 @@ definitions:
           - python3 dast.py
         artifacts:
           - test_results/**
+    
+
+    - step: &Danger
+        name: Git Compliance - Danger
+        caches:
+          - node
+        script:
+          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - export LANG="C.UTF-8"
+          - npm install --f
+          - npm install -g danger
+          - npx danger ci
 
 pipelines:
   custom: 
@@ -186,6 +198,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+            
       - step: *APITesting
  
       
@@ -202,6 +215,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+
       - step: *APITesting
 
   
@@ -219,6 +233,7 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+
      
 
   branches:
