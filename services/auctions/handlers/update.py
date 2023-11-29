@@ -2,7 +2,6 @@
 import os
 import json
 import pymongo
-from datetime import datetime, timezone
 from lib.get import get_by_email
 
 headers = {
