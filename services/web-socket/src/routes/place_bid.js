@@ -35,7 +35,7 @@ const historyHelper = require('../utilities/save-bid-history')
 const helper = require('../utilities/auto_bid')
 const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
-const { checkExtensionType, extensionAlert } = require('./update_extension')
+const { checkExtensionType } = require('./update_extension')
 // const {sendPinpointEmail} = require('../utilities/send_email')
 
 
@@ -191,8 +191,9 @@ const redisHelper = {
             return {}
         }
     },
-    async findAndUpdate(lots, currentLotDetails, client, io) {
+    async findAndUpdate(lots, currentLotDetails, client, io, socket) {
         console.log('lotssss', lots)
+        console.log('currentLotDetails', currentLotDetails)
         const updates = {}
         const extensionTimeInMilliseconds = parseExtensionTime(currentLotDetails.extended_time)
         if (currentLotDetails.extension_type === 'All Lots') {
@@ -205,9 +206,12 @@ const redisHelper = {
                 }
                 await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
                 console.log('emitting extension before', record._id)
-                io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
-                })
+                // io.to(record._id).emit('extensionAlert', {
+                //     success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
+                // })
+                socket.join(record._id)
+                socket.emit('extensionAlert', {success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds }})
+
                 console.log('emitting extension after')
             }
         } else if (currentLotDetails.extension_type === 'Individual') {
@@ -252,6 +256,7 @@ async function getLotFromRedis(lot_id, client) {
         if (getLotDetails.length <= 0) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
+            console.log('before end', lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
             console.log('endedd', checkAuctionEnd)
             getLotData[0].status = checkAuctionEnd[0].status
@@ -360,14 +365,14 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // Calculate time left until auction end in seconds
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
 
-        if (timeLeft <= 60000 && timeLeft > 0) {
-        // if (timeLeft) {
+        // if (timeLeft <= 60000 && timeLeft > 0) {
+        if (timeLeft) {
             console.log('The bid is within the last minute before the auction ends.')
             extension_time = currentLotDetails.extended_time
             extension_type = currentLotDetails.extension_type
             extended = true
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
-            const updateExtension = await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io)
+            const updateExtension = await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
         }
         if (getLotHistoryDetails.length <= 0) {
