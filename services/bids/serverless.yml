@@ -116,7 +116,24 @@ functions:
           method: get
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
-  
+  view:
+    handler: handlers/view.view_bidder
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors: true
+          path: /{id}
+          method: get
+          authorizer:
+              arn: ${env:COGNITO_AUTH_ARN}
+
   add-to-group:
     handler: handlers/update.update_user
     runtime: python3.8
@@ -132,7 +149,7 @@ functions:
           cors: true
           path: /update
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          # authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
 resources:
