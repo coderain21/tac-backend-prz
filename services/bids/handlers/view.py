@@ -12,34 +12,8 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-
 def view_bidder(event, context):
-    """
-    The `view_bidder` function retrieves detailed information about a single bidder based on the provided bidder ID.
-
-    :param event: The `event` parameter is a dictionary that contains the input data for the function.
-    :param context: The `context` parameter is an object that provides information about the runtime environment of the function.
-
-    :return: a JSON response with the following properties:
-    - "statusCode": The HTTP status code of the response (200 for success, 403 for access denied, 404 for not found, 500 for error)
-    - "body": A JSON string containing the response data, including the bidder details.
-    """
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-            print('email', email_address)
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
         # Extract bidder ID from the path parameter
         bidder_id = ObjectId(event['pathParameters']['id'])
 
@@ -48,20 +22,43 @@ def view_bidder(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        projection = {
+            'password': 0
+        }
 
-        # Define the projection to include/exclude fields as needed
+        # Retrieve bidder details from the buyer_collection
         bidder_details = collection.find_one({"_id": bidder_id})
         bidder_email = bidder_details['email_address']
-        seller_email = email_address
-        buyer_bidder_details = buyer_collection.find_one({'email_address': bidder_email, 'seller_email': seller_email})
+        seller_email = bidder_details['seller_email']
+        buyer_bidder_details = buyer_collection.find_one({'email_address': bidder_email, 'seller_email': seller_email},projection)
 
+        # Define the order of keys
+        key_order = [
+            "_id",
+            "email_address",
+            "first_name",
+            "last_name",
+            "terms_and_condition",
+            "user_type",
+            "newsletter_notification",
+            "seller_email",
+            "address_line1",
+            "address_line2",
+            "country",
+            "postal_code",
+            "town/city",  # Assuming "town/city" is a valid key
+            "county"
+        ]
+
+        # Construct the dictionary with the desired key order
+        ordered_dict = {key: buyer_bidder_details[key] if key in buyer_bidder_details else '' for key in key_order}
         if buyer_bidder_details:
             client.close()
             # Bidder found, return details
             return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps(buyer_bidder_details, cls=Encoder)
+                "body": json.dumps(ordered_dict, cls=Encoder)
             }
         else:
             # Bidder not found
@@ -77,4 +74,3 @@ def view_bidder(event, context):
             "headers": headers,
             "body": json.dumps({"message": "Error while retrieving bidder details"})
         }
-        
