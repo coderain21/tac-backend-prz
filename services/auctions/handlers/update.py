@@ -53,23 +53,7 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
 
     # Execute the aggregation pipeline
     result = list(collection_lot.aggregate(pipeline))
-
     return bool(result)  # True if at least one lot has non-empty images array
-
-def convert_timestamp_to_date(timestamp):
-    # Convert the timestamp to seconds
-    timestamp = timestamp / 1000
-    # Create a datetime object in UTC
-    dt_utc = datetime.fromtimestamp(timestamp, tz=timezone.utc)
-
-    # Format the datetime object as a string in the desired format
-    formatted_date_str = dt_utc.strftime('%Y-%m-%dT%H:%M:%S.%f+00:00')
-
-    # Convert the formatted string back to a datetime object
-    formatted_date = datetime.strptime(
-        formatted_date_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
-    return formatted_date
-
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction
@@ -138,7 +122,6 @@ def update_auction(event, context):
                     }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
-            const_date = datetime(1970, 1, 1, 0, 0)
             for field in required_fields:
                 if auction_record[field]== "":
                     print(field,auction_record[field])
@@ -147,13 +130,6 @@ def update_auction(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "required and cannot be empty."})
                     }
-            if const_date in (auction_record['start_date'], auction_record['end_date']):
-                return {
-                    "statusCode": 400,
-                    'headers': headers,
-                    "body": json.dumps({"message": "required fields are missing or empty"})
-                }
-
             if ((auction_record['add_buyer_fees'] == 'Add percentage' and
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
@@ -230,16 +206,6 @@ def update_auction(event, context):
                                 }
         else:
             updatable_fields = {}
-        if "start_date" in request_body:
-            date_converted = convert_timestamp_to_date(
-                request_body["start_date"])
-            request_body["start_date"] = date_converted
-
-        if "end_date" in request_body:
-            date_converted = convert_timestamp_to_date(
-                request_body["end_date"])
-            request_body["end_date"] = date_converted
-
         # Filter the request body to keep only updatable fields
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
