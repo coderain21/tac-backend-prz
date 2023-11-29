@@ -189,14 +189,24 @@ const redisHelper = {
     },
     async findAndUpdate(lots, currentLotDetails, client, io, socket) {
         const updates = {}
-        const extensionTimeInMilliseconds = parseExtensionTime(currentLotDetails.extended_time)
         if (currentLotDetails.extension_type === 'All Lots') {
             for (const record of lots) {
+                const timestamp = record.end_date
+                const dateObject = new Date(timestamp)
+                // Get the current minutes
+                const currentMinutes = dateObject.getMinutes()
+                // Add 2 minutes to the current minutes
+                const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+                // Set the new minutes to the Date object
+                dateObject.setMinutes(newMinutes)
+                // Convert the Date object back to a timestamp
+                const newTimestamp = dateObject.getTime()
+                console.log(newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
-                updates[bidKey] = { end_date: currentLotDetails.end_date + extensionTimeInMilliseconds }
+                updates[bidKey] = { end_date: newTimestamp }
                 const newRecord = {
                     ...record,
-                    bidKey: currentLotDetails.end_date + extensionTimeInMilliseconds,
+                    bidKey: newTimestamp,
                 }
                 await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
                 console.log('emitting extension before', record._id)
@@ -206,32 +216,54 @@ const redisHelper = {
                 // socket.join(record._id)
                 // socket.emit('extensionAlert', {success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds }})
                 io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
+                    success: true, extension: { extended: true, extended_time: document.extension_time },
                 })
 
                 console.log('emitting extension after')
             }
         } else if (currentLotDetails.extension_type === 'Individual') {
             const bidKey = `lot:${currentLotDetails.lot_id}`
-            currentLotDetails.end_date += extensionTimeInMilliseconds
-            const saveLotDetails = await client.hSet(bidKey, bidKey, JSON.stringify(currentLotDetails))
+            const timestamp = currentLotDetails.end_date
+            const dateObject = new Date(timestamp)
+            // Get the current minutes
+            const currentMinutes = dateObject.getMinutes()
+            // Add 2 minutes to the current minutes
+            const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+            // Set the new minutes to the Date object
+            dateObject.setMinutes(newMinutes)
+            // Convert the Date object back to a timestamp
+            const newTimestamp = dateObject.getTime()
+            updates[bidKey] = { end_date: newTimestamp }
+            const newRecord = {
+                ...currentLotDetails,
+                bidKey: newTimestamp,
+            }
+            await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
             io.to(currentLotDetails.lot_id).emit('extensionAlert', {
-                success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
+                success: true, extension: { extended: true, extended_time: document.extension_time },
             })
         } else {
-            let previousExtensionTime = 0
+            const previousExtensionTime = 0
             for (const record of lots) {
-                const updatedExtensionTime = previousExtensionTime + extensionTimeInMilliseconds
-                previousExtensionTime = updatedExtensionTime
+                const timestamp = currentLotDetails.end_date
+                const dateObject = new Date(timestamp)
+                // Get the current minutes
+                const currentMinutes = dateObject.getMinutes()
+                // Add 2 minutes to the current minutes
+                const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+                // Set the new minutes to the Date object
+                dateObject.setMinutes(newMinutes)
+                // Convert the Date object back to a timestamp
+                const newTimestamp = dateObject.getTime()
                 const bidKey = `lot:${record.lot_id}`
-                updates[bidKey] = { end_date: currentLotDetails.end_date + updatedExtensionTime }
+                updates[bidKey] = { end_date: timestamp }
                 const newRecord = {
                     ...record,
-                    bidKey: currentLotDetails.end_date + updatedExtensionTime,
+                    bidKey: timestamp,
                 }
                 await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
                 io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: updatedExtensionTime },
+                    success: true, extension: { extended: true, extended_time: document.extension_time },
                 })
             }
         }
@@ -269,22 +301,38 @@ async function getLotFromRedis(lot_id, client) {
     }
 }
 
+// Export the function that joins a user to a bid room
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
+        // Create a Redis client
         const client = await redis.createClient()
+
+        // Uncomment the following lines if using a specific Redis URL
         // const client = await redis.createClient({
         //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect();
+
+        // Check if the Redis client is not open, then connect
         if (!client.isOpen) {
             await client.connect()
         }
+
+        // Join the socket to the specified bid room (lotID)
         socket.join(lotID)
+
+        // Retrieve lot details from Redis
         const lotDetails = await getLotFromRedis(lotID, client)
+
+        // Emit an event to the client informing them that they have joined the bid room
         socket.emit('joinBidRoom', lotDetails)
+
+        // Prepare data for listing bid history
         const data = {
             auction_id: lotDetails.auction_id,
             lot_id: lotID,
         }
+
+        // List bid history for the user in the bid room
         const listHistory = await listBidHistory(socket, data, io)
     } catch (err) {
         console.log(err)
@@ -292,16 +340,13 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
     }
 }
 
-
+/* The above code is a JavaScript function that handles the process of placing a bid in an auction. It
+performs the following steps: */
 module.exports.placeBid = async (socket, data, io, userData) => {
     console.log('placing bid')
     try {
-        // step1 : get current lot info from redis
         const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
-        let extended = false
-        let extension_time = 0
-        let extension_type = ''
         // const client = await redis.createClient({
         //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
         // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
@@ -309,41 +354,49 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         if (!client.isOpen) {
             await client.connect()
         }
+
+        // step1 : get current lot history info from redis
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
+
+        // step2 : Save bid history
         data.time_stamp = new Date().getTime()
         const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
-        const currentLotDetails = await getLotFromRedis(data.lot_id, client)
-        // static values
-        const currentTimestamp = new Date().getTime()
-        console.log('currentTimestamp', currentTimestamp, currentLotDetails.end_date)
-        // if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
-        //     console.log('insidee 123')
-        //     const all_bidders = []
-        //     for (let i = 0; i < getLotHistoryDetails.length; i++) {
-        //         all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
-        //     }
-        //     const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
 
-        //     if (data.bid_amount > currentLotDetails.max_bid) {
-        //         console.log('if')
-        //         currentLotDetails.bid_amount = data.bid_amount 
-        //         currentLotDetails.max_bid = data.bid_amount
-        //         currentLotDetails.winning_user = data.buyer_id 
-        //     } else if (data.bid_amount < currentLotDetails.max_bid) {
-        //         console.log('else data')
-        //         currentLotDetails.winning_user = currentLotDetails.winning_user
-        //         currentLotDetails.bid_amount = currentLotDetails.bid_amount
-        //         currentLotDetails.max_bid = currentLotDetails.max_bid
-        //     }
-        //     currentLotDetails.lot_status = 'Ended'
-        //     currentLotDetails.email_address = currentLotDetails.winning_user
-        //     const saveToCart = await addToCart(currentLotDetails)
-        //     console.log('endedddd')
-        //     io.to(data.lot_id).emit('placeBid', {
-        //         success: true, winning_user: currentLotDetails.winning_user,
-        //     })
-        //     return
-        // }
+        // step3 : get current lot  info from redis
+        const currentLotDetails = await getLotFromRedis(data.lot_id, client)
+        const currentTimestamp = new Date().getTime()
+
+        /*----------------------------------------------------------------------------------------------------------*/
+        // step4: Check Lot is ending or not, if ending : 
+
+        if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+            console.log('insidee 123')
+            const all_bidders = []
+            for (let i = 0; i < getLotHistoryDetails.length; i++) {
+                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+            }
+            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+
+            if (data.bid_amount > currentLotDetails.max_bid) {
+                console.log('if')
+                currentLotDetails.bid_amount = data.bid_amount 
+                currentLotDetails.max_bid = data.bid_amount
+                currentLotDetails.winning_user = data.buyer_id 
+            } else if (data.bid_amount < currentLotDetails.max_bid) {
+                console.log('else data')
+                currentLotDetails.winning_user = currentLotDetails.winning_user
+                currentLotDetails.bid_amount = currentLotDetails.bid_amount
+                currentLotDetails.max_bid = currentLotDetails.max_bid
+            }
+            currentLotDetails.lot_status = 'Ended'
+            currentLotDetails.email_address = currentLotDetails.winning_user
+            const saveToCart = await addToCart(currentLotDetails)
+            console.log('endedddd')
+            io.to(data.lot_id).emit('placeBid', {
+                success: true, winning_user: currentLotDetails.winning_user,
+            })
+            return true
+        }
         const now = new Date()
         const oneMinuteAgo = new Date(now - 60000) // Subtract 1 minute (60,000 milliseconds)
         
@@ -356,12 +409,11 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // Calculate time left until auction end in seconds
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
 
-        // if (timeLeft <= 60000 && timeLeft > 0) {
-        if (timeLeft) {
+        if (timeLeft <= 60000 && timeLeft > 0) {
             console.log('The bid is within the last minute before the auction ends.')
-            extension_time = currentLotDetails.extended_time
-            extension_type = currentLotDetails.extension_type
-            extended = true
+            // extension_time = currentLotDetails.extended_time
+            // extension_type = currentLotDetails.extension_type
+            // extended = true
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
             const updateExtension = await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
@@ -431,31 +483,19 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             success: true, currentLotDetails,
         })
         console.log('afterrrr')
-        // webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
-        // const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
-        // let message = 'Congratulations! 🎉 You\'re the highest bidder! '
-        // if (currentLotDetails.winning_user !== data.buyer_id) {
-        //     message = 'Oops! 😕 You\'ve been outbid on [item name]. Bid higher now to stay in the game and secure your desired item!"'
-        // }
-        // const payload = JSON.stringify({ title: 'Bidding', body: message })
-        // const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log)
-        // console.log('res', pushresponse)
+        webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
+        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
+        let message = 'Congratulations! 🎉 You\'re the highest bidder! '
+        if (currentLotDetails.winning_user !== data.buyer_id) {
+            message = 'Oops! 😕 You\'ve been outbid on [item name]. Bid higher now to stay in the game and secure your desired item!"'
+        }
+        const payload = JSON.stringify({ title: 'Bidding', body: message })
+        const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log)
+        console.log('res', pushresponse)
     } catch (err) {
         console.log(err)
         return err
     }
 }
 
-// extension steps
-// update redis cache of lot by adding the extension time
-// emit the updated lot data to  lot room
-// step1 : get current lot info from redis ------
-// step2: check for lot status = complete/ornot
-// if lot is active, then store   history for current bid
-// check if there are any bid exist
-//  if  no, then max bid and currentbid and buyer id
-// if yes,  if only one history, then current bid amount is greater than max_bid then store current bid amount =  new bid amount and max_bid = new_bid_amount
-// if yes, if only one history,then current bid amount is less than max_bid dont do anything
-// if more than one history get the greatest max_bid from redis $200
-// if there are more unique bidders, then current bid amount is greater than max_bid then store current bid amount = nextIncrement(max_bid) old max_bidder and max_bid = new_bid_amount
-// if i get mx bid of more than one  users  on the same timestamp then we will be considering 1st registered bidder and concurrent_user = [other bidders]
+
