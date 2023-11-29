@@ -12,7 +12,6 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-
 def remove(event, context):
     try:
         try:
@@ -31,29 +30,45 @@ def remove(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         
-        body = json.loads(event['body'])
         data = event['queryStringParameters']
-        lot = data['lot_id']
-        lot_id = ObjectId(lot)
+        lot_id = data.get('lot_id')
+
+        if not lot_id:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Please provide a valid lot_id'})
+            }
+
+        lot_id = ObjectId(lot_id)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
         wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
-        # lot_detail = lot_collection.find_one({'_id': lot_id})
-        # seller_email = lot_detail['seller_email']
-        # auction_name = body['auction_name']
-        remove_data = {
-            # 'seller_email': seller_email,
-            'lot_id': lot_id,
-            'email_address': email_address,
-            # 'auction_name': auction_name,
-            # 'auction_id': lot_detail['auction_id']
-        }
 
-        wish_list.delete_one(remove_data)
+        # Check if the lot exists in the wishlist
+        existing_wishlist_entry = wish_list.find_one({
+            'lot_id': lot_id,
+            'email_address': email_address
+        })
+
+        if not existing_wishlist_entry:
+            return {
+                'statusCode': 404,
+                'headers': headers,
+                'body': json.dumps({'message': 'Lot not found in wishlist'})
+            }
+
+        # Remove the lot from the wishlist
+        wish_list.delete_one({'lot_id': lot_id, 'email_address': email_address})
+
+        return {
+            'statusCode': 200,
+            'headers': headers,
+            'body': json.dumps({'message': 'Lot removed from wishlist'})
+        }
     except Exception as e:
         print(str(e))
-        return{
+        return {
             'statusCode': 500,
             'headers': headers,
             'body': json.dumps({'message': 'Internal server error'})

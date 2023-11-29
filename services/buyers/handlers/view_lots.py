@@ -1,3 +1,4 @@
+'''api for viewing the lot details'''
 import json
 import os
 from pymongo import MongoClient
@@ -49,12 +50,14 @@ def lot_details(event, context):
 
         client.close()
 
+
         if result is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "Lot not found"})
             }
+
 
         return {
             'headers': headers,
@@ -68,3 +71,4 @@ def lot_details(event, context):
             'headers': headers,
             "body": json.dumps({"error": str(e)})
         }
+

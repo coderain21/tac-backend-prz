@@ -1,3 +1,4 @@
+'''this api will list all the lots'''
 import json
 import os
 from pymongo import MongoClient
@@ -13,6 +14,8 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+# Function to escape special characters
 
 # Function to escape special characters
 def prepend_backslash(text):
@@ -124,5 +127,6 @@ def view_list_lots(event, context):
         return {
             "statusCode": 500,
             "headers": headers,
+            "body": json.dumps({"message": str(e)})
             "body": json.dumps({"message": str(e)})
         }
