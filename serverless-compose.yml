@@ -20,4 +20,8 @@ services:
   address-management:
     path: services/address-management
     config: ${env:config}
+  cart-management:
+    path: services/cart-management
+    config: ${env:config}
+
     

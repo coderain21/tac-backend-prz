@@ -158,6 +158,7 @@
       "get": {
         "tags": [
           "Auction"
+          
         ],
         "summary": "Listing auction",
         "description": "Listing auction",

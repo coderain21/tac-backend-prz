@@ -38,20 +38,18 @@ def add_address(event, context):
         if 'update' in data:
             if data['update'] == 'True':
                 body = json.loads(event['body'])
-                try:
+                if 'address_line1' in body:
                     update_data['address_line1']=body['address_line1']
+                if 'country' in body:
                     update_data['country']= body['country']
+                if 'town/city' in body:
                     update_data['town/city']= body['town/city']
-                    update_data['postal_code']= body['postal_code']
+                if 'is_manual' in body:
                     update_data['is_manual']=body['is_manual']
-                except Exception as e:
-                    return {
-                        "statusCode": 404,
-                        "headers": headers,
-                        "body": json.dumps({"message": ' please enter the required fileds'})
-                    }
                 if 'address_line2' in body:
                     update_data['address_line2'] = body['address_line2']
+                if 'postal_code' in body:
+                    update_data['postal_code']= body['postal_code']
                 result= collection.find_one_and_update({'email_address':email_address},
                                                    {"$set": update_data})
         if 'delete' in data:

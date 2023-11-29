@@ -1,20 +1,4 @@
-"""
-Module: address_management_api
-
-AWS Lambda function `update_address` updates the default address for a user in a MongoDB collection.
-Handles HTTP requests, validates permissions via Amazon Cognito, and modifies the default address based on
-the provided address ID and user email.
-
-Dependencies:
-- json: Parsing JSON data.
-- pymongo: MongoDB driver.
-- os: Accessing environment variables.
-- lib.common_helper.Encoder: Custom JSON encoder.
-- bson.ObjectId: MongoDB ObjectId for querying by address ID.
-
-Response Structure:
-- JSON response with status code, headers, and a body containing the updated address information.
-"""
+'''this api will update the shipping and billing address'''
 import json
 from pymongo import MongoClient
 import os
@@ -34,7 +18,6 @@ def update_address(event, context):
     """
     The `update_address` function updates the default address for a user in a MongoDB collection based
     on the provided address ID and user email.
-
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, body, and
     other relevant data
