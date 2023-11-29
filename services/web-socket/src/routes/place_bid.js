@@ -36,6 +36,7 @@ const helper = require('../utilities/auto_bid')
 const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
 const { checkExtensionType, extensionAlert } = require('./update_extension')
+// const {sendPinpointEmail} = require('../utilities/send_email')
 
 
 
@@ -262,41 +263,6 @@ async function getLotFromRedis(lot_id, client) {
             const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(getLotData[0]))
             get_lot[0] = getLotData[0]
             await connectionData.disconnect()
-            // get_lot = [{
-            //     _id: '6527ea63d0f71d56747f83f6',
-            //     auction_id: 'A0037',
-            //     seller_email: 'aishwarya+30@7edge.com',
-            //     title1: 'World',
-            //     title2: '',
-            //     description: '<p>LOtttt....</p>',
-            //     starting_price: 127,
-            //     low_estimate: 0,
-            //     high_estimate: 0,
-            //     shipping_details: '',
-            //     current_bid: 0,
-            //     tags: [
-            //         'lot',
-            //     ],
-            //     images: [
-            //         {
-            //             url: 'DomainName/Auctions/lots/images/760f7893-a884-2813-623a-2dde22c73f6d/mak-6-5rajeKe50-unsplash.jpg',
-            //             featured: true,
-            //         },
-            //         {
-            //             url: 'DomainName/Auctions/lots/images/4b3a62b0-e088-a1bf-c1f1-30957f431159/andrea-davis-SoRlz-tnWUM-unsplash.jpg',
-            //             featured: false,
-            //         },
-            //         {
-            //             url: 'DomainName/Auctions/lots/images/af3aa2d1-59dd-dc31-bcee-fc555c4f85cc/james-dimas-1xvtRcLbLeM-unsplash.jpg',
-            //             featured: false,
-            //         },
-            //         {
-            //             url: 'DomainName/Auctions/lots/images/931da454-0724-e822-a893-6188355fd31b/mak-6-5rajeKe50-unsplash.jpg',
-            //             featured: false,
-            //         },
-            //     ],
-            //     lot_number: 1,
-            // }]
         }
         console.log('@@@@22', get_lot)
         return get_lot[0]
@@ -381,18 +347,15 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             io.to(data.lot_id).emit('placeBid', {
                 success: true, currentLotDetails,
             })
-            return true
         }
         const now = new Date()
         const oneMinuteAgo = new Date(now - 60000) // Subtract 1 minute (60,000 milliseconds)
         
         const oneMinuteBeforeEndDate = oneMinuteAgo.getTime()
-        console.log('oneMinuteBeforeEndDate', oneMinuteBeforeEndDate)
         const auctionEndTimeEpoch = currentLotDetails.end_date // Example end time: January 1, 2023, at 18:00 (6:00 PM) in epoch timestamp
 
         // Get current time in epoch timestamp (in seconds)
         const currentTimeEpoch = Date.now()
-
 
         // Calculate time left until auction end in seconds
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
@@ -408,7 +371,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await checkExtensionType(data)
         }
         if (getLotHistoryDetails.length <= 0) {
-            console.log('111')
             //  if  no, then max bid and currentbid and buyer id
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(100) // (getLotData[0].starting_bid)
@@ -416,7 +378,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         }
         // check if there are any bid exist
         else if (getLotHistoryDetails.length === 1) {
-            console.log('222222')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
@@ -424,7 +385,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             if (data.buyer_id === all_bidders[0].buyer_id) {
                 currentLotDetails.max_bid = data.bid_amount
             } else {
-                console.log('22222 else')
                 // const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[0])
                 // console.log('hbidde', highestBidder)
                 if (data.bid_amount > currentLotDetails.max_bid) {
@@ -445,7 +405,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
-            console.log('111highestBidder', highestBidder)
             if (data.buyer_id === highestBidder.buyer_id) {
                 currentLotDetails.max_bid = data.bid_amount
                 // added later
@@ -456,16 +415,12 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
                 currentLotDetails.winning_user = data.buyer_id
             } else {
-                console.log('4444444444444')
                 if (data.bid_amount > currentLotDetails.max_bid) {
-                    console.log('if')
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } else {
-                    console.log('else data')
                     if (data.bid_amount === currentLotDetails.max_bid) {
-                        console.log('@@@@@@@@@@@@@@')
                         currentLotDetails.winning_user = highestBidder.buyer_id
                         currentLotDetails.bid_amount = highestBidder.bid_amount
                     } else {
@@ -479,20 +434,15 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails, extension: { extended, extension_type, extension_time },
         })
-        // webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
-        // // const payload = JSON.stringify({
-        // //     title: 'BID HAPPENING',
-        // //     body: 'YESS HAPPENED',
-        // //     stage: 'dev',
-        // //     web_push_type: 'BID',
-        // const dataS = {
-        //     status: 'Winning',
-        // }
-        // // })
-        // const payload = JSON.stringify({ title: 'Hello World', body: 'This is your first push notification' })
-        // const pushresponse = webpush.sendNotification(dataS, payload).catch(console.log)
-        // // const pushresponse = await webpush.sendNotification(, payload)
-        // const listHistory = await listBidHistory(socket, data, io)
+        webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
+        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
+        let message = 'Congratulations! 🎉 You\'re the highest bidder! '
+        if (currentLotDetails.winning_user !== data.buyer_id) {
+            message = 'Oops! 😕 You\'ve been outbid on [item name]. Bid higher now to stay in the game and secure your desired item!"'
+        }
+        const payload = JSON.stringify({ title: 'Bidding', body: message })
+        const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log)
+        console.log('res', pushresponse)
     } catch (err) {
         console.log(err)
         return err

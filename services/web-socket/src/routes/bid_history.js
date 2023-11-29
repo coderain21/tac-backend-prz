@@ -11,7 +11,6 @@ async function getHistory(data) {
         await client.connect()
     }
     const allBidders = await client.hGetAll(`auction:${data.auction_id}#${data.lot_id}`)
-    console.log('all bidder', allBidders)
     // Filter out the current bidder and return an array
     return Object.values(allBidders || {}).filter((bidder) => {
         const parsedBidder = JSON.parse(bidder)
@@ -20,9 +19,7 @@ async function getHistory(data) {
 }
 module.exports.listBidHistory = async (socket, data, io) => {
     try {
-        console.log('heyyyyyyyy history')
         const listData = await getHistory(data)
-        console.log('list', listData)
         const all_bidders = []
         for (let i = 0; i < listData.length; i++) {
             all_bidders.push(JSON.parse(listData[i]))
@@ -31,7 +28,6 @@ module.exports.listBidHistory = async (socket, data, io) => {
             success: true, all_bidders,
         })
     } catch (err) {
-        console.log('errm came', err)
         return err
     }
 }
