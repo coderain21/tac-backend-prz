@@ -233,32 +233,56 @@ module.exports.getAllLots = async (document, lotData) => {
         const connectionData = await this.connect()
         const database = connectionData.connection.db
         const collection = database.collection('dev-lots')
-
         const query = {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
         }
         const extensionTimeInMilliseconds = parseExtensionTime(document.extension_time)
         let documents
+        console.log('document extensi', document)
         if (document.extension_type === 'All Lots') {
             console.log('1111111')
-            documents = await collection.find(query).toArray()
+            const timestamp = documents[0].end_date
+            const dateObject = new Date(timestamp)
+            // Get the current minutes
+            const currentMinutes = dateObject.getMinutes()
+            // Add 2 minutes to the current minutes
+            const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+            // Set the new minutes to the Date object
+            dateObject.setMinutes(newMinutes)
+            // Convert the Date object back to a timestamp
+            const newTimestamp = dateObject.getTime()
+            console.log(newTimestamp) // Output:
             const updateQuery = {
                 $set: {
-                    // end_date: documents.map((lot) => new Date(new Date(lot.end_date).getTime() + extensionTimeInMilliseconds)),
-                    extended_time: extensionTimeInMilliseconds,
+                    end_date: newTimestamp,
+                    extended_time: parseInt(document.extension_time, 10),
 
                 },
             }
-            await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
+            const x = await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
+            console.log('x', x)
         } else if (document.extension_type === 'Individual') {
             const lotId = ObjectId(lotData.lot_id)
+            const timestamp = documents[0].end_date
+            const dateObject = new Date(timestamp)
+            // Get the current minutes
+            const currentMinutes = dateObject.getMinutes()
+            // Add 2 minutes to the current minutes
+            const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+            // Set the new minutes to the Date object
+            dateObject.setMinutes(newMinutes)
+            // Convert the Date object back to a timestamp
+            const newTimestamp = dateObject.getTime()
+            console.log(newTimestamp) // Output:
             documents = await collection.find({ ...query, _id: lotId }).toArray()
             const updateQuery = {
                 $set: {
-                    end_date: new Date(new Date(documents[0].end_date).getTime() + extensionTimeInMilliseconds),
+                    end_date: newTimestamp,
+                    extended_time: parseInt(document.extension_time, 10),
                 },
             }
+
             await collection.updateMany({ _id: lotId }, updateQuery)
         } else {
             const sortOptions = { lot_number: 1 }
@@ -275,7 +299,7 @@ module.exports.getAllLots = async (document, lotData) => {
                         update: {
                             $set: {
                                 extension_time: updatedExtensionTime,
-                                // end_date: document.end_date,
+                                end_date: document.end_date,
                             },
                         },
                     },

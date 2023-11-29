@@ -3,7 +3,7 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-tabs */
 const { checkAuthentication } = require('./routes/check-authentication')
-const { placeBid, joinBidRoom, extensionAlert } = require('./routes/place_bid')
+const { placeBid, joinBidRoom } = require('./routes/place_bid')
 const { listBidHistory } = require('./routes/bid_history')
 // const { extensionAlert } = require('./routes/update_extension')
 // const { listMessages } = require('./routes/list_messages')
@@ -43,7 +43,7 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
     socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
     socket.on('listBidHistory', (message, callback) => listBidHistory(socket, message, io, userData))
     socket.on('joinBidRoom', (lotID, buyer_id, callback) => joinBidRoom(socket, lotID, io))
-    socket.on('extensionAlert', (lotID, callback) => extensionAlert(socket, lotID, io))
+    // socket.on('extensionAlert', (lotID, callback) => extensionAlert(socket, lotID, io))
     // socket.on('joinBidRoom', (bidId) => {
     //     console.log('inside')
     //     // Join a specific bid room

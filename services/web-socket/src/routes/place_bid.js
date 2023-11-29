@@ -158,7 +158,6 @@ function parseExtensionTime(extensionTimeString) {
 const redisHelper = {
     async getLotData(redisKey, client) {
         const allBidders = await client.hGetAll(redisKey)
-        console.log('all bidder', allBidders)
         // Filter out the current bidder and return an array
         return Object.values(allBidders || {}).filter((bidder) => {
             const parsedBidder = JSON.parse(bidder)
@@ -167,7 +166,6 @@ const redisHelper = {
     },
     async getLotDeatils(rediskey, client) {
         const allBidders = await client.hGetAll(rediskey)
-        console.log('all bidder', allBidders)
         // Filter out the current bidder and return an array
         return Object.values(allBidders || {}).filter((bidder) => {
             const parsedBidder = JSON.parse(bidder)
@@ -176,12 +174,10 @@ const redisHelper = {
     },
     async  getCurrentBidder(bidderData, client) {
         try {
-            console.log('getting current user')
             const allBidders = await client.hGetAll(`auction:${bidderData.auction_id}`)    
             // Parse each string value into an object
             const parsedBidders = Object.values(allBidders || {}).map((bidder) => JSON.parse(bidder))
             const x = parsedBidders.find((parsedBidder) => parsedBidder.buyer_id === bidderData.buyer_id)
-            console.log('heyyyy', x)
             if (x === undefined) {
                 return false
             }
@@ -192,8 +188,6 @@ const redisHelper = {
         }
     },
     async findAndUpdate(lots, currentLotDetails, client, io, socket) {
-        console.log('lotssss', lots)
-        console.log('currentLotDetails', currentLotDetails)
         const updates = {}
         const extensionTimeInMilliseconds = parseExtensionTime(currentLotDetails.extended_time)
         if (currentLotDetails.extension_type === 'All Lots') {
@@ -209,8 +203,11 @@ const redisHelper = {
                 // io.to(record._id).emit('extensionAlert', {
                 //     success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
                 // })
-                socket.join(record._id)
-                socket.emit('extensionAlert', {success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds }})
+                // socket.join(record._id)
+                // socket.emit('extensionAlert', {success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds }})
+                io.to(record._id).emit('extensionAlert', {
+                    success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
+                })
 
                 console.log('emitting extension after')
             }
@@ -222,7 +219,6 @@ const redisHelper = {
                 success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
             })
         } else {
-            console.log('casceaded')
             let previousExtensionTime = 0
             for (const record of lots) {
                 const updatedExtensionTime = previousExtensionTime + extensionTimeInMilliseconds
@@ -245,7 +241,6 @@ const redisHelper = {
 
 async function getLotFromRedis(lot_id, client) {
     try {
-        console.log('hello345')
         const redisKey = `lot:${lot_id}`
         const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
         const get_lot = []
@@ -256,10 +251,8 @@ async function getLotFromRedis(lot_id, client) {
         if (getLotDetails.length <= 0) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
-            console.log('before end', lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
-            console.log('endedd', checkAuctionEnd)
-            getLotData[0].status = checkAuctionEnd[0].status
+            getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
             getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
@@ -269,7 +262,6 @@ async function getLotFromRedis(lot_id, client) {
             get_lot[0] = getLotData[0]
             await connectionData.disconnect()
         }
-        console.log('@@@@22', get_lot)
         return get_lot[0]
     } catch (err) {
         console.log(err)
@@ -279,11 +271,10 @@ async function getLotFromRedis(lot_id, client) {
 
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
-        console.log('hello13')
-        // const client = await redis.createClient()
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redis.createClient()
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         if (!client.isOpen) {
             await client.connect()
         }
@@ -306,14 +297,14 @@ module.exports.placeBid = async (socket, data, io, userData) => {
     console.log('placing bid')
     try {
         // step1 : get current lot info from redis
-        // const client = await redis.createClient()
+        const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
         let extended = false
         let extension_time = 0
         let extension_type = ''
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
 
         if (!client.isOpen) {
             await client.connect()
@@ -322,37 +313,37 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         data.time_stamp = new Date().getTime()
         const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
-        console.log('currentLotDetails', currentLotDetails)
         // static values
         const currentTimestamp = new Date().getTime()
         console.log('currentTimestamp', currentTimestamp, currentLotDetails.end_date)
-        if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
-            console.log('insidee 123')
-            const all_bidders = []
-            for (let i = 0; i < getLotHistoryDetails.length; i++) {
-                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
-            }
-            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+        // if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+        //     console.log('insidee 123')
+        //     const all_bidders = []
+        //     for (let i = 0; i < getLotHistoryDetails.length; i++) {
+        //         all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+        //     }
+        //     const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
 
-            if (data.bid_amount > currentLotDetails.max_bid) {
-                console.log('if')
-                currentLotDetails.bid_amount = data.bid_amount 
-                currentLotDetails.max_bid = data.bid_amount
-                currentLotDetails.winning_user = data.buyer_id 
-            } else if (data.bid_amount < currentLotDetails.max_bid) {
-                console.log('else data')
-                currentLotDetails.winning_user = currentLotDetails.winning_user
-                currentLotDetails.bid_amount = currentLotDetails.bid_amount
-                currentLotDetails.max_bid = currentLotDetails.max_bid
-            }
-            currentLotDetails.lot_status = 'Ended'
-            currentLotDetails.email_address = currentLotDetails.winning_user
-            const saveToCart = await addToCart(currentLotDetails)
-            console.log('endedddd', currentLotDetails)
-            io.to(data.lot_id).emit('placeBid', {
-                success: true, currentLotDetails,
-            })
-        }
+        //     if (data.bid_amount > currentLotDetails.max_bid) {
+        //         console.log('if')
+        //         currentLotDetails.bid_amount = data.bid_amount 
+        //         currentLotDetails.max_bid = data.bid_amount
+        //         currentLotDetails.winning_user = data.buyer_id 
+        //     } else if (data.bid_amount < currentLotDetails.max_bid) {
+        //         console.log('else data')
+        //         currentLotDetails.winning_user = currentLotDetails.winning_user
+        //         currentLotDetails.bid_amount = currentLotDetails.bid_amount
+        //         currentLotDetails.max_bid = currentLotDetails.max_bid
+        //     }
+        //     currentLotDetails.lot_status = 'Ended'
+        //     currentLotDetails.email_address = currentLotDetails.winning_user
+        //     const saveToCart = await addToCart(currentLotDetails)
+        //     console.log('endedddd')
+        //     io.to(data.lot_id).emit('placeBid', {
+        //         success: true, winning_user: currentLotDetails.winning_user,
+        //     })
+        //     return
+        // }
         const now = new Date()
         const oneMinuteAgo = new Date(now - 60000) // Subtract 1 minute (60,000 milliseconds)
         
@@ -437,17 +428,18 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(currentLotDetails))
         console.log('currentLotDetails', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
-            success: true, currentLotDetails, extension: { extended, extension_type, extension_time },
+            success: true, currentLotDetails,
         })
-        webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
-        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
-        let message = 'Congratulations! 🎉 You\'re the highest bidder! '
-        if (currentLotDetails.winning_user !== data.buyer_id) {
-            message = 'Oops! 😕 You\'ve been outbid on [item name]. Bid higher now to stay in the game and secure your desired item!"'
-        }
-        const payload = JSON.stringify({ title: 'Bidding', body: message })
-        const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log)
-        console.log('res', pushresponse)
+        console.log('afterrrr')
+        // webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
+        // const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
+        // let message = 'Congratulations! 🎉 You\'re the highest bidder! '
+        // if (currentLotDetails.winning_user !== data.buyer_id) {
+        //     message = 'Oops! 😕 You\'ve been outbid on [item name]. Bid higher now to stay in the game and secure your desired item!"'
+        // }
+        // const payload = JSON.stringify({ title: 'Bidding', body: message })
+        // const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log)
+        // console.log('res', pushresponse)
     } catch (err) {
         console.log(err)
         return err
