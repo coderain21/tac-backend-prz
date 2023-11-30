@@ -198,13 +198,15 @@ const redisHelper = {
                 const dateObject = new Date(timestamp)
                 // Get the current minutes
                 const currentMinutes = dateObject.getMinutes()
+                console.log('currentMinutes', currentMinutes)
                 // Add 2 minutes to the current minutes
                 const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time)
+                console.log('newMinutes', newMinutes)
                 // Set the new minutes to the Date object
                 dateObject.setMinutes(newMinutes)
                 // Convert the Date object back to a timestamp
                 const newTimestamp = dateObject.getTime()
-                console.log(newTimestamp) // Output:
+                console.log('newTimestamp', newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
                 
                 // const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))    
@@ -218,7 +220,7 @@ const redisHelper = {
                 }        
                 for (const key in updateRequest) {
                     console.log('key', key)
-                    const x = await client.hSet(bidKey, key, JSON.stringify(updateRequest))
+                    const x = await client.hSet(bidKey, key, JSON.stringify(newRecord))
                     console.log('xx', x, record._id)
                     const existingRecord = await client.hGet(bidKey, bidKey)
                     console.log('Existing Record:', existingRecord) }
@@ -241,7 +243,7 @@ const redisHelper = {
             // Get the current minutes
             const currentMinutes = dateObject.getMinutes()
             // Add 2 minutes to the current minutes
-            const newMinutes = currentMinutes + parseInt(currentLotDetails.extension_time, 10)
+            const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
             // Set the new minutes to the Date object
             dateObject.setMinutes(newMinutes)
             // Convert the Date object back to a timestamp
@@ -253,7 +255,7 @@ const redisHelper = {
             }
             await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
             io.to(currentLotDetails.lot_id).emit('extensionAlert', {
-                success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
+                success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
             })
         } else {
             const previousExtensionTime = 0
@@ -263,7 +265,7 @@ const redisHelper = {
                 // Get the current minutes
                 const currentMinutes = dateObject.getMinutes()
                 // Add 2 minutes to the current minutes
-                const newMinutes = currentMinutes + parseInt(currentLotDetails.extension_time, 10)
+                const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
                 // Set the new minutes to the Date object
                 dateObject.setMinutes(newMinutes)
                 // Convert the Date object back to a timestamp
@@ -276,7 +278,7 @@ const redisHelper = {
                 }
                 await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
                 io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
+                    success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
                 })
             }
         }
