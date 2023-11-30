@@ -220,7 +220,7 @@ const redisHelper = {
                 }        
                 for (const key in updateRequest) {
                     console.log('key', key)
-                    const x = await client.hSet(bidKey, key, JSON.stringify(newRecord))
+                    const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
                     console.log('xx', x, record._id)
                     const existingRecord = await client.hGet(bidKey, bidKey)
                     console.log('Existing Record:', existingRecord) }
@@ -422,8 +422,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // Calculate time left until auction end in seconds
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
 
-        // if (timeLeft <= 60000 && timeLeft > 0) {
-        if (timeLeft) {
+        if (timeLeft <= 60000 && timeLeft > 0) {
+        // if (timeLeft) {
             console.log('The bid is within the last minute before the auction ends.')
             // extension_time = currentLotDetails.extended_time
             // extension_type = currentLotDetails.extension_type
