@@ -15,7 +15,6 @@ def view(event, context):
     """
     The above function is a Python code that retrieves cart details for a specific auction from a
     MongoDB database, based on the user's email address.
-    
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, and query
     parameters
