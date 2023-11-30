@@ -208,26 +208,26 @@ const redisHelper = {
                 const newTimestamp = dateObject.getTime()
                 console.log('newTimestamp', newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
-                const existingRecord = await client.hGet(bidKey, 'end_date');
+                const existingRecord = await client.hGet(bidKey, 'end_date')
 
                 if (existingRecord) {
                     // Parse the existing record value (assuming it's stored as a JSON string)
-                    const currentEndDate = JSON.parse(existingRecord);
+                    const currentEndDate = JSON.parse(existingRecord)
                     // Compare current end_date with newTimestamp
                     if (currentEndDate !== newTimestamp) {
                         const updateRequest = {
                             end_date: newTimestamp,
-                        };
+                        }
 
                         const newRecord = {
                             ...record,
                             end_date: newTimestamp,
-                        };
+                        }
 
                         // Update the existing record in Redis
-                        const x = await client.hSet(bidKey, 'end_date', JSON.stringify(newRecord.end_date));
-                        console.log('xx', x, record._id);
-                         // Emit the extension alert
+                        const x = await client.hSet(bidKey, 'end_date', JSON.stringify(newRecord.end_date))
+                        console.log('xx', x, record._id)
+                        // Emit the extension alert
                         socket.emit('extensionAlert', {
                             success: true,
                             extension: {
@@ -235,55 +235,56 @@ const redisHelper = {
                             }, 
                         })
                         console.log('emitting extension after', record._id)
-                            
                     }
-        } else if (currentLotDetails.extension_type === 'Individual') {
-            const bidKey = `lot:${currentLotDetails.lot_id}`
-            const timestamp = currentLotDetails.end_date
-            const dateObject = new Date(timestamp)
-            // Get the current minutes
-            const currentMinutes = dateObject.getMinutes()
-            // Add 2 minutes to the current minutes
-            const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
-            // Set the new minutes to the Date object
-            dateObject.setMinutes(newMinutes)
-            // Convert the Date object back to a timestamp
-            const newTimestamp = dateObject.getTime()
-            updates[bidKey] = { end_date: newTimestamp }
-            const newRecord = {
-                ...currentLotDetails,
-                bidKey: newTimestamp,
-            }
-            await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-            io.to(currentLotDetails.lot_id).emit('extensionAlert', {
-                success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
-            })
-        } else {
-            const previousExtensionTime = 0
-            for (const record of lots) {
-                const timestamp = currentLotDetails.end_date
-                const dateObject = new Date(timestamp)
-                // Get the current minutes
-                const currentMinutes = dateObject.getMinutes()
-                // Add 2 minutes to the current minutes
-                const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
-                // Set the new minutes to the Date object
-                dateObject.setMinutes(newMinutes)
-                // Convert the Date object back to a timestamp
-                const newTimestamp = dateObject.getTime()
-                const bidKey = `lot:${record.lot_id}`
-                updates[bidKey] = { end_date: timestamp }
-                const newRecord = {
-                    ...record,
-                    bidKey: timestamp,
+                } else if (currentLotDetails.extension_type === 'Individual') {
+                    const bidKey = `lot:${currentLotDetails.lot_id}`
+                    const timestamp = currentLotDetails.end_date
+                    const dateObject = new Date(timestamp)
+                    // Get the current minutes
+                    const currentMinutes = dateObject.getMinutes()
+                    // Add 2 minutes to the current minutes
+                    const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
+                    // Set the new minutes to the Date object
+                    dateObject.setMinutes(newMinutes)
+                    // Convert the Date object back to a timestamp
+                    const newTimestamp = dateObject.getTime()
+                    updates[bidKey] = { end_date: newTimestamp }
+                    const newRecord = {
+                        ...currentLotDetails,
+                        bidKey: newTimestamp,
+                    }
+                    await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+                    io.to(currentLotDetails.lot_id).emit('extensionAlert', {
+                        success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
+                    })
+                } else {
+                    const previousExtensionTime = 0
+                    for (const record of lots) {
+                        const timestamp = currentLotDetails.end_date
+                        const dateObject = new Date(timestamp)
+                        // Get the current minutes
+                        const currentMinutes = dateObject.getMinutes()
+                        // Add 2 minutes to the current minutes
+                        const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
+                        // Set the new minutes to the Date object
+                        dateObject.setMinutes(newMinutes)
+                        // Convert the Date object back to a timestamp
+                        const newTimestamp = dateObject.getTime()
+                        const bidKey = `lot:${record.lot_id}`
+                        updates[bidKey] = { end_date: timestamp }
+                        const newRecord = {
+                            ...record,
+                            bidKey: timestamp,
+                        }
+                        await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+                        io.to(record._id).emit('extensionAlert', {
+                            success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
+                        })
+                    }
                 }
-                await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-                io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
-                })
             }
         }
-    }
+    },
 
 }
 
