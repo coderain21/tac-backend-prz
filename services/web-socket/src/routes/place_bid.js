@@ -208,8 +208,8 @@ const redisHelper = {
                     ...record,
                     bidKey: newTimestamp,
                 }
-                await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-                console.log('emitting extension before', record._id)
+                const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+                console.log('emitting extension before', record._id, x)
                 // io.to(record._id).emit('extensionAlert', {
                 //     success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
                 // })
