@@ -305,12 +305,11 @@ async function getLotFromRedis(lot_id, client) {
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
         // Create a Redis client
-        const client = await redis.createClient()
+        // const client = await redis.createClient()
 
-        // Uncomment the following lines if using a specific Redis URL
-        // const client = await redis.createClient({
-        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect();
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect();
 
         // Check if the Redis client is not open, then connect
         if (!client.isOpen) {
@@ -345,11 +344,11 @@ performs the following steps: */
 module.exports.placeBid = async (socket, data, io, userData) => {
     console.log('placing bid')
     try {
-        const client = await redis.createClient()
+        // const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
-        // const client = await redis.createClient({
-        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
 
         if (!client.isOpen) {
             await client.connect()
