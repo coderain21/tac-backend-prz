@@ -208,22 +208,19 @@ const redisHelper = {
                 const newTimestamp = dateObject.getTime()
                 console.log('newTimestamp', newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
-                
-                // const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))    
+
                 const updateRequest = {
                     end_date: newTimestamp,
                 }
-                updates[bidKey] = updateRequest
+
                 const newRecord = {
                     ...record,
                     end_date: newTimestamp,
-                }        
-                for (const key in updateRequest) {
-                    console.log('key', key)
-                    const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-                    console.log('xx', x, record._id)
-                    const existingRecord = await client.hGet(bidKey, bidKey)
-                    console.log('Existing Record:', existingRecord) }
+                }
+
+                // Set the individual key for each record
+                const x = await client.hSet(bidKey, 'end_date', JSON.stringify(newRecord.end_date))
+                console.log('xx', x, record._id)
                 
                 // io.to(record._id).emit('extensionAlert', {
                 //     success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
