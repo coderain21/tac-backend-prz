@@ -196,7 +196,7 @@ const redisHelper = {
                 // Get the current minutes
                 const currentMinutes = dateObject.getMinutes()
                 // Add 2 minutes to the current minutes
-                const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+                const newMinutes = currentMinutes + parseInt(currentLotDetails.extension_time, 10)
                 // Set the new minutes to the Date object
                 dateObject.setMinutes(newMinutes)
                 // Convert the Date object back to a timestamp
@@ -216,7 +216,7 @@ const redisHelper = {
                 // socket.join(record._id)
                 // socket.emit('extensionAlert', {success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds }})
                 io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: document.extension_time },
+                    success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
                 })
 
                 console.log('emitting extension after')
@@ -228,7 +228,7 @@ const redisHelper = {
             // Get the current minutes
             const currentMinutes = dateObject.getMinutes()
             // Add 2 minutes to the current minutes
-            const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+            const newMinutes = currentMinutes + parseInt(currentLotDetails.extension_time, 10)
             // Set the new minutes to the Date object
             dateObject.setMinutes(newMinutes)
             // Convert the Date object back to a timestamp
@@ -240,7 +240,7 @@ const redisHelper = {
             }
             await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
             io.to(currentLotDetails.lot_id).emit('extensionAlert', {
-                success: true, extension: { extended: true, extended_time: document.extension_time },
+                success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
             })
         } else {
             const previousExtensionTime = 0
@@ -250,7 +250,7 @@ const redisHelper = {
                 // Get the current minutes
                 const currentMinutes = dateObject.getMinutes()
                 // Add 2 minutes to the current minutes
-                const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+                const newMinutes = currentMinutes + parseInt(currentLotDetails.extension_time, 10)
                 // Set the new minutes to the Date object
                 dateObject.setMinutes(newMinutes)
                 // Convert the Date object back to a timestamp
@@ -263,7 +263,7 @@ const redisHelper = {
                 }
                 await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
                 io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: document.extension_time },
+                    success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
                 })
             }
         }
@@ -310,7 +310,6 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
         const client = await redis.createClient({
             url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
         }).on('error', (err) => console.log('Redis Client Error', err)).connect();
-
         // Check if the Redis client is not open, then connect
         if (!client.isOpen) {
             await client.connect()
@@ -416,6 +415,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
             const updateExtension = await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
+            const listHistory = await listBidHistory(socket, data, io)
         }
         if (getLotHistoryDetails.length <= 0) {
             //  if  no, then max bid and currentbid and buyer id
@@ -481,6 +481,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
         })
+        const listHistory = await listBidHistory(socket, data, io)
         console.log('afterrrr')
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
         const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
