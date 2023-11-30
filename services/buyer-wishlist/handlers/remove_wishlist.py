@@ -1,3 +1,8 @@
+"""
+Module: add_to_wishlist
+
+This module provides functionality to add lots to a buyer's wishlist.
+"""
 import json
 import os
 from pymongo import MongoClient
