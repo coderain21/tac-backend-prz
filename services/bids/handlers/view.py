@@ -31,7 +31,7 @@ def view_bidder(event, context):
         bidder_email = bidder_details['email_address']
         seller_email = bidder_details['seller_email']
         buyer_bidder_details = buyer_collection.find_one({'email_address': bidder_email, 'seller_email': seller_email},projection)
-
+        
         # Define the order of keys
         key_order = [
             "_id",
@@ -52,6 +52,19 @@ def view_bidder(event, context):
 
         # Construct the dictionary with the desired key order
         ordered_dict = {key: buyer_bidder_details[key] if key in buyer_bidder_details else '' for key in key_order}
+        ordered_dict['created_at'] = bidder_details['created_at']
+        ordered_dict['marketing'] = bidder_details['marketing']
+
+        # Create an "address" object
+        ordered_dict['address'] = {
+            'address_line1': ordered_dict.pop('address_line1', ''),
+            'address_line2': ordered_dict.pop('address_line2', ''),
+            'country': ordered_dict.pop('country', ''),
+            'postal_code': ordered_dict.pop('postal_code', ''),
+            'town/city': ordered_dict.pop('town/city', ''),
+            'county': ordered_dict.pop('county', '')
+        }
+
         if buyer_bidder_details:
             client.close()
             # Bidder found, return details
