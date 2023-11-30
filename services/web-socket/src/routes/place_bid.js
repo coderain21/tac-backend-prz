@@ -208,12 +208,25 @@ const redisHelper = {
                 const newTimestamp = dateObject.getTime()
                 console.log('newTimestamp', newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
-                const updatedRecord = {
-                    ...record,
-                    end_date: newTimestamp,
-                }
-                const setResult = await client.set(bidKey, JSON.stringify(updatedRecord))
-                console.log('set', setResult)
+                if (record.end_date !== newTimestamp) {
+                    const updatedRecord = {
+                        ...record,
+                        end_date: newTimestamp,
+                    }
+                    
+                    const setResult = await client.set(bidKey, JSON.stringify(updatedRecord))
+                    console.log('xx', setResult, record._id)
+                
+                    // Emit the extension alert
+                    socket.emit('extensionAlert', {
+                        success: true,
+                        extension: {
+                            extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
+                        }, 
+                    })
+                
+                    console.log('emitting extension after', record._id)
+                } 
             }
         } else if (currentLotDetails.extension_type === 'Individual') {
             const bidKey = `lot:${currentLotDetails.lot_id}`
