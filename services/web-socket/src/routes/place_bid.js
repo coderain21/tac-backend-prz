@@ -1,3 +1,4 @@
+/* eslint-disable radix */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable no-plusplus */
@@ -190,36 +191,48 @@ const redisHelper = {
     async findAndUpdate(lots, currentLotDetails, client, io, socket) {
         const updates = {}
         if (currentLotDetails.extension_type === 'All Lots') {
+            console.log('inside all lot', currentLotDetails, typeof (currentLotDetails.extension_time), lots)
             for (const record of lots) {
+                console.log('records', record)
                 const timestamp = record.end_date
                 const dateObject = new Date(timestamp)
                 // Get the current minutes
                 const currentMinutes = dateObject.getMinutes()
                 // Add 2 minutes to the current minutes
-                const newMinutes = currentMinutes + parseInt(currentLotDetails.extension_time, 10)
+                const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time)
                 // Set the new minutes to the Date object
                 dateObject.setMinutes(newMinutes)
                 // Convert the Date object back to a timestamp
                 const newTimestamp = dateObject.getTime()
                 console.log(newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
-                updates[bidKey] = { end_date: newTimestamp }
+                
+                // const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))    
+                const updateRequest = {
+                    end_date: newTimestamp,
+                }
+                updates[bidKey] = updateRequest
                 const newRecord = {
                     ...record,
-                    bidKey: newTimestamp,
-                }
-                const x = await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-                console.log('emitting extension before', record._id, x)
+                    end_date: newTimestamp,
+                }        
+                for (const key in updateRequest) {
+                    console.log('key', key)
+                    const x = await client.hSet(bidKey, key, JSON.stringify(updateRequest))
+                    console.log('xx', x, record._id)
+                    const existingRecord = await client.hGet(bidKey, bidKey)
+                    console.log('Existing Record:', existingRecord) }
+                
                 // io.to(record._id).emit('extensionAlert', {
                 //     success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds },
                 // })
                 // socket.join(record._id)
-                // socket.emit('extensionAlert', {success: true, extension: { extended: true, extended_time: extensionTimeInMilliseconds }})
-                io.to(record._id).emit('extensionAlert', {
-                    success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
-                })
+                socket.emit('extensionAlert', { success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id } })
+                // io.to(record._id).emit('extensionAlert', {
+                //     success: true, extension: { extended: true, extended_time: currentLotDetails.extension_time },
+                // })
 
-                console.log('emitting extension after')
+                console.log('emitting extension after', record._id)
             }
         } else if (currentLotDetails.extension_type === 'Individual') {
             const bidKey = `lot:${currentLotDetails.lot_id}`
@@ -305,11 +318,11 @@ async function getLotFromRedis(lot_id, client) {
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
         // Create a Redis client
-        // const client = await redis.createClient()
+        const client = await redis.createClient()
 
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect();
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         // Check if the Redis client is not open, then connect
         if (!client.isOpen) {
             await client.connect()
@@ -343,11 +356,11 @@ performs the following steps: */
 module.exports.placeBid = async (socket, data, io, userData) => {
     console.log('placing bid')
     try {
-        // const client = await redis.createClient()
+        const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
-        const client = await redis.createClient({
-            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // const client = await redis.createClient({
+        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
 
         if (!client.isOpen) {
             await client.connect()
@@ -367,34 +380,34 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         /*----------------------------------------------------------------------------------------------------------*/
         // step4: Check Lot is ending or not, if ending : 
 
-        if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
-            console.log('insidee 123')
-            const all_bidders = []
-            for (let i = 0; i < getLotHistoryDetails.length; i++) {
-                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
-            }
-            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+        // if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+        //     console.log('insidee 123')
+        //     const all_bidders = []
+        //     for (let i = 0; i < getLotHistoryDetails.length; i++) {
+        //         all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+        //     }
+        //     const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
 
-            if (data.bid_amount > currentLotDetails.max_bid) {
-                console.log('if')
-                currentLotDetails.bid_amount = data.bid_amount 
-                currentLotDetails.max_bid = data.bid_amount
-                currentLotDetails.winning_user = data.buyer_id 
-            } else if (data.bid_amount < currentLotDetails.max_bid) {
-                console.log('else data')
-                currentLotDetails.winning_user = currentLotDetails.winning_user
-                currentLotDetails.bid_amount = currentLotDetails.bid_amount
-                currentLotDetails.max_bid = currentLotDetails.max_bid
-            }
-            currentLotDetails.lot_status = 'Ended'
-            currentLotDetails.email_address = currentLotDetails.winning_user
-            const saveToCart = await addToCart(currentLotDetails)
-            console.log('endedddd')
-            io.to(data.lot_id).emit('placeBid', {
-                success: true, winning_user: currentLotDetails.winning_user,
-            })
-            return true
-        }
+        //     if (data.bid_amount > currentLotDetails.max_bid) {
+        //         console.log('if')
+        //         currentLotDetails.bid_amount = data.bid_amount 
+        //         currentLotDetails.max_bid = data.bid_amount
+        //         currentLotDetails.winning_user = data.buyer_id 
+        //     } else if (data.bid_amount < currentLotDetails.max_bid) {
+        //         console.log('else data')
+        //         currentLotDetails.winning_user = currentLotDetails.winning_user
+        //         currentLotDetails.bid_amount = currentLotDetails.bid_amount
+        //         currentLotDetails.max_bid = currentLotDetails.max_bid
+        //     }
+        //     currentLotDetails.lot_status = 'Ended'
+        //     currentLotDetails.email_address = currentLotDetails.winning_user
+        //     const saveToCart = await addToCart(currentLotDetails)
+        //     console.log('endedddd')
+        //     io.to(data.lot_id).emit('placeBid', {
+        //         success: true, currentLotDetails: currentLotDetails.winning_user,
+        //     })
+        //     return true
+        // }
         const now = new Date()
         const oneMinuteAgo = new Date(now - 60000) // Subtract 1 minute (60,000 milliseconds)
         
@@ -407,7 +420,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // Calculate time left until auction end in seconds
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
 
-        if (timeLeft <= 60000 && timeLeft > 0) {
+        // if (timeLeft <= 60000 && timeLeft > 0) {
+        if (timeLeft) {
             console.log('The bid is within the last minute before the auction ends.')
             // extension_time = currentLotDetails.extended_time
             // extension_type = currentLotDetails.extension_type
