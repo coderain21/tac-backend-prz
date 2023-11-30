@@ -3,8 +3,9 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.common_helper import Encoder
 import re
+from lib.common_helper import Encoder
+
 
 # Constants
 headers = {
@@ -114,7 +115,6 @@ def view_list_lots(event, context):
             search_keyword = data.get('search', "")
 
             lots_list = get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param)
-            print('============', lots_list)
 
             return {
                 "statusCode": 200,
@@ -128,5 +128,4 @@ def view_list_lots(event, context):
             "statusCode": 500,
             "headers": headers,
             "body": json.dumps({"message": str(e)})
-            "body": json.dumps({"message": str(e)})
-        }
+            }
