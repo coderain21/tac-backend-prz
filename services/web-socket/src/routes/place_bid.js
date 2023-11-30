@@ -209,10 +209,13 @@ const redisHelper = {
                 console.log('newTimestamp', newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
                 const existingRecord = await client.hGet(bidKey, 'end_date')
+                console.log('exist', existingRecord)
 
                 if (existingRecord) {
+                    console.log('insideeeeeeee')
                     // Parse the existing record value (assuming it's stored as a JSON string)
                     const currentEndDate = JSON.parse(existingRecord)
+                    console.log('cure', currentEndDate)
                     // Compare current end_date with newTimestamp
                     if (currentEndDate !== newTimestamp) {
                         const updateRequest = {
@@ -236,55 +239,56 @@ const redisHelper = {
                         })
                         console.log('emitting extension after', record._id)
                     }
-                } else if (currentLotDetails.extension_type === 'Individual') {
-                    const bidKey = `lot:${currentLotDetails.lot_id}`
-                    const timestamp = currentLotDetails.end_date
-                    const dateObject = new Date(timestamp)
-                    // Get the current minutes
-                    const currentMinutes = dateObject.getMinutes()
-                    // Add 2 minutes to the current minutes
-                    const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
-                    // Set the new minutes to the Date object
-                    dateObject.setMinutes(newMinutes)
-                    // Convert the Date object back to a timestamp
-                    const newTimestamp = dateObject.getTime()
-                    updates[bidKey] = { end_date: newTimestamp }
-                    const newRecord = {
-                        ...currentLotDetails,
-                        bidKey: newTimestamp,
-                    }
-                    await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-                    io.to(currentLotDetails.lot_id).emit('extensionAlert', {
-                        success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
-                    })
-                } else {
-                    const previousExtensionTime = 0
-                    for (const record of lots) {
-                        const timestamp = currentLotDetails.end_date
-                        const dateObject = new Date(timestamp)
-                        // Get the current minutes
-                        const currentMinutes = dateObject.getMinutes()
-                        // Add 2 minutes to the current minutes
-                        const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
-                        // Set the new minutes to the Date object
-                        dateObject.setMinutes(newMinutes)
-                        // Convert the Date object back to a timestamp
-                        const newTimestamp = dateObject.getTime()
-                        const bidKey = `lot:${record.lot_id}`
-                        updates[bidKey] = { end_date: timestamp }
-                        const newRecord = {
-                            ...record,
-                            bidKey: timestamp,
-                        }
-                        await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
-                        io.to(record._id).emit('extensionAlert', {
-                            success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
-                        })
-                    }
                 }
+            }
+        } else if (currentLotDetails.extension_type === 'Individual') {
+            const bidKey = `lot:${currentLotDetails.lot_id}`
+            const timestamp = currentLotDetails.end_date
+            const dateObject = new Date(timestamp)
+            // Get the current minutes
+            const currentMinutes = dateObject.getMinutes()
+            // Add 2 minutes to the current minutes
+            const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
+            // Set the new minutes to the Date object
+            dateObject.setMinutes(newMinutes)
+            // Convert the Date object back to a timestamp
+            const newTimestamp = dateObject.getTime()
+            updates[bidKey] = { end_date: newTimestamp }
+            const newRecord = {
+                ...currentLotDetails,
+                bidKey: newTimestamp,
+            }
+            await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+            io.to(currentLotDetails.lot_id).emit('extensionAlert', {
+                success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
+            })
+        } else {
+            const previousExtensionTime = 0
+            for (const record of lots) {
+                const timestamp = currentLotDetails.end_date
+                const dateObject = new Date(timestamp)
+                // Get the current minutes
+                const currentMinutes = dateObject.getMinutes()
+                // Add 2 minutes to the current minutes
+                const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
+                // Set the new minutes to the Date object
+                dateObject.setMinutes(newMinutes)
+                // Convert the Date object back to a timestamp
+                const newTimestamp = dateObject.getTime()
+                const bidKey = `lot:${record.lot_id}`
+                updates[bidKey] = { end_date: timestamp }
+                const newRecord = {
+                    ...record,
+                    bidKey: timestamp,
+                }
+                await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+                io.to(record._id).emit('extensionAlert', {
+                    success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
+                })
             }
         }
     },
+    
 
 }
 
