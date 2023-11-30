@@ -109,7 +109,7 @@ custom:
 functions: 
 
   create:
-    handler: handlers/add-to-wishlist.create
+    handler: handlers/add_to_wishlist.create
     runtime: python3.8
     memorySize: 128
     layers:
@@ -136,8 +136,8 @@ functions:
           method: post
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
-  remove-wishlist:
-    handler: handlers/remove-wishlist.remove
+  remove_wishlist:
+    handler: handlers/remove_wishlist.remove
     runtime: python3.8
     memorySize: 128
     layers:

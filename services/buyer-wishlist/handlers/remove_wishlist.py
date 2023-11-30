@@ -2,8 +2,6 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.common_helper import Encoder
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -29,7 +27,7 @@ def remove(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         data = event['queryStringParameters']
         lot_id = data.get('lot_id')
 

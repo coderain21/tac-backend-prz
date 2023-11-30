@@ -1,8 +1,12 @@
+"""
+Module: add_to_wishlist
+
+This module provides functionality to add lots to a buyer's wishlist.
+"""
 import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.common_helper import Encoder
 
 headers = {
     'Content-Type': 'application/json',
@@ -56,7 +60,7 @@ def create(event, context):
         lot_detail = lot_collection.find_one({'_id': lot_id})
         seller_email = lot_detail['seller_email']
         auction_name = body['auction_name']
-        
+
         buyer_details = buyer_collection.find_one({'email_address': email_address})
         buyer_id = buyer_details['_id']
         insert_data = {
