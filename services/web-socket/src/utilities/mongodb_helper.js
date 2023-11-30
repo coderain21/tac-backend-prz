@@ -242,6 +242,7 @@ module.exports.getAllLots = async (document, lotData) => {
         console.log('document extensi', document)
         if (document.extension_type === 'All Lots') {
             console.log('1111111')
+            documents = await collection.find(query).toArray()
             const timestamp = documents[0].end_date
             const dateObject = new Date(timestamp)
             // Get the current minutes
