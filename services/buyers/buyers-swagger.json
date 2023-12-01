@@ -62,10 +62,10 @@
                           "type": "string"
                         },
                         "start_date": {
-                          "type": "string"
+                          "type": "number"
                         },
                         "end_date": {
-                          "type": "string"
+                          "type": "number"
                         },
                         "status": {
                           "type": "string"

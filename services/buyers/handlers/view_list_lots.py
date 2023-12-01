@@ -1,9 +1,11 @@
+'''this api will list all the lots'''
 import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.common_helper import Encoder
 import re
+from lib.common_helper import Encoder
+
 
 # Constants
 headers = {
@@ -15,15 +17,18 @@ headers = {
 }
 
 # Function to escape special characters
+
+# Function to escape special characters
 def prepend_backslash(text):
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
     return re.sub(special_chars_pattern, r'\\\1', text)
 
 # Function to get lots based on search criteria and sorting
-def get_lots(auction_id, seller_email, search_keyword, sort_param):
+def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
     client = MongoClient(os.environ['MONGO_CLIENT'])
     db = client[os.environ['DATABASE']]
     lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
+    buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
     escaped_search_keyword = prepend_backslash(search_keyword)
     search_criteria = {
@@ -46,35 +51,39 @@ def get_lots(auction_id, seller_email, search_keyword, sort_param):
 
     aggregation_pipeline = [
         {"$match": {"auction_id": auction_id, 'seller_email': seller_email, **search_criteria}},
-        {"$lookup": {
-            "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
-            "localField": "_id",
-            "foreignField": "lot_id",
-            "as": "wishlist"
-        }},
-        {"$addFields": {
-            "is_wishlisted": {
-                "$cond": {
-                    "if": {"$gt": [{"$size": "$wishlist"}, 0]},
-                    "then": True,
-                    "else": False
-                }
-            }
-        }},
-        {"$project": {"wishlist": 0}}# Default sorting by lot_number
+        {"$addFields": {"is_wishlisted": False}}  # Default value for is_wishlisted when buyer_id is not provided
     ]
+
+    if buyer_id:
+        buyer_details = buyer_collection.find_one({'_id': ObjectId(buyer_id)})
+        buyer_email = buyer_details['email_address']
+
+        aggregation_pipeline.extend([
+            {"$lookup": {
+                "from": os.environ['BUYER_WISHLIST_TABLE_NAME'],
+                "localField": "_id",
+                "foreignField": "lot_id",
+                "as": "wishlist"
+            }},
+            {"$addFields": {
+                "is_wishlisted": {
+                    "$in": [buyer_email, "$wishlist.email_address"]
+                }
+            }},
+        ])
 
     sort_stage = {"$sort": {sort_field: sort_order}}
     aggregation_pipeline.append(sort_stage)
 
+    # Exclude wishlist field from the final output
+    projection_stage = {"$project": {"wishlist": 0}}
+    aggregation_pipeline.append(projection_stage)
+
     search_result = lot_collection.aggregate(aggregation_pipeline)
 
-    # Additional print statement
+    # Additional print statements
     print("Aggregation pipeline:", aggregation_pipeline)
     result_list = list(search_result)
-    print('-------------------------------------------------')
-    print("Aggregation result:", result_list)
-    print('kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk', result_list)
     return result_list
 
 
@@ -83,6 +92,7 @@ def view_list_lots(event, context):
     try:
         data = event.get('queryStringParameters', {})
         auction_id = data.get("auction_id")
+        buyer_id = data.get('buyer_id')
 
         if not auction_id:
             return {
@@ -94,7 +104,6 @@ def view_list_lots(event, context):
         with MongoClient(os.environ['MONGO_CLIENT']) as client:
             db = client[os.environ['DATABASE']]
             collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-            lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 
             _id = ObjectId(auction_id)
             projection = {"_id": 1, "auction_id": 1, "seller_email": 1}
@@ -105,8 +114,7 @@ def view_list_lots(event, context):
             sort_param = data.get("sort_by", "")
             search_keyword = data.get('search', "")
 
-            lots_list = get_lots(auction_id, seller_email, search_keyword, sort_param)
-            print('============', lots_list)
+            lots_list = get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param)
 
             return {
                 "statusCode": 200,
@@ -120,4 +128,4 @@ def view_list_lots(event, context):
             "statusCode": 500,
             "headers": headers,
             "body": json.dumps({"message": str(e)})
-        }
+            }

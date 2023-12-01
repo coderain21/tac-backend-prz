@@ -3,6 +3,7 @@ import os
 import json
 import pymongo
 import re
+from lib.common_helper import Encoder
 
 headers = {
     'Content-Type': 'application/json',
@@ -90,7 +91,7 @@ def list_lots(event, context):
         return {
             'headers': headers,
             "statusCode": 200,
-            "body": json.dumps(body)
+            "body": json.dumps(body,cls= Encoder)
         }
     except Exception as e:
         return {

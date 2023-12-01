@@ -5,6 +5,7 @@ import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.helper_python import send_pinpoint_email
+from datetime import datetime
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -78,9 +79,13 @@ def accept_buyer(event, context):
                                 upsert=True)
             register_status="Approved"
             seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
-            start_date_time= registeration_type['start_date']
-            start_date=start_date_time.date()
-            start_time=start_date_time.time()
+            start_date_time_in_milliseconds= registeration_type['start_date']
+            # Convert timestamp in milliseconds to datetime object
+            start_date_time_in_seconds = start_date_time_in_milliseconds / 1000
+            start_date_time = datetime.utcfromtimestamp(start_date_time_in_seconds)
+            # Extract date and time
+            start_date = start_date_time.date()
+            start_time = start_date_time.time()
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":

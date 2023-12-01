@@ -1,3 +1,4 @@
+'''api for viewing the lot details'''
 import json
 import os
 from pymongo import MongoClient
@@ -22,21 +23,20 @@ def lot_details(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide lot_id"})
             }
-
         lot_id = ObjectId(data['lot_id'])
-        buyer_email = data.get('buyer_email')  # Check if buyer_email is provided
-
+        buyer_id = ObjectId(data.get('buyer_id'))  # Check if buyer_email is provided
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
         wishlist_collection = db[os.environ["BUYER_WISHLIST_TABLE_NAME"]]
         auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-
+        # buyer_details = buyer_collection.find_one({'_id': ObjectId(buyer_id)})
+        # buyer_email = buyer_details['email_address']
         result = collection.find_one({'_id': lot_id})
-        
         # Check if buyer_email is provided in the query parameters
-        if buyer_email:
-            wishlist_result = wishlist_collection.find_one({'lot_id': lot_id, 'seller_email': result['seller_email'], 'email_address': buyer_email})
+        if buyer_id:
+            wishlist_result = wishlist_collection.find_one({'lot_id': lot_id, 'seller_email': result['seller_email'], 'buyer_id': buyer_id})
             result['is_wishlisted'] = wishlist_result is not None
         else:
             result['is_wishlisted'] = False
@@ -50,12 +50,14 @@ def lot_details(event, context):
 
         client.close()
 
+
         if result is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "Lot not found"})
             }
+
 
         return {
             'headers': headers,
