@@ -23,7 +23,7 @@ connection to be established before returning the connection object or error. */
 module.exports.connect = async () => {
     try {
         const URL = 'mongodb://develop:develop!7edge@indy-auction.cimvoiv4bc2g.eu-west-2.docdb.amazonaws.com:27017/indyauction-develop'
-        const connection = await mongoose.connect(URL, { useNewUrlParser: true, connectTimeoutMS: 30000 })
+        const connection = await mongoose.connect(URL, { useNewUrlParser: true, useFindAndModify: false })
         return connection
     } catch (err) {
         console.log('MongoDB connection error:', err)
@@ -202,32 +202,6 @@ module.exports.getLot = async (lot_id) => {
     }
 }
 
-function parseExtensionTime(extensionTimeString) {
-    const regex = /^(\d+)\s*(\w*)$/
-    const match = extensionTimeString.match(regex)
-
-    if (!match) {
-        throw new Error('Invalid extension time format')
-    }
-
-    const amount = parseInt(match[1], 10)
-    const unit = (match[2] || 'minute').toLowerCase() // Default to minute if unit is not provided
-
-    const millisecondsInUnit = {
-        millisecond: 1,
-        second: 1000,
-        minute: 60 * 1000,
-        hour: 60 * 60 * 1000,
-        day: 24 * 60 * 60 * 1000,
-    }
-
-    if (!millisecondsInUnit.hasOwnProperty(unit)) {
-        throw new Error('Invalid time unit')
-    }
-
-    return amount * millisecondsInUnit[unit]
-}
-
 module.exports.getAllLots = async (document, lotData) => {
     try {
         const connectionData = await this.connect()
@@ -237,7 +211,6 @@ module.exports.getAllLots = async (document, lotData) => {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
         }
-        const extensionTimeInMilliseconds = parseExtensionTime(document.extension_time)
         let documents
         console.log('document extensi', document)
         if (document.extension_type === 'All Lots') {
@@ -287,19 +260,25 @@ module.exports.getAllLots = async (document, lotData) => {
         } else {
             const sortOptions = { lot_number: 1 }
             documents = await collection.find(query).sort(sortOptions).toArray()
-
-            let previousExtensionTime = 0
             const bulkOperations = documents.map((lot) => {
-                const updatedExtensionTime = previousExtensionTime + extensionTimeInMilliseconds
-                previousExtensionTime = updatedExtensionTime
+                const timestamp = lot.end_date
+                const dateObject = new Date(timestamp)
+                // Get the current minutes
+                const currentMinutes = dateObject.getMinutes()
+                // Add 2 minutes to the current minutes
+                const newMinutes = currentMinutes + parseInt(document.extension_time, 10)
+                // Set the new minutes to the Date object
+                dateObject.setMinutes(newMinutes)
+                // Convert the Date object back to a timestamp
+                const newTimestamp = dateObject.getTime()
 
                 return {
                     updateOne: {
                         filter: { _id: ObjectId(lot._id) },
                         update: {
                             $set: {
-                                extension_time: updatedExtensionTime,
-                                end_date: document.end_date,
+                                extension_time: document.extension_time,
+                                end_date: newTimestamp,
                             },
                         },
                     },
@@ -366,5 +345,20 @@ module.exports.getBuyer = async (buyer_id) => {
     } catch (err) {
         console.log(err)
         return false
+    }
+}
+
+module.exports.saveBidHistory = async (document) => {
+    try {
+        // Connect to the MongoDB server
+        const connectionData = await this.connect()
+        const database = connectionData.connection.db
+        const collection = database.collection('dev-bid-informations')
+        // The document to be inserted
+        // Insert the document into the collection
+        const result = await collection.insertOne(document)
+        return true
+    } catch (err) {
+        return err
     }
 }
