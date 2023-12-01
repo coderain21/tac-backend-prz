@@ -48,7 +48,7 @@ if (shouldSkipLoop) {
 }
 
 
-const branchNameRegex = /^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert)\/\d+(\.\d+)?\/[a-zA-Z0-9-]+$/
+const branchNameRegex = /\/(\d+\.\d+)\//;
 
 
 

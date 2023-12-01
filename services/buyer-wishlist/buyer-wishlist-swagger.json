@@ -1,0 +1,248 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Buyers Wishlist Management APIs",
+    "description": "APIs to add and remove lots from the buyer wishlist side of the auction",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.indyauction.net/dev/v1/buyer-wishlist"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Buyers Wishlist Management",
+      "description": "APIs to manage the wishlist"
+    }
+  ],
+  
+  "paths": {
+    "/": {
+      "post": {
+        "tags": ["Wishlist"],
+        "summary": "Add to wishlist",
+        "description": "Add to wishlist",
+        "parameters": [
+          {
+            "name": "lot_id",
+            "in": "query",
+            "description": "lot id of a lot",
+            "schema": {
+              "type": "string"
+            },
+            "example": "654d13dbbbb8401327bc1196"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_name": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example":{
+                "auction_name": "test"
+              }
+            }
+          }
+        },                 
+        "responses": {
+          "200": {
+            "description": "Lot added to wishlist successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot added to wishlist successfully"
+                    }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Existing lot for a user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot already exist in wishlist"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction with associated auction_id doesn't exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/remove": {
+    "delete": {
+      "tags": ["Wishlist"],
+      "summary": "Add to wishlist",
+      "description": "Add to wishlist",
+      "parameters": [
+        {
+          "name": "lot_id",
+          "in": "query",
+          "description": "lot id of a lot",
+          "schema": {
+            "type": "string"
+          },
+          "example": "654d13dbbbb8401327bc1196"
+        }
+      ],                
+      "responses": {
+        "200": {
+          "description": "Lot removed from wishlist successfully",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Lot removed from wishlist"
+                  }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "lot id not found in wishlist",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Lot not found in wishlist"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Not found",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                    "message": "Auction with associated auction_id doesn't exists"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "There was an error "
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  }
+},
+"components": {
+  "schemas": {
+    "LotDetails": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "object",
+          "properties": {
+            "$oid": {
+              "type": "string"
+            }
+          }
+        },
+        "seller_email": {
+          "type": "string"
+        },
+        "lot_id": {
+          "type": "object",
+          "properties": {
+            "$oid": {
+              "type": "string"
+            }
+          }
+        },
+        "email_address": {
+          "type": "string"
+        },
+        "auction_name": {
+          "type": "string"
+        },
+        "auction_id": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securitySchemes": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Bearer Token"
+    }
+  }
+}
+}
