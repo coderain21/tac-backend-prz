@@ -3,10 +3,10 @@
 const redis = require('redis')
 
 async function getHistory(data) {
-    const client = await redis.createClient()
-    // const client = await redis.createClient({
-    //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-    // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+    // const client = await redis.createClient()
+    const client = await redis.createClient({
+        url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+    }).on('error', (err) => console.log('Redis Client Error', err)).connect()
     if (!client.isOpen) {
         await client.connect()
     }

@@ -286,11 +286,10 @@ async function getLotFromRedis(lot_id, client) {
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
         // Create a Redis client
-        const client = await redis.createClient()
-
-        // const client = await redis.createClient({
-        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // const client = await redis.createClient()
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         // Check if the Redis client is not open, then connect
         if (!client.isOpen) {
             await client.connect()
@@ -322,12 +321,12 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
-        const client = await redis.createClient()
+        // const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
-        // const client = await redis.createClient({
-        //     url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redis.createClient({
+            url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
 
         if (!client.isOpen) {
             await client.connect()
@@ -337,30 +336,30 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
         const currentTimestamp = new Date().getTime()
-        // if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
-        //     console.log('endedddd')
-        //     const all_bidders = []
-        //     for (let i = 0; i < getLotHistoryDetails.length; i++) {
-        //         all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
-        //     }
-        //     const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
-        //     if (data.bid_amount > currentLotDetails.max_bid) {
-        //         currentLotDetails.bid_amount = data.bid_amount 
-        //         currentLotDetails.max_bid = data.bid_amount
-        //         currentLotDetails.winning_user = data.buyer_id 
-        //     } else if (data.bid_amount < currentLotDetails.max_bid) {
-        //         currentLotDetails.winning_user = currentLotDetails.winning_user
-        //         currentLotDetails.bid_amount = currentLotDetails.bid_amount
-        //         currentLotDetails.max_bid = currentLotDetails.max_bid
-        //     }
-        //     currentLotDetails.lot_status = 'Ended'
-        //     currentLotDetails.email_address = currentLotDetails.winning_user
-        //     const saveToCart = await addToCart(currentLotDetails)
-        //     io.to(data.lot_id).emit('placeBid', {
-        //         success: true, currentLotDetails: currentLotDetails.winning_user,
-        //     })
-        //     return true
-        // }
+        if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+            console.log('endedddd')
+            const all_bidders = []
+            for (let i = 0; i < getLotHistoryDetails.length; i++) {
+                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+            }
+            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+            if (data.bid_amount > currentLotDetails.max_bid) {
+                currentLotDetails.bid_amount = data.bid_amount 
+                currentLotDetails.max_bid = data.bid_amount
+                currentLotDetails.winning_user = data.buyer_id 
+            } else if (data.bid_amount < currentLotDetails.max_bid) {
+                currentLotDetails.winning_user = currentLotDetails.winning_user
+                currentLotDetails.bid_amount = currentLotDetails.bid_amount
+                currentLotDetails.max_bid = currentLotDetails.max_bid
+            }
+            currentLotDetails.lot_status = 'Ended'
+            currentLotDetails.email_address = currentLotDetails.winning_user
+            const saveToCart = await addToCart(currentLotDetails)
+            io.to(data.lot_id).emit('placeBid', {
+                success: true, currentLotDetails,
+            })
+            return true
+        }
         const now = new Date()
         const oneMinuteAgo = new Date(now - 60000)
         const oneMinuteBeforeEndDate = oneMinuteAgo.getTime()
