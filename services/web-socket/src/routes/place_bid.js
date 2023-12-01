@@ -157,7 +157,7 @@ const redisHelper = {
     async findAndUpdate(lots, currentLotDetails, client, io, socket) {
         const updates = {}
         if (currentLotDetails.extension_type === 'All Lots') {
-            console.log('inside all lot', currentLotDetails, typeof (currentLotDetails.extension_time), lots)
+            console.log('inside all lot', currentLotDetails, typeof (currentLotDetails.extended_time), lots)
             for (const record of lots) {
                 const timestamp = record.end_date
                 const dateObject = new Date(timestamp)
@@ -165,18 +165,21 @@ const redisHelper = {
                 const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time)
                 dateObject.setMinutes(newMinutes)
                 const newTimestamp = dateObject.getTime()
-                console.log('new', newTimestamp)
+                console.log('new', newTimestamp, record)
                 const bidKey = `lot:${record._id}`
                 const existingRecord = await client.hGet('lot', bidKey)
                 const get_lot = JSON.parse(existingRecord)
+                console.log('getlotss', get_lot)
                 if (get_lot) {
                     if (record.end_date !== newTimestamp) {
+                        console.log('conditionsss')
                         const updateRequest = {
                             ...get_lot,
                             end_date: newTimestamp,
                         }
-                        const lotDetails = await getLotFromRedis(record._id, client)
                         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+                        console.log('xxx', x)
+                        const lotDetails = await getLotFromRedis(record._id, client)
                         socket.emit('extensionAlert', {
                             success: true,
                             extension: {
