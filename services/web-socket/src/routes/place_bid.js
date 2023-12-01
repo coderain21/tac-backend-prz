@@ -123,6 +123,39 @@ async function calculateNextAmont(currentBid) {
 // }
 
 
+
+async function getLotFromRedis(lot_id, client) {
+    try {
+        const redisKey = `lot:${lot_id}`
+        const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
+        const get_lot = []
+        for (let i = 0; i < getLotDetails.length; i++) {
+            get_lot.push(JSON.parse(getLotDetails[i]))
+        }
+        // if lot is active, then store   history for current bid
+        if (getLotDetails.length <= 0) {
+            const connectionData = await mongodbHelpers.connect()
+            const getLotData = await mongodbHelpers.getLot(lot_id)
+            const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
+            console.log('checkAuctionEnd', checkAuctionEnd)
+            // getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
+            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
+            getLotData[0].percentage = checkAuctionEnd[0].percentage
+            getLotData[0].fees = checkAuctionEnd[0].fees
+            getLotData[0].extended_time = checkAuctionEnd[0].extension_time
+            getLotData[0].extension_type = checkAuctionEnd[0].extension_type
+            const saveLotDetails = await client.hSet('lot', redisKey, JSON.stringify(getLotData[0]))
+            get_lot[0] = getLotData[0]
+            await connectionData.disconnect()
+        }
+        return get_lot[0]
+    } catch (err) {
+        console.log(err)
+        return err
+    }
+}
+
+
 const redisHelper = {
     async getLotData(redisKey, client) {
         const allBidders = await client.hGetAll(redisKey)
@@ -182,6 +215,7 @@ const redisHelper = {
                                 extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
                             }, 
                         })
+                        const lotDetails = await getLotFromRedis(record._id, client)
                     }
                     return true
                 }
@@ -250,37 +284,6 @@ const redisHelper = {
     },
     
 
-}
-
-async function getLotFromRedis(lot_id, client) {
-    try {
-        const redisKey = `lot:${lot_id}`
-        const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
-        const get_lot = []
-        for (let i = 0; i < getLotDetails.length; i++) {
-            get_lot.push(JSON.parse(getLotDetails[i]))
-        }
-        // if lot is active, then store   history for current bid
-        if (getLotDetails.length <= 0) {
-            const connectionData = await mongodbHelpers.connect()
-            const getLotData = await mongodbHelpers.getLot(lot_id)
-            const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
-            console.log('checkAuctionEnd', checkAuctionEnd)
-            // getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
-            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
-            getLotData[0].percentage = checkAuctionEnd[0].percentage
-            getLotData[0].fees = checkAuctionEnd[0].fees
-            getLotData[0].extended_time = checkAuctionEnd[0].extension_time
-            getLotData[0].extension_type = checkAuctionEnd[0].extension_type
-            const saveLotDetails = await client.hSet('lot', redisKey, JSON.stringify(getLotData[0]))
-            get_lot[0] = getLotData[0]
-            await connectionData.disconnect()
-        }
-        return get_lot[0]
-    } catch (err) {
-        console.log(err)
-        return err
-    }
 }
 
 module.exports.joinBidRoom = async (socket, lotID, io) => {
