@@ -4,6 +4,8 @@ import os
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 from bson import ObjectId
+from lib.get import get_by_email, fetch_seller_data_from_auction
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -45,7 +47,14 @@ def view(event, context):
         collection = db[os.environ['CART_COLLECTION']]
         data = event['queryStringParameters']
         auction_id = data['auction_id']
-        auction_id= ObjectId(auction_id)
+        plan_type = "Free"
+        auction_data = fetch_seller_data_from_auction(auction_id)
+        if auction_data is not None:
+            seller_email = auction_data["seller_email"]
+            seller_data = get_by_email(seller_email,os.environ['SELLERS_TABLE'])
+            if seller_data is not None:
+                plan_type = seller_data["plan_type"]
+
         cart_details= collection.find({'email_address':email_address,'auction_id':auction_id})
         if cart_details is None:
             return {
@@ -56,7 +65,7 @@ def view(event, context):
         return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({"data":list(cart_details)},cls = Encoder)
+                "body": json.dumps({"data":list(cart_details),"plan_type":plan_type},cls = Encoder)
             }
     except Exception as err:
         print(err)
