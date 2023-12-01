@@ -52,7 +52,6 @@ functions:
     layers:
       - ${env:LAMBDA_LAYER}
 
-  
 
 resources:
    Resources:

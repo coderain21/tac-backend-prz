@@ -439,12 +439,18 @@ functions:
       subnetIds:
         - subnet-0ff05c7c2bd2a3f87
     layers:
+      
       - ${env:COMMON_LIB_ARN}
-    events:
-      - cognitoUserPool:
-          pool: ${env:DEFAULT_USERPOOL_NAME}
-          trigger: PreSignUp
-          existing: true
+    # events:
+    #   - cognitoUserPool:
+    #       pool: ${env:DEFAULT_USERPOOL_NAME}
+    #       trigger: PreSignUp
+    #       existing: true
+    # # events:
+    #   - cognitoUserPool:
+    #       pool: 'indyauction-staging-buyers'
+    #       trigger: PreSignUp
+    #       existing: true
 
 resources:
    Resources:
