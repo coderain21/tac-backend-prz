@@ -180,6 +180,7 @@ const redisHelper = {
                         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
                         console.log('xxx', x)
                         const lotDetails = await getLotFromRedis(record._id, client)
+                        console.log('lot details', lotDetails)
                         socket.emit('extensionAlert', {
                             success: true,
                             extension: {
