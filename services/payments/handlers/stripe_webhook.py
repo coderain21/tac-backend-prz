@@ -37,10 +37,10 @@ def update_payment_data(id,update_data):
         # MongoDB configuration
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        payments_collection = db[os.environ['PAYMENTS_COLLECTION']]
+        payments_collection = db[os.environ['ORDERS_COLLECTION']]
         print(update_data)
 
-        update_result = payments_collection.update_one({"id": id},{"$set": update_data})
+        update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
 
         client.close()
         if update_result:
@@ -101,12 +101,13 @@ def update(event, context):
         if data["object"]["object"] == "payment_intent":
             payment_id = data["object"]["id"]
             payment_method = data["object"]["payment_method"]
-            if payment_method is not None:
-                payment_method = stripe.PaymentMethod.retrieve(payment_id,
-                                                       stripe_account = account_id)
+            # if payment_method is not None:
+            #     payment_method = stripe.PaymentMethod.retrieve(payment_id,
+                                                    #   stripe_account = account_id)
                 # print(payment_method)
             update_data= {
                 "status": data["object"]["status"],
+                "payment_status": "Paid" if data["object"]["status"] == "succeeded" else "Unpaid",
                 "payment_method_types": data["object"]["payment_method_types"]
             }
             if data["object"]["last_payment_error"] is not None:
@@ -116,7 +117,7 @@ def update(event, context):
                 }
 
             update_payment_data(payment_id,update_data)
-
+ 
         return {
             "headers": headers,
             'statusCode': 204,

@@ -193,7 +193,7 @@ def create_intent(event, context):
                     "body": json.dumps(
                         {"message": f"Please provide {','.join(fields_not_found)}"})
                     }
-
+        body_data = {}
         sub_domain = data.get("domain")
         auction_id = data.get("id")
         amount = int(data.get("amount"))
@@ -252,6 +252,7 @@ def create_intent(event, context):
                 "currency": stripe_data["currency"],
                 "seller_email": seller_data_of_auction["seller_email"]
             }
+            body_data = {'data': stripe_data["client_secret"], 'account_id': account_id}
         elif payment == "paypal":
             insert_data = {
                 "email_address": email_address,
@@ -313,10 +314,10 @@ def create_intent(event, context):
             }
             result = counter_collection.insert_one(counter_record)
         print(counter_record)
-        last_order_number = counter_record["starting_sequence"]
+        last_order_number = counter_record["starting_sequence"]+1
         print("last_order_number", last_order_number)
         update_data = {
-            "starting_sequence": last_order_number+1
+            "starting_sequence": last_order_number
         }
         insert_data["order_number"] = generate_order_code(last_order_number)
 
@@ -335,10 +336,11 @@ def create_intent(event, context):
                                        "email_address": email_address,
                                        "record_type": "Orders"}, {
             "$set": update_data})
+        
         return {
             "statusCode": 201,
             "headers": headers,
-            "body": json.dumps({'data': stripe_data["client_secret"], 'account_id': account_id}, cls=Encoder)
+            "body": json.dumps(body_data, cls=Encoder)
         }
     except Exception as err:
         print(err)
