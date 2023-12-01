@@ -208,27 +208,19 @@ const redisHelper = {
                 const newTimestamp = dateObject.getTime()
                 console.log('newTimestamp', newTimestamp) // Output:
                 const bidKey = `lot:${record._id}`
-                const existingRecord = await client.hGet(bidKey, 'end_date')
+                const existingRecord = await client.hGet('lot', bidKey)
                 console.log('exist', existingRecord)
-
-                if (existingRecord) {
-                    console.log('insideeeeeeee')
-                    // Parse the existing record value (assuming it's stored as a JSON string)
-                    const currentEndDate = JSON.parse(existingRecord)
-                    console.log('cure', currentEndDate)
+                const get_lot = JSON.parse(existingRecord)
+                console.log('get', get_lot)
+                if (get_lot) {
                     // Compare current end_date with newTimestamp
-                    if (currentEndDate !== newTimestamp) {
+                    if (record.end_date !== newTimestamp) {
                         const updateRequest = {
+                            ...get_lot,
                             end_date: newTimestamp,
                         }
-
-                        const newRecord = {
-                            ...record,
-                            end_date: newTimestamp,
-                        }
-
                         // Update the existing record in Redis
-                        const x = await client.hSet(bidKey, 'end_date', JSON.stringify(newRecord.end_date))
+                        const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
                         console.log('xx', x, record._id)
                         // Emit the extension alert
                         socket.emit('extensionAlert', {
@@ -239,6 +231,7 @@ const redisHelper = {
                         })
                         console.log('emitting extension after', record._id)
                     }
+                    return true
                 }
             }
         } else if (currentLotDetails.extension_type === 'Individual') {
@@ -252,13 +245,31 @@ const redisHelper = {
             // Set the new minutes to the Date object
             dateObject.setMinutes(newMinutes)
             // Convert the Date object back to a timestamp
+            const existingRecord = await client.hGet('lot', bidKey)
+            console.log('exist', existingRecord)
             const newTimestamp = dateObject.getTime()
-            updates[bidKey] = { end_date: newTimestamp }
-            const newRecord = {
-                ...currentLotDetails,
-                bidKey: newTimestamp,
+            const get_lot = JSON.parse(existingRecord)
+            console.log('get', get_lot)
+            if (get_lot) {
+                // Compare current end_date with newTimestamp
+                if (get_lot.end_date !== newTimestamp) {
+                    const updateRequest = {
+                        ...get_lot,
+                        end_date: newTimestamp,
+                    }
+                    // Update the existing record in Redis
+                    const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+                    // Emit the extension alert
+                    socket.emit('extensionAlert', {
+                        success: true,
+                        extension: {
+                            extended: true, extended_time: currentLotDetails.extended_time, lot_id: get_lot._id, extension_type: currentLotDetails.extension_type, 
+                        }, 
+                    })
+                }
+                return true
             }
-            await client.hSet(bidKey, bidKey, JSON.stringify(newRecord))
+
             io.to(currentLotDetails.lot_id).emit('extensionAlert', {
                 success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
             })
@@ -305,13 +316,13 @@ async function getLotFromRedis(lot_id, client) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
-            getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
+            // getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
             getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
             getLotData[0].extended_time = checkAuctionEnd[0].extension_time
             getLotData[0].extension_type = checkAuctionEnd[0].extension_type
-            const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(getLotData[0]))
+            const saveLotDetails = await client.hSet('lot', redisKey, JSON.stringify(getLotData[0]))
             get_lot[0] = getLotData[0]
             await connectionData.disconnect()
         }
@@ -498,7 +509,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 }
             } 
         }
-        const saveLotDetails = await client.hSet(redisKey, redisKey, JSON.stringify(currentLotDetails))
+        const saveLotDetails = await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
         console.log('currentLotDetails', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
