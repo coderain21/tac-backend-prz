@@ -258,6 +258,8 @@ async function getLotFromRedis(lot_id, client) {
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
+        console.log('getlotdetails', lot_id)
+
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
             const connectionData = await mongodbHelpers.connect()
@@ -331,35 +333,35 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         if (!client.isOpen) {
             await client.connect()
         }
-        const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
         data.time_stamp = new Date().getTime()
         const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
-        const currentLotDetails = await getLotFromRedis(data.lot_id, client)
+        const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
+        let currentLotDetails = await getLotFromRedis(data.lot_id, client)
         const currentTimestamp = new Date().getTime()
-        if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
-            console.log('endedddd')
-            const all_bidders = []
-            for (let i = 0; i < getLotHistoryDetails.length; i++) {
-                all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
-            }
-            const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
-            if (data.bid_amount > currentLotDetails.max_bid) {
-                currentLotDetails.bid_amount = data.bid_amount 
-                currentLotDetails.max_bid = data.bid_amount
-                currentLotDetails.winning_user = data.buyer_id 
-            } else if (data.bid_amount < currentLotDetails.max_bid) {
-                currentLotDetails.winning_user = currentLotDetails.winning_user
-                currentLotDetails.bid_amount = currentLotDetails.bid_amount
-                currentLotDetails.max_bid = currentLotDetails.max_bid
-            }
-            currentLotDetails.lot_status = 'Ended'
-            currentLotDetails.email_address = currentLotDetails.winning_user
-            const saveToCart = await addToCart(currentLotDetails)
-            io.to(data.lot_id).emit('placeBid', {
-                success: true, currentLotDetails,
-            })
-            return true
-        }
+        // if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
+        //     console.log('endedddd')
+        //     const all_bidders = []
+        //     for (let i = 0; i < getLotHistoryDetails.length; i++) {
+        //         all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+        //     }
+        //     const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+        //     if (data.bid_amount > currentLotDetails.max_bid) {
+        //         currentLotDetails.bid_amount = data.bid_amount 
+        //         currentLotDetails.max_bid = data.bid_amount
+        //         currentLotDetails.winning_user = data.buyer_id 
+        //     } else if (data.bid_amount < currentLotDetails.max_bid) {
+        //         currentLotDetails.winning_user = currentLotDetails.winning_user
+        //         currentLotDetails.bid_amount = currentLotDetails.bid_amount
+        //         currentLotDetails.max_bid = currentLotDetails.max_bid
+        //     }
+        //     currentLotDetails.lot_status = 'Ended'
+        //     currentLotDetails.email_address = currentLotDetails.winning_user
+        //     const saveToCart = await addToCart(currentLotDetails)
+        //     io.to(data.lot_id).emit('placeBid', {
+        //         success: true, currentLotDetails,
+        //     })
+        //     return true
+        // }
         const now = new Date()
         const oneMinuteAgo = new Date(now - 60000)
         const oneMinuteBeforeEndDate = oneMinuteAgo.getTime()
@@ -367,14 +369,16 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const currentTimeEpoch = Date.now()
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
         console.log('monfogg', currentLotDetails)
-        if (timeLeft <= 60000 && timeLeft > 0) {
-        // if (timeLeft) {
+        // if (timeLeft <= 60000 && timeLeft > 0) {
+        if (timeLeft) {
             console.log('The bid is within the last minute before the auction ends.')
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
             await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
             await listBidHistory(socket, data, io)
+            currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
+        
         if (getLotHistoryDetails.length <= 0) {
             console.log('0 consition')
             currentLotDetails.max_bid = data.bid_amount
@@ -445,6 +449,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
+
         console.log('current', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
