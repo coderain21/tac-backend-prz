@@ -174,7 +174,7 @@ const redisHelper = {
                     if (record.end_date !== newTimestamp) {
                         console.log('conditionsss')
                         const updateRequest = {
-                            ...get_lot,
+                            ...record,
                             end_date: newTimestamp,
                         }
                         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
