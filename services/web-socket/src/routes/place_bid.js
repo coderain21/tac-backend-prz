@@ -165,6 +165,7 @@ const redisHelper = {
                 const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time)
                 dateObject.setMinutes(newMinutes)
                 const newTimestamp = dateObject.getTime()
+                console.log('new', newTimestamp)
                 const bidKey = `lot:${record._id}`
                 const existingRecord = await client.hGet('lot', bidKey)
                 const get_lot = JSON.parse(existingRecord)
@@ -174,14 +175,15 @@ const redisHelper = {
                             ...get_lot,
                             end_date: newTimestamp,
                         }
-                        await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+                        const lotDetails = await getLotFromRedis(record._id, client)
+                        const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
                         socket.emit('extensionAlert', {
                             success: true,
                             extension: {
                                 extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
                             }, 
+                            lot: lotDetails,
                         })
-                        const lotDetails = await getLotFromRedis(record._id, client)
                     }
                     return true
                 }
@@ -397,38 +399,45 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } else {
                 console.log('222222222222222222222222222222')
                 if (data.bid_amount > currentLotDetails.max_bid) {
+                    console.log('aaaaaaaaaaaaaaaaaaaaaaa')
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } 
                 else if (data.bid_amount === currentLotDetails.max_bid) {
+                    console.log('bbbbbbbbbbbbbbbbbb')
                     console.log('333333333333333333333333333333')
                     currentLotDetails.max_bid = all_bidders[0].bid_amount
                     currentLotDetails.bid_amount = currentLotDetails[0].max_bid
                 } else {
-                    console.log('4444444444444444444444444444')
+                    console.log('ccccccccccccccccccccc')
                     currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                 }
             } 
         } else {
+            console.log('#################################')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
             if (data.buyer_id === highestBidder.buyer_id) {
+                console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
             } else if (data.bid_amount > currentLotDetails.max_bid) {
+                console.log('dddddddddddddddddddddd')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
                 currentLotDetails.winning_user = data.buyer_id
             } else {
+                console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
                 if (data.bid_amount > currentLotDetails.max_bid) {
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } else {
+                    console.log('fffffffffffffffffffffffffffff')
                     if (data.bid_amount === currentLotDetails.max_bid) {
                         currentLotDetails.winning_user = highestBidder.buyer_id
                         currentLotDetails.bid_amount = highestBidder.bid_amount
