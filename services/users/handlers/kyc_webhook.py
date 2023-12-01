@@ -39,27 +39,34 @@ def kyc_webhook(event, context):
             collection = db[os.environ['SELLERS_TABLE']]
 
             user = collection.find_one({'applicantId': applicant_id})
-            # Handle different webhook events
-            event_type = data['type']
-            if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
-                user["kyc_event_type"] = event_type
-                user["kyc_status"] = data["reviewStatus"]
+            if user is not None:
+                # Handle different webhook events
+                event_type = data['type']
+                if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
+                    user["kyc_event_type"] = event_type
+                    user["kyc_status"] = data["reviewStatus"]
 
+                else:
+                    user["kyc_event_type"] = event_type
+                    user["kyc_status"] = data["reviewStatus"]
+
+                if "reviewResult" in data:
+                    user['kyc_reviewResult'] = data["reviewResult"]
+
+                collection.update_one({"_id": user["_id"]}, {
+                    "$set": user})
+
+                client.close()
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({'message': 'Webhook event received and processed successfully'})
+                }
             else:
-                user["kyc_event_type"] = event_type
-                user["kyc_status"] = data["reviewStatus"]
-
-            if "reviewResult" in data:
-                user['kyc_reviewResult'] = data["reviewResult"]
-
-            collection.update_one({"_id": user["_id"]}, {
-                "$set": user})
-
-            client.close()
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'message': 'Webhook event received and processed successfully'})
-            }
+                client.close()
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({'message': 'Webhook event received and processed successfully'})
+                }
         elif data['levelName']=='basic-kyb-level':
             print('entering kyb')
             company_id =  data["applicantId"]
@@ -68,28 +75,35 @@ def kyc_webhook(event, context):
             collection = db[os.environ['SELLERS_TABLE']]
 
             user = collection.find_one({'companyId': company_id})
-            # Handle different webhook events
-            event_type = data['type']
-            print('event_type', event_type)
-            if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
-                user["kyb_event_type"] = event_type
-                user["kyb_status"] = data["reviewStatus"]
+            if user is not None:
+                # Handle different webhook events
+                event_type = data['type']
+                print('event_type', event_type)
+                if event_type in ('applicantCreated', 'applicantPending', 'applicantWorkflowCompleted'):
+                    user["kyb_event_type"] = event_type
+                    user["kyb_status"] = data["reviewStatus"]
 
+                else:
+                    user["kyb_event_type"] = event_type
+                    user["kyb_status"] = data["reviewStatus"]
+
+                if "reviewResult" in data:
+                    user['kyb_reviewResult'] = data["reviewResult"]
+
+                collection.update_one({"_id": user["_id"]}, {
+                    "$set": user})
+
+                client.close()
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({'message': 'Webhook event received and processed successfully'})
+                }
             else:
-                user["kyb_event_type"] = event_type
-                user["kyb_status"] = data["reviewStatus"]
-
-            if "reviewResult" in data:
-                user['kyb_reviewResult'] = data["reviewResult"]
-
-            collection.update_one({"_id": user["_id"]}, {
-                "$set": user})
-
-            client.close()
-            return {
-                'statusCode': 200,
-                'body': json.dumps({'message': 'Webhook event received and processed successfully'})
-            }
+                client.close()
+                return {
+                    'statusCode': 200,
+                    'body': json.dumps({'message': 'Webhook event received and processed successfully'})
+                }
 
     except Exception as e:
         # Handle errors or exceptions
