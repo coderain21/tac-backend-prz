@@ -421,10 +421,12 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
+            console.log('ddd', highestBidder)
             if (data.buyer_id === highestBidder.buyer_id) {
                 console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+                currentLotDetails.winning_user = highestBidder.buyer_id
             } else if (data.bid_amount > currentLotDetails.max_bid) {
                 console.log('dddddddddddddddddddddd')
                 currentLotDetails.max_bid = data.bid_amount
