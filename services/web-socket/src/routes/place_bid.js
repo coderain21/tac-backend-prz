@@ -46,7 +46,7 @@ const bidInformationSchema = new mongoose.Schema({
     lot_id: String,
     lot_number: String,
     lot_title: String,
-    buyer_name: String,
+    name: String,
     next_bid_amount: Number,
     low_estimate: String,
     high_estimate: String,
@@ -336,6 +336,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
         let currentLotDetails = await getLotFromRedis(data.lot_id, client)
         data.time_stamp = new Date().getTime()
+        currentLotDetails.email_address = data.email_address
         const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const currentTimestamp = new Date().getTime()
         if (currentLotDetails.end_date === currentTimestamp || currentLotDetails.end_date < currentTimestamp) {
@@ -355,7 +356,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 currentLotDetails.max_bid = currentLotDetails.max_bid
             }
             currentLotDetails.lot_status = 'Ended'
-            currentLotDetails.email_address = currentLotDetails.winning_user
             const saveToCart = await addToCart(currentLotDetails)
             io.to(data.lot_id).emit('placeBid', {
                 success: true, currentLotDetails,
