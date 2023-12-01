@@ -233,7 +233,6 @@ module.exports.getAllLots = async (document, lotData) => {
                 },
             }
             const x = await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
-            console.log('x', x)
         } else if (document.extension_type === 'Individual') {
             const lotId = ObjectId(lotData.lot_id)
             const timestamp = documents[0].end_date
