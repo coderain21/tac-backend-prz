@@ -95,13 +95,19 @@ def update(event, context):
         event_body = payload
 
         data = json.loads(event_body)
+        account_id = data["account"]
         data=data["data"]
         # Handle the event
         if data["object"]["object"] == "payment_intent":
             payment_id = data["object"]["id"]
-
+            payment_method = data["object"]["payment_method"]
+            if payment_method is not None:
+                payment_method = stripe.PaymentMethod.retrieve(payment_id,
+                                                       stripe_account = account_id)
+                # print(payment_method)
             update_data= {
-                "status": data["object"]["status"]
+                "status": data["object"]["status"],
+                "payment_method_types": data["object"]["payment_method_types"]
             }
             if data["object"]["last_payment_error"] is not None:
                 update_data["last_payment_error"]= {

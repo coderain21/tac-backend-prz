@@ -9,6 +9,7 @@ import json
 import os
 import stripe
 from pymongo import MongoClient
+from bson import ObjectId
 from lib.common_helper import Encoder
 from lib.get import get_by_email, fetch_seller_data_from_auction
 
@@ -21,6 +22,55 @@ headers = {
 }
 stripe.api_key = os.environ["STRIPE_API_KEY"]
 
+def generate_order_code(number):
+    if not isinstance(number, int) or number < 1:
+        raise ValueError("Input must be a positive integer greater than 0.")
+
+    # Define the prefix for the code
+    prefix = "OD"
+
+    # Determine the number of digits in the input number
+    num_digits = len(str(number))
+
+    # Calculate the padding needed for the code
+    padding = max(0, 3 - num_digits)
+
+    # Generate the formatted code
+    formatted_code = f"{prefix}{padding*'0'}{number}"
+
+    return formatted_code
+
+def get_data_from_cart(auction_id,seller_email,buyer_email):
+    try:
+        # MongoDB configuration
+        results = []
+        lot_numbers = []
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        cart_collection = db[os.environ["CART_COLLECTION"]]
+        
+        cart_data = cart_collection.find({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+        for lot in cart_data:
+            record = {}
+            record["bid_amount"] = lot.get("bid_amount")
+            record["fees"] = lot.get("fees")
+            record["lot_title"] = lot.get("lot_title")
+            record["lot_number"] = lot.get("lot_number")
+            lot_numbers.append(lot.get("lot_number"))
+            record["lot_image"] = lot.get("lot_image")
+            record["auction_id"] = lot.get("auction_id")
+            record["name"] = lot.get("name")
+
+            results.append(record)
+        res = ",".join(lot_numbers)
+        client.close()
+        if cart_data:
+            return cart_data,res
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
 
 def calculate_application_fee(amount, plan_type):
     """
@@ -64,9 +114,6 @@ def generate_client_secret(account_id, amount, currency, application_fee):
             automatic_payment_methods={"enabled": True},
             application_fee_amount=int(application_fee*100),
             stripe_account=account_id
-            # payment_method_types=["card"],
-            # confirm=True,
-            # return_url="https://auction-domain.indyauction.net/auctions/6520008e74542648a5819807"
         )
         print(session)
         return session
@@ -74,7 +121,7 @@ def generate_client_secret(account_id, amount, currency, application_fee):
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 
-def add_payment_data_to_collection(insert_data):
+def create_order(insert_data):
     """
     Add payment data to the MongoDB collection.
 
@@ -94,7 +141,7 @@ def add_payment_data_to_collection(insert_data):
         # MongoDB configuration
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        payments_collection = db[os.environ['PAYMENTS_COLLECTION']]
+        payments_collection = db[os.environ['ORDERS_COLLECTION']]
         print(insert_data)
         insert_result = payments_collection.insert_one(insert_data)
         print(insert_result)
@@ -138,7 +185,7 @@ def create_intent(event, context):
             }
 
         data = event['queryStringParameters']
-        expected_fields = ["id", "domain", "amount"]
+        expected_fields = ["id", "domain", "amount","billing","shipping","timestamp"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
         if fields_not_found:
             return {"headers": headers,
@@ -150,7 +197,10 @@ def create_intent(event, context):
         sub_domain = data.get("domain")
         auction_id = data.get("id")
         amount = int(data.get("amount"))
-
+        billing = data.get("billing")
+        shipping = data.get("shipping")
+        time_stamp = data.get("timestamp")
+        payment= data.get("payment")
         seller_data_of_auction = fetch_seller_data_from_auction(auction_id)
         if seller_data_of_auction is None:
             return {
@@ -158,6 +208,9 @@ def create_intent(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Auction doesn't exists"})
             }
+        auction_title = seller_data_of_auction.get("title")
+        auction_image = seller_data_of_auction.get("auction_image")
+        seller_email = seller_data_of_auction["seller_email"]
         seller_data = get_by_email(
             seller_data_of_auction["seller_email"], os.environ['SELLERS_TABLE'])
         print(seller_data)
@@ -168,36 +221,122 @@ def create_intent(event, context):
                 "body": json.dumps({"message": "Seller not found"})
             }
         plan_type = seller_data.get("plan_type", "")
-        account_id = seller_data.get("stripe_connected_id")
-        if account_id is None:
-            return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({'message': 'Seller does not have stripe account,please connect'}, cls=Encoder)
-            }
-        account_status = seller_data.get("stripe_status", "")
-        if account_status != "connected":
-            return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({'message': 'Seller has disconnected their stripe account,please connect'}, cls=Encoder)
-            }
         application_fee = calculate_application_fee(amount, plan_type)
-        stripe_data = generate_client_secret(
-            account_id, amount, seller_data_of_auction["currency"], application_fee)
-        insert_data = {
-            "email_address": email_address,
-            "id": stripe_data["id"],
-            "client_secret": stripe_data["client_secret"],
-            "status": stripe_data["status"],
-            "amount": amount*100,
-            "application_amount": stripe_data["application_fee_amount"],
-            "currency": stripe_data["currency"],
-            "seller_email": seller_data_of_auction["seller_email"]
+        if payment == "stripe":
+            account_id = seller_data.get("stripe_connected_id")
+            if account_id is None:
+                return {
+                    "statusCode": 400,
+                    "headers": headers,
+                    "body": json.dumps({'message': 'Seller does not have stripe account,please connect'}, cls=Encoder)
+                }
+            stripe_account_status = seller_data.get("stripe_status", "")
+            if stripe_account_status != "connected":
+                return {
+                    "statusCode": 400,
+                    "headers": headers,
+                    "body": json.dumps({'message': 'Seller has disconnected their stripe account,please connect'}, cls=Encoder)
+                }
+            
+            stripe_data = generate_client_secret(
+                account_id, amount, seller_data_of_auction["currency"], application_fee)
+            insert_data = {
+                "email_address": email_address,
+                "payment_intent": stripe_data["id"],
+                "client_secret": stripe_data["client_secret"],
+                "status": stripe_data["status"],
+                "payment_status": "Unpaid",
+                "amount": amount,
+                "payment": "Stripe",
+                "application_amount": application_fee,
+                "currency": stripe_data["currency"],
+                "seller_email": seller_data_of_auction["seller_email"]
+            }
+        elif payment == "paypal":
+            insert_data = {
+                "email_address": email_address,
+                "payment_intent": "",
+                "client_secret": "",
+                "status": "",
+                "payment_status": "Unpaid",
+                "amount": amount,
+                "payment": "Paypal",
+                "application_amount": application_fee,
+                "currency": seller_data_of_auction["currency"],
+                "seller_email": seller_data_of_auction["seller_email"]
+            }
+        else:
+            insert_data = {
+                "email_address": email_address,
+                "payment_intent": "",
+                "client_secret": "",
+                "status": "",
+                "payment_status": "Unpaid",
+                "amount": amount,
+                "payment": "",
+                "application_amount": application_fee,
+                "currency": seller_data_of_auction["currency"],
+                "seller_email": seller_data_of_auction["seller_email"]
+            }
+
+        #Block to fetch the counter record , add the order to orders
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+
+        counter_collection = db[os.environ['COUNTER_LOT']]
+        address_collection = db[os.environ["ADDRESS_COLLECTION"]]
+        orders_collection = db[os.environ["ORDERS_COLLECTION"]]
+
+        #fetch address data and add to order data
+        billing_address = address_collection.find_one({"_id": ObjectId(billing)})
+        shipping_address = address_collection.find_one({"_id": ObjectId(shipping)})
+        insert_data["shipping_address"] = shipping_address
+        insert_data["billing_address"] = billing_address
+        
+
+        existing_orders_count = orders_collection.count_documents(
+            {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
+        print("existing orders",existing_orders_count)
+        counter_record = counter_collection.find_one({"auction_id": auction_id,
+                                                      "email_address": email_address,
+                                                      "seller_email": seller_email,
+                                                      'record_type': 'Orders'}
+                                                     )
+        if counter_record is None:
+            last_order_number = 0
+            counter_record = {
+                "auction_id": auction_id,
+                "seller_email": seller_email,
+                "email_address": email_address,
+                "record_type": "Orders",
+                "starting_sequence": last_order_number
+            }
+            result = counter_collection.insert_one(counter_record)
+        print(counter_record)
+        last_order_number = counter_record["starting_sequence"]
+        print("last_order_number", last_order_number)
+        update_data = {
+            "starting_sequence": last_order_number+1
         }
-        add_payment_data_to_collection(insert_data)
+        insert_data["order_number"] = generate_order_code(last_order_number)
+
+        cart_data,res = get_data_from_cart(email_address,seller_email,auction_id)
+        insert_data["created_at"] = time_stamp
+        insert_data["auction_title"] = auction_title
+        insert_data["auction_image"] = auction_image
+        insert_data["purchases"] = {} if cart_data is None else cart_data
+        insert_data["lots"] = res
+        #add the order data in orders collection
+        create_order(insert_data)
+
+        print("latest lot number", last_order_number)
+        counter_collection.update_one({"auction_id": auction_id,
+                                       "seller_email": seller_email,
+                                       "email_address": email_address,
+                                       "record_type": "Orders"}, {
+            "$set": update_data})
         return {
-            "statusCode": 200,
+            "statusCode": 201,
             "headers": headers,
             "body": json.dumps({'data': stripe_data["client_secret"], 'account_id': account_id}, cls=Encoder)
         }
