@@ -257,7 +257,7 @@ module.exports.getAllLots = async (document, lotData) => {
             const updateQuery = {
                 $set: {
                     end_date: newTimestamp,
-                    extended_time: parseInt(document.extension_time, 10),
+                    extended_time: document.extension_time,
 
                 },
             }
@@ -280,10 +280,9 @@ module.exports.getAllLots = async (document, lotData) => {
             const updateQuery = {
                 $set: {
                     end_date: newTimestamp,
-                    extended_time: parseInt(document.extension_time, 10),
+                    extended_time: document.extension_time,
                 },
             }
-
             await collection.updateMany({ _id: lotId }, updateQuery)
         } else {
             const sortOptions = { lot_number: 1 }
