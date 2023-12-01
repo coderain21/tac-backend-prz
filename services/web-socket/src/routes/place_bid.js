@@ -382,24 +382,28 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             currentLotDetails.winning_user = data.buyer_id       
         }
         else if (getLotHistoryDetails.length === 1) {
-            console.log('1 condition')
+            console.log('1 condition', currentLotDetails)
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             if (data.buyer_id === all_bidders[0].buyer_id) {
+                console.log('1111111111111')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = data.bid_amount > currentLotDetails.starting_price ? await calculateNextAmont(currentLotDetails.starting_price) : data.bid_amount
             } else {
+                console.log('222222222222222222222222222222')
                 if (data.bid_amount > currentLotDetails.max_bid) {
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } 
                 else if (data.bid_amount === currentLotDetails.max_bid) {
+                    console.log('333333333333333333333333333333')
                     currentLotDetails.max_bid = all_bidders[0].bid_amount
                     currentLotDetails.bid_amount = currentLotDetails[0].max_bid
                 } else {
+                    console.log('4444444444444444444444444444')
                     currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                 }
             } 
