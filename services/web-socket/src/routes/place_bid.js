@@ -395,6 +395,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
 
         // step3 : get current lot  info from redis
         const currentLotDetails = await getLotFromRedis(data.lot_id, client)
+        console.log('current', currentLotDetails)
         const currentTimestamp = new Date().getTime()
 
         /*----------------------------------------------------------------------------------------------------------*/
