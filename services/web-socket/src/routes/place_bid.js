@@ -316,6 +316,7 @@ async function getLotFromRedis(lot_id, client) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
+            console.log('checkAuctionEnd', checkAuctionEnd)
             // getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
             getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
