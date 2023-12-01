@@ -9,8 +9,6 @@ const mongoose = require('mongoose')
 const { ObjectId } = require('mongodb')
 const { MongoClient } = require('mongodb')
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-require('dotenv').config()
 
 /* This code exports a function named `connect` as a property of the `module.exports` object. The
 `connect` function uses the `mongoose` library to connect to a MongoDB database using the connection
