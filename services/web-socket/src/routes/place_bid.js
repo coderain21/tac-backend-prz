@@ -259,7 +259,7 @@ async function getLotFromRedis(lot_id, client) {
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
-        consollot_ide.log('getlotdetails', lot_id)
+        console.log('getlotdetails', lot_id)
 
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
