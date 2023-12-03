@@ -252,16 +252,18 @@ const redisHelper = {
 
 async function getLotFromRedis(lot_id, client) {
     try {
+        console.log('lotdd', lot_id)
         const redisKey = `lot:${lot_id}`
         const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
         const get_lot = []
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
-        console.log('getlotdetails', lot_id)
+        consollot_ide.log('getlotdetails', lot_id)
 
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
+            console.log('inside redis', lot_id)
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
@@ -287,6 +289,7 @@ async function getLotFromRedis(lot_id, client) {
 
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
+        console.log('inside bid rom', lotID)
         // Create a Redis client
         // const client = await redis.createClient()
         const client = await redis.createClient({
