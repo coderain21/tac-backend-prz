@@ -1,0 +1,443 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Payments Management APIs",
+    "description": "APIs to manage payments for the lot purchase",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.indyauction.net/dev/v1/payments"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Payment Management",
+      "description": "APIs to manage the payments"
+    }
+  ],
+
+  "paths": {
+    "/stripe": {
+      "get": {
+        "tags": ["Stripe Payments Management"],
+        "summary": "Get payment related data",
+        "description": "Get payment related data",
+        "parameters": [
+          {
+            "name": "amount",
+            "in": "query",
+            "description": "total amount",
+            "schema": {
+              "type": "string"
+            },
+            "example": "100"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6520008e74542648a5819807"
+          },
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "sub domain",
+            "schema": {
+              "type": "string"
+            },
+            "example": "auction-domain"
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "description": "payment type",
+            "schema": {
+              "type": "string"
+            },
+            "example": "stripe"
+          },
+          {
+            "name": "billing",
+            "in": "query",
+            "description": "billing address id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6569734504bebdf5cc4bb24f"
+          },
+          {
+            "name": "shipping",
+            "in": "query",
+            "description": "shipping address id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6569734504bebdf5cc4bb24f"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved payment intent data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "string"
+                    },
+                    "account_id": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "data": "sabhvsbajshcakscjnacnackan",
+                  "account_id": "acct_1Nknf8C5wvaI16p7"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide auction_id"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Seller does not have stripe account,please connect"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Seller has disconnected their stripe account,please connect"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction doesn't exists"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Seller not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error while generating payment data"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Auction": {
+        "type": "object",
+        "properties": {
+          "seller_email": {
+            "type": "string"
+          },
+          "auction_id": {
+            "type": "string"
+          },
+          "template_name": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "menu_links": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "link_url": {
+                  "type": "string"
+                },
+                "dropdown": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "link_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "logo_image": {
+            "type": "string"
+          },
+          "logo_redirection_url": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "auction_image": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "number"
+          },
+          "end_date": {
+            "type": "number"
+          },
+          "extension_type": {
+            "type": "string"
+          },
+          "extension_time": {
+            "type": "string"
+          },
+          "extension_time_between_lots": {
+            "type": "string"
+          },
+          "registration_type": {
+            "type": "string"
+          },
+          "add_buyer_fees": {
+            "type": "number"
+          },
+          "time_zone": {
+            "type": "string"
+          },
+          "faq": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "terms_and_condition": {
+            "type": "string"
+          },
+          "publish_auction_result": {
+            "type": "boolean"
+          },
+          "show_bidder_location_in_bidder_history": {
+            "type": "boolean"
+          },
+          "make_your_auction_private": {
+            "type": "boolean"
+          },
+          "passcode": {
+            "type": "string"
+          },
+          "font": {
+            "type": "object"
+          },
+          "button": {
+            "type": "object"
+          },
+          "header": {
+            "type": "object"
+          },
+          "content_area": {
+            "type": "object"
+          },
+          "footer": {
+            "type": "object"
+          },
+          "paddle": {
+            "type": "object"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "email_address": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "terms_and_condition": {
+            "type": "boolean"
+          },
+          "user_type": {
+            "type": "string"
+          },
+          "newsletter_notification": {
+            "type": "boolean"
+          },
+          "sub_domain": {
+            "type": "string"
+          },
+          "seller_email": {
+            "type": "string"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Lots": {
+        "type": "object",
+        "properties": {
+          "auction_id": {
+            "type": "string"
+          },
+          "seller_email": {
+            "type": "string"
+          },
+          "lot_number": {
+            "type": "integer"
+          },
+          "lot_title": {
+            "type": "string"
+          },
+          "starting_bid": {
+            "type": "integer"
+          },
+          "current_bid": {
+            "type": "integer"
+          },
+          "Top_bidder": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "feature": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "title1": {
+            "type": "string"
+          },
+          "title2": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "starting_price": {
+            "type": "integer"
+          },
+          "low_estimate": {
+            "type": "integer"
+          },
+          "high_estimate": {
+            "type": "integer"
+          },
+          "shipping_details": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "tags_name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}
