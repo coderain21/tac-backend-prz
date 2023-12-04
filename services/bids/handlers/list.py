@@ -160,7 +160,7 @@ def export_as_csv(bidders, db):
         auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
         auction_details = auction_collection.find_one({'_id': ObjectId(auction_id)})
         filename = auction_details['auction_id']
-        
+
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}.csv')
@@ -168,7 +168,7 @@ def export_as_csv(bidders, db):
         s3_key = f"exports/bidders/{auction_id}/{filename}.csv"
         s3_bucket = os.environ['S3_BUCKET']
         print('Bidders details------------', bidders)
-        
+
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
                 "Paddle Number", "Name", "Email", "Date Registered", "Marketing Communication", "Bidder Status"
