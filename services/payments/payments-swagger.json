@@ -50,6 +50,33 @@
               "type": "string"
             },
             "example": "auction-domain"
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "description": "payment type",
+            "schema": {
+              "type": "string"
+            },
+            "example": "stripe"
+          },
+          {
+            "name": "billing",
+            "in": "query",
+            "description": "billing address id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6569734504bebdf5cc4bb24f"
+          },
+          {
+            "name": "shipping",
+            "in": "query",
+            "description": "shipping address id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6569734504bebdf5cc4bb24f"
           }
         ],
         "responses": {

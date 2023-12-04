@@ -117,7 +117,7 @@ def update(event, context):
                 }
 
             update_payment_data(payment_id,update_data)
- 
+
         return {
             "headers": headers,
             'statusCode': 204,
