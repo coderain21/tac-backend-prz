@@ -34,7 +34,7 @@ const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
 const { checkExtensionType } = require('./update_extension')
 
-const { sendPinpointEmail } = require('../utilities/send_email')
+// const { sendPinpointEmail } = require('../utilities/send_email')
 
 const bidInformationSchema = new mongoose.Schema({
     buyer_id: String,
@@ -183,6 +183,7 @@ const redisHelper = {
                             }, 
                             lot: lotDetails,
                         })
+                        socket.emit('joinBidRoom', record)
                     }
                 }
             }

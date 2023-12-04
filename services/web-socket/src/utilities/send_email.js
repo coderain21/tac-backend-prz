@@ -13,8 +13,8 @@ const pinpoint = new PinpointEmail()
 
 config.update({
     region: 'eu-west-2',
-    accessKeyId: 'AKIA5QZYLFWFE6TXB756',
-    secretAccessKey: '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',
+    accessKeyId: 'AKIA5QZYLFWFKKXDL4P6',
+    secretAccessKey: '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',
 })
 
 /* The `module.exports.getHeaders` function is exporting an object that contains the headers for an
@@ -32,11 +32,6 @@ Pinpoint service. It takes in four parameters: `destinationId`, `sourceId`, `tem
 `templateArn`. */
 module.exports.sendPinpointEmail = async (destinationId, sourceId, templateData, templateArn) => {
     console.log(templateArn, 'templateArn')
-    if (!AWS.config.region) {
-        AWS.config.update({
-          region: 'eu-west-1'
-        });
-      }
     const params = {
         Content: {
             Template: {
