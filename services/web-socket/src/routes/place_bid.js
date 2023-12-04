@@ -34,7 +34,7 @@ const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
 const { checkExtensionType } = require('./update_extension')
 
-// const {sendPinpointEmail} = require('../utilities/send_email')
+// const { sendPinpointEmail } = require('../utilities/send_email')
 
 const bidInformationSchema = new mongoose.Schema({
     buyer_id: String,
@@ -305,6 +305,7 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 
         // Retrieve lot details from Redis
         const lotDetails = await getLotFromRedis(lotID, client)
+        console.log('join bid', lotDetails)
 
         // Emit an event to the client informing them that they have joined the bid room
         socket.emit('joinBidRoom', lotDetails)
@@ -326,6 +327,10 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
+        const template_data = {
+            name: 'sandhya',
+        }
+        // await sendPinpointEmail('sandhyashri@7edge.com', 'shrinith.poojary@7edge.com', JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)  
         // const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
@@ -360,6 +365,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             }
             currentLotDetails.lot_status = 'Ended'
             const saveToCart = await addToCart(currentLotDetails)
+                      
             io.to(data.lot_id).emit('placeBid', {
                 success: true, currentLotDetails,
             })
