@@ -17,6 +17,7 @@ async function getHistory(data) {
         return parsedBidder
     })
 }
+
 module.exports.listBidHistory = async (socket, data, io) => {
     try {
         const listData = await getHistory(data)

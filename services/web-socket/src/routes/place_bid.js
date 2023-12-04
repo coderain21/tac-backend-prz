@@ -123,6 +123,7 @@ const redisHelper = {
         })
     },
     async getLotDeatils(rediskey, client) {
+        console.log('REDIS KEY', rediskey)
         const allBidders = await client.hGetAll('lot', rediskey)
         // Filter out the current bidder and return an array
         return Object.values(allBidders || {}).filter((bidder) => {
@@ -259,7 +260,7 @@ async function getLotFromRedis(lot_id, client) {
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
-        console.log('getlotdetails', lot_id)
+        console.log('getlotdetails', lot_id, getLotDetails)
 
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
@@ -315,6 +316,7 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
             auction_id: lotDetails.auction_id,
             lot_id: lotID,
         }
+        console.log('dataaa', data)
 
         // List bid history for the user in the bid room
         const listHistory = await listBidHistory(socket, data, io)
@@ -327,9 +329,9 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
-        const template_data = {
-            name: 'sandhya',
-        }
+        // const template_data = {
+        //     name: 'sandhya',
+        // }
         // await sendPinpointEmail('sandhyashri@7edge.com', 'shrinith.poojary@7edge.com', JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)  
         // const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
