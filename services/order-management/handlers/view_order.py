@@ -68,7 +68,7 @@ def view(event, context):
         # Query the MongoDB collection to find lots matching the seller email and auction ID
         search_criteria = {}
         if search_keyword:
-            escaped_search_keyword = prepend_backslash(search_keyword)
+            escaped_search_keyword = prepend backslash(search_keyword)
             print(escaped_search_keyword)
             search_criteria['title1'] = {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}
 
@@ -82,7 +82,7 @@ def view(event, context):
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "No Lots found"})
+                "body": json.dumps({"message": " No Lots found"})
             }
         return {
                 "statusCode": 200,
