@@ -276,6 +276,149 @@
             }
           }
         }
+      },
+      "/{id}":{
+        "get": {
+          "tags": [
+            "Bidders Management"
+          ],
+          "summary": "View bidder details",
+          "description": "View bidder details",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "Bidder id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "6566d902dc957c0632800f46"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved bidder details",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": { 
+                      "data": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string"
+                            },
+                            "first_name": {
+                              "type": "string"
+                            },
+                            "last_name": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "email_address": {
+                              "type": "string"
+                            },
+                            "terms and condition": {
+                              "type": "boolean"
+                            },
+                            "user_type": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string"
+                            },
+                            "marketing": {
+                                "type": "boolean"
+                              },
+                            "address":{
+                              "type": "object",
+                              "properties": {
+                                "address_line1":{
+                                  "type": "string"
+                                },
+                                "address_line2": {
+                                  "type": "string"
+                                },
+                                "country": {
+                                  "type": "string"
+                                },
+                                "town/city": {
+                                  "type": "string"
+                                },
+                                "postal_code": {
+                                  "type": "string"
+                                },
+                                "county": {
+                                  "type": "string"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "_id": "655c79b18128c8ffd83a2428",
+                    "email_address": "dhruva.shetty@7edge.com",
+                    "first_name": "Dhruva",
+                    "last_name": "shetty",
+                    "terms_and_condition": true,
+                    "user_type": "buyer",
+                    "newsletter_notification": false,
+                    "seller_email": "dhruva.shetty@7edge.com",
+                    "created_at": "2023-11-28 00:25:46.388000",
+                    "marketing": false,
+                    "address": {
+                        "address_line1": "",
+                        "address_line2": "",
+                        "country": "",
+                        "postal_code": "",
+                        "town/city": "",
+                        "county": ""
+                    }
+                  }  
+                }
+              }
+            },
+            "403": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                          "example": "You do not have access to perform this API action"
+                        
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "There was an error an while retrieving the bidders list."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
   },
     "components": {
