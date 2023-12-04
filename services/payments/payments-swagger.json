@@ -77,6 +77,15 @@
               "type": "string"
             },
             "example": "6569734504bebdf5cc4bb24f"
+          },
+          {
+            "name": "time_stamp",
+            "in": "query",
+            "description": "time_stamp of the order",
+            "schema": {
+              "type": "string"
+            },
+            "example": "123456789"
           }
         ],
         "responses": {
