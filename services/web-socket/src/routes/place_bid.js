@@ -187,7 +187,7 @@ const redisHelper = {
                     }
                 }
             }
-        } else if (currentLotDetails.extension_type === 'Individual') {
+        } else if (currentLotDetails.extension_type === 'Individual Lots') {
             console.log('inside individual')
             const bidKey = `lot:${currentLotDetails.lot_id}`
             const timestamp = currentLotDetails.end_date
