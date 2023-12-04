@@ -1,3 +1,4 @@
+"""This module is used to view bidder's details"""
 import json
 import os
 from bson import ObjectId
@@ -31,7 +32,7 @@ def view_bidder(event, context):
         bidder_email = bidder_details['email_address']
         seller_email = bidder_details['seller_email']
         buyer_bidder_details = buyer_collection.find_one({'email_address': bidder_email, 'seller_email': seller_email},projection)
-        
+
         # Define the order of keys
         key_order = [
             "_id",
