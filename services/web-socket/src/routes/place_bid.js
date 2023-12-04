@@ -34,7 +34,7 @@ const { addToCart } = require('../utilities/add-to-cart')
 const { listBidHistory } = require('./bid_history')
 const { checkExtensionType } = require('./update_extension')
 
-// const { sendPinpointEmail } = require('../utilities/send_email')
+const { sendPinpointEmail } = require('../utilities/send_email')
 
 const bidInformationSchema = new mongoose.Schema({
     buyer_id: String,
@@ -122,13 +122,15 @@ const redisHelper = {
             return parsedBidder
         })
     },
-    async getLotDeatils(rediskey, client) {
+    async getLotDeatils(rediskey, client, lotID) {
         console.log('REDIS KEY', rediskey)
         const allBidders = await client.hGetAll('lot', rediskey)
         // Filter out the current bidder and return an array
         return Object.values(allBidders || {}).filter((bidder) => {
+            console.log('bidder', bidder)
             const parsedBidder = JSON.parse(bidder)
-            return parsedBidder
+            console.log('consoit', parsedBidder._id)
+            return parsedBidder._id === lotID
         })
     },
     async  getCurrentBidder(bidderData, client) {
@@ -172,7 +174,7 @@ const redisHelper = {
                         console.log('bidkey', bidKey)
                         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
                         console.log('xxx', x)
-                        const lotDetails = await redisHelper.getLotDeatils(record._id, client)
+                        const lotDetails = await redisHelper.getLotDeatils(record._id, client, record._id)
                         console.log('lot details', lotDetails)
                         socket.emit('extensionAlert', {
                             success: true,
@@ -255,7 +257,7 @@ async function getLotFromRedis(lot_id, client) {
     try {
         console.log('lotdd', lot_id)
         const redisKey = `lot:${lot_id}`
-        const getLotDetails = await redisHelper.getLotDeatils(redisKey, client)
+        const getLotDetails = await redisHelper.getLotDeatils(redisKey, client, lot_id)
         const get_lot = []
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
@@ -332,7 +334,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         // const template_data = {
         //     name: 'sandhya',
         // }
-        // await sendPinpointEmail('sandhyashri@7edge.com', 'shrinith.poojary@7edge.com', JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)  
+        // await sendPinpointEmail('sandhyashri@7edge.com', 'shrinith.poojary@7edge.com', JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/dev_paddle/EMAIL')  
         // const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
