@@ -188,8 +188,8 @@ const redisHelper = {
                 }
             }
         } else if (currentLotDetails.extension_type === 'Individual Lots') {
-            console.log('inside individual', currentLotDetails.lot_id)
-            const bidKey = `lot:${currentLotDetails.lot_id}`
+            console.log('inside individual', currentLotDetails)
+            const bidKey = `lot:${currentLotDetails._id}`
             const timestamp = currentLotDetails.end_date
             const dateObject = new Date(timestamp)
             const currentMinutes = dateObject.getMinutes()
@@ -214,10 +214,6 @@ const redisHelper = {
                     })
                 }
             }
-
-            io.to(currentLotDetails.lot_id).emit('extensionAlert', {
-                success: true, extension: { extended: true, extended_time: currentLotDetails.extended_time },
-            })
         } else {
             console.log('elsee')
             for (const record of lots) {
