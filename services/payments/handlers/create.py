@@ -51,7 +51,7 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         cart_collection = db[os.environ["CART_COLLECTION"]]
-        
+
         cart_data = cart_collection.find({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
         if cart_data is None:
             return [],""
@@ -244,7 +244,7 @@ def create_intent(event, context):
                     "headers": headers,
                     "body": json.dumps({'message': 'Seller has disconnected their stripe account,please connect'}, cls=Encoder)
                 }
-            
+
             stripe_data = generate_client_secret(
                 account_id, amount, seller_data_of_auction["currency"], application_fee)
             insert_data = {
@@ -300,7 +300,7 @@ def create_intent(event, context):
         shipping_address = address_collection.find_one({"_id": ObjectId(shipping)})
         insert_data["shipping_address"] = shipping_address
         insert_data["billing_address"] = billing_address
-        
+
 
         existing_orders_count = orders_collection.count_documents(
             {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
@@ -343,7 +343,7 @@ def create_intent(event, context):
                                        "email_address": email_address,
                                        "record_type": "Orders"}, {
             "$set": update_data})
-        
+
         return {
             "statusCode": 201,
             "headers": headers,

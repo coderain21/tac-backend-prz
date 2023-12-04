@@ -3,7 +3,6 @@ import json
 import os
 from pymongo import MongoClient
 from lib.common_helper import Encoder
-from bson import ObjectId
 from lib.get import get_by_email, fetch_seller_data_from_auction
 
 headers = {
