@@ -1,4 +1,4 @@
-service: bids
+service: buyer-wishlist
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -17,6 +17,8 @@ provider:
   layers: ${env:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    LOTS_TABLE_NAME: ${opt:stage, self:provider.stage}-lots
+    BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
     REGION: ${env:REGION}
@@ -45,11 +47,17 @@ provider:
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}    
+    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    CDN_LINK: ${env:CDN_LINK}
     DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${env:DEFAULT_COGNITO_DOMAIN}
+    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
+    CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     
   http:
     cors: true
@@ -99,58 +107,62 @@ custom:
       endpointType: REGIONAL
 
 functions: 
-  list:
-    handler: handlers/list.list_bidders
-    runtime: python3.8
-    layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
-          path: /
-          method: get
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
-  view:
-    handler: handlers/view.view_bidder
-    runtime: python3.8
-    layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
-          path: /{id}
-          method: get
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
 
-  add-to-group:
-    handler: handlers/update.update_user
+  create:
+    handler: handlers/add_to_wishlist.create
     runtime: python3.8
-    layers: 
-      - ${env:COMMON_PYTHON_LIB_ARN}
+    memorySize: 128
+    layers:
+        - ${env:PYTHON_LIB_ARN}
     vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
-          path: /update
-          method: patch
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /
+          method: post
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
+  remove_wishlist:
+    handler: handlers/remove_wishlist.remove
+    runtime: python3.8
+    memorySize: 128
+    layers:
+        - ${env:PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /remove
+          method: delete
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:
@@ -163,7 +175,6 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
-
 
 plugins:
   - serverless-offline
