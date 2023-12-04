@@ -188,7 +188,7 @@ const redisHelper = {
                 }
             }
         } else if (currentLotDetails.extension_type === 'Individual Lots') {
-            console.log('inside individual')
+            console.log('inside individual', currentLotDetails.lot_id)
             const bidKey = `lot:${currentLotDetails.lot_id}`
             const timestamp = currentLotDetails.end_date
             const dateObject = new Date(timestamp)
@@ -198,6 +198,7 @@ const redisHelper = {
             const existingRecord = await client.hGet('lot', bidKey)
             const newTimestamp = dateObject.getTime()
             const get_lot = JSON.parse(existingRecord)
+            console.log('get lot', get_lot)
             if (get_lot) {
                 if (get_lot.end_date !== newTimestamp) {
                     const updateRequest = {
@@ -212,7 +213,6 @@ const redisHelper = {
                         }, 
                     })
                 }
-                return true
             }
 
             io.to(currentLotDetails.lot_id).emit('extensionAlert', {
