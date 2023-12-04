@@ -63,9 +63,10 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
 
             results.append(record)
         res = ",".join(lot_numbers)
+        cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
         client.close()
         if cart_data:
-            return cart_data,res
+            return results,res
         return None
     except BaseException as err:
         client.close()
