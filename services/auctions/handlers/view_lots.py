@@ -1,7 +1,6 @@
 '''The `import os` statement is importing the `os` module in Python'''
 import os
 import json
-from bson import ObjectId
 import pymongo
 import re
 import csv
@@ -86,8 +85,6 @@ def list_lots(event, context):
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
         total_documents = collection.count_documents(query)
         total_lots = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
-        
-
         body = {
             "data": lots,
             "total_records_found": total_documents,
@@ -114,6 +111,13 @@ def list_lots(event, context):
 
 
 def export_lots_as_csv(lots, db):
+    """
+    The function exports lots of data as a CSV file using a database connection.
+    
+    :param lots: A list of dictionaries representing lots of data
+    :param db: The `db` parameter is a database connection object that allows you to interact with a
+    database. It can be used to execute SQL queries, fetch data, and perform other database operations
+    """
     try:
         auction_id = str(lots[0].get('auction_id', ''))
         filename = auction_id
@@ -130,14 +134,14 @@ def export_lots_as_csv(lots, db):
         s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
         s3_bucket = os.environ['S3_BUCKET']
         print('Lots details------------', lots)
-        
+
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
                 "Total Current Bid", "Total Bids", "Active Bidders", "Lot Number",
                 "Thumbnail URL", "Title", "Paddle Number", "Top Bidder", "Status(Selling, No Bids)", "Top Bid"
             ])
             writer.writeheader()
-            
+
             for lot in lots:
                 lot_images = lot.get("images", [])
                 featured_image = next((img["url"] for img in lot_images if img.get("featured")), None)
