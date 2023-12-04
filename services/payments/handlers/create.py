@@ -43,6 +43,9 @@ def generate_order_code(number):
 def get_data_from_cart(auction_id,seller_email,buyer_email):
     try:
         # MongoDB configuration
+        print(auction_id)
+        print(seller_email)
+        print(buyer_email)
         results = []
         lot_numbers = []
         client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -50,7 +53,10 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         cart_collection = db[os.environ["CART_COLLECTION"]]
         
         cart_data = cart_collection.find({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-        for lot in cart_data:
+        if cart_data is None:
+            return [],""
+        print("cart_data",list(cart_data))
+        for lot in list(cart_data):
             record = {}
             record["bid_amount"] = lot.get("bid_amount")
             record["fees"] = lot.get("fees")
@@ -116,7 +122,7 @@ def generate_client_secret(account_id, amount, currency, application_fee):
             application_fee_amount=int(application_fee*100),
             stripe_account=account_id
         )
-        print(session)
+        # print(session)
         return session
     except Exception as err:
         print(f"Unexpected {err=}, {type(err)=}")
@@ -143,9 +149,9 @@ def create_order(insert_data):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         payments_collection = db[os.environ['ORDERS_COLLECTION']]
-        print(insert_data)
+        # print(insert_data)
         insert_result = payments_collection.insert_one(insert_data)
-        print(insert_result)
+        # print(insert_result)
         client.close()
         if insert_result:
             return insert_result
@@ -214,7 +220,7 @@ def create_intent(event, context):
         seller_email = seller_data_of_auction["seller_email"]
         seller_data = get_by_email(
             seller_data_of_auction["seller_email"], os.environ['SELLERS_TABLE'])
-        print(seller_data)
+        # print(seller_data)
         if seller_data is None:
             return {
                 "statusCode": 404,
@@ -314,7 +320,7 @@ def create_intent(event, context):
                 "starting_sequence": last_order_number
             }
             result = counter_collection.insert_one(counter_record)
-        print(counter_record)
+        # print(counter_record)
         last_order_number = counter_record["starting_sequence"]+1
         print("last_order_number", last_order_number)
         update_data = {
@@ -322,7 +328,7 @@ def create_intent(event, context):
         }
         insert_data["order_number"] = generate_order_code(last_order_number)
 
-        cart_data,res = get_data_from_cart(email_address,seller_email,auction_id)
+        cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["created_at"] = time_stamp
         insert_data["auction_title"] = auction_title
         insert_data["auction_image"] = auction_image
