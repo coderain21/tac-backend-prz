@@ -26,22 +26,22 @@ def order_detail(event, context):
     contains a JSON object with a "data" key, which holds the cart details.
     """
     try:
-        # try:
-        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-        #         return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        email_address= 'aishwarya@7edge.com'
+        try:
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            email_address = cognito_data['email']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        # email_address= 'aishwarya@7edge.com'
         projection={
             'order_number':1,
             'created_at':1,
