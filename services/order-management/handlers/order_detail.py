@@ -51,13 +51,17 @@ def order_detail(event, context):
             'payment_status':1,
             'amount':1,
             'payment_intent':1,
-            'email_address':1
+            'email_address':1,
+            'status':1,
+            "billing_address":1,
+            "shipping_address":1
         }
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['ORDER_COLLECTION']]
         data = event['queryStringParameters']
-        order_id = data['order_id']p        order_data = collection.find_one({'_id':ObjectId(order_id),'email_adderss':email_address},projection)
+        order_id = data['order_id']
+        order_data = collection.find_one({'_id':ObjectId(order_id),'email_address':email_address},projection)
         if order_data is None:
             return {
                 "statusCode": 404,
