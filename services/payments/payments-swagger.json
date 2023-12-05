@@ -89,7 +89,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Successfully retrieved payment intent data",
             "content": {
               "application/json": {
