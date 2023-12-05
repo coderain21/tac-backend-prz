@@ -131,8 +131,8 @@ functions:
               - Access-Control-Allow-Headers
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
-  list_orders:
-    handler: handlers/list.list_orders
+  order_detail:
+    handler: handlers/order_detail.order_detail
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}

@@ -58,7 +58,7 @@ def order_detail(event, context):
         }
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db[os.environ['ORDER_COLLECTION']]
+        collection = db[os.environ['ORDERS_COLLECTION']]
         data = event['queryStringParameters']
         order_id = data['order_id']
         order_data = collection.find_one({'_id':ObjectId(order_id),'email_address':email_address},projection)
