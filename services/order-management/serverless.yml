@@ -1,4 +1,4 @@
-service: order-management
+service: orders
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -54,7 +54,7 @@ provider:
     SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
     PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
     CART_COLLECTION: ${env:CART_COLLECTION}
-    ORDER_COLLECTION: ${env:ORDER_COLLECTION}
+    ORDERS_COLLECTION: ${env:ORDERS_COLLECTION}
     
   http:
     cors: true
@@ -104,8 +104,35 @@ custom:
       endpointType: REGIONAL
 
 functions:
-  order_detail:
-    handler: handlers/order_detail.order_detail
+  list_orders:
+    handler: handlers/list.list_orders
+    runtime: python3.8
+    layers:
+      - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          path: /
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  
+  list_orders:
+    handler: handlers/list.list_orders
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
@@ -130,6 +157,7 @@ functions:
               - Accept
               - Access-Control-Allow-Headers
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
 resources:
    Resources:
      GatewayResponseDefault4XX:

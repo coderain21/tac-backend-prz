@@ -1,24 +1,176 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "Order-Management APIs",
-      "description": "APIs to manage the buyer cart",
-      "version": "1.0.0"
-    },
-    "servers": [
-      {
-        "url": "https://apis.indyauction.net/dev/v1/order-management"
-      }
-    ],
-    "tags": [
-      {
-        "name": "Order Management",
-        "description": "APIs to manage the Buyer Cart"
-      }
-    ],
-    
-    "paths": {
-        "/details":{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Order-Management APIs",
+    "description": "APIs to manage the buyer cart",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.indyauction.net/dev/v1/order-management"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Order Management",
+      "description": "APIs to manage the Buyer Cart"
+    }
+  ],
+  
+  "paths": {
+      "/":{
+        "get": {
+          "tags": ["Order Management"],
+          "summary": "listing the all orders.",
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "description": "Fetch details for the provided auction id",
+              "schema": {
+                "type": "string"
+              },
+              "example": "65169eee25d90f9a92c12876"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "listing successful",
+              "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "payment_status": {
+                                "type": "string"
+                              },
+                              "amount": {
+                                "type": "integer"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "integer"
+                              },
+                              "auction_title": {
+                                "type": "string"
+                              },
+                              "auction_image": {
+                                "type": "string"
+                              },
+                              "lots": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        },
+                        "total_pages": {
+                          "type": "integer"
+                        },
+                        "current_page": {
+                          "type": "integer"
+                        },
+                        "total_orders": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                      "example": {
+                        "data": [
+                            {
+                                "_id": "656d9f68803eee9eaf8e9f6e",
+                                "payment_status": "Paid",
+                                "amount": 22000,
+                                "order_number": "OD002",
+                                "created_at": 1701683046,
+                                "auction_title": "Demo auction (here)+",
+                                "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png",
+                                "lots": ""
+                            }
+                        ],
+                        "total_pages": 1,
+                        "current_page": 1,
+                        "total_orders": 3
+                    }
+                    }
+                  }
+                },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "You do not have access to perform this API action"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "Auction doesn't exists"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "examples": {
+                    "example1": {
+                      "value": {
+                        "message": "There was an error "
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+          },
+          "/details":{
             "get": {
                 "tags": ["Order Management"],
                 "summary": "order details",
@@ -297,18 +449,18 @@
                 }
             }
                 }
-        },
-        "components": {
-            "securitySchemes": {
-              "BearerAuth": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header",
-                "description": "Bearer Token"
-              }
+      },
+      "components": {
+          "securitySchemes": {
+            "BearerAuth": {
+              "type": "apiKey",
+              "name": "Authorization",
+              "in": "header",
+              "description": "Bearer Token"
             }
           }
-          
-  
-  
-    }
+        }
+        
+
+
+  }
