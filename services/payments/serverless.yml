@@ -1,4 +1,4 @@
-service: bids
+service: payments
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -49,7 +49,21 @@ provider:
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
+    AMPLIFY_APP_ID: ${env:AMPLIFY_APP_ID}
+    AMPLIFY_DOMAIN_NAME: ${env:AMPLIFY_DOMAIN_NAME}
+    DEFAULT_INDENTITY_POOL_ID: ${env:DEFAULT_INDENTITY_POOL_ID}
+    DEFAULT_IDENTITY_POOL_NAME: ${env:DEFAULT_IDENTITY_POOL_NAME}
+    DEFAULT_BUYER_USERPOOL_ID: ${env:DEFAULT_BUYER_USERPOOL_ID}
+    SUBDOMAIN_COLLECTION: ${env:SUB_DOMAIN_TABLE}
+    AMPLIFY_BRANCH: ${env:AMPLIFY_BRANCH}
+    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
+    PAYMENTS_COLLECTION: ${env:PAYMENTS_COLLECTION}
+    STRIPE_ENDPOINT_SECRET: ${env:STRIPE_ENDPOINT_SECRET}
+    ORDERS_COLLECTION: ${env:ORDERS_COLLECTION}
+    ADDRESS_COLLECTION: ${env:ADDRESS_COLLECTION}
+    CART_COLLECTION: ${env:CART_COLLECTION}
+
+
     
   http:
     cors: true
@@ -71,6 +85,9 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
+            - amplify:*
+            - route53:*
+            - cognito-identity:UpdateIdentityPool
           Resource: "*"
  
 package:
@@ -99,57 +116,57 @@ custom:
       endpointType: REGIONAL
 
 functions: 
-  list:
-    handler: handlers/list.list_bidders
+  create_intent:
+    handler: handlers/create.create_intent
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+      - sg-0882c1da39e729097
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+      - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
-          cors: true
-          path: /
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /stripe
           method: get
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
-  view:
-    handler: handlers/view.view_bidder
-    runtime: python3.8
-    layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
-          path: /{id}
-          method: get
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
-
-  add-to-group:
-    handler: handlers/update.update_user
-    runtime: python3.8
-    layers: 
-      - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
-    events:
-      - http:
-          cors: true
-          path: /update
-          method: patch
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  stripe_payments_webhook:
+    handler: handlers/stripe_webhook.update
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /payments_webhook
+          method: post
 
 
 resources:

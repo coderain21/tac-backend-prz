@@ -203,9 +203,8 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            
-      - step: *APITesting
- 
+            - step: *Danger
+
       
         
       
@@ -220,8 +219,9 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+            - step: *Danger
 
-      - step: *APITesting
+
 
   
       
@@ -238,6 +238,8 @@ pipelines:
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
+            - step: *Danger
+
 
      
 
