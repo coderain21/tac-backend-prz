@@ -138,7 +138,7 @@ def export_lots_as_csv(lots, db):
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
                 "Total Current Bid", "Total Bids", "Active Bidders", "Lot Number",
-                "Thumbnail URL", "Title", "Paddle Number", "Top Bidder", "Status(Selling, No Bids)", "Top Bid"
+                "Thumbnail URL", "Title", "Paddle Number", "Top Bidder", "Status", "Top Bid"
             ])
             writer.writeheader()
 
