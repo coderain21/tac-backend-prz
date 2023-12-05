@@ -45,7 +45,7 @@ def list_lots(event, context):
         query_parameters = event.get('queryStringParameters')
         auction_id = query_parameters.get('auction_id')
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
-        sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
+        sort_order = query_parameters.get('sorsandhyashri+auction@7edge.com A0003sandhyashri+auction@7edge.com A0003t_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
         page = int(event['queryStringParameters'].get(
             'page', '1'))
