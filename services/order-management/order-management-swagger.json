@@ -78,6 +78,9 @@
                         },
                         "total_orders": {
                           "type": "integer"
+                        },
+                        "total_records": {
+                          "type": "integer"
                         }
                       }
                     },
@@ -96,7 +99,8 @@
                         ],
                         "total_pages": 1,
                         "current_page": 1,
-                        "total_orders": 3
+                        "total_orders": 3,
+                        "total_records": 10
                     }
                     }
                   }
