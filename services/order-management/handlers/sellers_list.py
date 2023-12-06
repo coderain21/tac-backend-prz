@@ -78,6 +78,8 @@ def list_orders(event, context):
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
             'per_page', '20'))  # Number of records per page
+        payment_type = data.get("payment_type")
+        payment_status = data.get("payment_status")
 
         auction_id = data['auction_id']
 
@@ -89,7 +91,7 @@ def list_orders(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists"})
             }
 
-        if sort_by in ['created_at','payment_status']:
+        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
 
@@ -98,10 +100,13 @@ def list_orders(event, context):
         if search_keyword:
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
-            search_criteria['order_number'] = {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}
+            search_criteria["$or"] = [
+                {"order_number": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}},
+                {"name": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}}
+            ]
 
         # Combine the search and sort criteria
-        query = {"seller_email": seller_email,**search_criteria}
+        query = {"seller_email": seller_email,"auction_id": auction_id,**search_criteria}
         # Check if both start and end timestamps are provided
         if start_timestamp is not None and end_timestamp is not None:
             # Add timestamp range criteria to the query
@@ -112,6 +117,11 @@ def list_orders(event, context):
         elif end_timestamp is not None:
             # Only end timestamp is provided
             query['created_at'] = {"$lte": end_timestamp}
+        
+        if payment_type:
+            query["payment"] = payment_type
+        if payment_status:
+            query["payment_status"] = payment_status
 
         # Query the MongoDB collection to find lots matching the criteria
         orders_list = orders_collection.find(query, {"_id": 1,"auction_title": 1,"auction_image": 1,"lots": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
@@ -119,7 +129,7 @@ def list_orders(event, context):
         total_records = orders_collection.count_documents(query)
         # Calculate total pages
         total_pages = math.ceil(total_records / limit)
-        total_orders = orders_collection.count_documents({"seller_email": seller_data_of_auction["seller_email"]})
+        total_orders = orders_collection.count_documents({"seller_email": seller_data_of_auction["seller_email"],"auction_id": auction_id})
         if orders_list is None:
             return {
                 "statusCode": 404,
