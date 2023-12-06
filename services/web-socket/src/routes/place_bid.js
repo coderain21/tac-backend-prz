@@ -175,15 +175,8 @@ const redisHelper = {
                         console.log('xxx', x)
                         const lotDetails = await redisHelper.getLotDeatils(record._id, client, record._id)
                         console.log('lot details', lotDetails)
-                        // socket.emit('extensionAlert', {
-                        //     success: true,
-                        //     extension: {
-                        //         extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
-                        //     }, 
-                        //     lot: lotDetails,
-                        // })
-                        io.to(record._id).emit('extensionAlert', {
-                            success: true, 
+                        socket.emit('extensionAlert', {
+                            success: true,
                             extension: {
                                 extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
                             }, 
