@@ -31,7 +31,7 @@ const redis = require('redis')
 
 const mongodbHelpers = require('../utilities/mongodb_helper')
 const { listBidHistory } = require('./bid_history')
-const { checkExtensionType } = require('./update_extension')
+const { checkExtensionType, extensionAlert } = require('./update_extension')
 
 // const { sendPinpointEmail } = require('../utilities/send_email')
 
@@ -175,13 +175,20 @@ const redisHelper = {
                         console.log('xxx', x)
                         const lotDetails = await redisHelper.getLotDeatils(record._id, client, record._id)
                         console.log('lot details', lotDetails)
-                        socket.emit('extensionAlert', {
-                            success: true,
-                            extension: {
-                                extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
-                            }, 
-                            lot: lotDetails,
-                        })
+                        // socket.emit('extensionAlert', {
+                        //     success: true,
+                        //     extension: {
+                        //         extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
+                        //     }, 
+                        //     lot: lotDetails,
+                        // })
+                        const lotData = {
+                            extended: true,
+                            extended_time: currentLotDetails.extended_time,
+                            lot_id: record._id,
+                            extension_type: currentLotDetails.extension_type,
+                        }
+                        const sendEmit = await extensionAlert(socket, lotData, io)
                         socket.emit('joinBidRoom', record)
                     }
                 }

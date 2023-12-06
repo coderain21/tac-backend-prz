@@ -15,3 +15,16 @@ module.exports.checkExtensionType = async (documents) => {
         return err
     }
 }
+
+module.exports.extensionAlert = async (socket, data, io) => {
+    try {
+        io.to(data.lot_id).emit('extensionAlert', {
+            success: true,
+            extension: {
+                extended: true, extended_time: data.extended_time, lot_id: data.lot_id, extension_type: data.extension_type,
+            },
+        })
+    } catch (err) {
+        return err
+    }
+}
