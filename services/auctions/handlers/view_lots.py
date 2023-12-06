@@ -121,12 +121,12 @@ def export_lots_as_csv(lots, db):
     try:
         auction_id = str(lots[0].get('auction_id', ''))
         filename = auction_id
-        auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
-        seller_email = lots[0]["seller_email"]
-        auction_status = auction_collection.find_one({
-            "seller_email": seller_email,
-            "auction_id": auction_id
-        }, {"status": 1})
+        # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        # seller_email = lots[0]["seller_email"]
+        # auction_status = auction_collection.find_one({
+        #     "seller_email": seller_email,
+        #     "auction_id": auction_id
+        # }, {"status": 1})
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
@@ -155,7 +155,7 @@ def export_lots_as_csv(lots, db):
                     "Title": lot.get("title1", ""),
                     "Paddle Number": lot.get("paddle_number", ""),
                     "Top Bidder": lot.get("top_bidder", ""),
-                    "Status": auction_status['status'],
+                    "Status": lot.get("status", ""),
                     "Top Bid": lot.get("top_bid", "")
                 })
 
