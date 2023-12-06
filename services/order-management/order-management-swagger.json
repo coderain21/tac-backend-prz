@@ -16,455 +16,606 @@
       "description": "APIs to manage the Buyer Cart"
     }
   ],
-  
+
   "paths": {
-      "/":{
-        "get": {
-          "tags": ["Order Management"],
-          "summary": "listing the all orders.",
-          "parameters": [
-            {
-              "name": "auction_id",
-              "in": "query",
-              "description": "Fetch details for the provided auction id",
-              "schema": {
-                "type": "string"
-              },
-              "example": "65169eee25d90f9a92c12876"
+    "/": {
+      "get": {
+        "tags": ["Order Management"],
+        "summary": "listing the all orders.",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "Fetch details for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65169eee25d90f9a92c12876"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "listing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "payment_status": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "integer"
+                          },
+                          "order_number": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "integer"
+                          },
+                          "auction_title": {
+                            "type": "string"
+                          },
+                          "auction_image": {
+                            "type": "string"
+                          },
+                          "lots": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_orders": {
+                      "type": "integer"
+                    },
+                    "total_records": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "_id": "656d9f68803eee9eaf8e9f6e",
+                      "payment_status": "Paid",
+                      "amount": 22000,
+                      "order_number": "OD002",
+                      "created_at": 1701683046,
+                      "auction_title": "Demo auction (here)+",
+                      "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png",
+                      "lots": ""
+                    }
+                  ],
+                  "total_pages": 1,
+                  "current_page": 1,
+                  "total_orders": 3,
+                  "total_records": 10
+                }
+              }
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "listing successful",
-              "content": {
-                  "application/json": {
-                    "schema": {
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction doesn't exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/details": {
+      "get": {
+        "tags": ["Order Management"],
+        "summary": "order details",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "Fetch details for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "656d66fd3c32ca65775aca29"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "listing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "result": {
                       "type": "object",
                       "properties": {
                         "data": {
-                          "type": "array",
+                          "type": "object",
                           "items": {
                             "type": "object",
                             "properties": {
+                              "_id": {
+                                "type": "string"
+                              },
+                              "email_address": {
+                                "type": "string"
+                              },
+                              "payment_intent": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string"
+                              },
                               "payment_status": {
                                 "type": "string"
                               },
                               "amount": {
                                 "type": "integer"
                               },
+                              "shipping_address": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "object",
+                                    "properties": {
+                                      "$oid": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "first_name": {
+                                    "type": "string"
+                                  },
+                                  "last_name": {
+                                    "type": "string"
+                                  },
+                                  "address_line1": {
+                                    "type": "string"
+                                  },
+                                  "address_line2": {
+                                    "type": "string"
+                                  },
+                                  "city": {
+                                    "type": "string"
+                                  },
+                                  "state": {
+                                    "type": "string"
+                                  },
+                                  "postal_code": {
+                                    "type": "string"
+                                  },
+                                  "country": {
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "type": "string"
+                                  },
+                                  "default": {
+                                    "type": "boolean"
+                                  },
+                                  "created_at": {
+                                    "type": "object",
+                                    "properties": {
+                                      "$date": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "email_address": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "billing_address": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": {
+                                    "type": "object",
+                                    "properties": {
+                                      "$oid": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "first_name": {
+                                    "type": "string"
+                                  },
+                                  "last_name": {
+                                    "type": "string"
+                                  },
+                                  "address_line1": {
+                                    "type": "string"
+                                  },
+                                  "address_line2": {
+                                    "type": "string"
+                                  },
+                                  "city": {
+                                    "type": "string"
+                                  },
+                                  "state": {
+                                    "type": "string"
+                                  },
+                                  "postal_code": {
+                                    "type": "string"
+                                  },
+                                  "country": {
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "type": "string"
+                                  },
+                                  "default": {
+                                    "type": "boolean"
+                                  },
+                                  "created_at": {
+                                    "type": "object",
+                                    "properties": {
+                                      "$date": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  },
+                                  "email_address": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
                               "order_number": {
                                 "type": "string"
                               },
                               "created_at": {
-                                "type": "integer"
+                                "type": "string"
                               },
                               "auction_title": {
                                 "type": "string"
                               },
-                              "auction_image": {
-                                "type": "string"
+                              "purchases": {
+                                "type": "array"
                               },
-                              "lots": {
-                                "type": "string"
+                              "payment_method_types": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
                               }
                             }
                           }
-                        },
-                        "total_pages": {
-                          "type": "integer"
-                        },
-                        "current_page": {
-                          "type": "integer"
-                        },
-                        "total_orders": {
-                          "type": "integer"
-                        },
-                        "total_records": {
-                          "type": "integer"
                         }
                       }
-                    },
-                      "example": {
-                        "data": [
-                            {
-                                "_id": "656d9f68803eee9eaf8e9f6e",
-                                "payment_status": "Paid",
-                                "amount": 22000,
-                                "order_number": "OD002",
-                                "created_at": 1701683046,
-                                "auction_title": "Demo auction (here)+",
-                                "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png",
-                                "lots": ""
-                            }
-                        ],
-                        "total_pages": 1,
-                        "current_page": 1,
-                        "total_orders": 3,
-                        "total_records": 10
-                    }
                     }
                   }
                 },
-            "403": {
-              "description": "Forbidden",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "examples": {
-                    "example1": {
-                      "value": {
-                        "message": "You do not have access to perform this API action"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "examples": {
-                    "example1": {
-                      "value": {
-                        "message": "Auction doesn't exists"
-                      }
-                    }
-                  }
-                }
-              }
-            },
-            "500": {
-              "description": "Internal Server Error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "examples": {
-                    "example1": {
-                      "value": {
-                        "message": "There was an error "
-                      }
-                    }
+                "example": {
+                  "data": {
+                    "_id": "656d66fd3c32ca65775aca29",
+                    "email_address": "aishwarya@7edge.com",
+                    "payment_intent": "pi_3OJUwDCFv4mFjXqT06uc3PS3",
+                    "status": "succeeded",
+                    "payment_status": "Paid",
+                    "amount": 22000,
+                    "shipping_address": {
+                      "_id": "6569734504bebdf5cc4bb24f",
+                      "first_name": "Aishwarya",
+                      "last_name": "K",
+                      "address_line1": "Mangalore Junction Railway Station Rd",
+                      "address_line2": "Mangalore Junction Railway Station Road",
+                      "city": "Mangaluru",
+                      "state": "Karnataka",
+                      "postal_code": "575007",
+                      "country": "India",
+                      "type": "shipping",
+                      "default": true,
+                      "created_at": "2023-12-01 05:46:45.422000",
+                      "email_address": "aishwarya@7edge.com"
+                    },
+                    "billing_address": {
+                      "_id": "6569734504bebdf5cc4bb24f",
+                      "first_name": "Aishwarya",
+                      "last_name": "K",
+                      "address_line1": "Mangalore Junction Railway Station Rd",
+                      "address_line2": "Mangalore Junction Railway Station Road",
+                      "city": "Mangaluru",
+                      "state": "Karnataka",
+                      "postal_code": "575007",
+                      "country": "India",
+                      "type": "shipping",
+                      "default": true,
+                      "created_at": "2023-12-01 05:46:45.422000",
+                      "email_address": "aishwarya@7edge.com"
+                    },
+                    "order_number": "OD001",
+                    "created_at": 1701668603,
+                    "auction_title": "Demo auction (here)+",
+                    "purchases": [],
+                    "payment_method_types": ["card"]
                   }
                 }
               }
             }
-          }
-        }
           },
-          "/details":{
-            "get": {
-                "tags": ["Order Management"],
-                "summary": "order details",
-                "parameters": [
-                {
-                    "name": "order_id",
-                    "in": "query",
-                    "description": "Fetch details for the provided auction id",
-                    "schema": {
-                    "type": "string"
-                    },
-                    "example": "656d66fd3c32ca65775aca29"
-                }
-                ],
-                "responses": {
-                "200": {
-                    "description": "listing successful",
-                    "content": {
-                        "application/json": {
-                        "schema": {
-                            "type": "object",
-                            "properties": {
-                            "result": {
-                                "type": "object",
-                                "properties": {
-                                    "data": {
-                                    "type": "object",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                        "_id":{
-                                            "type": "string"
-                                        },
-                                        "email_address": {
-                                            "type": "string"
-                                        },
-                                        "payment_intent": {
-                                            "type": "string"
-                                        },
-                                        "status": {
-                                            "type": "string"
-                                        },
-                                        "payment_status": {
-                                            "type": "string"
-                                        },
-                                        "amount": {
-                                            "type": "integer"
-                                        },
-                                        "shipping_address": {
-                                            "type": "object",
-                                            "properties": {
-                                            "_id": {
-                                                "type": "object",
-                                                "properties": {
-                                                "$oid": {
-                                                    "type": "string"
-                                                }
-                                                }
-                                            },
-                                            "first_name": {
-                                                "type": "string"
-                                            },
-                                            "last_name": {
-                                                "type": "string"
-                                            },
-                                            "address_line1": {
-                                                "type": "string"
-                                            },
-                                            "address_line2": {
-                                                "type": "string"
-                                            },
-                                            "city": {
-                                                "type": "string"
-                                            },
-                                            "state": {
-                                                "type": "string"
-                                            },
-                                            "postal_code": {
-                                                "type": "string"
-                                            },
-                                            "country": {
-                                                "type": "string"
-                                            },
-                                            "type": {
-                                                "type": "string"
-                                            },
-                                            "default": {
-                                                "type": "boolean"
-                                            },
-                                            "created_at": {
-                                                "type": "object",
-                                                "properties": {
-                                                "$date": {
-                                                    "type": "string"
-                                                }
-                                                }
-                                            },
-                                            "email_address": {
-                                                "type": "string"
-                                            }
-                                            }
-                                        },
-                                        "billing_address": {
-                                            "type": "object",
-                                            "properties": {
-                                            "_id": {
-                                                "type": "object",
-                                                "properties": {
-                                                "$oid": {
-                                                    "type": "string"
-                                                }
-                                                }
-                                            },
-                                            "first_name": {
-                                                "type": "string"
-                                            },
-                                            "last_name": {
-                                                "type": "string"
-                                            },
-                                            "address_line1": {
-                                                "type": "string"
-                                            },
-                                            "address_line2": {
-                                                "type": "string"
-                                            },
-                                            "city": {
-                                                "type": "string"
-                                            },
-                                            "state": {
-                                                "type": "string"
-                                            },
-                                            "postal_code": {
-                                                "type": "string"
-                                            },
-                                            "country": {
-                                                "type": "string"
-                                            },
-                                            "type": {
-                                                "type": "string"
-                                            },
-                                            "default": {
-                                                "type": "boolean"
-                                            },
-                                            "created_at": {
-                                                "type": "object",
-                                                "properties": {
-                                                "$date": {
-                                                    "type": "string"
-                                                }
-                                                }
-                                            },
-                                            "email_address": {
-                                                "type": "string"
-                                            }
-                                            }
-                                        },
-                                        "order_number": {
-                                            "type": "string"
-                                        },
-                                        "created_at": {
-                                            "type": "string"
-                                        },
-                                        "auction_title": {
-                                            "type": "string"
-                                        },
-                                        "purchases": {
-                                            "type": "array"
-                                        },
-                                        "payment_method_types": {
-                                            "type": "array",
-                                            "items": {
-                                            "type": "string"
-                                            }
-                                        }
-                                        }
-                                    }
-                                    }
-                                }
-                            }
-                            }
-                        },
-                            "example":{
-                            "data": {
-                                "_id": "656d66fd3c32ca65775aca29",
-                                "email_address": "aishwarya@7edge.com",
-                                "payment_intent": "pi_3OJUwDCFv4mFjXqT06uc3PS3",
-                                "status": "succeeded",
-                                "payment_status": "Paid",
-                                "amount": 22000,
-                                "shipping_address": {
-                                "_id": "6569734504bebdf5cc4bb24f",
-                                "first_name": "Aishwarya",
-                                "last_name": "K",
-                                "address_line1": "Mangalore Junction Railway Station Rd",
-                                "address_line2": "Mangalore Junction Railway Station Road",
-                                "city": "Mangaluru",
-                                "state": "Karnataka",
-                                "postal_code": "575007",
-                                "country": "India",
-                                "type": "shipping",
-                                "default": true,
-                                "created_at": "2023-12-01 05:46:45.422000",
-                                "email_address": "aishwarya@7edge.com"
-                                },
-                                "billing_address": {
-                                "_id": "6569734504bebdf5cc4bb24f",
-                                "first_name": "Aishwarya",
-                                "last_name": "K",
-                                "address_line1": "Mangalore Junction Railway Station Rd",
-                                "address_line2": "Mangalore Junction Railway Station Road",
-                                "city": "Mangaluru",
-                                "state": "Karnataka",
-                                "postal_code": "575007",
-                                "country": "India",
-                                "type": "shipping",
-                                "default": true,
-                                "created_at": "2023-12-01 05:46:45.422000",
-                                "email_address": "aishwarya@7edge.com"
-                                },
-                                "order_number": "OD001",
-                                "created_at": 1701668603,
-                                "auction_title": "Demo auction (here)+",
-                                "purchases": [],
-                                "payment_method_types": [
-                                "card"
-                                ]
-                            }
-                            }
-                        }
-                        }
-                    },
-                "403": {
-                    "description": "Forbidden",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "type": "object",
-                        "properties": {
-                            "message": {
-                            "type": "string"
-                            }
-                        }
-                        },
-                        "examples": {
-                        "example1": {
-                            "value": {
-                            "message": "You do not have access to perform this API action"
-                            }
-                        }
-                        }
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
                     }
-                    }
+                  }
                 },
-                "500": {
-                    "description": "Internal Server Error",
-                    "content": {
-                    "application/json": {
-                        "schema": {
-                        "type": "object",
-                        "properties": {
-                            "message": {
-                            "type": "string"
-                            }
-                        }
-                        },
-                        "examples": {
-                        "example1": {
-                            "value": {
-                            "message": "Internal server error"
-                            }
-                        }
-                        }
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
                     }
-                    }
+                  }
                 }
-                }
+              }
             }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
                 }
-      },
-      "components": {
-          "securitySchemes": {
-            "BearerAuth": {
-              "type": "apiKey",
-              "name": "Authorization",
-              "in": "header",
-              "description": "Bearer Token"
+              }
             }
           }
         }
-        
-
-
+      }
+    },
+    "/seller": {
+      "get": {
+        "tags": ["Order Management"],
+        "summary": "listing the all orders at seller auction page.",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "Fetch details for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65169eee25d90f9a92c12876"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "listing successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "payment_status": {
+                            "type": "string"
+                          },
+                          "amount": {
+                            "type": "integer"
+                          },
+                          "order_number": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "integer"
+                          },
+                          "auction_title": {
+                            "type": "string"
+                          },
+                          "auction_image": {
+                            "type": "string"
+                          },
+                          "lots": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_orders": {
+                      "type": "integer"
+                    },
+                    "total_records": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "_id": "656d9f68803eee9eaf8e9f6e",
+                      "payment_status": "Paid",
+                      "amount": 22000,
+                      "order_number": "OD002",
+                      "created_at": 1701683046,
+                      "auction_title": "Demo auction (here)+",
+                      "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png",
+                      "lots": ""
+                    }
+                  ],
+                  "total_pages": 1,
+                  "current_page": 1,
+                  "total_orders": 3,
+                  "total_records": 10
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction doesn't exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
   }
+}
