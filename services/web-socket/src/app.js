@@ -16,5 +16,5 @@ module.exports.initiateEvents = async (socket, io, userData, users) => {
     socket.on('placeBid', (message, callback) => placeBid(socket, message, io, userData))
     socket.on('listBidHistory', (message, callback) => listBidHistory(socket, message, io, userData))
     socket.on('joinBidRoom', (lotID, buyer_id, callback) => joinBidRoom(socket, lotID, io))
-    socket.on('extensionAlert', (lotID) => extensionAlert(socket, lotID, io))
+    socket.on('extensionAlert', (lotID, callback) => extensionAlert(socket, lotID, io))
 }

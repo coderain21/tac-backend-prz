@@ -185,7 +185,7 @@ const redisHelper = {
                         const lotData = {
                             extended: true,
                             extended_time: currentLotDetails.extended_time,
-                            lot_id: record._id,
+                            lot_id: record._id.toString(),
                             extension_type: currentLotDetails.extension_type,
                         }
                         const sendEmit = await extensionAlert(socket, lotData, io)
@@ -360,8 +360,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const currentTimeEpoch = Date.now()
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
         console.log('monfogg', currentLotDetails)
-        if (timeLeft <= 60000 && timeLeft > 0) {
-        // if (timeLeft) {
+        // if (timeLeft <= 60000 && timeLeft > 0) {
+        if (timeLeft) {
             console.log('The bid is within the last minute before the auction ends.')
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
             await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)

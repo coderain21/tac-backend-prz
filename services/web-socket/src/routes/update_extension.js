@@ -8,7 +8,6 @@ const mongodbHelper = require('../utilities/mongodb_helper')
 module.exports.checkExtensionType = async (documents) => {
     try {
         const getAuctionDetails = await mongodbHelper.getAuction(documents)
-        console.log('getAuctionDetails', getAuctionDetails)
         await mongodbHelper.getAllLots(getAuctionDetails[0], documents)
         return false
     } catch (err) {
@@ -17,7 +16,7 @@ module.exports.checkExtensionType = async (documents) => {
 }
 
 module.exports.extensionAlert = async (socket, data, io) => {
-    console.log('heyyy new function emitted', data)
+    console.log('heyyy new function emitted', typeof (data.lot_id), data.lot_id)
     try {
         io.to(data.lot_id).emit('extensionAlert', {
             success: true,
