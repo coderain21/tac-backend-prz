@@ -361,12 +361,11 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 auction_id: data.auction_id,
                 seller_email: data.seller_email,
             }
-            console.log('payloadddd', payload)
             const checkAuctionEnd = await mongodbHelpers.getAuction(payload)
-            console.log('$$$$$$$$$$$$$$$$$$$$$', checkAuctionEnd)
             const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
             console.log('stop', stopStateMachine)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
+            console.log('33333333333333333333333333333333335', currentLotDetails)
         }
         console.log('%%%%%%%%%%%%%%%%%%%5', currentLotDetails)
         
@@ -427,7 +426,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
-        console.log('current', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
         })
@@ -441,11 +439,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         let message; let 
             bidStatus
 
-        console.log('atlast', all_bidders)
         for (let i = 0; i < all_bidders.length; i++) {
-            console.log(('bueyr', all_bidders[i]))
             const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id)
-            console.log('token', token)
             if (currentLotDetails.winning_user !== all_bidders[i].buyer_id) {
                 message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                 bidStatus = 'UnderBidder'
@@ -455,7 +450,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             }
             const payload = JSON.stringify({ title: 'Bidding', body: message })
             const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
-            console.log('psu response', pushresponse)
         }
 
         bidStatus = 'Winning'

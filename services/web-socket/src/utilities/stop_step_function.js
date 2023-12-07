@@ -73,6 +73,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         }
         const sendEmit = await extensionAlert(socket, lotData, io)
         socket.emit('joinBidRoom', lotInformation)
+        return true
     } catch (err) {
         console.log(err)
     }
@@ -89,7 +90,8 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
-                await findAndUpdateTime(item, client, io, socket, currentLotDetails)
+                const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails)
+                console.log('gggg', gg)
                 const getArn = await mongodbHelper.getExecutionArn(item)
                 console.log('getarn', getArn)
                 const executionArn = getArn[0].arn
@@ -97,7 +99,9 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                     executionArn,
                     cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
                 }).promise()
-                await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
+                console.log('stop response', response)
+                const cc  = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
+                console.log('cc', cc)
             }
         }
         if (auctionDetails.extension_type === 'Individual' && currentLotDetails.lot_extended !== true) {
