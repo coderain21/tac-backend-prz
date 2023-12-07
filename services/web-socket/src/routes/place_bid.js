@@ -24,46 +24,23 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 const webpush = require('web-push')
-
-
-const mongoose = require('mongoose')
 const redis = require('redis')
 
 const mongodbHelpers = require('../utilities/mongodb_helper')
 const { listBidHistory } = require('./bid_history')
 const { checkExtensionType, extensionAlert } = require('./update_extension')
+const helper = require('../utilities/stop_step_function')
 
-// const { sendPinpointEmail } = require('../utilities/send_email')
-
-const bidInformationSchema = new mongoose.Schema({
-    buyer_id: String,
-    auction_id: String,
-    seller_email: String,
-    paddle_number: Number,
-    starting_bid: Number,
-    bid_amount: Number,
-    lot_id: String,
-    lot_number: String,
-    lot_title: String,
-    name: String,
-    next_bid_amount: Number,
-    low_estimate: String,
-    high_estimate: String,
-    top_bidder: String,
-    bid_status: String,
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
-    timestamp: Number,
-    max_bid: Number,
-    additional_fees: String,
-    auction_uid: String,
-
-})
-
-const BidInformation = mongoose.model('dev-bid-information', bidInformationSchema)
+/**
+ * Calculates the next bid amount based on the current bid value.
+ * The function considers the first digit of the bid and determines the next bid
+ * with a specific increment, ensuring it aligns with bidding conventions.
+ *
+ * @param {number} currentBid - The current bid amount to calculate the next bid for.
+ * @returns {number} The calculated next bid amount.
+ */
 
 async function calculateNextAmont(currentBid) {
-    console.log('1123456', currentBid)
     const firstDigit = Math.floor(currentBid / 10 ** (Math.floor(Math.log10(currentBid))))
     let nextBid
 
@@ -111,6 +88,12 @@ async function calculateNextAmont(currentBid) {
     
     return parseInt(nextBid, 10)
 }
+
+/**
+ * Utility object for interacting with Redis in the context of lot bidding.
+ * Provides methods to retrieve bidder data, lot details, current bidders,
+ * and perform updates based on different extension scenarios.
+ */
 
 const redisHelper = {
     async getLotData(redisKey, client) {
@@ -255,32 +238,35 @@ const redisHelper = {
 
 }
 
+/**
+ * Retrieves lot details from Redis based on the provided lot ID.
+ * If the lot is not found in Redis, fetches the data from MongoDB,
+ * updates Redis, and returns the lot details.
+ *
+ * @param {string} lot_id - The ID of the lot to retrieve.
+ * @param {object} client - The Redis client for database interaction.
+ * @returns {object} The lot details retrieved from Redis or MongoDB.
+ */
 
 async function getLotFromRedis(lot_id, client) {
     try {
-        console.log('lotdd', lot_id)
         const redisKey = `lot:${lot_id}`
         const getLotDetails = await redisHelper.getLotDeatils(redisKey, client, lot_id)
         const get_lot = []
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
-        console.log('getlotdetails', lot_id, getLotDetails)
-
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
-            console.log('inside redis', lot_id)
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
-            console.log('checkAuctionEnd', checkAuctionEnd)
-            // getLotData[0].status = checkAuctionEnd[0].status === undefined ? '' : checkAuctionEnd[0].status
             getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
             getLotData[0].extended_time = checkAuctionEnd[0].extension_time
             getLotData[0].extension_type = checkAuctionEnd[0].extension_type
-            const saveLotDetails = await client.hSet('lot', redisKey, JSON.stringify(getLotData[0]))
+            await client.hSet('lot', redisKey, JSON.stringify(getLotData[0]))
             get_lot[0] = getLotData[0]
             await connectionData.disconnect()
         }
@@ -292,11 +278,18 @@ async function getLotFromRedis(lot_id, client) {
 }
 
 
+/**
+ * Connects a socket to a bid room (lotID), retrieves lot details from Redis,
+ * emits an event to inform the client about joining the bid room, and lists bid history.
+ *
+ * @param {object} socket - The socket instance representing the connected client.
+ * @param {string} lotID - The ID of the lot representing the bid room to join.
+ * @param {object} io - The socket.io instance for broadcasting events.
+ * @returns {object} once the bid room is joined and bid history is listed.
+ */
 
 module.exports.joinBidRoom = async (socket, lotID, io) => {
     try {
-        console.log('inside bid rom', lotID)
-        // Create a Redis client
         // const client = await redis.createClient()
         const client = await redis.createClient({
             url: 'redis://dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com:6379',
@@ -320,8 +313,6 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
             auction_id: lotDetails.auction_id,
             lot_id: lotID,
         }
-        console.log('dataaa', data)
-
         // List bid history for the user in the bid room
         const listHistory = await listBidHistory(socket, data, io)
     } catch (err) {
@@ -330,13 +321,18 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
     }
 }
 
-
+/**
+ * Handles the process of placing a bid, updating bid details in Redis,
+ * determining bid status, emitting events to clients, and sending push notifications.
+ *
+ * @param {object} socket - The socket instance representing the connected client.
+ * @param {object} data - Bid information including lot and auction details.
+ * @param {object} io - The socket.io instance for broadcasting events.
+ * @param {object} userData - User data associated with the bid.
+ * @returns {object} once the bid is placed and relevant updates are made.
+ */
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
-        // const template_data = {
-        //     name: 'sandhya',
-        // }
-        // await sendPinpointEmail('sandhyashri@7edge.com', 'shrinith.poojary@7edge.com', JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/dev_paddle/EMAIL')  
         // const client = await redis.createClient()
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
@@ -351,86 +347,68 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         let currentLotDetails = await getLotFromRedis(data.lot_id, client)
         data.time_stamp = new Date().getTime()
         currentLotDetails.email_address = data.email_address
-        const saveBidHistory = await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
-        const currentTimestamp = new Date().getTime()
-        const now = new Date()
-        const oneMinuteAgo = new Date(now - 60000)
-        const oneMinuteBeforeEndDate = oneMinuteAgo.getTime()
+        await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const auctionEndTimeEpoch = currentLotDetails.end_date
         const currentTimeEpoch = Date.now()
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
-        console.log('monfogg', currentLotDetails)
-        // if (timeLeft <= 60000 && timeLeft > 0) {
-        if (timeLeft) {
+        if (timeLeft <= 60000 && timeLeft > 0) {
             console.log('The bid is within the last minute before the auction ends.')
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
             await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
             await listBidHistory(socket, data, io)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
+            const stopStateMachine = await helper.stopExecution(currentLotDetails)
+            console.log('stop', stopStateMachine)
         }
         
         if (getLotHistoryDetails.length <= 0) {
-            console.log('0 consition')
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.starting_price)
             currentLotDetails.winning_user = data.buyer_id       
         }
         else if (getLotHistoryDetails.length === 1) {
-            console.log('1 condition', currentLotDetails)
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             if (data.buyer_id === all_bidders[0].buyer_id) {
-                console.log('1111111111111')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = data.bid_amount > currentLotDetails.starting_price ? await calculateNextAmont(currentLotDetails.starting_price) : data.bid_amount
                 currentLotDetails.winning_user = data.buyer_id
             } else {
-                console.log('222222222222222222222222222222')
                 if (data.bid_amount > currentLotDetails.max_bid) {
-                    console.log('aaaaaaaaaaaaaaaaaaaaaaa')
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } 
                 else if (data.bid_amount === currentLotDetails.max_bid) {
-                    console.log('bbbbbbbbbbbbbbbbbb')
-                    console.log('333333333333333333333333333333')
                     currentLotDetails.max_bid = all_bidders[0].bid_amount
                     currentLotDetails.bid_amount = currentLotDetails[0].max_bid
                 } else {
-                    console.log('ccccccccccccccccccccc')
                     currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                 }
             } 
         } else {
-            console.log('#################################')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
-            console.log('ddd', highestBidder)
             if (data.buyer_id === highestBidder.buyer_id) {
-                console.log('CCCCCCCCCCCCCCCCCCCCCCCCCCCCCC')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
                 currentLotDetails.winning_user = highestBidder.buyer_id
             } else if (data.bid_amount > currentLotDetails.max_bid) {
-                console.log('dddddddddddddddddddddd')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
                 currentLotDetails.winning_user = data.buyer_id
             } else {
-                console.log('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
                 if (data.bid_amount > currentLotDetails.max_bid) {
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } else {
-                    console.log('fffffffffffffffffffffffffffff')
                     if (data.bid_amount === currentLotDetails.max_bid) {
                         currentLotDetails.winning_user = highestBidder.buyer_id
                         currentLotDetails.bid_amount = highestBidder.bid_amount
@@ -441,7 +419,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
-
         console.log('current', currentLotDetails)
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
@@ -449,16 +426,39 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         await listBidHistory(socket, data, io)
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
         const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
-        let message = 'Congratulations! 🎉 You\'re the highest bidder! '
-        let bidStatus = 'Winning'
+        const all_bidders = []
+        for (let i = 0; i < getLotHistoryDetails.length; i++) {
+            all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
+        }
+        let message; let 
+            bidStatus
+
+        console.log('atlast', all_bidders)
+        for (let i = 0; i < all_bidders.length; i++) {
+            console.log(('bueyr', all_bidders[i]))
+            const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id)
+            console.log('token', token)
+            if (currentLotDetails.winning_user !== all_bidders[i].buyer_id) {
+                message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
+                bidStatus = 'UnderBidder'
+            } else {
+                message = 'Congratulations! 🎉 You\'re the highest bidder! '
+                bidStatus = 'Winning'
+            }
+            const payload = JSON.stringify({ title: 'Bidding', body: message })
+            const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
+            console.log('psu response', pushresponse)
+        }
+
+        bidStatus = 'Winning'
         if (currentLotDetails.winning_user !== data.buyer_id && currentLotDetails.winning_user !== data.buyer_id) {
             message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
             bidStatus = 'UnderBidder'
         }
         bidInformation.bid_status = bidStatus
         const saveHistory = await mongodbHelpers.saveBidHistory(bidInformation)
-        const payload = JSON.stringify({ title: 'Bidding', body: message })
-        const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log) 
+        // const payload = JSON.stringify({ title: 'Bidding', body: message })
+        // const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log) 
     } catch (err) {
         console.log(err)
         return err
