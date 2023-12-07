@@ -1,4 +1,4 @@
-'''this api will list all the lots'''
+'''this api for details of sales'''
 import json
 import os
 from pymongo import MongoClient
@@ -12,36 +12,37 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-def order_detail(event, context):
+def sales_details(event, context):
     """
-    The `order_detail` function retrieves order details from a MongoDB database based on the provided
-    order ID and the authenticated user's email address.
-    :param event: The `event` parameter is the input event data that triggers the function. It contains
-    information about the HTTP request that was made to invoke the function
+    The `sales_details` function retrieves sales details for a specific order based on the order ID and
+    the seller's email.
+    :param event: The `event` parameter is a dictionary that contains information about the event that
+    triggered the function. It typically includes details such as the HTTP request, headers, query
+    parameters, and body
     :param context: The `context` parameter is a context object that provides information about the
     runtime environment of the function. It includes details such as the AWS request ID, function name,
     and other metadata. In this code, the `context` parameter is not used, but it is typically included
     in AWS Lambda function signatures
-    :return: a response object with a status code, headers, and a body. The body contains a JSON object
-    with the data of the order detail.
+    :return: The code is returning a JSON response with the following structure:
     """
     try:
         try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            email_address = cognito_data['email']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('email ', seller_email)
+            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "do not have access to perform this API action"})
+                }
         except:
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # email_address= 'aishwarya@7edge.com'
+        # seller_email= 'anusha.k+subdomain@7edge.com'
         projection={
             'order_number':1,
             'created_at':1,
@@ -54,14 +55,15 @@ def order_detail(event, context):
             'email_address':1,
             'status':1,
             "billing_address":1,
-            "shipping_address":1
+            "shipping_address":1,
+            'seller_email':1
         }
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['ORDERS_COLLECTION']]
         data = event['queryStringParameters']
         order_id = data['order_id']
-        order_data = collection.find_one({'_id':ObjectId(order_id),'email_address':email_address},projection)
+        order_data = collection.find_one({'_id':ObjectId(order_id),'seller_email':seller_email},projection)
         if order_data is None:
             return {
                 "statusCode": 404,
