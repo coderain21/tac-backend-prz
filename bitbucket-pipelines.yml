@@ -124,7 +124,7 @@ definitions:
               S3_BUCKET: $S3_BUCKET
               COMMAND: 'deploy'
               WAIT: 'true'
-              VERSION_LABEL: 'my-app-1.0.0'
+              # VERSION_LABEL: 'my-app-1.0.0'
               IGNORE_APPLICATION_STOP_FAILURES: 'true'
               FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
 
