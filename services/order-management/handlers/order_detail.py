@@ -14,16 +14,17 @@ headers = {
 }
 def order_detail(event, context):
     """
-    The above function is a Python code that retrieves cart details for a specific auction from a
-    MongoDB database, based on the user's email address.
-    :param event: The `event` parameter is a dictionary that contains information about the event that
-    triggered the function. It typically includes details such as the HTTP request, headers, and query
-    parameters
-    :param context: The `context` parameter is an object that provides information about the runtime
-    environment of the function. It includes details such as the AWS request ID, function name, and
-    other contextual information. In this code snippet, the `context` parameter is not used
-    :return: The code is returning a response object with a status code, headers, and a body. The body
-    contains a JSON object with a "data" key, which holds the cart details.
+    The `order_detail` function retrieves order details from a MongoDB database based on the provided
+    order ID and the authenticated user's email address.
+    
+    :param event: The `event` parameter is the input event data that triggers the function. It contains
+    information about the HTTP request that was made to invoke the function
+    :param context: The `context` parameter is a context object that provides information about the
+    runtime environment of the function. It includes details such as the AWS request ID, function name,
+    and other metadata. In this code, the `context` parameter is not used, but it is typically included
+    in AWS Lambda function signatures
+    :return: a response object with a status code, headers, and a body. The body contains a JSON object
+    with the data of the order detail.
     """
     try:
         try:
