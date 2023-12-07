@@ -369,7 +369,6 @@ module.exports.getExecutionArn = async (currentLotDetails) => {
         const collection = database.collection('dev-step-function-arns') // Replace with your collection name
         const query = {
             lot_id: currentLotDetails._id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
-            seller_email: currentLotDetails.seller_email,
         } // Corrected 'document.buyer_id'
         console.log('seller', query)
         const documents = await collection.find(query).toArray() // Await the query result
