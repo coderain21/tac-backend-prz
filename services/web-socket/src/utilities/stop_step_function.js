@@ -90,7 +90,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
                 await findAndUpdateTime(item, client, io, socket, currentLotDetails)
-                const getArn = await mongodbHelper.getExecutionArn(item._id)
+                const getArn = await mongodbHelper.getExecutionArn(item)
                 console.log('getarn', getArn)
                 const executionArn = getArn[0].arn
                 const response = await stepFunctions.stopExecution({
@@ -107,7 +107,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             currentLotDetails.lot_end_time = currentLotDetails.end_date + extend_time
             // await findAndUpdateTime(currentLotDetails._id, currentLotDetails.lot_end_time, client, io, socket, currentLotDetails)
             await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails)
-            const getArn = await mongodbHelper.getExecutionArn(currentLotDetails._id)
+            const getArn = await mongodbHelper.getExecutionArn(currentLotDetails)
             console.log('getarn', getArn)
             const executionArn = getArn[0].arn
             const response = await stepFunctions.stopExecution({
