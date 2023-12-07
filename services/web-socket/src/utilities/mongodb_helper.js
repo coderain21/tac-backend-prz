@@ -176,6 +176,7 @@ module.exports.getAuction = async (document) => {
         const query = {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
+        console.log('query', query)
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
         return documents
