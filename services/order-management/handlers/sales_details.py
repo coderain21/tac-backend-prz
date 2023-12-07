@@ -26,23 +26,23 @@ def sales_details(event, context):
     contains a JSON object with a "data" key, which holds the cart details.
     """
     try:
-        # try:
-        #     seller_email = event['requestContext']['authorizer']['claims']['email']
-        #     print('email ', seller_email)
-        #     if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-        #             'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        seller_email= 'anusha.k+subdomain@7edge.com'
+        try:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('email ', seller_email)
+            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
+                return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "do not have access to perform this API action"})
+                }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        # seller_email= 'anusha.k+subdomain@7edge.com'
         projection={
             'order_number':1,
             'created_at':1,
