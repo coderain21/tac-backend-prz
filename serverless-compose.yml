@@ -26,3 +26,9 @@ services:
   buyer-wishlist:
     path: services/buyer-wishlist
     config: ${env:config}
+  payments:
+    path: services/payments
+    config: ${env:config}
+  order-management:
+    path: services/order-management
+    config: ${env:config}
