@@ -92,6 +92,7 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
+        
         auction_id = event['pathParameters']['auction_id']
         print(event)
         if event['queryStringParameters'] is not None:
@@ -110,10 +111,6 @@ def update_auction(event, context):
                                                      "auction_id": auction_id})
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                      "auction_id": auction_id}))
-        for item in listLots:
-            print('inside for', item)            
-            invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
-
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
 
@@ -177,12 +174,32 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "No Lots Found"})
                 }
             else:
-                # print('eventtttttttttttttttt', event)
+                print('eventtttttttttttttttt', event)
                 # invoke_state_machine(event)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
+                for item in listLots:
+                    print('inside for', item)     
+                    itemData = json.dumps(item, cls= Encoder)
+                    invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
+                    print('invoking', invoking)
+                    collection = db["dev-step-function-arns"]
+                    step_request={}
+                    print('11', invoking['executionArn'])
+                    step_request['arn'] = invoking['executionArn']
+                    print('2222',itemData )
+                    id_value = item['_id']
+                    step_request['lot_id'] = str(id_value)
+                    step_request['auction_id'] = auction_id
+                    step_request['seller_email'] = seller_email
+                    print('step', step_request)
+                    x = collection.insert_one(step_request)
+                    print('xxxx', x)
+                    # for item in listLots:
+                    #     print('inside for', item)            
+                    #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
                 return {
                     "statusCode": 204,
                     'headers': headers,

@@ -35,9 +35,7 @@ provider:
     LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
     COUNTER_LOT: ${env:COUNTER_LOT}
     STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
-
-                 # Fn::GetAtt: ["lot-published", Arn]
-
+    REDIS_URL: ${env:REDIS_URL}
     
     
   http:
