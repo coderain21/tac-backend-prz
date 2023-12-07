@@ -35,7 +35,7 @@ async function startExecution(executionARN, lots) {
 }
 
 async function  getLotDeatils(rediskey, client, lotID) {
-    console.log('REDIS KEY', rediskey)
+    console.log('REDIS KEY', rediskey, lotID, typeof lotID)
     const allBidders = await client.hGetAll('lot', rediskey)
     // Filter out the current bidder and return an array
     return Object.values(allBidders || {}).filter((bidder) => {
@@ -65,11 +65,10 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
         console.log('xxx', x)
         const lotDetails = await getLotDeatils(bidKey, client, lotInformation._id)
-        console.log('lot details', lotDetails)
         const lotData = {
             extended: true,
             extended_time: currentLotDetails.extended_time,
-            lot_id: lotInformation.lot_id,
+            lot_id: lotInformation._id,
             extension_type: currentLotDetails.extension_type,
         }
         const sendEmit = await extensionAlert(socket, lotData, io)

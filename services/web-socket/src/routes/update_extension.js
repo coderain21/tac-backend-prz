@@ -16,7 +16,7 @@ module.exports.checkExtensionType = async (documents) => {
 }
 
 module.exports.extensionAlert = async (socket, data, io) => {
-    console.log('heyyy new function emitted', typeof (data.lot_id), data.lot_id)
+    console.log('heyyy new function emitted', typeof (data), data)
     try {
         io.to(data.lot_id).emit('extensionAlert', {
             success: true,
