@@ -359,7 +359,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await listBidHistory(socket, data, io)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
             const payload = {
-                auction_id: data.auction_uid,
+                auction_id: data.auction_id,
                 seller_email: data.seller_email,
             }
             console.log('payloadddd', payload)
