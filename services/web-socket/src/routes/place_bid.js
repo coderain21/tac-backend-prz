@@ -130,110 +130,110 @@ const redisHelper = {
             return {}
         }
     },
-    async findAndUpdate(lots, currentLotDetails, client, io, socket) {
-        const updates = {}
-        if (currentLotDetails.extension_type === 'All Lots') {
-            console.log('inside all lot', currentLotDetails, typeof (currentLotDetails.extended_time), lots)
-            for (const record of lots) {
-                const timestamp = record.end_date
-                const dateObject = new Date(timestamp)
-                const currentMinutes = dateObject.getMinutes()
-                const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time)
-                dateObject.setMinutes(newMinutes)
-                const newTimestamp = dateObject.getTime()
-                console.log('new', newTimestamp, record)
-                const bidKey = `lot:${record._id}`
-                const existingRecord = await client.hGet('lot', bidKey)
-                const get_lot = JSON.parse(existingRecord)
-                console.log('getlotss', get_lot)
-                if (get_lot) {
-                    if (record.end_date !== newTimestamp) {
-                        console.log('conditionsss')
-                        const updateRequest = {
-                            ...get_lot,
-                            end_date: newTimestamp,
-                        }
-                        console.log('bidkey', bidKey)
-                        const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-                        console.log('xxx', x)
-                        const lotDetails = await redisHelper.getLotDeatils(record._id, client, record._id)
-                        console.log('lot details', lotDetails)
-                        // socket.emit('extensionAlert', {
-                        //     success: true,
-                        //     extension: {
-                        //         extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
-                        //     }, 
-                        //     lot: lotDetails,
-                        // })
-                        const lotData = {
-                            extended: true,
-                            extended_time: currentLotDetails.extended_time,
-                            lot_id: record._id.toString(),
-                            extension_type: currentLotDetails.extension_type,
-                        }
-                        const sendEmit = await extensionAlert(socket, lotData, io)
-                        socket.emit('joinBidRoom', record)
-                    }
-                }
-            }
-        } else if (currentLotDetails.extension_type === 'Individual Lots') {
-            console.log('inside individual', currentLotDetails)
-            const bidKey = `lot:${currentLotDetails._id}`
-            const timestamp = currentLotDetails.end_date
-            const dateObject = new Date(timestamp)
-            const currentMinutes = dateObject.getMinutes()
-            const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
-            dateObject.setMinutes(newMinutes)
-            const existingRecord = await client.hGet('lot', bidKey)
-            const newTimestamp = dateObject.getTime()
-            const get_lot = JSON.parse(existingRecord)
-            console.log('get lot', get_lot)
-            if (get_lot) {
-                if (get_lot.end_date !== newTimestamp) {
-                    const updateRequest = {
-                        ...get_lot,
-                        end_date: newTimestamp,
-                    }
-                    await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-                    socket.emit('extensionAlert', {
-                        success: true,
-                        extension: {
-                            extended: true, extended_time: currentLotDetails.extended_time, lot_id: get_lot._id, extension_type: currentLotDetails.extension_type, 
-                        }, 
-                    })
-                }
-            }
-        } else {
-            console.log('elsee')
-            for (const record of lots) {
-                const timestamp = record.end_date
-                const dateObject = new Date(timestamp)
-                const currentMinutes = dateObject.getMinutes()
-                const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
-                dateObject.setMinutes(newMinutes)
-                const newTimestamp = dateObject.getTime()
-                const bidKey = `lot:${record.lot_id}`
-                const existingRecord = await client.hGet('lot', bidKey)
-                const get_lot = JSON.parse(existingRecord)
-                if (get_lot) {
-                    if (get_lot.end_date !== newTimestamp) {
-                        const updateRequest = {
-                            ...get_lot,
-                            end_date: newTimestamp,
-                        }
-                        await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-                        socket.emit('extensionAlert', {
-                            success: true,
-                            extension: {
-                                extended: true, extended_time: currentLotDetails.extended_time, lot_id: get_lot._id, extension_type: currentLotDetails.extension_type, 
-                            }, 
-                        })
-                    }
-                    return true
-                }
-            }
-        }
-    },
+    // async findAndUpdate(lots, currentLotDetails, client, io, socket) {
+    //     const updates = {}
+    //     if (currentLotDetails.extension_type === 'All Lots') {
+    //         console.log('inside all lot', currentLotDetails, typeof (currentLotDetails.extended_time), lots)
+    //         for (const record of lots) {
+    //             const timestamp = record.end_date
+    //             const dateObject = new Date(timestamp)
+    //             const currentMinutes = dateObject.getMinutes()
+    //             const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time)
+    //             dateObject.setMinutes(newMinutes)
+    //             const newTimestamp = dateObject.getTime()
+    //             console.log('new', newTimestamp, record)
+    //             const bidKey = `lot:${record._id}`
+    //             const existingRecord = await client.hGet('lot', bidKey)
+    //             const get_lot = JSON.parse(existingRecord)
+    //             console.log('getlotss', get_lot)
+    //             if (get_lot) {
+    //                 if (record.end_date !== newTimestamp) {
+    //                     console.log('conditionsss')
+    //                     const updateRequest = {
+    //                         ...get_lot,
+    //                         end_date: newTimestamp,
+    //                     }
+    //                     console.log('bidkey', bidKey)
+    //                     const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+    //                     console.log('xxx', x)
+    //                     const lotDetails = await redisHelper.getLotDeatils(record._id, client, record._id)
+    //                     console.log('lot details', lotDetails)
+    //                     // socket.emit('extensionAlert', {
+    //                     //     success: true,
+    //                     //     extension: {
+    //                     //         extended: true, extended_time: currentLotDetails.extended_time, lot_id: record._id, extension_type: currentLotDetails.extension_type, 
+    //                     //     }, 
+    //                     //     lot: lotDetails,
+    //                     // })
+    //                     const lotData = {
+    //                         extended: true,
+    //                         extended_time: currentLotDetails.extended_time,
+    //                         lot_id: record._id.toString(),
+    //                         extension_type: currentLotDetails.extension_type,
+    //                     }
+    //                     const sendEmit = await extensionAlert(socket, lotData, io)
+    //                     socket.emit('joinBidRoom', record)
+    //                 }
+    //             }
+    //         }
+    //     } else if (currentLotDetails.extension_type === 'Individual Lots') {
+    //         console.log('inside individual', currentLotDetails)
+    //         const bidKey = `lot:${currentLotDetails._id}`
+    //         const timestamp = currentLotDetails.end_date
+    //         const dateObject = new Date(timestamp)
+    //         const currentMinutes = dateObject.getMinutes()
+    //         const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
+    //         dateObject.setMinutes(newMinutes)
+    //         const existingRecord = await client.hGet('lot', bidKey)
+    //         const newTimestamp = dateObject.getTime()
+    //         const get_lot = JSON.parse(existingRecord)
+    //         console.log('get lot', get_lot)
+    //         if (get_lot) {
+    //             if (get_lot.end_date !== newTimestamp) {
+    //                 const updateRequest = {
+    //                     ...get_lot,
+    //                     end_date: newTimestamp,
+    //                 }
+    //                 await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+    //                 socket.emit('extensionAlert', {
+    //                     success: true,
+    //                     extension: {
+    //                         extended: true, extended_time: currentLotDetails.extended_time, lot_id: get_lot._id, extension_type: currentLotDetails.extension_type, 
+    //                     }, 
+    //                 })
+    //             }
+    //         }
+    //     } else {
+    //         console.log('elsee')
+    //         for (const record of lots) {
+    //             const timestamp = record.end_date
+    //             const dateObject = new Date(timestamp)
+    //             const currentMinutes = dateObject.getMinutes()
+    //             const newMinutes = currentMinutes + parseInt(currentLotDetails.extended_time, 10)
+    //             dateObject.setMinutes(newMinutes)
+    //             const newTimestamp = dateObject.getTime()
+    //             const bidKey = `lot:${record.lot_id}`
+    //             const existingRecord = await client.hGet('lot', bidKey)
+    //             const get_lot = JSON.parse(existingRecord)
+    //             if (get_lot) {
+    //                 if (get_lot.end_date !== newTimestamp) {
+    //                     const updateRequest = {
+    //                         ...get_lot,
+    //                         end_date: newTimestamp,
+    //                     }
+    //                     await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+    //                     socket.emit('extensionAlert', {
+    //                         success: true,
+    //                         extension: {
+    //                             extended: true, extended_time: currentLotDetails.extended_time, lot_id: get_lot._id, extension_type: currentLotDetails.extension_type, 
+    //                         }, 
+    //                     })
+    //                 }
+    //                 return true
+    //             }
+    //         }
+    //     }
+    // },
     
 
 }
@@ -354,11 +354,16 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         if (timeLeft <= 60000 && timeLeft > 0) {
             console.log('The bid is within the last minute before the auction ends.')
             const auctionLots = await mongodbHelpers.getAuctionLots(data)
-            await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
+            // await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
             await listBidHistory(socket, data, io)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
-            const stopStateMachine = await helper.stopExecution(currentLotDetails)
+            const payload = {
+                auction_id: data.auction_uid,
+                seller_email: data.seller_email,
+            }
+            const checkAuctionEnd = await mongodbHelpers.getAuction(payload)
+            const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
             console.log('stop', stopStateMachine)
         }
         
