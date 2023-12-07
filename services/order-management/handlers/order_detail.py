@@ -16,7 +16,6 @@ def order_detail(event, context):
     """
     The `order_detail` function retrieves order details from a MongoDB database based on the provided
     order ID and the authenticated user's email address.
-    
     :param event: The `event` parameter is the input event data that triggers the function. It contains
     information about the HTTP request that was made to invoke the function
     :param context: The `context` parameter is a context object that provides information about the

@@ -16,7 +16,6 @@ def sales_details(event, context):
     """
     The `sales_details` function retrieves sales details for a specific order based on the order ID and
     the seller's email.
-    
     :param event: The `event` parameter is a dictionary that contains information about the event that
     triggered the function. It typically includes details such as the HTTP request, headers, query
     parameters, and body
