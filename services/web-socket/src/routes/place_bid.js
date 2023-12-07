@@ -368,6 +368,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             console.log('stop', stopStateMachine)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
+        console.log('%%%%%%%%%%%%%%%%%%%5', currentLotDetails)
         
         if (getLotHistoryDetails.length <= 0) {
             currentLotDetails.max_bid = data.bid_amount
