@@ -46,9 +46,12 @@ async function  getLotDeatils(rediskey, client, lotID) {
     })
 }
 
-async function findAndUpdateTime(lotInformation, end_time, client, io, socket, currentLotDetails) {
-    console.log('inside find and update', lotInformation, end_time, currentLotDetails)
+async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails) {
+    console.log('inside find and update', lotInformation, currentLotDetails)
     try {
+        if (!client.isOpen) {
+            await client.connect()
+        }
         const bidKey = `lot:${lotInformation._id}`
         const existingRecord = await client.hGet('lot', bidKey)
         const get_lot = JSON.parse(existingRecord)
