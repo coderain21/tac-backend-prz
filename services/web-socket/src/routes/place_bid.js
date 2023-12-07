@@ -357,7 +357,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             // await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
             await checkExtensionType(data)
             await listBidHistory(socket, data, io)
-            currentLotDetails = await getLotFromRedis(data.lot_id, client)
             const payload = {
                 auction_id: data.auction_id,
                 seller_email: data.seller_email,
@@ -367,6 +366,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             console.log('$$$$$$$$$$$$$$$$$$$$$', checkAuctionEnd)
             const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
             console.log('stop', stopStateMachine)
+            currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
         
         if (getLotHistoryDetails.length <= 0) {
