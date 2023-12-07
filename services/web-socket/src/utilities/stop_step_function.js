@@ -1,6 +1,7 @@
-const { StepFunctions } = require('aws-sdk')
+const { StepFunctions, config } = require('aws-sdk')
 const mongodbHelper = require('./mongodb_helper')
 
+config.update({ region: 'eu-west-2' })
 
 module.exports.stopExecution = async (currentLotDetails) => {
     try {
