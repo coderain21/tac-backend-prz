@@ -79,7 +79,7 @@
             "example": "6569734504bebdf5cc4bb24f"
           },
           {
-            "name": "time_stamp",
+            "name": "timestamp",
             "in": "query",
             "description": "time_stamp of the order",
             "schema": {
@@ -89,7 +89,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Successfully retrieved payment intent data",
             "content": {
               "application/json": {

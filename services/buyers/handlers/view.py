@@ -112,12 +112,9 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-        start_date=result['start_date']
-        end_date = result['end_date']
-        start_time= datetime.utcfromtimestamp(start_date / 1000)
-        end_time = datetime.utcfromtimestamp(end_date / 1000)
-        # Get the timezone from the result
-        print(start_time,end_time)
+        print(result)
+        start_time=result['start_date']
+        end_time= result['end_date']
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
             return {
@@ -131,6 +128,9 @@ def view(event, context):
         time_zone = time_zones[time_zone_str]
         # Get the current time in the specified timezone
         current_time = datetime.now(pytz.timezone(time_zone))
+        current_time= datetime.timestamp(current_time)
+        current_time=current_time*1000
+        print(current_time)
         if not time_zone_str:
             return {
                 "headers": headers,
@@ -139,13 +139,13 @@ def view(event, context):
             }
 
         # Convert time_zone_str to a time zone object using the dictionary
-        if time_zone_str in time_zones:
-            start_time = datetime.fromtimestamp(int(start_time.timestamp()),
-                                                 tz=pytz.timezone(time_zone))
-            end_time = datetime.fromtimestamp(int(end_time.timestamp()),
-                                               tz=pytz.timezone(time_zone))
-        else:
-            raise ValueError("Invalid time zone")
+        # if time_zone_str in time_zones:
+        #     start_time = datetime.fromtimestamp(start_date,
+        #                                          tz=pytz.timezone(time_zone))
+        #     end_time = datetime.fromtimestamp(end_date,
+        #                                       tz=pytz.timezone(time_zone))
+        # else:
+        #     raise ValueError("Invalid time zone")
         # Convert start_time and end_time to the auction's timezone
         # start_time = result.get("start_date")
         # start_time = auction_timezone.localize(
@@ -207,6 +207,7 @@ def view(event, context):
             "body": json.dumps(body, cls=Encoder)
         }
     except Exception as e:
+        print(e)
         return {
             "headers": headers,
             "statusCode": 500,
