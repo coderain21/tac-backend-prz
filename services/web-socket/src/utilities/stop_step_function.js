@@ -43,9 +43,10 @@ async function getLotDeatils(rediskey, client, lotID) {
     })
 }
 
-async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails, auctionDetails,auctionLots) {
+async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails, auctionDetails, auctionLots) {
     console.log('inside find and update', lotInformation, currentLotDetails)
     try {
+        lotInformation.initial_end_time = lotInformation.end_date
         if (!client.isOpen) {
             await client.connect()
         }
@@ -63,7 +64,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         console.log('bidkey', bidKey)
         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
         console.log('xxx', x)
-        const lotDetails = await getLotDeatils(bidKey, client,lot_id)
+        // const lotDetails = await getLotDeatils(bidKey, client, lot_id)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
@@ -101,7 +102,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                     cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
                 }).promise()
                 console.log('stop response', response)
-                const cc  = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
+                const cc = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
                 console.log('cc', cc)
             }
         }
