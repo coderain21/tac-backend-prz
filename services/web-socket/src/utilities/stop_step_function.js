@@ -59,6 +59,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             ...get_lot,
             lot_end_date: lotInformation.lot_end_time,
             lot_extended: true,
+            end_date: lotInformation.lot_end_date,
         }
         console.log('bidkey', bidKey)
         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
