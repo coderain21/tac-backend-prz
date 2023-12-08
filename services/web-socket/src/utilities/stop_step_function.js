@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-param-reassign */
 /* eslint-disable camelcase */
 /* eslint-disable no-restricted-syntax */
@@ -37,18 +38,7 @@ async function startExecution(executionARN, lots) {
     })
 }
 
-async function getLotDeatils(rediskey, client, lotID) {
-    const lot_id = lotID.toString()
-    const allBidders = await client.hGetAll('lot', rediskey)
-    // Filter out the current bidder and return an array
-    return Object.values(allBidders || {}).filter((bidder) => {
-        const parsedBidder = JSON.parse(bidder)
-        return parsedBidder._id === lot_id
-    })
-}
-
 async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails, auctionDetails, auctionLots) {
-    console.log('inside find and update', lotInformation, currentLotDetails)
     try {
         lotInformation.initial_end_time = lotInformation.end_date
         if (!client.isOpen) {
@@ -66,9 +56,8 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             end_date: lotInformation.lot_end_time,
         }
         console.log('bidkey', bidKey)
-        const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        console.log('xxx', x)
-        // const lotDetails = await getLotDeatils(bidKey, client, lot_id)
+        const updateRedis = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+        console.log('updateRedis', updateRedis)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
@@ -86,8 +75,6 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
 
 module.exports.stopExecution = async (currentLotDetails, auctionDetails, auctionLots, client, io, socket) => {
     try {
-        console.log('stop exec')
-        console.log('inputssss', currentLotDetails, auctionDetails, auctionLots)
         const stepFunctions = new StepFunctions()
         if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascade')) {
         // if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascaded') && currentLotDetails.lot_extended !== true) {
@@ -106,8 +93,8 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                     cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
                 }).promise()
                 console.log('stop response', response)
-                const cc = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
-                console.log('cc', cc)
+                const executeStepFunction = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
+                console.log('executeStepFunction', executeStepFunction)
             }
         }
         if (auctionDetails.extension_type === 'Individual Lots') {
@@ -115,7 +102,6 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = parseInt(extend_time, 10)
             extend_time = extend_time * 60 * 1000
             currentLotDetails.lot_end_time = currentLotDetails.end_date + extend_time
-            // await findAndUpdateTime(currentLotDetails._id, currentLotDetails.lot_end_time, client, io, socket, currentLotDetails)
             const redisUpdate = await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
             console.log('redis update', redisUpdate)
             const getArn = await mongodbHelper.getExecutionArn(currentLotDetails)

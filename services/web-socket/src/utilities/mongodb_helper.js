@@ -7,7 +7,6 @@
 /* eslint-disable no-console */
 const mongoose = require('mongoose')
 const { ObjectId } = require('mongodb')
-const { MongoClient } = require('mongodb')
 
 /* This code exports a function named `connect` as a property of the `module.exports` object. The
 `connect` function uses the `mongoose` library to connect to a MongoDB database using the connection
@@ -147,25 +146,25 @@ module.exports.updateSignleLot = async (document) => {
     client.disconnect()
     return updateResult
 }
-module.exports.updateTopBidder = async (updateInformation) => {
-    try {
-        const client = await this.connect()
-        const database = client.connection.db // Access the database
-        const collection = database.collection('dev-lots') //
-        const updateResult = await collection.updateOne(
-            { _id: new ObjectId(data.lot_id) },
-            {
-                $set: {
-                    Top_bidder: updateInformation.buyer_id, paddle_number: updateInformation.paddle_number, current_bid: updateInformation.bid_amount,
-                },
-            },
-        )
-        client.disconnect()
-        return updateResult
-    } catch (error) {
-        return error
-    }
-}
+// module.exports.updateTopBidder = async (updateInformation) => {
+//     try {
+//         const client = await this.connect()
+//         const database = client.connection.db // Access the database
+//         const collection = database.collection('dev-lots') //
+//         const updateResult = await collection.updateOne(
+//             { _id: new ObjectId(data.lot_id) },
+//             {
+//                 $set: {
+//                     Top_bidder: updateInformation.buyer_id, paddle_number: updateInformation.paddle_number, current_bid: updateInformation.bid_amount,
+//                 },
+//             },
+//         )
+//         client.disconnect()
+//         return updateResult
+//     } catch (error) {
+//         return error
+//     }
+// }
 
 module.exports.getAuction = async (document) => {
     try {
@@ -232,7 +231,7 @@ module.exports.getAllLots = async (document, lotData) => {
 
                 },
             }
-            const x = await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
+            await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
         } else if (document.extension_type === 'Individual') {
             const lotId = ObjectId(lotData.lot_id)
             const timestamp = documents[0].end_date
@@ -313,14 +312,11 @@ module.exports.getAuctionLots = async (document) => {
 
 module.exports.lotToCart = async (document) => {
     try {
-        // Connect to the MongoDB server
         const connectionData = await this.connect()
         const database = connectionData.connection.db
         const collection = database.collection('dev-carts')
-        // The document to be inserted
-        // Insert the document into the collection
         const result = await collection.insertOne(document)
-        return true
+        return result
     } catch (err) {
         return err
     }
@@ -347,14 +343,11 @@ module.exports.getBuyer = async (buyer_id) => {
 
 module.exports.saveBidHistory = async (document) => {
     try {
-        // Connect to the MongoDB server
         const connectionData = await this.connect()
         const database = connectionData.connection.db
         const collection = database.collection('dev-bid-informations')
-        // The document to be inserted
-        // Insert the document into the collection
         const result = await collection.insertOne(document)
-        return true
+        return result
     } catch (err) {
         return err
     }
@@ -362,7 +355,6 @@ module.exports.saveBidHistory = async (document) => {
 
 module.exports.getExecutionArn = async (currentLotDetails) => {
     try {
-        console.log('getExecutionArn mongo', currentLotDetails, typeof (currentLotDetails._id))
         const lotID = currentLotDetails._id.toString()
         const connectionData = await this.connect()
         const database = connectionData.connection.db// Access the database
