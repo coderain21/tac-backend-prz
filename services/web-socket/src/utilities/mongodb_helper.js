@@ -9,7 +9,6 @@ const mongoose = require('mongoose')
 const { ObjectId } = require('mongodb')
 const { MongoClient } = require('mongodb')
 
-
 /* This code exports a function named `connect` as a property of the `module.exports` object. The
 `connect` function uses the `mongoose` library to connect to a MongoDB database using the connection
 string specified in the `process.env.MONGODB_CONNECTION_STRING` environment variable. If the
@@ -377,6 +376,30 @@ module.exports.getExecutionArn = async (currentLotDetails) => {
         return documents
     } catch (err) {
         console.log(err)
+        return false
+    }
+}
+
+module.exports.update = async (arnData, data) => {
+    try {
+        const connectionData = await this.connect()
+        console.log('update', arnData, data)
+        const update_information = {
+            arn: data.executionArn,
+        }
+        // const connection = await mongoConnection.connect()
+        console.log(update_information, 'updateddd')
+        const database = connectionData.connection.db// Access the database
+        const collection = database.collection('dev-step-function-arns') // R
+        const updateResult = await collection.updateOne(
+            { _id: new ObjectId(arnData._id) },
+            { $set: update_information },
+        )
+        connectionData.disconnect()
+        return updateResult
+        // await connection.disconnect()
+    } catch (error) {
+        console.log(error)
         return false
     }
 }

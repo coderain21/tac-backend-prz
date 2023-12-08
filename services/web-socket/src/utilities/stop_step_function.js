@@ -21,11 +21,15 @@ async function startExecution(executionARN, lots) {
     console.log('params', params)
     const stepfunctions = new StepFunctions()
     return new Promise((resolve, reject) => {
-        stepfunctions.startExecution(params, (error, data) => {
+        stepfunctions.startExecution(params, async (error, data) => {
             if (error) {
                 reject(error)
             }
             if (data) {
+                console.log('start execution relove block', data)
+                const getArn = await mongodbHelper.getExecutionArn(lots)
+                const updateARN = await mongodbHelper.update(getArn[0], data)
+                console.log('updateARN', updateARN)
                 resolve(data)
             }
             resolve({ status: false })
