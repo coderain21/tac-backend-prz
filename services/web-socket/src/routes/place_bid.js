@@ -411,7 +411,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             if (data.buyer_id === highestBidder.buyer_id) {
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
-                currentLotDetails.winning_user = highestBidder.buyer_id
+                currentLotDetails.winning_user = highestBidder.buyer_idhelloo
+
             } else if (data.bid_amount > currentLotDetails.max_bid) {
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
