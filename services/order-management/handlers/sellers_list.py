@@ -7,6 +7,8 @@ from pymongo import MongoClient
 from lib.common_helper import Encoder
 import math
 from lib.get import fetch_seller_data_from_auction
+import csv
+import boto3
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -71,6 +73,8 @@ def list_orders(event, context):
         start_date_str = data.get('start_date')
         end_date_str = data.get('end_date')
         # Convert timestamp strings to integers
+        export = int(event['queryStringParameters'].get('export', '0'))
+        download_link = None
         start_timestamp = int(start_date_str) if start_date_str else None
         end_timestamp = int(end_date_str) if end_date_str else None
         search_keyword = data.get('search_keyword')
@@ -104,7 +108,6 @@ def list_orders(event, context):
                 {"order_number": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}},
                 {"name": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}}
             ]
-
         # Combine the search and sort criteria
         query = {"seller_email": seller_email,"auction_id": auction_id,**search_criteria}
         # Check if both start and end timestamps are provided
@@ -121,6 +124,8 @@ def list_orders(event, context):
             query["payment"] = payment_type
         if payment_status:
             query["payment_status"] = payment_status
+        if export is not None and export == 1:
+            download_link = export_as_csv(list(orders_collection.find(query)))
 
         # Query the MongoDB collection to find lots matching the criteria
         orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
@@ -135,14 +140,19 @@ def list_orders(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No Orders found"})
             }
+        body={  "data":list(orders_list),
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "current_page": page,
+                "total_orders": total_orders
+        }
+        print(download_link)
+        if download_link is not None:
+            body['csv_url']=download_link
         return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({"data":list(orders_list),
-                                    "total_pages": total_pages,
-                                    "total_records": total_records,
-                                    "current_page": page,
-                                    "total_orders": total_orders},cls = Encoder)
+                "body": json.dumps(body,cls = Encoder)
             }
     except Exception as err:
         print(err)
@@ -151,3 +161,54 @@ def list_orders(event, context):
             "statusCode": 500,
             "body": json.dumps({"message": "There was an error "})
         }
+
+def export_as_csv(sales):
+    """
+    Exports a list of auctions as a CSV file and uploads it to an S3 bucket.
+
+    Args:
+        auctions (list): A list of dictionaries representing the auctions.
+
+    Returns:
+        str: The signed URL of the uploaded CSV file on S3.
+
+    Raises:
+        Exception: If an error occurs during the export and upload process.
+    """
+    try:
+        # Export QR codes as CSV and upload to S3
+        csv_file = os.environ["CSV_FILE"]
+        s3_key = f"exports/{csv_file}"
+        s3_bucket = os.environ['S3_BUCKET']
+        print(s3_bucket, type(s3_bucket))
+        with open(csv_file, "w") as file:
+            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date","Payment Type", "Payment Status"])
+            writer.writeheader()
+            print(333)
+            # Format the created_at field as dd-mm-year
+            for sale in sales:
+                modified_sales = {}
+                shipping_address = sale['shipping_address']
+                full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
+                modified_sales["ORDER ID"] = sale["order_number"]
+                modified_sales["Customer Name"] = full_name
+                modified_sales["Auction Name"] = sale['auction_title']
+                modified_sales["Order Date"] = sale["created_at"]
+                modified_sales["Payment Status"] = sale["status"]
+                modified_sales["Payment Type"]= sale["payment_method_types"]
+                writer.writerow(modified_sales)
+        s3_client = boto3.client("s3", region_name='eu-west-2')
+        s3_client.upload_file(csv_file, s3_bucket, s3_key)
+        s3_resource = boto3.resource("s3", region_name='eu-west-2')
+        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
+        object_acl.put(ACL="public-read")
+        s3_signed_url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": s3_bucket, "Key": s3_key},
+            # URL expiration time in seconds (adjust as needed)
+            ExpiresIn=3600,
+        )
+        return s3_signed_url
+    except Exception as err:
+        print(err)
+        return None

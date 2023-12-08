@@ -464,7 +464,17 @@
               "type": "string"
             },
             "example": "65520f8b98b3d00d2336cd1a"
+          },
+          {
+            "name": "export",
+            "in": "query",
+            "description": "exporting the order list",
+            "schema": {
+              "type": "string"
+            },
+            "example": "0"
           }
+
         ],
         "responses": {
           "200": {
