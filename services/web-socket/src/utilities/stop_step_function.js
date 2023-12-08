@@ -45,7 +45,7 @@ async function getLotDeatils(rediskey, client, lotID) {
     })
 }
 
-async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails) {
+async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails, auctionDetails) {
     console.log('inside find and update', lotInformation, currentLotDetails)
     try {
         if (!client.isOpen) {
@@ -66,9 +66,9 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         const lotDetails = await getLotDeatils(bidKey, client, lotInformation._id)
         const lotData = {
             extended: true,
-            extended_time: currentLotDetails.extended_time,
+            extended_time: auctionDetails.extension_time,
             lot_id: lotInformation._id,
-            extension_type: currentLotDetails.extension_type,
+            extension_type: auctionDetails.extension_type,
         }
         const sendEmit = await extensionAlert(socket, lotData, io)
         socket.emit('joinBidRoom', lotInformation)
@@ -89,7 +89,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
-                const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails)
+                const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails, auctionDetails)
                 console.log('gggg', gg)
                 const getArn = await mongodbHelper.getExecutionArn(item)
                 console.log('getarn', getArn)
@@ -109,7 +109,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             currentLotDetails.lot_end_time = currentLotDetails.end_date + extend_time
             // await findAndUpdateTime(currentLotDetails._id, currentLotDetails.lot_end_time, client, io, socket, currentLotDetails)
-            const redisUpdate = await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails)
+            const redisUpdate = await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails, auctionDetails)
             console.log('redis update', redisUpdate)
             const getArn = await mongodbHelper.getExecutionArn(currentLotDetails)
             console.log('getarn', getArn)

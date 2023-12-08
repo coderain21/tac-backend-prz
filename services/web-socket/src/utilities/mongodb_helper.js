@@ -363,7 +363,7 @@ module.exports.saveBidHistory = async (document) => {
 
 module.exports.getExecutionArn = async (currentLotDetails) => {
     try {
-        console.log('getExecutionArn mongo', currentLotDetails)
+        console.log('getExecutionArn mongo', currentLotDetails, typeof (currentLotDetails._id))
         const connectionData = await this.connect()
         const database = connectionData.connection.db// Access the database
         const collection = database.collection('dev-step-function-arns') // Replace with your collection name
