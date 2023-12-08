@@ -253,6 +253,7 @@ async function getLotFromRedis(lot_id, client) {
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
+        console.log('lot from redis', get_lot)
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
             const connectionData = await mongodbHelpers.connect()
@@ -412,7 +413,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
                 currentLotDetails.winning_user = highestBidder.buyer_idhelloo
-
             } else if (data.bid_amount > currentLotDetails.max_bid) {
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
@@ -447,6 +447,14 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         }
         let message; let 
             bidStatus
+        if (all_bidders.length <= 0) {
+            const token = await mongodbHelpers.getBuyer(data.buyer_id)
+            message = 'Congratulations! 🎉 You\'re the highest bidder! '
+            bidStatus = 'Winning'
+            const payload = JSON.stringify({ title: 'Bidding', body: message })
+            const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
+        }
+       
 
         for (let i = 0; i < all_bidders.length; i++) {
             const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id)

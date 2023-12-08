@@ -9,6 +9,7 @@ module.exports.handler = async (event, context, callback) => {
     console.log('event', event, typeof event)
     // const data = JSON.parse(event)
     const data = typeof event === 'string' ? JSON.parse(event) : event
+    console.log('data', data, typeof data)
     const client = await redis.createClient({
         url: process.env.REDIS_URL,
     }).on('error', (err) => console.log('Redis Client Error', err)).connect()
@@ -19,15 +20,15 @@ module.exports.handler = async (event, context, callback) => {
     let endDateISO
     const redisPayload = JSON.stringify(data)
     console.log('rediss', redisPayload)
-    await client.hSet('lot', redisKey, redisPayload)
-    if (data && data.lot_end_date) {
-        endDateISO = new Date(data.lot_end_date).toISOString()
+    if (data && data.lot_end_time) {
+        endDateISO = new Date(data.lot_end_time).toISOString()
         data.extended = false
         data.lot_extended = false
     } else {
         endDateISO = new Date(data.end_date).toISOString()
         data.extended = true
         data.lot_extended = true
+        await client.hSet('lot', redisKey, redisPayload)
     }
 
     console.log('end', endDateISO, data)

@@ -84,7 +84,8 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
         console.log('stop exec')
         console.log('inputssss', currentLotDetails, auctionDetails, auctionLots)
         const stepFunctions = new StepFunctions()
-        if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascaded') && currentLotDetails.lot_extended !== true) {
+        if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascade')) {
+        // if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascaded') && currentLotDetails.lot_extended !== true) {
             let extend_time = auctionDetails.extension_time.replace('m', '')
             extend_time = parseInt(extend_time, 10)
             extend_time = extend_time * 60 * 1000
@@ -104,7 +105,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                 console.log('cc', cc)
             }
         }
-        if (auctionDetails.extension_type === 'Individual' && currentLotDetails.lot_extended !== true) {
+        if (auctionDetails.extension_type === 'Individual Lots') {
             let extend_time = auctionDetails.extension_time.replace('m', '')
             extend_time = parseInt(extend_time, 10)
             extend_time = extend_time * 60 * 1000
