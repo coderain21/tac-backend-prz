@@ -432,6 +432,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 }
             } 
         }
+        console.log('last response', currentLotDetails)
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,

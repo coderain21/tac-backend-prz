@@ -34,14 +34,11 @@ async function startExecution(executionARN, lots) {
 }
 
 async function getLotDeatils(rediskey, client, lotID) {
-    console.log('REDIS KEY', rediskey, lotID, typeof lotID)
     const lot_id = lotID.toString()
     const allBidders = await client.hGetAll('lot', rediskey)
     // Filter out the current bidder and return an array
     return Object.values(allBidders || {}).filter((bidder) => {
-        console.log('bidder', bidder)
         const parsedBidder = JSON.parse(bidder)
-        console.log('consoit', parsedBidder._id)
         return parsedBidder._id === lot_id
     })
 }
@@ -66,7 +63,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         console.log('bidkey', bidKey)
         const x = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
         console.log('xxx', x)
-        const lotDetails = await getLotDeatils(bidKey, client, lotInformation._id)
+        const lotDetails = await getLotDeatils(bidKey, client,lot_id)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
