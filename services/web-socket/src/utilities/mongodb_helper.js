@@ -364,11 +364,12 @@ module.exports.saveBidHistory = async (document) => {
 module.exports.getExecutionArn = async (currentLotDetails) => {
     try {
         console.log('getExecutionArn mongo', currentLotDetails, typeof (currentLotDetails._id))
+        const lotID = currentLotDetails._id.toString()
         const connectionData = await this.connect()
         const database = connectionData.connection.db// Access the database
         const collection = database.collection('dev-step-function-arns') // Replace with your collection name
         const query = {
-            lot_id: currentLotDetails._id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+            lot_id: lotID, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
         console.log('seller', query)
         const documents = await collection.find(query).toArray() // Await the query result
