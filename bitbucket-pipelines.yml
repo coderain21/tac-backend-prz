@@ -114,7 +114,20 @@ definitions:
         name: Deployment
         size: 2x
         script:
-          - echo "DEV Deploy"
+          - echo "Deploy"
+          # - pipe: atlassian/aws-code-deploy:1.4.0
+          #   variables:
+          #     AWS_DEFAULT_REGION: $AWS_REGION
+          #     AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+          #     AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+          #     APPLICATION_NAME: $APPLICATION_NAME
+          #     DEPLOYMENT_GROUP: $DEPLOYMENT_GROUP
+          #     S3_BUCKET: $S3_BUCKET
+          #     COMMAND: 'deploy'
+          #     WAIT: 'true'
+          #     # VERSION_LABEL: 'my-app-1.0.0'
+          #     IGNORE_APPLICATION_STOP_FAILURES: 'true'
+          #     FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
 
 
     
@@ -180,6 +193,7 @@ definitions:
           - npm install --f
           - npm install -g danger
           - npx danger ci
+
 
 pipelines:
   custom: 
