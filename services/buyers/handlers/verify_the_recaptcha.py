@@ -1,17 +1,10 @@
-"""This module contains functions for user registration verification and email validation within a serverless application.
-
-Module Functions:
-- is_valid_password(password): Check if a password meets specific requirements (uppercase, lowercase, digits, length).
-- verify(event, context): Verify user registration data, generate an OTP, send an email, and return an encrypted token.
-
-Please note that the code is designed for use within a serverless environment and relies on various environment variables for configuration and secrets.
-
-The primary functionality of this module is to verify user registration data, including password strength, duplicate email check, and captcha validation (if enabled). It then generates an OTP, sends an email, and returns an encrypted token for further processing.
-"""
+""" The code is importing various modules and functions that will be used in the script. """
 import json
 import re
 import random
 import os
+from bson import ObjectId
+import requests
 from pymongo import MongoClient
 from lib.helper_python import encrypt_with_time_validation, send_pinpoint_email
 
@@ -22,8 +15,6 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
-
-
 def is_valid_password(password):
     """Check if a password meets specific requirements (uppercase, lowercase, digits, length).
 
@@ -39,63 +30,59 @@ def is_valid_password(password):
     # Use the re.search function to check if the password matches the pattern
     return bool(re.search(pattern, password))
 
-# def verify_recaptcha(token):
-#     try:
-#         recaptcha_url = os.environ['RECAPTCHA_URL']
-#         print(recaptcha_url)
-#         payload = {
-#             'secret': os.environ["RECAPTCHA_KEY"],
-#             'response': token
-#         }
-#         print(os.environ["RECAPTCHA_KEY"])
-#         data = payload # Convert the payload to form data
+def verify_buyer_recaptcha(token, hostname):
+  try:
+      recaptcha_url = os.environ['BUYER_RECAPTCHA_URL'] # Replace with the actual ReCaptcha URL for buyers
+      payload = {
+          'secret': os.environ['BUYER_RECAPTCHA_KEY'], # Replace with the actual ReCaptcha key for buyers
+          'response': token,
+          'hostname': hostname
+      }
+      data = payload
 
-#         headers = {'Content-Type': 'application/x-www-form-urlencoded'}
-#         print(token)
-#         response = requests.post(recaptcha_url, data=data, headers=headers)
-#         response_data = response.json()
-#         print(response_data)
-#         if response_data.get('success', False):
-#             return response_data
-#         return {'success_status': False}
-#     except Exception as e:
-#         print(e)
-#         return {'success_status': False}
+      headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+      response = requests.post(recaptcha_url, data=data, headers=headers, timeout=600)
+      response_data = response.json()
+      print('response', response_data)
+      if response_data.get('success', False) and response_data.get('hostname') == hostname:
+          print('hostname true')
+          return response_data
+
+      return {'success_status': False}
+  except Exception as e:
+      print(str(e))
+      return {'success_status': False}
 
 
-def verify(event, context):
-    """Verify user registration data, generate an OTP, send an email, and return an encrypted token.
-
-    Args:
-        event (dict): The event data containing user registration details, including email, password, and other attributes.
-        context: The AWS Lambda context object (not used in this function).
-
-    Returns:
-        dict: A response indicating the outcome of the user registration process, including status code, headers, and a JSON body with an encrypted token or an error message.
-    """
+def verify_buyer(event, context):
     try:
         data = json.loads(event['body'])
-        expected_fields = ["email_address", "first_name", "last_name", "password", "confirm_password",
-                           "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type"]
+        expected_fields = ["auction_id", "email_address", "first_name", "last_name", "password", "confirm_password",
+                           "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type", "session_token"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
         if fields_not_found:
-            return {"headers": headers,
-                    'statusCode': 400,
-                    "body": json.dumps(
-                        {"message": f"Please provide {','.join(fields_not_found)}"})
-                    }
-
+            return {
+                "headers": headers,
+                'statusCode': 400,
+                "body": json.dumps({"message": f"Please provide {','.join(fields_not_found)}"})
+            }
+        
         password = data.get("password")
         confirm_password = data.get("confirm_password")
         is_password_valid = False
 
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         user_collection = db[os.environ["BUYER_COLLECTION"]]
+        auction_id = data['auction_id']
+        seller_details = auction_collection.find_one(
+            {'_id': ObjectId(auction_id)})
         user_exist = user_collection.find_one(
-            {'email_address': data['email_address'], 'user_type': data['user_type']})
+            {'email_address': data['email_address'],'seller_email': seller_details['seller_email'], 'user_type': data['user_type']})
 
         if user_exist:
+            client.close()
             return {
                 'statusCode': 409,
                 'headers': headers,
@@ -110,11 +97,10 @@ def verify(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': "Password Doesn't match"})
             }
+
         if is_valid_password(password):
             if password == confirm_password:
                 is_password_valid = True
-            else:
-                is_password_valid = False
 
         if not is_password_valid:
             return {
@@ -122,30 +108,33 @@ def verify(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': 'Invalid Password'})
             }
+        hostname = data['hostname']
 
-        # captcha_result = verify_recaptcha(data['session_token'])
+        print('Before captcha verification')
+        captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
+        print('After captcha verification')
 
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
-        # if not captcha_result['success_status'] and 'anusha.k+7' not in data['email_address']:
-        #     return {
-        #         'statusCode': 400,
-        #         'headers': headers,
-        #         'body': json.dumps({'message': 'Captcha verification failed'})
-        #     }
+        if not captcha_result['success']:
+            print('in failure')
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Captcha verification failed'})
+            }
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
         email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
-                                           os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
-        print(encrypted_data)
+                                        os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
         return {
             'statusCode': 201,
             'headers': headers,
             'body': json.dumps({'encrypted_token': encrypted_data})
         }
     except Exception as e:
-        print(e)
+        print(f'Error: {str(e)}')
         return {
             'statusCode': 500,
             'headers': headers,
