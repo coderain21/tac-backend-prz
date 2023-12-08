@@ -10,7 +10,6 @@ const { StepFunctions, config } = require('aws-sdk')
 const mongodbHelper = require('./mongodb_helper')
 const { extensionAlert } = require('../routes/update_extension')
 
-
 config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
@@ -34,7 +33,7 @@ async function startExecution(executionARN, lots) {
     })
 }
 
-async function  getLotDeatils(rediskey, client, lotID) {
+async function getLotDeatils(rediskey, client, lotID) {
     console.log('REDIS KEY', rediskey, lotID, typeof lotID)
     const allBidders = await client.hGetAll('lot', rediskey)
     // Filter out the current bidder and return an array
@@ -110,7 +109,8 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             currentLotDetails.lot_end_time = currentLotDetails.end_date + extend_time
             // await findAndUpdateTime(currentLotDetails._id, currentLotDetails.lot_end_time, client, io, socket, currentLotDetails)
-            await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails)
+            const redisUpdate = await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails)
+            console.log('redis update', redisUpdate)
             const getArn = await mongodbHelper.getExecutionArn(currentLotDetails)
             console.log('getarn', getArn)
             const executionArn = getArn[0].arn

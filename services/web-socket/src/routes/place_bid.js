@@ -105,13 +105,10 @@ const redisHelper = {
         })
     },
     async getLotDeatils(rediskey, client, lotID) {
-        console.log('REDIS KEY', rediskey)
         const allBidders = await client.hGetAll('lot', rediskey)
         // Filter out the current bidder and return an array
         return Object.values(allBidders || {}).filter((bidder) => {
-            console.log('bidder', bidder)
             const parsedBidder = JSON.parse(bidder)
-            console.log('consoit', parsedBidder._id)
             return parsedBidder._id === lotID
         })
     },
@@ -303,7 +300,6 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 
         // Retrieve lot details from Redis
         const lotDetails = await getLotFromRedis(lotID, client)
-        console.log('join bid', lotDetails)
 
         // Emit an event to the client informing them that they have joined the bid room
         socket.emit('joinBidRoom', lotDetails)
