@@ -117,14 +117,13 @@ def list_orders(event, context):
         elif end_timestamp is not None:
             # Only end timestamp is provided
             query['created_at'] = {"$lte": end_timestamp}
-        
         if payment_type:
             query["payment"] = payment_type
         if payment_status:
             query["payment_status"] = payment_status
 
         # Query the MongoDB collection to find lots matching the criteria
-        orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
+        orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
         # Count the total number of records
         total_records = orders_collection.count_documents(query)
         # Calculate total pages

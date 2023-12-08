@@ -463,7 +463,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65169eee25d90f9a92c12876"
+            "example": "65520f8b98b3d00d2336cd1a"
           }
         ],
         "responses": {
@@ -496,9 +496,6 @@
                           },
                           "auction_image": {
                             "type": "string"
-                          },
-                          "lots": {
-                            "type": "string"
                           }
                         }
                       }
@@ -526,8 +523,7 @@
                       "order_number": "OD002",
                       "created_at": 1701683046,
                       "auction_title": "Demo auction (here)+",
-                      "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png",
-                      "lots": ""
+                      "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png"
                     }
                   ],
                   "total_pages": 1,
@@ -607,7 +603,7 @@
         }
       }
     },
-    "/sales-detail":{
+    "/sales":{
       "get": {
           "tags": ["Sales Management"],
           "summary": "sales details",

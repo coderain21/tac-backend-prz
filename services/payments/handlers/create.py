@@ -348,7 +348,6 @@ def create_intent(event, context):
 
         #add the order data in orders collection
         create_order(insert_data)
-        
         print("latest lot number", last_order_number)
         counter_collection.update_one({"auction_id": auction_id,
                                        "seller_email": seller_email,
