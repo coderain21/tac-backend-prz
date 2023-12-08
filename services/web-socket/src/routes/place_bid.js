@@ -330,6 +330,7 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
 module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         // const client = await redis.createClient()
+        console.log('data', data)
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
         const client = await redis.createClient({
@@ -340,7 +341,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await client.connect()
         }
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
+        console.log('getL', getLotHistoryDetails)
         let currentLotDetails = await getLotFromRedis(data.lot_id, client)
+        console.log('first console', currentLotDetails)
         data.time_stamp = new Date().getTime()
         currentLotDetails.email_address = data.email_address
         await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
@@ -366,33 +369,40 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         console.log('%%%%%%%%%%%%%%%%%%%5', currentLotDetails)
         
         if (getLotHistoryDetails.length <= 0) {
+            console.log('11111111111')
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.starting_price)
             currentLotDetails.winning_user = data.buyer_id       
         }
         else if (getLotHistoryDetails.length === 1) {
+            console.log('2222222222222222222')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
             }
             if (data.buyer_id === all_bidders[0].buyer_id) {
+                console.log('helloo')
                 currentLotDetails.max_bid = data.bid_amount
                 currentLotDetails.bid_amount = data.bid_amount > currentLotDetails.starting_price ? await calculateNextAmont(currentLotDetails.starting_price) : data.bid_amount
                 currentLotDetails.winning_user = data.buyer_id
             } else {
+                console.log('hello else')
                 if (data.bid_amount > currentLotDetails.max_bid) {
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
                 } 
                 else if (data.bid_amount === currentLotDetails.max_bid) {
+                    console.log('hello else if 1')
                     currentLotDetails.max_bid = all_bidders[0].bid_amount
                     currentLotDetails.bid_amount = currentLotDetails[0].max_bid
                 } else {
+                    console.log('last else hello')
                     currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                 }
             } 
         } else {
+            console.log('3333333333333333')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
@@ -416,6 +426,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                         currentLotDetails.winning_user = highestBidder.buyer_id
                         currentLotDetails.bid_amount = highestBidder.bid_amount
                     } else {
+                        console.log('44444444444444444')
                         currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                     }
                 }
