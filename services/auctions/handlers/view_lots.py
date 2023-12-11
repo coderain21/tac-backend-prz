@@ -121,12 +121,12 @@ def export_lots_as_csv(lots, db):
     try:
         auction_id = str(lots[0].get('auction_id', ''))
         filename = auction_id
-        # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
-        # seller_email = lots[0]["seller_email"]
-        # auction_status = auction_collection.find_one({
-        #     "seller_email": seller_email,
-        #     "auction_id": auction_id
-        # }, {"status": 1})
+        auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        seller_email = lots[0]["seller_email"]
+        auction_status = auction_collection.find_one({
+            "seller_email": seller_email,
+            "auction_id": auction_id
+        }, {"status": 1})
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
@@ -137,26 +137,53 @@ def export_lots_as_csv(lots, db):
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
-                "Total Current Bid", "Total Bids", "Active Bidders", "Lot Number",
-                "Thumbnail URL", "Title", "Paddle Number", "Top Bidder", "Status", "Top Bid"
+                 "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
             ])
             writer.writeheader()
-
+            
             for lot in lots:
                 lot_images = lot.get("images", [])
                 featured_image = next((img["url"] for img in lot_images if img.get("featured")), None)
                 thumbnail_url = featured_image or ""
+
+                # Aggregate bid information
+                bid_collection = db[os.environ['BID_COLLECTION']]
+                bids_info_cursor = bid_collection.find({"auction_id": lot["auction_id"], "seller_email": lot["seller_email"], "auction_uuid": auction_status["_id"]})
+                bids_info = list(bids_info_cursor)  # Convert cursor to list to get count
+
+                total_current_bid = sum(bid["bid_amount"] for bid in bids_info)
+                total_bids = len(bids_info)
+                active_bidders = len(set(bid["buyer_id"] for bid in bids_info if bid["bid_status"] == "UnderBidder"))
+
+                # Identify top bid and top bidder based on the winning status
+                top_bid = max(bids_info, key=lambda bid: bid.get("bid_amount", 0), default={})
+                top_bidder = top_bid.get("buyer_id", "")
+                paddle_number = top_bid.get("paddle_number", "")
+
+                # Check if 'total_bids' is not None before converting to int
+                total_bids_lot = lot.get('total_bids')
+                if total_bids_lot is not None and int(total_bids_lot) > 0:
+                    status = 'Selling'
+                else:
+                    status = 'No Bids'
+
+                # Prepend the S3 URL to the thumbnail URL
+                s3_url_prefix = os.environ['CDN_LINK']
+                thumbnail_url = s3_url_prefix + thumbnail_url
+
                 writer.writerow({
-                    "Total Current Bid": lot.get("current_bid", ""),
-                    "Total Bids": lot.get("total_bids", ""),
-                    "Active Bidders": lot.get("active_bidders", ""),
                     "Lot Number": lot.get("lot_number", ""),
                     "Thumbnail URL": thumbnail_url,
                     "Title": lot.get("title1", ""),
-                    "Paddle Number": lot.get("paddle_number", ""),
-                    "Top Bidder": lot.get("top_bidder", ""),
-                    "Status": lot.get("status", ""),
-                    "Top Bid": lot.get("top_bid", "")
+                    "Starting Bid": lot.get("starting_price", ""),
+                    "Top(Current) Bid": lot.get("current_bid", ""),
+                    "Top Bidder": top_bidder,
+                    "Total Current Bid": total_current_bid,
+                    "Total Bids": total_bids,
+                    "Active Bidders": active_bidders,
+                    "Paddle Number": paddle_number,
+                    "Status(Selling, No Bids)": status,
+                    "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
                 })
 
         # Upload the file to S3

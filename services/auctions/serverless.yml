@@ -34,6 +34,8 @@ provider:
     S3_BUCKET: ${env:S3_BUCKET}
     LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
     COUNTER_LOT: ${env:COUNTER_LOT}
+    CDN_LINK: ${env:CDN_LINK}
+    BID_COLLECTION: ${env:BID_COLLECTION}
     
     
   http:
