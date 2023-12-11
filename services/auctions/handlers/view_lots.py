@@ -140,14 +140,14 @@ def export_lots_as_csv(lots, db):
                  "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
             ])
             writer.writeheader()
-
+            
             for lot in lots:
                 lot_images = lot.get("images", [])
                 featured_image = next((img["url"] for img in lot_images if img.get("featured")), None)
                 thumbnail_url = featured_image or ""
 
-                # Aggregate bid information
-                bid_collection = db[os.environ['BID_COLLECTION']]
+                
+                bid_collection = db[os.environ['BID_INFORMATION_COLLECTION']]
                 bids_info_cursor = bid_collection.find({"auction_id": lot["auction_id"], "seller_email": lot["seller_email"], "auction_uuid": auction_status["_id"]})
                 bids_info = list(bids_info_cursor)  # Convert cursor to list to get count
 
@@ -177,11 +177,11 @@ def export_lots_as_csv(lots, db):
                     "Title": lot.get("title1", ""),
                     "Starting Bid": lot.get("starting_price", ""),
                     "Top(Current) Bid": lot.get("current_bid", ""),
-                    "Top Bidder": top_bidder,
-                    "Total Current Bid": total_current_bid,
-                    "Total Bids": total_bids,
-                    "Active Bidders": active_bidders,
-                    "Paddle Number": paddle_number,
+                    "Top Bidder": lot.get("top_bidder", ""),
+                    "Total Current Bid": lot.get("total_current_bid",""),
+                    "Total Bids": lot.get("total_bids", ""),
+                    "Active Bidders": lot.get("active_bidders", ""),
+                    "Paddle Number": lot.get("paddle_number", ""),
                     "Status(Selling, No Bids)": status,
                     "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
                 })
