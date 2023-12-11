@@ -140,7 +140,7 @@ def export_lots_as_csv(lots, db):
                  "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
             ])
             writer.writeheader()
-            
+
             for lot in lots:
                 lot_images = lot.get("images", [])
                 featured_image = next((img["url"] for img in lot_images if img.get("featured")), None)
