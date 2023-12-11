@@ -5,6 +5,7 @@ import csv
 import boto3
 from bson import ObjectId
 from pymongo import MongoClient
+from datetime import datetime
 from lib.common_helper import Encoder
 import tempfile
 
@@ -176,12 +177,18 @@ def export_as_csv(bidders, db):
             writer.writeheader()
 
             for bidder in bidders:
+                date_registered = bidder.get("created_at", "")
+                if date_registered and isinstance(date_registered, datetime):
+                    # Convert date to the desired format (08 Dec 2019)
+                    formatted_date = date_registered.strftime("%d %b %Y")
+                else:
+                    formatted_date = ""
                 writer.writerow({
                     "Name": f"{bidder.get('first_name', '')} {bidder.get('last_name', '')}".strip(),
                     "Email": bidder["email_address"],
                     "Bidder Status": bidder["status"],
                     "Paddle Number": bidder.get("paddle", ""),
-                    "Date Registered": str(bidder.get("created_at", "")),
+                    "Date Registered": formatted_date,
                     "Marketing Communication": "subscribed" if bidder.get("marketing", False) else "unsubscribed"
                 })
 
