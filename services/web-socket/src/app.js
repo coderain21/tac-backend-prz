@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 /* eslint-disable camelcase */
 /* eslint-disable import/extensions */
@@ -6,7 +7,7 @@
 const { checkAuthentication } = require('./routes/check-authentication')
 const { placeBid, joinBidRoom } = require('./routes/place_bid')
 const { listBidHistory } = require('./routes/bid_history')
-const {extensionAlert} = require('./routes/update_extension')
+const { extensionAlert } = require('./routes/update_extension')
 
 /* The code is exporting a function called `initiateEvents` as a property of the `module.exports`
 object. This function takes four parameters: `socket`, `io`, `userData`, and `users`. */

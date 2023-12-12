@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-param-reassign */
 const mongoose = require('mongoose')
 

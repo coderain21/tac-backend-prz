@@ -38,6 +38,17 @@ async function startExecution(executionARN, lots) {
     })
 }
 
+/*
+The function begins by setting the initial end time of the lot based on its end date.
+It checks if the Redis client is open and connects if it is not.
+It retrieves existing information about the lot from Redis using the lot's ID.
+The existing record is parsed, and a new set of information is created for updating, including extending the lot's end date and marking it as extended.
+The updated information is then stored back in the Redis database.
+Additional data about the lot and the auction extension is prepared.
+An extension alert is sent using a custom function (extensionAlert) with information about the extended lot.
+A socket event is emitted to join a bid room, and the function returns true on successful execution.
+*/
+
 async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails, auctionDetails, auctionLots) {
     try {
         lotInformation.initial_end_time = lotInformation.end_date
@@ -73,6 +84,14 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
     }
 }
 
+/*  Function to stop the execution of Step Functions for auction lots
+    * Create StepFunctions instance
+    * The function starts by creating an instance of the StepFunctions class.
+    * It checks the extension_type in auctionDetails to determine the course of action.
+    * If the extension type is either 'All Lots' or 'Cascade', it iterates through auction lots, extends their end times, updates the database, stops Step Functions executions, and starts new executions.
+    * If the extension type is 'Individual Lots', it extends the end time for the current lot, updates the database, stops the Step Functions execution, and starts a new execution for the specific lot.
+*/
+
 module.exports.stopExecution = async (currentLotDetails, auctionDetails, auctionLots, client, io, socket) => {
     try {
         const stepFunctions = new StepFunctions()
@@ -84,9 +103,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
                 const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
-                console.log('gggg', gg)
                 const getArn = await mongodbHelper.getExecutionArn(item)
-                console.log('getarn', getArn)
                 const executionArn = getArn[0].arn
                 const response = await stepFunctions.stopExecution({
                     executionArn,
@@ -103,9 +120,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             currentLotDetails.lot_end_time = currentLotDetails.end_date + extend_time
             const redisUpdate = await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
-            console.log('redis update', redisUpdate)
             const getArn = await mongodbHelper.getExecutionArn(currentLotDetails)
-            console.log('getarn', getArn)
             const executionArn = getArn[0].arn
             const response = await stepFunctions.stopExecution({
                 executionArn,

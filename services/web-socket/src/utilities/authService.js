@@ -9,7 +9,6 @@ module.exports.checkBuyerAuthentication = async (authParams) => {
         // Query documents based on the email address
         const query = { email_address: authParams.buyer_id }
         const documents = await collection.find(query).toArray() // Await the query result
-        console.log(documents, 'DDD')
         if (String(authParams.auction_id) === String(documents[0].auction_id)) {
             return true
         }
