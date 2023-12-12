@@ -92,7 +92,6 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        
         auction_id = event['pathParameters']['auction_id']
         print(event)
         if event['queryStringParameters'] is not None:
@@ -181,7 +180,7 @@ def update_auction(event, context):
                     {"$set": {"status": "Published"}}
                 )
                 for item in listLots:
-                    print('inside for', item)     
+                    print('inside for', item)
                     itemData = json.dumps(item, cls= Encoder)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)
@@ -198,7 +197,7 @@ def update_auction(event, context):
                     x = collection.insert_one(step_request)
                     print('xxxx', x)
                     # for item in listLots:
-                    #     print('inside for', item)            
+                    #     print('inside for', item)
                     #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
                 return {
                     "statusCode": 204,

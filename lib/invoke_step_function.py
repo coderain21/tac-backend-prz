@@ -1,3 +1,4 @@
+'''invoke state machine'''
 import json
 import boto3
 
@@ -18,5 +19,3 @@ def invoke_state_machine(invocation_params, step_function_arn=None):
     except Exception as e:
         print(f"Error invoking state machine: {e}")
         return {'status': False}
-
-
