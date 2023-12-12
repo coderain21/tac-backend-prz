@@ -362,12 +362,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         }
         bidInformation.bid_status = bidStatus
         const saveHistory = await mongodbHelpers.saveBidHistory(bidInformation)
-        // const payload = JSON.stringify({ title: 'Bidding', body: message })
-        // const pushresponse = await webpush.sendNotification(getBuyerToken[0].token, payload).catch(console.log) 
     } catch (err) {
         console.log(err)
         return err
     }
 }
-
-
