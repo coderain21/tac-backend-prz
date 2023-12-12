@@ -9,6 +9,8 @@ import math
 from lib.get import fetch_seller_data_from_auction
 import csv
 import boto3
+from datetime import datetime
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -16,6 +18,7 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
 
 def prepend_backslash(text):
     """
@@ -188,14 +191,17 @@ def export_as_csv(sales):
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
+                date = datetime.fromtimestamp(sale['created_at'])
+                # Format the date as a string with only the date
+                formatted_date = date.strftime('%Y-%m-%d')
                 shipping_address = sale['shipping_address']
                 full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
                 modified_sales["ORDER ID"] = sale["order_number"]
                 modified_sales["Customer Name"] = full_name
                 modified_sales["Auction Name"] = sale['auction_title']
-                modified_sales["Order Date"] = sale["created_at"]
-                modified_sales["Payment Status"] = sale["status"]
-                modified_sales["Payment Type"]= sale["payment_method_types"]
+                modified_sales["Order Date"] = formatted_date
+                modified_sales["Payment Status"] = sale["payment_status"]
+                modified_sales["Payment Type"]= sale["payment"]
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
