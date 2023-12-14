@@ -426,7 +426,414 @@ functions:
 
 
   
+resources:
+  Resources:
+    AdminUsers:
+      Type: "AWS::Cognito::UserPool"
+      Properties:
+        UserPoolName: arcm-${self:provider.stage}
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            TemporaryPasswordValidityDays: 7
+        DeletionProtection: ACTIVE
+        Schema:
+          - Name: sub
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: false
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "1"
+              MaxLength: "2048"
+          - Name: name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: given_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: family_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: middle_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: nickname
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: preferred_username
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: profile
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: picture
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: website
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email_verified
+            AttributeDataType: Boolean
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+          - Name: gender
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: birthdate
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "10"
+              MaxLength: "10"
+          - Name: zoneinfo
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: locale
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: phone_number
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: phonenumber_verified
+            AttributeDataType: Boolean
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+          - Name: address
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: updated_at
+            AttributeDataType: Number
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            NumberAttributeConstraints:
+              MinValue: "0"
+          - Name: user_type
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: main_number
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: status
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: is_reset_password
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: created_at
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: country_code1
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: country_code2
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: user_id
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: mobile_number
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: email_address
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: temp_pass_expiry
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: main_no_country_code
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: mob_no_country_code
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: permission_access
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: monitor_permission
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+        AliasAttributes:
+          - preferred_username
+        VerificationMessageTemplate:
+          DefaultEmailOption: CONFIRM_WITH_CODE
+        UserAttributeUpdateSettings:
+          AttributesRequireVerificationBeforeUpdate: []
+        MfaConfiguration: "OPTIONAL"
+        EnabledMfas:
+          - SOFTWARE_TOKEN_MFA
+        EmailConfiguration:
+          EmailSendingAccount: COGNITO_DEFAULT
+        UsernameConfiguration:
+          CaseSensitive: false
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Priority: 1
+              Name: verified_email
 
+
+    AdminUsersClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        AccessTokenValidity: 60
+        AllowedOAuthFlowsUserPoolClient: false
+        AuthSessionValidity: 10
+        ClientName: admin-cooperate
+        UserPoolId: { Ref: AdminUsers }
+        EnablePropagateAdditionalUserContextData: false
+        EnableTokenRevocation: true
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        IdTokenValidity: 60
+        PreventUserExistenceErrors: ENABLED
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+    
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: arcm-${self:provider.stage}
+        AllowUnauthenticatedIdentities: true
+        AllowClassicFlow: true
+        CognitoIdentityProviders: 
+          - ClientId: !Ref AdminUsersClient
+            ProviderName: !GetAtt AdminUsers.ProviderName
+            ServerSideTokenCheck: false
+        # Define more configuration properties as needed
+
+    CognitoIdentityPoolRole:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: CognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt: [MyRoleLogicalName, Arn] # Replace with your IAM role
+    
+    MyRoleLogicalName: # Define your IAM role here
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated: "cognito-identity.amazonaws.com"
+              Action: "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud": 
+                    Ref: CognitoIdentityPool
+                "ForAnyValue:StringLike":
+                  "cognito-identity.amazonaws.com:amr": "authenticated"
+
+        Policies:
+          - PolicyName: S3AccessPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "s3:*" # Adjust permissions as needed
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+  
+    AdminCognitoIdentityPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_IDENTITY_POOL_ID
+          Type: String
+          Value: { Ref: CognitoIdentityPool }
+
+    AdminCognitoPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_USERPOOL_ID
+          Type: String
+          Value: { Ref: AdminUsers }
+
+    AdminCognitoPoolNameStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_USERPOOL_NAME
+          Type: String
+          Value: arcm-${self:provider.stage}
+    AdminCognitoClientIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_CLIENT_ID
+          Type: String
+          Value: { Ref: AdminUsersClient }
+    
+    AdminCognitoPoolARNStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_AUTH_ARN
+          Type: String
+          Value:
+            Fn::GetAtt:
+              - AdminUsers
+              - Arn
+    OTPVerification:
+      Type: AWS::SES::Template
+      Properties: 
+        Template:
+          HtmlPart: ${file(./templates/otp_email.html)}
+          SubjectPart: OTP Verification for Your Account
+          TemplateName: ${self:provider.stage}-otp-verification
 plugins:
   - serverless-offline
   - serverless-package-external
