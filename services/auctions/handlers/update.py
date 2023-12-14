@@ -5,6 +5,7 @@ import pymongo
 from lib.get import get_by_email
 from lib.invoke_step_function import invoke_state_machine
 from lib.common_helper import Encoder
+from datetime import datetime
 
 
 headers = {
@@ -181,6 +182,7 @@ def update_auction(event, context):
                 )
                 for item in listLots:
                     print('inside for', item)
+                    item['start_date'] = datetime.fromtimestamp(auction_record['start_date']).isoformat()
                     itemData = json.dumps(item, cls= Encoder)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)

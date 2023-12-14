@@ -78,12 +78,12 @@ stepFunctions:
       name: ${opt:stage}-lot-published
       definition:
         Comment: "Step function will trigger when lot published"
-        StartAt: process-cache-lots
+        StartAt: wait-for-auction-start
         States:
-          # wait-for-auction-start:
-          #   Type: Wait
-          #   TimestampPath: "$.start_date"
-          #   Next:  process-cache-lots
+          wait-for-auction-start:
+            Type: Wait
+            TimestampPath: "$.start_date"
+            Next:  process-cache-lots
           process-cache-lots:
             Type: Task
             Resource:
