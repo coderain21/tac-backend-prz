@@ -2037,6 +2037,15 @@
               "type": "string"
             },
             "example": "False"
+          },
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to display and update the profile ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "64facdcb8e305feab49525d3"
           }
         ],
         "requestBody": {

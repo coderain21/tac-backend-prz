@@ -2,7 +2,9 @@
 /* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-underscore-dangle */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
+
 const redis = require('redis')
 
 /**

@@ -1,6 +1,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-console */
 /* eslint-disable camelcase */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable no-plusplus */
 const redis = require('redis')
 

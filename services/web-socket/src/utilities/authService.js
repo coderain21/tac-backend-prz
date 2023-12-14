@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-useless-path-segments */
 const jwt = require('jsonwebtoken')
 const jwksClient = require('jwks-rsa')
