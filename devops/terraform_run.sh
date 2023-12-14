@@ -1,20 +1,21 @@
-
 #!/bin/sh
 
 # set -a            
 # source .env
 # set +a
 
-apt-get update && apt-get install python -y && apt-get install python3-pip -y
+apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-# Configure AWS CLI profiles
+# # Configure AWS CLI profiles
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
 aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
 
 aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 
-aws s3 sync s3://indyauction-$STAGE-pipeline-logs/ . --profile $PROFILE_ENV
+log_bucket="s3://indyauction-$STAGE-pipeline-logs/"
+echo "$log_bucket"
+aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
@@ -53,5 +54,19 @@ for param_name in "${parameter_names[@]}"; do
 done <<< "$parameter_names"
 
 
-aws s3 sync . s3://indyauction-$STAGE-pipeline-logs/ --exclude "*" --include "*.tfstate" --include "*tf-key-pair" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair" --profile $PROFILE_ENV
 
+
+npm i -g serverless@3.15.2
+npm i -g @serverless/compose
+npm i serverless-aws-documentation
+npm i serverless-domain-manager
+npm i serverless-dynamodb-autoscaling
+npm i serverless-dynamodb-ttl
+npm i serverless-offline
+npm i serverless-package-external
+npm i serverless-python-requirements
+npm i serverless-appsync-plugin
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+sls deploy --stage ${STAGE} --max-concurrency 5

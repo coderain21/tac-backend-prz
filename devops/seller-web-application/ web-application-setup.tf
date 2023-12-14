@@ -25,13 +25,13 @@ variable "certificate_domain" {
   default     = "*.indyauction.net"
 }
 provider "aws" {
-  region = "eu-west-2"
+  region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
-  region = "eu-west-2"
+  region = "us-east-1"
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
