@@ -1,4 +1,6 @@
-
+data "external" "env" {
+  program = ["../envs.sh"]
+}
 
 
 provider "aws" {
