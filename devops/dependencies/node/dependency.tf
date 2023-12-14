@@ -1,6 +1,6 @@
 provider "aws" {
   region  = "eu-west-2"
-  profile = "indyauction-dev" # Use the AWS profile for the source account
+  profile = "indyauction-qa" # Use the AWS profile for the source account
 }
 
 resource "null_resource" "nodejs" {

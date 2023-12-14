@@ -56,7 +56,7 @@ data "aws_acm_certificate" "existing_certificate" {
 }
 
 #creates a API DOMAIN NAME with ACM certificate generated for regional configuration
-resource "aws_api_gateway_domain_name" "dev_api" {
+resource "aws_api_gateway_domain_name" "qa_api" {
   domain_name              = "apis-${var.STAGE}.${var.DOMAIN}"
   regional_certificate_arn = data.aws_acm_certificate.existing_certificate.arn
 
@@ -72,7 +72,7 @@ resource "aws_api_gateway_domain_name" "dev_api" {
 
 # Adds DNS record of newly created API domain name to Hosted Zone in main acc using Route53.
 resource "aws_route53_record" "record_updater" {
-  name    = aws_api_gateway_domain_name.dev_api.domain_name
+  name    = aws_api_gateway_domain_name.qa_api.domain_name
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   provider = aws.main
@@ -80,8 +80,8 @@ resource "aws_route53_record" "record_updater" {
   #configures the domain name and Cname which will be added in hosted zone
   alias {
     evaluate_target_health = true
-    name                   = aws_api_gateway_domain_name.dev_api.regional_domain_name
-    zone_id                = aws_api_gateway_domain_name.dev_api.regional_zone_id
+    name                   = aws_api_gateway_domain_name.qa_api.regional_domain_name
+    zone_id                = aws_api_gateway_domain_name.qa_api.regional_zone_id
   }
 }
 
@@ -89,7 +89,7 @@ resource "aws_route53_record" "record_updater" {
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
   name  = "DOMAIN_NAME"
   type  = "String"
-  value = aws_api_gateway_domain_name.dev_api.regional_domain_name
+  value = aws_api_gateway_domain_name.qa_api.regional_domain_name
   provider = aws.deployment-ap
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
