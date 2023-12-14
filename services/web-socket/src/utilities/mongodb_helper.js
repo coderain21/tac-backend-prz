@@ -407,7 +407,7 @@ module.exports.updateLotDetails = async (document) => {
             { _id: new ObjectId(document._id) },
             {
                 $set: {
-                    starting_bid: document.starting_bid, current_bid: document.bid_amount, top_bidder: getBuyerInfo[0].first_name,
+                    starting_bid: document.starting_price, current_bid: document.bid_amount, top_bidder: getBuyerInfo[0].first_name,
                 },
             },
         )
