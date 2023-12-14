@@ -9,7 +9,7 @@ variable "STAGE" {
 
 resource "null_resource" "python" {
   provisioner "local-exec" {
-    command = "pip install -r requirements.txt -t python_lib/python && rm -r python_lib/python/cffi* && rm -r python_lib/python/_cffi_* && rsync -a extra/* python_lib/python"
+    command = "pip install -r requirements.txt -t python_lib/python && rm -r python_lib/python/cffi* && rm -r python_lib/python/_cffi_* && cp -a extra/* python_lib/python"
   }
 }
 
