@@ -5,7 +5,7 @@ variable "REGION" {
 
 variable "STAGE" {
   description = "AWS Stage"
-  default     = "dev" # Default region if the environment variable is not set
+  default     = "qa" # Default region if the environment variable is not set
 }
 
 variable "Application" {
@@ -132,14 +132,14 @@ resource "aws_route53_record" "my_cname" {
 }
 
 resource "aws_ssm_parameter" "s3_bucket" {
-  name  = "/dev/ADMIN_S3_BUCKET"
+  name  = "ADMIN_S3_BUCKET"
   type  = "String"
   value = "${var.Application}-${var.STAGE}"
   provider = aws.deployment-us
 }
 
 resource "aws_ssm_parameter" "distribution_id" {
-  name  = "/dev/ADMIN_DISTRIBUTION_ID"
+  name  = "ADMIN_DISTRIBUTION_ID"
   type  = "String"
   value = aws_cloudfront_distribution.s3_distribution.id
   provider = aws.deployment-us

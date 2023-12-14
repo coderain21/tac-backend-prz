@@ -8,7 +8,7 @@ variable "DOMAIN" {
 }
 variable "STAGE" {
   description = "AWS Stage"
-  default     = "dev" # Default region if the environment variable is not set
+  default     = "qa" # Default region if the environment variable is not set
 }
 
 provider "aws" {
@@ -209,7 +209,7 @@ resource "aws_route53_record" "assets_cname" {
 }
 
 resource "aws_ssm_parameter" "assets_bucket" {
-  name  = "/dev/BUCKET_NAME"
+  name  = "BUCKET_NAME"
   type  = "String"
   value = "indyauction-assets-${var.STAGE}"
   provider = aws.deployment-ap

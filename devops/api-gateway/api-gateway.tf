@@ -13,7 +13,7 @@ variable "DOMAIN" {
 #variable default stage
 variable "STAGE" {
   description = "AWS Stage"
-  default     = "dev" # Default region if the environment variable is not set
+  default     = "qa" # Default region if the environment variable is not set
 }
 
 #AWS Provider with profile main account
@@ -87,13 +87,13 @@ resource "aws_route53_record" "record_updater" {
 
 #Creates a variabe store in ssm_parameter store
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
-  name  = "/dev/DOMAIN_NAME"
+  name  = "DOMAIN_NAME"
   type  = "String"
   value = aws_api_gateway_domain_name.dev_api.regional_domain_name
   provider = aws.deployment-ap
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
-  name  = "/dev/DOMAIN_CERTIFICATE"
+  name  = "DOMAIN_CERTIFICATE"
   type  = "String"
   value = "*.${var.DOMAIN}"
   provider = aws.deployment-ap

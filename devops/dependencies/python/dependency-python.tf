@@ -4,7 +4,7 @@ provider "aws" {
 
 variable "STAGE" {
   description = "AWS Stage"
-  default     = "dev" # Default region if the environment variable is not set
+  default     = "qa" # Default region if the environment variable is not set
 }
 
 resource "null_resource" "python" {
