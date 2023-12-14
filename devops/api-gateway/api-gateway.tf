@@ -2,29 +2,21 @@ data "external" "env" {
   program = ["../envs.sh"]
 }
 
+  
 #AWS Provider with profile main account
 provider "aws" {
-  region = "eu-west-2"
+  region = data.external.env.result["REGION"]
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
 
+
+
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = "eu-west-2"
-  alias = "deployment-ap"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
-}
-
-#Default AWS region for variable
-provider "aws" {
   region = data.external.env.result["REGION"]
-}
-
-variable "certificate_domain" {
-  type        = string
-  description = "Domain name for ACM certificate"
-  default     = "*.indyauction.net"
+  alias = "deployment-us"   # Specify a default AWS region here
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 ########
@@ -38,11 +30,11 @@ data "aws_route53_zone" "domain_zone" {
 data "aws_acm_certificate" "existing_certificate" {
   domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
-  provider = aws.deployment-ap
+  provider = aws.deployment-us
 }
 
 #creates a API DOMAIN NAME with ACM certificate generated for regional configuration
-resource "aws_api_gateway_domain_name" "qa_api" {
+resource "aws_api_gateway_domain_name" "dev_api" {
   domain_name              = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
   regional_certificate_arn = data.aws_acm_certificate.existing_certificate.arn
 
@@ -53,12 +45,12 @@ resource "aws_api_gateway_domain_name" "qa_api" {
   #  aws_acm_certificate.cert_us_east_1,
   #  aws_route53_record.route_53_certificate_records_us_east_1,
   #]
-  provider = aws.deployment-ap
+  provider = aws.deployment-us
 }
 
 # Adds DNS record of newly created API domain name to Hosted Zone in main acc using Route53.
 resource "aws_route53_record" "record_updater" {
-  name    = aws_api_gateway_domain_name.qa_api.domain_name
+  name    = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   provider = aws.main
@@ -66,21 +58,21 @@ resource "aws_route53_record" "record_updater" {
   #configures the domain name and Cname which will be added in hosted zone
   alias {
     evaluate_target_health = true
-    name                   = aws_api_gateway_domain_name.qa_api.regional_domain_name
-    zone_id                = aws_api_gateway_domain_name.qa_api.regional_zone_id
+    name                   = aws_api_gateway_domain_name.dev_api.regional_domain_name
+    zone_id                = aws_api_gateway_domain_name.dev_api.regional_zone_id
   }
 }
 
 #Creates a variabe store in ssm_parameter store
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
-  name  = "DOMAIN_NAME"
+  name  = "/DOMAIN_NAME"
   type  = "String"
-  value = aws_api_gateway_domain_name.qa_api.regional_domain_name
-  provider = aws.deployment-ap
+  value = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
+  provider = aws.deployment-us
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
-  name  = "DOMAIN_CERTIFICATE"
+  name  = "/DOMAIN_CERTIFICATE"
   type  = "String"
   value = "*.${data.external.env.result["DOMAIN"]}"
-  provider = aws.deployment-ap
+  provider = aws.deployment-us
 }
