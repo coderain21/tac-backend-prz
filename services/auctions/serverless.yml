@@ -80,6 +80,10 @@ stepFunctions:
         Comment: "Step function will trigger when lot published"
         StartAt: process-cache-lots
         States:
+          # wait-for-auction-start:
+          #   Type: Wait
+          #   TimestampPath: "$.start_date"
+          #   Next:  process-cache-lots
           process-cache-lots:
             Type: Task
             Resource:
