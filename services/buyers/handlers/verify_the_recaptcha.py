@@ -1,5 +1,4 @@
 """ The code is importing various modules and functions that will be used in the script. """
-""" The code is importing various modules and functions that will be used in the script. """
 import json
 import re
 import random
@@ -81,15 +80,8 @@ def verify(event, context):
         data = json.loads(event['body'])
         expected_fields = ["auction_id", "email_address", "first_name", "last_name", "password", "confirm_password",
                            "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type", "session_token"]
-        expected_fields = ["auction_id", "email_address", "first_name", "last_name", "password", "confirm_password",
-                           "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type", "session_token"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
         if fields_not_found:
-            return {
-                "headers": headers,
-                'statusCode': 400,
-                "body": json.dumps({"message": f"Please provide {','.join(fields_not_found)}"})
-            }
             return {
                 "headers": headers,
                 'statusCode': 400,
@@ -102,7 +94,6 @@ def verify(event, context):
 
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         user_collection = db[os.environ["BUYER_COLLECTION"]]
         auction_id = data['auction_id']
@@ -139,11 +130,7 @@ def verify(event, context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
         hostname = data['hostname']
-        hostname = data['hostname']
 
-        print('Before captcha verification')
-        captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
-        print('After captcha verification')
         print('Before captcha verification')
         captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
         print('After captcha verification')
@@ -156,18 +143,10 @@ def verify(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': 'Captcha verification failed'})
             }
-        if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
-            print('in failure')
-            return {
-                'statusCode': 400,
-                'headers': headers,
-                'body': json.dumps({'message': 'Captcha verification failed'})
-            }
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
         email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
-                                        os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
                                         os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
         return {
             'statusCode': 201,
