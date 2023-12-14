@@ -2,40 +2,27 @@ data "external" "env" {
   program = ["../envs.sh"]
 }
 
-
+  
+#AWS Provider with profile main account
 provider "aws" {
-  region = "eu-west-2"
+  region = data.external.env.result["REGION"]
+  alias = "main"   # Specify a default AWS region here
+  profile = "indyauction-main"
+}
+
+
+
+#AWS Provider with profile Stage account
+provider "aws" {
+  region = data.external.env.result["REGION"]
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
-
-# Create a VPC for the MongoDB instance
-resource "aws_vpc" "mongodb_vpc" {
-  cidr_block = "10.0.0.0/16"
-  provider = aws.deployment-us
-}
-
-
 # Create a subnet within the VPC
 resource "aws_subnet" "mongodb_subnet" {
-  vpc_id     = aws_vpc.mongodb_vpc.id
+  vpc_id     = aws_default_vpc.default.id
   cidr_block = "10.0.0.0/24"
-  provider = aws.deployment-us
-}
-
-# Create a security group for the DocumentDB instance
-resource "aws_security_group" "documentdb_sg" {
-  name_prefix = "documentdb"
-  vpc_id      = aws_vpc.mongodb_vpc.id
-  # Add your security group rules here
-  # Example: Allow incoming connections on port 27017 for MongoDB
-  ingress {
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # You should restrict this to your specific network or IP ranges
-  }
   provider = aws.deployment-us
 }
 
@@ -124,7 +111,7 @@ resource "aws_security_group" "ssh_sg" {
 
 # Create an EC2 instance
 resource "aws_instance" "ssh_tunnel" {
-  ami           = "ami-0cfd0973db26b893b" # Specify a valid Amazon Linux AMI ID
+  ami           = "ami-053b0d53c279acc90" # Specify a valid Amazon Linux AMI ID
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg.id]
@@ -157,4 +144,42 @@ data "aws_ssm_parameter" "mongodb-username" {
 data "aws_ssm_parameter" "mongodb-password" {
   name = "MONGO_PASSWORD"
   provider = aws.deployment-us
+}
+
+data "aws_organizations_organization" "org" {
+  provider = aws.main
+}
+
+data "aws_organizations_organizational_unit_child_accounts" "accounts" {
+  parent_id = data.aws_organizations_organization.org.roots[0].id
+  provider = aws.main
+}
+
+# Get the current AWS account ID
+data "aws_caller_identity" "current" {
+  provider = aws.deployment-us
+}
+
+# Filter out the current account from the list of child accounts
+locals {
+  all_accounts_except_current = [
+    for account in data.aws_organizations_organizational_unit_child_accounts.accounts.accounts :
+    account.id if account.id != data.aws_caller_identity.current.account_id
+  ]
+}
+
+resource "aws_default_vpc" "default" {
+  provider = aws.deployment-us
+}
+
+resource "aws_ram_resource_share" "share_vpc" {
+  name               = "vpc-share"
+  provider = aws.deployment-us
+  allow_external_principals = false
+  # VPC and subnet ARNs to be shared
+  permission_arns = [
+    aws_default_vpc.default.arn,
+    aws_subnet.mongodb_subnet.arn,
+  ]
+  principals = locals.all_accounts_except_current
 }
