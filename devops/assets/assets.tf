@@ -1,14 +1,5 @@
-variable "REGION" {
-  description = "AWS region"
-  default     = "eu-west-2" # Default region if the environment variable is not set
-}
-variable "DOMAIN" {
-  description = "Domain"
-  default     = "indyauction.net" # Default region if the environment variable is not set
-}
-variable "STAGE" {
-  description = "AWS Stage"
-  default     = "qa" # Default region if the environment variable is not set
+data "external" "env" {
+  program = ["../envs.sh"]
 }
 
 provider "aws" {
@@ -20,21 +11,21 @@ provider "aws" {
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-ap"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 provider "aws" {
-  region = var.REGION
+  region = data.external.env.result["REGION"]
 }
 
 resource "aws_acm_certificate" "cert_us_east_1" {
-  domain_name ="*.${var.DOMAIN}"
+  domain_name ="*.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -43,7 +34,7 @@ resource "aws_acm_certificate" "cert_us_east_1" {
 }
 
 resource "aws_acm_certificate" "cert_ap_south_1" {
-  domain_name ="*.${var.DOMAIN}"
+  domain_name ="*.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -52,7 +43,7 @@ resource "aws_acm_certificate" "cert_ap_south_1" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
+  name = data.external.env.result["DOMAIN"] # Replace with your domain name
   provider = aws.main
 }
 
@@ -93,11 +84,11 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
 }
 
 resource "aws_s3_bucket" "assets" {
-  bucket = "indyauction-assets-${var.STAGE}"
+  bucket = "indyauction-assets-${data.external.env.result["STAGE"]}"
   force_destroy = true
 
   tags = {
-    Name = "${var.STAGE}"
+    Name = "${data.external.env.result["STAGE"]}"
   }
   provider = aws.deployment-ap
 }
@@ -116,8 +107,8 @@ resource "aws_s3_bucket_cors_configuration" "enable_cors_assets" {
 
 
 resource "aws_cloudfront_origin_access_control" "cdn" {
-  name                              = "assets-${var.STAGE}"
-  description                       = "assets-${var.STAGE}"
+  name                              = "assets-${data.external.env.result["STAGE"]}"
+  description                       = "assets-${data.external.env.result["STAGE"]}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -138,7 +129,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "CDN for application"
 
 
-  aliases = ["${var.STAGE}-cdn.${var.DOMAIN}"]
+  aliases = ["${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -160,7 +151,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   tags = {
-    Environment = "${var.STAGE}"
+    Environment = "${data.external.env.result["STAGE"]}"
   }
   restrictions {
     geo_restriction {
@@ -199,7 +190,7 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 resource "aws_route53_record" "assets_cname" {
-  name    = "${var.STAGE}-cdn.${var.DOMAIN}" # Replace with your desired CNAME
+  name    = "${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -211,6 +202,6 @@ resource "aws_route53_record" "assets_cname" {
 resource "aws_ssm_parameter" "assets_bucket" {
   name  = "BUCKET_NAME"
   type  = "String"
-  value = "indyauction-assets-${var.STAGE}"
+  value = "indyauction-assets-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-ap
 }

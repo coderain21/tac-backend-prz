@@ -1,19 +1,5 @@
-#variabe default region
-variable "REGION" {
-  description = "AWS region"
-  default     = "eu-west-2" # Default region if the environment variable is not set
-}
-
-#variable default domain name
-variable "DOMAIN" {
-  description = "Domain"
-  default     = "indyauction.net" # Default region if the environment variable is not set
-}
-
-#variable default stage
-variable "STAGE" {
-  description = "AWS Stage"
-  default     = "qa" # Default region if the environment variable is not set
+data "external" "env" {
+  program = ["../envs.sh"]
 }
 
 #AWS Provider with profile main account
@@ -27,12 +13,12 @@ provider "aws" {
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-ap"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 #Default AWS region for variable
 provider "aws" {
-  region = var.REGION
+  region = data.external.env.result["REGION"]
 }
 
 variable "certificate_domain" {
@@ -45,19 +31,19 @@ variable "certificate_domain" {
 
 #Fetches the data from Main Domain Hosted Zones
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
+  name = data.external.env.result["DOMAIN"] # Replace with your domain name
   provider = aws.main
 }
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = var.certificate_domain
+  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-ap
 }
 
 #creates a API DOMAIN NAME with ACM certificate generated for regional configuration
 resource "aws_api_gateway_domain_name" "qa_api" {
-  domain_name              = "apis-${var.STAGE}.${var.DOMAIN}"
+  domain_name              = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
   regional_certificate_arn = data.aws_acm_certificate.existing_certificate.arn
 
   endpoint_configuration {
@@ -95,6 +81,6 @@ resource "aws_ssm_parameter" "api_gateway_domain_name" {
 resource "aws_ssm_parameter" "api_gateway_certificate" {
   name  = "DOMAIN_CERTIFICATE"
   type  = "String"
-  value = "*.${var.DOMAIN}"
+  value = "*.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-ap
 }

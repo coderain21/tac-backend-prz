@@ -1,3 +1,8 @@
+data "external" "env" {
+  program = ["../../envs.sh"]
+}
+
+
 provider "aws" {
   region  = "eu-west-2"
 }
@@ -14,7 +19,7 @@ resource "null_resource" "python" {
 }
 
 resource "aws_lambda_layer_version" "lambda_python_layer" {
-  layer_name          = "python_dependency-${var.STAGE}"
+  layer_name          = "python_dependency-${data.external.env.result["STAGE"]}"
   filename            = data.archive_file.python_layer_code_zip.output_path
 }
 

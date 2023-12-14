@@ -1,3 +1,9 @@
+
+data "external" "env" {
+  program = ["../../envs.sh"]
+}
+
+
 provider "aws" {
   region  = "eu-west-2"
   profile = "indyauction-qa" # Use the AWS profile for the source account

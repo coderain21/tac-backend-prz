@@ -1,19 +1,5 @@
-#variabe default region
-variable "REGION" {
-  description = "AWS region"
-  default     = "eu-west-2" # Default region if the environment variable is not set
-}
-
-#variable default domain name
-variable "DOMAIN" {
-  description = "Domain"
-  default     = "indyauction.net" # Default region if the environment variable is not set
-}
-
-#variable default stage
-variable "STAGE" {
-  description = "AWS Stage"
-  default     = "dev" # Default region if the environment variable is not set
+data "external" "env" {
+  program = ["../envs.sh"]
 }
 
 #AWS Provider with profile main account
@@ -27,7 +13,7 @@ provider "aws" {
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-ap"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 #Default AWS region for variable
@@ -42,7 +28,7 @@ variable "certificate_domain" {
 variable "repository" {
   type        = string
   description = "github repo url"
-  default     = "http://x-token-auth:ATCTT3xFfGN0pvXiC2Tqk5pdXZvb_ouRJ1ssNumx81FXBl27enh4NZwOLCwE8N542V1xY81hb_h6mEkZjDdKXywQ5VICnct9KQbHxP2Cu0YJOCJLG2emVWuUeohiEZeAv8Az-0A_tvDB27ibVylu_DmVWLQF4QBkgkb9i6RGPJqeB9YFtxWEUHY=92C7D829@bitbucket.org/7EDGE/indy-auction-buyer-web-application.git"
+  default     = "http://x-token-auth:ATCTT3xFfGN0pvXiC2Tqk5pdXZvb_ouRJ1ssNumx81FXBl27enh4NZwOLCwE8N542V1xY81hb_h6mEkZjDdKXywQ5VICnct9KQbHxP2Cu0YJOCJLG2emVWuUeohiEZeAv8Az-0A_tvDB27ibVylu_DmVWLQF4QBkgkb9i6RGPJqeB9YFtxWEUHY=92C7D829@bitbucket.org/7EDGE/indy-auction-buyer-web-BUYER_APPLICATION.git"
 }
 variable "app_name" {
   type        = string
@@ -54,11 +40,11 @@ variable "app_name" {
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 provider "aws" {
-  region = var.REGION
+  region = data.external.env.result["REGION"]
 }
 
 resource "aws_amplify_app" "amplify_app" {

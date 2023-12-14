@@ -1,22 +1,5 @@
-variable "REGION" {
-  description = "AWS region"
-  default     = "eu-west-2" # Default region if the environment variable is not set
-}
-
-variable "STAGE" {
-  description = "AWS Stage"
-  default     = "qa" # Default region if the environment variable is not set
-}
-
-variable "Application" {
-  description = "Application"
-  default     = "seller-indyauction-web-application" # Default region if the environment variable is not set
-}
-
-variable "DOMAIN" {
-  type        = string
-  description = "Domain name for ACM certificate"
-  default     = "indyauction.net"
+data "external" "env" {
+  program = ["../envs.sh"]
 }
 
 variable "certificate_domain" {
@@ -27,7 +10,7 @@ variable "certificate_domain" {
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 provider "aws" {
@@ -37,19 +20,19 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = var.REGION
+  region = data.external.env.result["REGION"]
 }
 
 resource "aws_s3_bucket" "b" {
-  bucket = "${var.Application}-${var.STAGE}"
+  bucket = "${data.external.env.result["SELLER_APPLICATION"]}-${data.external.env.result["STAGE"]}"
 
   tags = {
-    Name = "${var.STAGE}"
+    Name = "${data.external.env.result["STAGE"]}"
   }
 }
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = var.certificate_domain
+  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
   statuses = ["ISSUED"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
@@ -73,7 +56,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "Some comment"
   default_root_object = "index.html"
 
-  aliases = ["${var.STAGE}-seller.${var.DOMAIN}"]
+  aliases = ["${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -103,7 +86,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   tags = {
-    Environment = "${var.STAGE}"
+    Environment = "${data.external.env.result["STAGE"]}"
   }
   restrictions {
     geo_restriction {
@@ -119,12 +102,12 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
+  name = data.external.env.result["DOMAIN"] # Replace with your domain name
   provider = aws.main
 }
 
 resource "aws_route53_record" "my_cname" {
-  name    = "${var.STAGE}-seller.${var.DOMAIN}" # Replace with your desired CNAME
+  name    = "${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -135,7 +118,7 @@ resource "aws_route53_record" "my_cname" {
 resource "aws_ssm_parameter" "s3_bucket" {
   name  = "SELLER_S3_BUCKET"
   type  = "String"
-  value = "${var.Application}-${var.STAGE}"
+  value = "${data.external.env.result["SELLER_APPLICATION"]}-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-us
 }
 
