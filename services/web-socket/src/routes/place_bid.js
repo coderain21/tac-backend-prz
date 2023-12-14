@@ -262,7 +262,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             console.log('33333333333333333333333333333333335', currentLotDetails)
         }
         console.log('%%%%%%%%%%%%%%%%%%%5', currentLotDetails)
-        
         if (getLotHistoryDetails.length <= 0) {
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.starting_price)

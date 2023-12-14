@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-unused-vars */
 /* eslint-disable import/order */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-tabs */
@@ -12,6 +14,7 @@ const cors = require('cors') // Add this line
 
 const { initiateEvents } = require('./src/app')
 const { AppUsers } = require('./src/models/AppConnection')
+const { authenticationCheck } = require('./src/utilities/authService')
 
 const port = process.env.PORT || 8080
 const app = express() // Change this line
@@ -34,25 +37,24 @@ const io = require('socket.io')(server, {
 
 const users = new AppUsers()
 
-io.on('connection', async (socket) => {
+io.on('connection', async (socket, data) => {
     /**
 	 * @eventType - AUTH_VALIDATION
 	 * @description -Function to authenticate client connection before initiating socket events
 	 * @param { Object }
 	 * @returns { Object }
 	 */
-    console.log('===========================')
+    console.log('===========================', socket)
     console.log('SOCKET :: ')
     console.log('===========================')
-    const obj = JSON.parse(JSON.stringify(socket.handshake.query))
-    console.log('object', obj)
-    // const authStatus = await mobileAuthenticated(obj)
-    // console.log('authStatus', authStatus)
-    // if (authStatus) {
-    //     console.log('emitiinh')
-    //     socket.emit('unAuthorized', JSON.stringify({ status: false, message: 'unauthorised' }))
-    //     return socket.disconnect()
-    // }
+    const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
+    const authStatus = await authenticationCheck(token)
+    console.log('authStatus', authStatus)
+    if (authStatus.statusCode === 401) {
+        console.log('emitiinh')
+        socket.emit('unAuthorized', JSON.stringify({ status: false, message: 'unauthorised' }))
+        return socket.disconnect()
+    }
 
     /**
 	 * @event - DISCONNECT
@@ -61,14 +63,14 @@ io.on('connection', async (socket) => {
 	 * 	* Server clears connection data from the connection stack
 	 * @eventType - Private
 	 */
-    socket.on('disconnect', (data) => {
-        console.log('Users List before')
+    socket.on('disconnect', (data1) => {
+        console.log('Users List before', data1)
         users.removeUser(socket.id)
         console.log('Users List After')
         return socket.disconnect()
     })
 
-    users.addUser(socket.id, obj.userId)
+    users.addUser(socket.id, token.userId)
     console.log('users', users)
     /**
 	 * @event - CONNECTION_INITIATE

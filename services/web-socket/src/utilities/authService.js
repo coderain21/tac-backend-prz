@@ -1,4 +1,18 @@
+/* eslint-disable no-console */
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-useless-path-segments */
+const jwt = require('jsonwebtoken')
+const jwksClient = require('jwks-rsa')
+
+// Cognito pool information
+const cognitoPoolId = 'eu-west-2_kqcLIvA4D'
+const cognitoRegion = 'eu-west-2'
+
+// Initialize the JWKS (JSON Web Key Set) client
+const client = jwksClient({
+    jwksUri: `https://cognito-idp.${cognitoRegion}.amazonaws.com/${cognitoPoolId}/.well-known/jwks.json`,
+})
+
 const mongodbHelper = require('../utilities/mongodb_helper')
 
 module.exports.checkBuyerAuthentication = async (authParams) => {
@@ -18,6 +32,51 @@ module.exports.checkBuyerAuthentication = async (authParams) => {
         return {
             status: false,
             message: 'Authentication Failed',
+        }
+    }
+}
+
+// Get the public key for the given key ID
+async function getKey(kid) {
+    return new Promise((resolve, reject) => {
+        client.getSigningKey(kid, (err, key) => {
+            if (err) {
+                reject(err)
+            } else {
+                const signingKey = {
+                    kid: key.kid,
+                    publicKey: key.publicKey || key.rsaPublicKey,
+                }
+                resolve(signingKey)
+            }
+        })
+    })
+}
+
+module.exports.authenticationCheck = async (token) => {
+    try {
+        console.log('tokenn', token)
+        // Decode the token (no verification at this stage)
+        const decodedToken = jwt.decode(token, { complete: true })
+
+        // Get the key ID from the decoded token header
+        const { kid } = decodedToken.header
+
+        // Get the signing key based on the key ID
+        const key = await getKey(kid)
+
+        // Verify the token using the key
+        const verifiedToken = jwt.verify(token, key.publicKey, { algorithms: ['RS256'] })
+
+        // Token is valid
+        console.log('Token is valid:', verifiedToken)
+        return {
+            statusCode: 200,
+        }
+    } catch (error) {
+        // Token is invalid
+        return {
+            statusCode: 401,
         }
     }
 }
