@@ -11,7 +11,7 @@ import stripe
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-from lib.get import get_by_email, fetch_seller_data_from_auction
+from lib.get import get_by_email, fetch_seller_data_from_auction, fetch_buyer_data
 
 headers = {
     'Content-Type': 'application/json',
@@ -51,28 +51,31 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         cart_collection = db[os.environ["CART_COLLECTION"]]
-
+        res = ""
         cart_data = cart_collection.find({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
         if cart_data is None:
-            return [],""
+            return [],[]
+        cart_list = list(cart_data)
         print("cart_data",list(cart_data))
-        for lot in list(cart_data):
+        for lot in cart_list:
             record = {}
             record["bid_amount"] = lot.get("bid_amount")
             record["fees"] = lot.get("fees")
+            record["percentage"] = lot.get("percentage")
             record["lot_title"] = lot.get("lot_title")
             record["lot_number"] = lot.get("lot_number")
             lot_numbers.append(lot.get("lot_number"))
             record["lot_image"] = lot.get("lot_image")
             record["auction_id"] = lot.get("auction_id")
             record["name"] = lot.get("name")
-
+            record["currency"] = lot.get("currency")
+            print(record)
             results.append(record)
-        res = ",".join(lot_numbers)
+
         cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
         client.close()
         if cart_data:
-            return results,res
+            return results,lot_numbers
         return None
     except BaseException as err:
         client.close()
@@ -327,16 +330,24 @@ def create_intent(event, context):
             "starting_sequence": last_order_number
         }
         insert_data["order_number"] = generate_order_code(last_order_number)
+        buyer_data = fetch_buyer_data(seller_email,email_address)
+        name = ""
+        if buyer_data is not None:
+            f_name = buyer_data.get("first_name","")
+            l_name = buyer_data.get("last_name","")
+            name = f_name+l_name
 
         cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["created_at"] = time_stamp
         insert_data["auction_title"] = auction_title
         insert_data["auction_image"] = auction_image
-        insert_data["purchases"] = {} if cart_data is None else cart_data
+        insert_data["purchases"] = cart_data
         insert_data["lots"] = res
+        insert_data["auction_id"] = auction_id
+        insert_data["name"] = name
+
         #add the order data in orders collection
         create_order(insert_data)
-
         print("latest lot number", last_order_number)
         counter_collection.update_one({"auction_id": auction_id,
                                        "seller_email": seller_email,
