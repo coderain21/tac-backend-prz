@@ -54,7 +54,7 @@ def verify_buyer_recaptcha(token, hostname):
     except Exception as e:
         print(str(e))
         return {'success': False}
-    
+
 def check_user_in_cognito(email_address):
     client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
