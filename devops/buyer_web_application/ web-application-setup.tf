@@ -42,7 +42,7 @@ variable "certificate_domain" {
 variable "repository" {
   type        = string
   description = "github repo url"
-  default     = "https://x-token-auth@bitbucket.org/7EDGE/indy-auction-buyer-web-application.git"
+  default     = "http://x-token-auth:ATCTT3xFfGN0pvXiC2Tqk5pdXZvb_ouRJ1ssNumx81FXBl27enh4NZwOLCwE8N542V1xY81hb_h6mEkZjDdKXywQ5VICnct9KQbHxP2Cu0YJOCJLG2emVWuUeohiEZeAv8Az-0A_tvDB27ibVylu_DmVWLQF4QBkgkb9i6RGPJqeB9YFtxWEUHY=92C7D829@bitbucket.org/7EDGE/indy-auction-buyer-web-application.git"
 }
 variable "app_name" {
   type        = string
@@ -64,7 +64,7 @@ provider "aws" {
 resource "aws_amplify_app" "amplify_app" {
   name       = var.app_name
   repository = var.repository
-  access_token ="ATCTT3xFfGN0pvXiC2Tqk5pdXZvb_ouRJ1ssNumx81FXBl27enh4NZwOLCwE8N542V1xY81hb_h6mEkZjDdKXywQ5VICnct9KQbHxP2Cu0YJOCJLG2emVWuUeohiEZeAv8Az-0A_tvDB27ibVylu_DmVWLQF4QBkgkb9i6RGPJqeB9YFtxWEUHY=92C7D829"
+  
   provider = aws.deployment-eu
   # The default build_spec added by the Amplify Console for React.
   build_spec = <<-EOT
