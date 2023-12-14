@@ -111,6 +111,7 @@ def update_user(event, context):
 
             if buyer_data is None:
                 if new is True:
+                    print("new")
                     new_data = {
                         "user_type": "buyer",
                         "password": "",
@@ -123,6 +124,7 @@ def update_user(event, context):
                     }
                     buyer_data_new = buyer_collection.find_one(
                         {"email_address": email_address},{"_id":0,"seller_email":0})
+                    print("-->",buyer_data_new)
                     if buyer_data_new is not None:
                         buyer_data_new["seller_email"]=seller_email
                         buyer_collection.insert_one(buyer_data_new)
