@@ -36,6 +36,8 @@ provider:
     COUNTER_LOT: ${env:COUNTER_LOT}
     CDN_LINK: ${env:CDN_LINK}
     BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
+    STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
+    REDIS_URL: ${env:REDIS_URL}
     
     
   http:
@@ -55,6 +57,7 @@ provider:
             - cognito-idp:*
             - ses:*
             - s3:*
+            - states:*
             - lambda:*
             - mobiletargeting:*
           Resource: "*"
@@ -67,6 +70,31 @@ package:
     - ./entities/**
     - ./utils/**
     - ./lib/**
+
+
+stepFunctions:
+  stateMachines:
+    lot-published:
+      name: ${opt:stage}-lot-published
+      definition:
+        Comment: "Step function will trigger when lot published"
+        StartAt: process-cache-lots
+        States:
+          process-cache-lots:
+            Type: Task
+            Resource:
+              Fn::GetAtt: ["save-to-cache", Arn]
+            Next: check-lot-ends
+          check-lot-ends:
+              Type: Wait
+              TimestampPath: "$.end_date"
+              Next:  process-cart
+          process-cart:
+              Type: Task
+              Resource:
+                Fn::GetAtt: ["process-cart", Arn]
+              End: true
+
 
 custom:
   packageExternal:
@@ -345,7 +373,41 @@ functions:
           authorizer:
               arn: ${env:COGNITO_AUTH_ARN}
 
+  process-cart:
+    handler: handlers/add_to_cart.handler
+    layers:
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+    vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+
+  save-to-cache:
+    handler: handlers/save_to_cache.handler
+    layers:
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+    vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      
+         #${env:LAMBDA_LAYER}
+
+  wait-for-lot-ends:
+    handler: handlers/wait_for_lot_ends.handler
+    layers:
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+    vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+
+
 plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
+  - serverless-step-functions
