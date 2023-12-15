@@ -7,8 +7,6 @@ This module provides functionality to send emails using Amazon SES .
 import os
 import json
 import boto3
-from pymongo import MongoClient
-
 
 def send_mail(link, email_template, destination_address, token):
     """

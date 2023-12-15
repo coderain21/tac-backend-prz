@@ -16,6 +16,8 @@ provider:
   versionFunctions: false
   layers: ${env:COMMON_LIB_ARN}
   environment:
+    BUYER_RECAPTCHA_URL: ${env:BUYER_RECAPTCHA_URL}
+    BUYER_RECAPTCHA_KEY: ${env:BUYER_RECAPTCHA_KEY}
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     BUYER_WISHLIST_TABLE_NAME: ${env:BUYER_WISHLIST_TABLE_NAME}
     COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
