@@ -38,11 +38,7 @@ provider:
     
   http:
     cors: true
-    authorizers:
-      cognito-auth:
-        identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
-        audience: ${env:COGNITO_SELLER_CLIENT_ID}
+     
 
 
   iam:

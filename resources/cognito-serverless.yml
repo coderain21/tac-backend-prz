@@ -1,0 +1,554 @@
+service: cognito-seller-resources
+frameworkVersion: "3"
+useDotenv: true
+
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - states:*
+            - dynamodb:*
+            - lambda:*
+            - cognito-idp:*
+            - s3:*
+            - execute-api:*
+            - ses:*
+            - mobiletargeting:*
+          Resource: "*"
+          
+
+
+package:
+  patterns:
+    - ./handlers/**
+    - ./data/**
+    - ./utils/**
+    - ./lib/**
+
+resources:
+  Resources:
+    SellerUsers:
+      Type: "AWS::Cognito::UserPool"
+      Properties:
+        UserPoolName: ${self:provider.stage}-indyauction
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            TemporaryPasswordValidityDays: 7
+        DeletionProtection: ACTIVE
+        Schema:
+          - Name: sub
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: false
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "1"
+              MaxLength: "2048"
+          - Name: name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: given_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: family_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: middle_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: nickname
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: preferred_username
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: profile
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: picture
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: website
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email_verified
+            AttributeDataType: Boolean
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+          - Name: gender
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: birthdate
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "10"
+              MaxLength: "10"
+          - Name: zoneinfo
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: locale
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: phone_number
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: phonenumber_verified
+            AttributeDataType: Boolean
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+          - Name: address
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: updated_at
+            AttributeDataType: Number
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            NumberAttributeConstraints:
+              MinValue: "0"
+          - Name: email_address
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: user_type
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: user_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: first_time_login
+            AttributeDataType: Number
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+          - Name: identities
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+          - Name: is_first_time_login
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MaxLength: "2048"
+
+        AliasAttributes:
+          - preferred_username
+        # AliasAttributes:
+        #   - email
+        # UsernameAttributes: 
+        #   - email
+        VerificationMessageTemplate:
+          DefaultEmailOption: CONFIRM_WITH_CODE
+        UserAttributeUpdateSettings:
+          AttributesRequireVerificationBeforeUpdate: []
+        MfaConfiguration: "OFF"
+        # EnabledMfas:
+        #   - SOFTWARE_TOKEN_MFA
+        EmailConfiguration:
+          EmailSendingAccount: COGNITO_DEFAULT
+        UsernameConfiguration:
+          CaseSensitive: true
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Priority: 1
+              Name: admin_only
+    
+    
+    
+    GoogleAuth:
+      Type: "AWS::Cognito::UserPoolIdentityProvider"
+      Properties:
+        AttributeMapping:
+          preferred_username: "email"
+          username: "email"
+          email: "sub"
+        ProviderName: Google
+        ProviderType: Google
+        ProviderDetails:
+          client_id: ${env:GOOGLE_CLIENT_ID}
+          client_secret: ${env:GOOGLE_CLIENT_SECRET}
+          authorize_scopes: "email openid profile"
+        UserPoolId: { Ref: SellerUsers }
+          
+    
+    FacebookAuth:
+      Type: "AWS::Cognito::UserPoolIdentityProvider"
+      Properties:
+        AttributeMapping:
+          preferred_username: "email"
+          username: "id"
+          email: "email"
+        ProviderName: Facebook
+        ProviderType: Facebook
+        ProviderDetails:
+          client_id: ${env:FACEBOOK_CLIENT_ID}
+          client_secret: ${env:FACEBOOK_CLIENT_SECRET}
+          authorize_scopes: "email openid profile"
+        UserPoolId: { Ref: SellerUsers }
+    
+    
+    
+    SellerUsersDomain:
+      Type: "AWS::Cognito::UserPoolDomain"
+      Properties:
+        Domain: seller-indyauction-${self:provider.stage}
+        UserPoolId: { Ref: SellerUsers }
+
+    SellerUsersClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        AccessTokenValidity: 60
+        AllowedOAuthFlowsUserPoolClient: true
+        AuthSessionValidity: 10
+        ClientName: seller
+        UserPoolId: { Ref: SellerUsers }
+        EnablePropagateAdditionalUserContextData: false
+        EnableTokenRevocation: true
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        SupportedIdentityProviders:
+          - "COGNITO"
+          - "Google"
+          - "Facebook"
+        AllowedOAuthFlows:
+          - implicit
+          - code
+        AllowedOAuthScopes:
+          - openid
+          - profile
+          - email
+          - aws.cognito.signin.user.admin
+        CallbackURLs:
+          - "https://seller-${opt:stage}.indyauction.net/"
+          - "https://seller-${opt:stage}.indyauction.net/"
+          - "http://localhost:3000/"
+          - "http://localhost:3001/"
+        LogoutURLs:
+          - "https://seller-${opt:stage}.indyauction.net/"
+          - "http://localhost:3000/"
+        IdTokenValidity: 60
+        PreventUserExistenceErrors: ENABLED
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+        ReadAttributes:
+          - "address"
+          - "birthdate"
+          - "custom:first_time_login"
+          - "custom:is_first_time_login"
+          - "custom:user_type"
+          - "email"
+          - "email_verified"
+          - "family_name"
+          - "gender"
+          - "given_name"
+          - "locale"
+          - "middle_name"
+          - "name"
+          - "nickname"
+          - "phone_number"
+          - "phone_number_verified"
+          - "picture"
+          - "preferred_username"
+          - "profile"
+          - "updated_at"
+          - "website"
+          - "zoneinfo"
+
+        WriteAttributes:
+          - "address"
+          - "birthdate"
+          - "custom:first_time_login"
+          - "custom:is_first_time_login"
+          - "custom:user_type"
+          - "email"
+          - "family_name"
+          - "gender"
+          - "given_name"
+          - "locale"
+          - "middle_name"
+          - "name"
+          - "nickname"
+          - "phone_number"
+          - "picture"
+          - "preferred_username"
+          - "profile"
+          - "updated_at"
+          - "website"
+          - "zoneinfo"
+
+    
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: indyauction-${self:provider.stage}
+        AllowUnauthenticatedIdentities: true
+        AllowClassicFlow: true
+        CognitoIdentityProviders: 
+          - ClientId: !Ref SellerUsersClient
+            ProviderName: !GetAtt SellerUsers.ProviderName
+            ServerSideTokenCheck: false
+        # Define more configuration properties as needed
+
+    CognitoIdentityPoolRole:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: CognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt: [MyRoleLogicalName, Arn] # Replace with your IAM role
+    
+    MyRoleLogicalName: # Define your IAM role here
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated: "cognito-identity.amazonaws.com"
+              Action: "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud": 
+                    Ref: CognitoIdentityPool
+                "ForAnyValue:StringLike":
+                  "cognito-identity.amazonaws.com:amr": "authenticated"
+
+        Policies:
+          - PolicyName: S3AccessPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "s3:*" # Adjust permissions as needed
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+  
+    AdminCognitoIdentityPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_IDENTITY_POOL_ID
+          Type: String
+          Value: { Ref: CognitoIdentityPool }
+
+    AdminCognitoPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_USERPOOL_ID
+          Type: String
+          Value: { Ref: SellerUsers }
+
+    AdminCognitoPoolNameStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_USERPOOL_NAME
+          Type: String
+          Value: indyauction-${self:provider.stage}
+    AdminCognitoClientIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_CLIENT_ID
+          Type: String
+          Value: { Ref: SellerUsersClient }
+    
+    AdminCognitoPoolARNStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_AUTH_ARN
+          Type: String
+          Value:
+            Fn::GetAtt:
+              - SellerUsers
+              - Arn
+        AliasAttributes:
+          - preferred_username
+        # AliasAttributes:
+        #   - email
+        # UsernameAttributes: 
+        #   - email
+        VerificationMessageTemplate:
+          DefaultEmailOption: CONFIRM_WITH_CODE
+        UserAttributeUpdateSettings:
+          AttributesRequireVerificationBeforeUpdate: []
+        MfaConfiguration: "OFF"
+        # EnabledMfas:
+        #   - SOFTWARE_TOKEN_MFA
+        EmailConfiguration:
+          EmailSendingAccount: COGNITO_DEFAULT
+        UsernameConfiguration:
+          CaseSensitive: true
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Priority: 1
+              Name: admin_only
+    
+    # EmailOtp:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/email_otp.html)}
+    #     Subject: Indy.auction - OTP Verification for Your Account
+    #     TemplateName: ${self:provider.stage}-email-otp-template
+
+    # BuyerResetPassword:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_reset_password.html)}
+    #     Subject: Indy.auction- Reset your password
+    #     TemplateName: ${self:provider.stage}-buyer_reset_password
+
+    # BuyerEmailOtp:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_email_otp.html)}
+    #     Subject: Indy.auction - OTP Verification for Your Account
+    #     TemplateName: ${self:provider.stage}-buyer_email_otp
+    # Paddle:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/paddle.html)}
+    #     Subject: Indy.auction - Paddle
+    #     TemplateName: ${self:provider.stage}-paddle
+    # WelcomeEmailTemplate:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/welcome_email_template.html)}
+    #     Subject: Welcome to Indy.auction - Your Auctioneering Partner!
+    #     TemplateName: ${self:provider.stage}-welcome_email_template
+   
+    # SellerForgotPassword:
+    #   Type: AWS::SES::Template
+    #   Properties: 
+    #     Template:
+    #       HtmlPart: ${file(./templates/seller-forgot-password.html)}
+    #       SubjectPart: Action Required for Document Completion
+    #       TemplateName: ${self:provider.stage}-seller-forgot-password
+    
+custom:
+  packageExternal:
+    external:
+      - '../lib'
+      - '../entities'
+
+plugins:
+  - serverless-offline
+  - serverless-package-external

@@ -38,7 +38,16 @@ provider:
     SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
     USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
     KMS_KEY_ID: ${env:KMS_KEY_ID}
-    BUYER_EMAIL_OTP_TEMPLATE: ${env:BUYER_EMAIL_OTP_TEMPLATE}
+    BUYER_EMAIL_OTP_TEMPLATE: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "template/${self:provider.stage}-buyer_email_otp"
+          - "EMAIL"
     ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
     BUYER_COLLECTION: ${env:BUYER_COLLECTION}
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
@@ -47,17 +56,23 @@ provider:
     SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}    
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
-    TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
+    TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "template/${self:provider.stage}-buyer_reset_password"
+          - "EMAIL"
+   
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
     DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
     
   http:
     cors: true
-    authorizers:
-      cognito-auth:
-        identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
-        audience: ${env:COGNITO_SELLER_CLIENT_ID}
+     
 
   iam:
     role:
@@ -154,7 +169,7 @@ functions:
 
 resources:
    Resources:
-     GatewayResponseDefault4XX:
+    GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
        Properties:
          ResponseParameters:
@@ -163,7 +178,19 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+    BuyerEmailOtp:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/buyer_email_otp.html)}
+        Subject: Indy.auction - OTP Verification for Your Account
+        TemplateName: ${self:provider.stage}-buyer_email_otp
 
+    BuyerResetPassword:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/buyer_reset_password.html)}
+        Subject: Indy.auction- Reset your password
+        TemplateName: ${self:provider.stage}-buyer_reset_password
 
 plugins:
   - serverless-offline
