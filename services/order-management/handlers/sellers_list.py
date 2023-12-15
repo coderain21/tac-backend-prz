@@ -98,7 +98,7 @@ def list_orders(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists"})
             }
 
-        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type']:
+        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type','auction_title','payment','amount']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
 
@@ -180,7 +180,7 @@ def export_as_csv(sales):
     """
     try:
         # Export QR codes as CSV and upload to S3
-        csv_file = os.environ["CSV_FILE"]
+        csv_file = os.environ["SALES_CSV_FILE"]
         s3_key = f"exports/{csv_file}"
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
