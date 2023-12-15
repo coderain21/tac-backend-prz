@@ -33,8 +33,8 @@ services:
     path: services/order-management
     config: ${env:config}
   cognito-seller:
-    path: resources
+    path: resources/seller
     config: cognito-serverless.yml
   cognito-buyer:
-    path: resources
+    path: resources/buyer
     config: cognito-buyer-serverless.yml
