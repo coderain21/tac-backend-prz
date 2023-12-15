@@ -38,6 +38,7 @@ provider:
     BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
     STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
     REDIS_URL: ${env:REDIS_URL}
+    STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     
     
   http:
@@ -103,12 +104,12 @@ stepFunctions:
         States:
           check-auction-ends:
                 Type: Wait
-                TimestampPath: "$.auction_end_date"
+                TimestampPath: "$.end_date"
                 Next: process-next-steps
           process-next-steps:
             Type: Task
             Resource:
-              Fn::GetAtt: ["send-email", Arn]
+              Fn::GetAtt: ["send-email_auction", Arn]
             End: true
         
 
@@ -400,7 +401,7 @@ functions:
           - subnet-0ff05c7c2bd2a3f87
 
   send-email:
-    handler: handlers/send_mail.handler
+    handler: handlers/send_email.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
     vpc:
@@ -408,6 +409,11 @@ functions:
           - sg-0882c1da39e729097
         subnetIds:
           - subnet-0ff05c7c2bd2a3f87
+    events:
+        - http:
+            cors: true
+            path: /sendmail
+            method: post
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
@@ -430,7 +436,17 @@ functions:
           - sg-0882c1da39e729097
         subnetIds:
           - subnet-0ff05c7c2bd2a3f87
-
+  
+  send-email_auction:
+    handler: handlers/send_email.handler
+    layers:
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+    vpc:
+        securityGroupIds:
+          - sg-0882c1da39e729097
+        subnetIds:
+          - subnet-0ff05c7c2bd2a3f87
+      
 
 plugins:
   - serverless-offline
