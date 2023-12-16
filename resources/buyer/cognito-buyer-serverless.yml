@@ -469,12 +469,12 @@ resources:
               - BuyerUsers
               - Arn
 
-    UserLogin:
-      Type: AWS::Pinpoint::EmailTemplate
-      Properties: 
-        HtmlPart: ${file(./templates/login_email.html)}
-        Subject: Indy Auction - OTP Verification for Your Account
-        TemplateName: ${self:provider.stage}-user-login
+    # UserLogin:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/login_email.html)}
+    #     Subject: Indy Auction - OTP Verification for Your Account
+    #     TemplateName: ${self:provider.stage}-user-login
 
 
 
