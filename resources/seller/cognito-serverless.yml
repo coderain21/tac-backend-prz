@@ -243,8 +243,8 @@ resources:
             Required: false
             StringAttributeConstraints:
               MaxLength: "2048"
-        # AliasAttributes:
-        #   - preferred_username
+        AliasAttributes:
+          - preferred_username
         # UsernameAttributes: 
         #   - email
         VerificationMessageTemplate:
@@ -477,27 +477,7 @@ resources:
             Fn::GetAtt:
               - SellerUsers
               - Arn
-        AliasAttributes:
-          - preferred_username
-        # AliasAttributes:
-        #   - email
-        # UsernameAttributes: 
-        #   - email
-        VerificationMessageTemplate:
-          DefaultEmailOption: CONFIRM_WITH_CODE
-        UserAttributeUpdateSettings:
-          AttributesRequireVerificationBeforeUpdate: []
-        MfaConfiguration: "OFF"
-        # EnabledMfas:
-        #   - SOFTWARE_TOKEN_MFA
-        EmailConfiguration:
-          EmailSendingAccount: COGNITO_DEFAULT
-        UsernameConfiguration:
-          CaseSensitive: true
-        AccountRecoverySetting:
-          RecoveryMechanisms:
-            - Priority: 1
-              Name: admin_only
+       
     
     # EmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate

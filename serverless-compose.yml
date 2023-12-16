@@ -34,7 +34,7 @@ services:
     config: ${env:config}
   cognito-seller:
     path: resources/seller
-    config: cognito-serverless.yml
+    config: serverless.yml
   cognito-buyer:
     path: resources/buyer
-    config: cognito-buyer-serverless.yml
+    config: serverless.yml
