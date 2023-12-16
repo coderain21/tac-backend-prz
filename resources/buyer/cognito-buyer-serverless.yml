@@ -322,16 +322,16 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://www-${opt:stage}.indyauction.net/
-          - "https://www-${opt:stage}.indyauction.net/login
+          - "https://www-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/login"
           - "https://www-${opt:stage}.indyauction.net/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
         LogoutURLs:
-          - "https://www-${opt:stage}.indyauction.net/
-          - "https://www-${opt:stage}.indyauction.net/login
+          - "https://www-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/login"
           - "https://www-${opt:stage}.indyauction.net/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
