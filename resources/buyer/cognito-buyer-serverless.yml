@@ -23,29 +23,29 @@ provider:
             - mobiletargeting:*
           Resource: "*"
           
-  environment:
-    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    OTP_TABLE_NAME: ${opt:stage, self:provider.stage}-merchant-otp
-    STORES_TABLE_NAME: ${opt:stage, self:provider.stage}-stores
-    EMPLOYEES_TABLE_NAME: ${opt:stage, self:provider.stage}-employees
-    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
-    COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
-    REGION: ${env:REGION}
-    AWS_ACCOUNT_ID: ${env:AWS_ACCOUNT_ID}
-    STAGE: ${opt:stage, self:provider.stage}
-    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
-    MERCHANT_CSV_FILES_FOLDER_NAME: csv-files/merchant-users
-    TEMP_FOLDER: '/tmp/'
-    MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
-    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
-    DEBUG: ${env:DEBUG}
-    DEVELOPER_MODE: ${env:DEVELOPER_MODE}
-    MESSAGE_TEMPLATE_SID: ${env:MESSAGE_TEMPLATE_SID}
-    MESSAGE_SERVICE_SID: ${env:MESSAGE_SERVICE_SID}
-    TWILIO_PHONE_NUMBER: ${env:TWILIO_PHONE_NUMBER}
-    LOGIN_SMS_TEMPLATE: ${env:LOGIN_SMS_TEMPLATE}
-    FACEBOOK_APP_ID: ${env:FACEBOOK_APP_ID}
-    FACEBOOK_APP_SECRET: ${env:FACEBOOK_APP_SECRET}
+  # environment:
+  #   TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+  #   OTP_TABLE_NAME: ${opt:stage, self:provider.stage}-merchant-otp
+  #   STORES_TABLE_NAME: ${opt:stage, self:provider.stage}-stores
+  #   EMPLOYEES_TABLE_NAME: ${opt:stage, self:provider.stage}-employees
+  #   COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
+  #   COGNITO_CLIENT_ID: ${env:COGNITO_CLIENT_ID}
+  #   REGION: ${env:REGION}
+  #   AWS_ACCOUNT_ID: ${env:AWS_ACCOUNT_ID}
+  #   STAGE: ${opt:stage, self:provider.stage}
+  #   S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
+  #   MERCHANT_CSV_FILES_FOLDER_NAME: csv-files/merchant-users
+  #   TEMP_FOLDER: '/tmp/'
+  #   MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
+  #   PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
+  #   DEBUG: ${env:DEBUG}
+  #   DEVELOPER_MODE: ${env:DEVELOPER_MODE}
+  #   MESSAGE_TEMPLATE_SID: ${env:MESSAGE_TEMPLATE_SID}
+  #   MESSAGE_SERVICE_SID: ${env:MESSAGE_SERVICE_SID}
+  #   TWILIO_PHONE_NUMBER: ${env:TWILIO_PHONE_NUMBER}
+  #   LOGIN_SMS_TEMPLATE: ${env:LOGIN_SMS_TEMPLATE}
+  #   FACEBOOK_APP_ID: ${env:FACEBOOK_APP_ID}
+  #   FACEBOOK_APP_SECRET: ${env:FACEBOOK_APP_SECRET}
 
 package:
   patterns:
@@ -230,7 +230,6 @@ resources:
             Required: false
             StringAttributeConstraints:
               MaxLength: "2048"
-          
         AliasAttributes:
           - preferred_username
         # AliasAttributes:

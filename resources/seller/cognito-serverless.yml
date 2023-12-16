@@ -243,11 +243,8 @@ resources:
             Required: false
             StringAttributeConstraints:
               MaxLength: "2048"
-
         AliasAttributes:
           - preferred_username
-        # AliasAttributes:
-        #   - email
         # UsernameAttributes: 
         #   - email
         VerificationMessageTemplate:
