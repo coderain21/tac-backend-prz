@@ -67,7 +67,7 @@ provider:
           - "template/${self:provider.stage}-buyer_reset_password"
           - "EMAIL"
    
-    BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
     AMPLIFY_APP_ID: ${env:AMPLIFY_APP_ID}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     DEFAULT_INDENTITY_POOL_ID: ${ssm:BUYER_COGNITO_IDENTITY_POOL_ID}

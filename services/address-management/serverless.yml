@@ -67,7 +67,7 @@ provider:
           - "template/${self:provider.stage}-buyer_reset_password"
           - "EMAIL"
    
-    BASE_URL_BUYER: ${env:BASE_URL_BUYER}
+    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${env:STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
