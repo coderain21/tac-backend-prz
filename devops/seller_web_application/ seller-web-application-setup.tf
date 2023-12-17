@@ -139,19 +139,19 @@ resource "aws_ssm_parameter" "application_url" {
   value = "${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "application_url" {
+resource "aws_ssm_parameter" "dashboard_application_url" {
   name  = "SELLER_DASHBOARD_APPLICATION_URL"
   type  = "String"
   value = "https://-${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}-/"
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "application_url" {
+resource "aws_ssm_parameter" "default_subdomain" {
   name  = "DEFAULT_SUB_DOMAIN"
   type  = "String"
   value = "www-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "application_url" {
+resource "aws_ssm_parameter" "amplify_domain_name" {
   name  = "AMPLIFY_DOMAIN_NAME"
   type  = "String"
   value = "${data.external.env.result["DOMAIN"]}"
