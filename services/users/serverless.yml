@@ -137,11 +137,11 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
   
-    events:
-      - cognitoUserPool:
-          pool: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
-          trigger: PreSignUp
-          existing: true
+    # events:
+    #   - cognitoUserPool:
+    #       pool: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
+    #       trigger: PreSignUp
+    #       existing: true
    
 
 
@@ -392,60 +392,60 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  # disconnect_account:
-  #   handler: handlers/stripe_disconnect.disconnect_account
-  #   runtime: python3.8
-  #   layers:
-  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
-  #   vpc:
-  #     securityGroupIds:
-  #       - ${ssm:SECURITY_GROUP_ID}
-  #     subnetIds:
-  #       - ${ssm:SUBNET_ID}
-  #   events:
-  #     - http:
-  #         cors: true
-  #         path: /stripe
-  #         method: patch
-  #         authorizer:
-  #             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  disconnect_account:
+    handler: handlers/stripe_disconnect.disconnect_account
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /stripe
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  # stripe-connect:
-  #   handler: handlers/create.create
-  #   runtime: python3.8
-  #   layers:
-  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
-  #   vpc:
-  #     securityGroupIds:
-  #       - ${ssm:SECURITY_GROUP_ID}
-  #     subnetIds:
-  #       - ${ssm:SUBNET_ID}
-  #   events:
-  #       - http:
-  #           cors: true
-  #           path: /stripe
-  #           method: GET
-  #           authorizer:
-  #             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  stripe-connect:
+    handler: handlers/create.create
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+        - http:
+            cors: true
+            path: /stripe
+            method: GET
+            authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  # stripe-webhook:
-  #     handler: handlers/stripe_webhook.create
-  #     runtime: python3.8
-  #     layers:
-  #       - ${ssm:COMMON_LIB_ARN_PYTHON}
-  #     vpc:
-  #       securityGroupIds:
-  #         - ${ssm:SECURITY_GROUP_ID}
-  #       subnetIds:
-  #         - ${ssm:SUBNET_ID}
+  stripe-webhook:
+      handler: handlers/stripe_webhook.create
+      runtime: python3.8
+      layers:
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
     
-  #     events:
-  #         - http:
-  #             cors: true
-  #             path: /stripe_webhook
-  #             method: post
-              # authorizer:
-              #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+      events:
+          - http:
+              cors: true
+              path: /stripe_webhook
+              method: post
+              authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
 resources:

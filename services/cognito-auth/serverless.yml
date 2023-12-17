@@ -1,50 +1,99 @@
-service: cognito-seller
-frameworkVersion: "3"
+service: cognito
+frameworkVersion: '3'
 useDotenv: true
-
-
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
 provider:
   name: aws
+  endpointType: REGIONAL
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: eu-west-2
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${ssm:COMMON_LIB_ARN}
+  http:
+    cors: true
+     
+
   iam:
     role:
       statements:
-        - Effect: "Allow"
+        - Effect: Allow
           Action:
-            - states:*
-            - dynamodb:*
-            - lambda:*
             - cognito-idp:*
-            - s3:*
-            - execute-api:*
             - ses:*
+            - s3:*
+            - lambda:*
             - mobiletargeting:*
+            - dynamodb:*
+            - execute-api:*
           Resource: "*"
-          
-
-
+ 
 package:
   patterns:
+    - '!./node_modules/**'
     - ./handlers/**
     - ./data/**
+    - ./entities/**
     - ./utils/**
     - ./lib/**
 
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+
+functions: 
+  pre-auth:
+    handler: handlers/pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      
+      - ${ssm:COMMON_LIB_ARN}
+    # events:
+    #   - cognitoUserPool:
+    #       pool: indyauction-buyers-${self:provider.stage}
+    #       trigger: PreSignUp
+    #       existing: true
+    # events:
+    #   - cognitoUserPool:
+    #       pool: ${ssm:BUYER_COGNITO_USERPOOL_NAME}
+    #       trigger: PreSignUp
+    #       existing: true
+
+
 resources:
-  Resources:
-    SellerUsers:
+   Resources:
+    Buyers:
       Type: "AWS::Cognito::UserPool"
       Properties:
-        UserPoolName: ${self:provider.stage}-indyauction-seller
+        UserPoolName: ${self:provider.stage}-indyauction-buyers
         Policies:
           PasswordPolicy:
-            MinimumLength: 8
+            MinimumLength: 6
             RequireUppercase: true
             RequireLowercase: true
             RequireNumbers: true
-            RequireSymbols: true
+            RequireSymbols: false
             TemporaryPasswordValidityDays: 7
         DeletionProtection: ACTIVE
         Schema:
@@ -201,34 +250,6 @@ resources:
             Required: false
             NumberAttributeConstraints:
               MinValue: "0"
-          - Name: email_address
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-          - Name: user_type
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-          - Name: user_name
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-          - Name: first_time_login
-            AttributeDataType: Number
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
           # - Name: identities
           #   AttributeDataType: String
           #   DeveloperOnlyAttribute: false
@@ -236,17 +257,8 @@ resources:
           #   Required: false
           #   StringAttributeConstraints:
           #     MaxLength: "2048"
-          - Name: is_first_time_login
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
         AliasAttributes:
           - preferred_username
-        # UsernameAttributes: 
-        #   - email
         VerificationMessageTemplate:
           DefaultEmailOption: CONFIRM_WITH_CODE
         UserAttributeUpdateSettings:
@@ -262,62 +274,57 @@ resources:
           RecoveryMechanisms:
             - Priority: 1
               Name: admin_only
+        
     
     
     
-    # GoogleAuth:
-    #   Type: "AWS::Cognito::UserPoolIdentityProvider"
-    #   Properties:
-    #     AttributeMapping:
-    #       preferred_username: "email"
-    #       username: "sub"
-    #       email: "email"
-    #     ProviderName: Google
-    #     ProviderType: Google
-    #     ProviderDetails:
-    #       client_id: ${env:GOOGLE_CLIENT_ID}
-    #       client_secret: ${env:GOOGLE_CLIENT_SECRET}
-    #       authorize_scopes: "email openid profile"
-    #     UserPoolId: { Ref: SellerUsers }
-    
-    Group:
-      Type: AWS::Cognito::UserPoolGroup
+    GoogleAuth:
+      Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
-        GroupName: "seller"
-        UserPoolId: { Ref: SellerUsers }
-                
+        AttributeMapping:
+          preferred_username: "email"
+          username: "sub"
+          email: "email"
+        ProviderName: Google
+        ProviderType: Google
+        ProviderDetails:
+          client_id: ${env:GOOGLE_CLIENT_ID}
+          client_secret: ${env:GOOGLE_CLIENT_SECRET}
+          authorize_scopes: "email openid profile"
+        UserPoolId: { Ref: Buyers }
+          
     
-    # FacebookAuth:
-    #   Type: "AWS::Cognito::UserPoolIdentityProvider"
-    #   Properties:
-    #     AttributeMapping:
-    #       preferred_username: "email"
-    #       username: "id"
-    #       email: "email"
-    #     ProviderName: Facebook
-    #     ProviderType: Facebook
-    #     ProviderDetails:
-    #       client_id: ${env:FACEBOOK_CLIENT_ID}
-    #       client_secret: ${env:FACEBOOK_CLIENT_SECRET}
-    #       authorize_scopes: "email openid profile"
-    #     UserPoolId: { Ref: SellerUsers }
+    FacebookAuth:
+      Type: "AWS::Cognito::UserPoolIdentityProvider"
+      Properties:
+        AttributeMapping:
+          preferred_username: "email"
+          username: "id"
+          email: "email"
+        ProviderName: Facebook
+        ProviderType: Facebook
+        ProviderDetails:
+          client_id: ${env:FACEBOOK_CLIENT_ID}
+          client_secret: ${env:FACEBOOK_CLIENT_SECRET}
+          authorize_scopes: "email openid profile"
+        UserPoolId: { Ref: Buyers }
     
     
     
-    SellerUsersDomain:
+    BuyersDomain:
       Type: "AWS::Cognito::UserPoolDomain"
       Properties:
-        Domain: indyauction-seller-${self:provider.stage}
-        UserPoolId: { Ref: SellerUsers }
+        Domain: buyers-indyauction-${self:provider.stage}
+        UserPoolId: { Ref: Buyers }
 
-    SellerUsersClient:
+    BuyersClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
         AuthSessionValidity: 10
-        ClientName: seller
-        UserPoolId: { Ref: SellerUsers }
+        ClientName: default-client
+        UserPoolId: { Ref: Buyers }
         EnablePropagateAdditionalUserContextData: false
         EnableTokenRevocation: true
         ExplicitAuthFlows:
@@ -338,13 +345,21 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://seller-${opt:stage}.indyauction.net/"
-          - "https://seller-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/login"
+          - "https://www-${opt:stage}.indyauction.net/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
+          - "http://localhost:3000/login"
+          - "http://localhost:3000/register"
         LogoutURLs:
-          - "https://seller-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/login"
+          - "https://www-${opt:stage}.indyauction.net/register"
           - "http://localhost:3000/"
+          - "http://localhost:3001/"
+          - "http://localhost:3000/login"
+          - "http://localhost:3000/register"
         IdTokenValidity: 60
         PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
@@ -353,27 +368,21 @@ resources:
           IdToken: minutes
           RefreshToken: days
         
+
     
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
-        IdentityPoolName: indyauction-seller-${self:provider.stage}
+        IdentityPoolName: indyauction-buyers-${self:provider.stage}
         AllowUnauthenticatedIdentities: true
         AllowClassicFlow: true
         CognitoIdentityProviders: 
-          - ClientId: !Ref SellerUsersClient
-            ProviderName: !GetAtt SellerUsers.ProviderName
+          - ClientId: !Ref BuyersClient
+            ProviderName: !GetAtt Buyers.ProviderName
             ServerSideTokenCheck: false
         # Define more configuration properties as needed
 
-    CognitoIdentityPoolRole:
-      Type: AWS::Cognito::IdentityPoolRoleAttachment
-      Properties:
-        IdentityPoolId:
-          Ref: CognitoIdentityPool
-        Roles:
-          authenticated:
-            Fn::GetAtt: [MyRoleLogicalName, Arn] # Replace with your IAM role
+     # Replace with your IAM role
     
     MyRoleLogicalName: # Define your IAM role here
       Type: AWS::IAM::Role
@@ -400,93 +409,70 @@ resources:
                 - Effect: "Allow"
                   Action:
                     - "s3:*" # Adjust permissions as needed
+                    
                   Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
   
-    SellerCognitoIdentityPoolIDStore:
+    CognitoIdentityPoolRole:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: CognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt: [MyRoleLogicalName, Arn]
+    AdminCognitoIdentityPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: SELLER_COGNITO_IDENTITY_POOL_ID
+          Name: BUYER_COGNITO_IDENTITY_POOL_ID
           Type: String
           Value: { Ref: CognitoIdentityPool }
 
-    SellerCognitoPoolIDStore:
+    AdminCognitoPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: SELLER_COGNITO_USERPOOL_ID
+          Name: BUYER_COGNITO_USERPOOL_ID
           Type: String
-          Value: { Ref: SellerUsers }
+          Value: { Ref: Buyers }
 
-    SellerCognitoPoolNameStore:
+    AdminCognitoPoolNameStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: SELLER_COGNITO_USERPOOL_NAME
+          Name: BUYER_COGNITO_USERPOOL_NAME
           Type: String
-          Value: indyauction-${self:provider.stage}
-    SellerCognitoClientIDStore:
+          Value: indyauction-buyers-${self:provider.stage}
+    AdminCognitoClientIDStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: SELLER_COGNITO_CLIENT_ID
+          Name: BUYER_COGNITO_CLIENT_ID
           Type: String
-          Value: { Ref: SellerUsersClient }
+          Value: { Ref: BuyersClient }
     
-    SellerCognitoPoolARNStore:
+    AdminCognitoPoolARNStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: SELLER_COGNITO_AUTH_ARN
+          Name: BUYER_COGNITO_AUTH_ARN
           Type: String
           Value:
             Fn::GetAtt:
-              - SellerUsers
+              - Buyers
               - Arn
-       
     
-    # EmailOtp:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/email_otp.html)}
-    #     Subject: Indy.auction - OTP Verification for Your Account
-    #     TemplateName: ${self:provider.stage}-email-otp-template
+    BuyersDomainStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_USERPOOL_DOMAIN
+          Type: String
+          Value: buyers-indyauction-${self:provider.stage}
 
-    # BuyerResetPassword:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/buyer_reset_password.html)}
-    #     Subject: Indy.auction- Reset your password
-    #     TemplateName: ${self:provider.stage}-buyer_reset_password
+    BuyersCognitoIdentityPoolNameStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_IDENTITY_POOL_NAME
+          Type: String
+          Value: indyauction-buyers-${self:provider.stage}
 
-    # BuyerEmailOtp:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/buyer_email_otp.html)}
-    #     Subject: Indy.auction - OTP Verification for Your Account
-    #     TemplateName: ${self:provider.stage}-buyer_email_otp
-    # Paddle:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/paddle.html)}
-    #     Subject: Indy.auction - Paddle
-    #     TemplateName: ${self:provider.stage}-paddle
-    # WelcomeEmailTemplate:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/welcome_email_template.html)}
-    #     Subject: Welcome to Indy.auction - Your Auctioneering Partner!
-    #     TemplateName: ${self:provider.stage}-welcome_email_template
-   
-    # SellerForgotPassword:
-    #   Type: AWS::SES::Template
-    #   Properties: 
-    #     Template:
-    #       HtmlPart: ${file(./templates/seller-forgot-password.html)}
-    #       SubjectPart: Action Required for Document Completion
-    #       TemplateName: ${self:provider.stage}-seller-forgot-password
-    
-custom:
-  packageExternal:
-    external:
-      - '../lib'
-      - '../entities'
-
+            
 plugins:
   - serverless-offline
   - serverless-package-external
+  - serverless-domain-manager
