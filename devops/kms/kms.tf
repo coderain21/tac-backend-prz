@@ -44,6 +44,7 @@ resource "aws_ssm_parameter" "acc_id" {
 }
 resource "aws_ssm_parameter" "kms_key" {
   name  = "KMS_KEY_ID"
+  overwrite = true
   type  = "String"
   value = aws_kms_key.example_key.id
   provider = aws.deployment-us

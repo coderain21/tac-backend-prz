@@ -485,9 +485,8 @@ resources:
       Properties:
         HtmlPart: ${file(./templates/paddle.html)}
         Subject: "{{subject}}"
-        TemplateDescription: Test
         TemplateName: ${opt:stage, 'dev'}_paddle
-        TextPart: ${file(./template/paddle.html)}
+
 
     BuyerEmailOtp:
       Type: AWS::Pinpoint::EmailTemplate
@@ -754,8 +753,8 @@ resources:
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
         SupportedIdentityProviders:
           - "COGNITO"
-          # - "Google"
-          # - "Facebook"
+          - "Google"
+          - "Facebook"
         AllowedOAuthFlows:
           - implicit
           - code
