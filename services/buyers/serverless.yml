@@ -14,31 +14,31 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${env:REGION}
   versionFunctions: false
-  layers: ${env:COMMON_LIB_ARN}
+  layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    BUYER_WISHLIST_TABLE_NAME: ${env:BUYER_WISHLIST_TABLE_NAME}
-    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
+    BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${env:DATABASE}
-    MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
-    MONGO_CLIENT: ${env:MONGO_CLIENT}
-    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
-    COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    DATABASE: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_NAME: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     CSV_FILE: ${env:CSV_FILE}
-    S3_BUCKET: ${env:S3_BUCKET}
-    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
-    COUNTER_LOT: ${env:COUNTER_LOT}
-    REGISTER_AUCTION_COLLECTION: ${env:REGISTER_AUCTION_COLLECTION}
-    SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
-    USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
-    KMS_KEY_ID: ${env:KMS_KEY_ID}
+    S3_BUCKET:  ${ssm:BUCKET_NAME}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
+    USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -50,12 +50,12 @@ provider:
           - "template/${self:provider.stage}-buyer_email_otp"
           - "EMAIL"
     ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
-    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
-    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
+    SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL}
+    DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
       Fn::GetAtt:
       - "sesTemplate"
@@ -74,9 +74,9 @@ provider:
           - "EMAIL"
    
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    CDN_LINK: ${env:CDN_LINK}
-    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
-    DEFAULT_COGNITO_DOMAIN: ${env:DEFAULT_COGNITO_DOMAIN}
+    CDN_LINK: ${ssm:CDN_URL}
+    DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
     STRIPE_API_KEY: ${env:STRIPE_API_KEY}
     CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
@@ -117,26 +117,41 @@ custom:
       
   customDomain:
     rest:
-      domainName: ${env:DOMAIN_NAME}
+      domainName: ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
       basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
-      certificateName: ${env:DOMAIN_CERTIFICATE}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
 functions: 
+  cognito-pre-auth:
+    handler: handlers/pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${ssm:BUYER_COGNITO_USERPOOL_NAME}
+          trigger: PreSignUp
+          existing: true
 
   view:
     handler: handlers/view.view
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -147,12 +162,12 @@ functions:
     handler: handlers/userpool.create
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -163,12 +178,12 @@ functions:
     handler: handlers/verify_the_recaptcha.verify
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /verify-captcha
@@ -179,13 +194,13 @@ functions:
     handler: handlers/otp_validation.validate
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
-      - ${env:ENCRYPTION_LAYER}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /otp-validation
@@ -196,12 +211,12 @@ functions:
     handler: handlers/view_list_lots.view_list_lots
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -212,12 +227,12 @@ functions:
     handler: handlers/search_lots.lot_search
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -229,12 +244,12 @@ functions:
     handler: handlers/view_lots.lot_details
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -245,12 +260,12 @@ functions:
     handler: handlers/credit_card.credit_card
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -261,30 +276,30 @@ functions:
       handler: handlers/accept_buyer.accept_buyer
       runtime: python3.8
       layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /approval
             method: patch
             authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
   update_password:
     handler: handlers/update_password.update_password
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -298,7 +313,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
           path: /update-password
           method: post
   
@@ -308,12 +323,12 @@ functions:
     handler: handlers/register_auction.register_auction
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /auction-register
@@ -329,18 +344,18 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   view_profile:
     handler: handlers/view_profile.view_profile
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -356,18 +371,18 @@ functions:
               - Access-Control-Allow-Headers
           path: /profile
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
   add_address:
     handler: handlers/add_address.add_address
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -383,18 +398,18 @@ functions:
               - Access-Control-Allow-Headers
           path: /add-address
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -410,19 +425,19 @@ functions:
               - Access-Control-Allow-Headers
           path: /paddle
           method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -433,34 +448,20 @@ functions:
     handler: handlers/reset.password_reset
     runtime: python3.8
     layers: 
-      - ${env:COMMON_PYTHON_LIB_ARN}
-      - ${env:ENCRYPTION_LAYER}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
     vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /reset_password
           method: post
 
-  cognito-pre-auth:
-    handler: handlers/pre_signup.handler
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
-    layers:
-      
-      - ${env:COMMON_LIB_ARN}
-    # events:
-    #   - cognitoUserPool:
-    #       pool: ${env:DEFAULT_USERPOOL_NAME}
-    #       trigger: PreSignUp
-    #       existing: true
+  
     # # events:
     #   - cognitoUserPool:
     #       pool: 'indyauction-staging-buyers'
@@ -502,6 +503,394 @@ resources:
         Subject: Indy.auction- Reset your password
         TemplateName: ${self:provider.stage}-buyer_reset_password
 
+    Buyers:
+      Type: "AWS::Cognito::UserPool"
+      Properties:
+        UserPoolName: ${self:provider.stage}-indyauction-buyers
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 6
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+            TemporaryPasswordValidityDays: 7
+        DeletionProtection: ACTIVE
+        Schema:
+          - Name: sub
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: false
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "1"
+              MaxLength: "2048"
+          - Name: name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: given_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: family_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: middle_name
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: nickname
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: preferred_username
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: profile
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: picture
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: website
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email_verified
+            AttributeDataType: Boolean
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+          - Name: gender
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: birthdate
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "10"
+              MaxLength: "10"
+          - Name: zoneinfo
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: locale
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: phone_number
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          # - Name: phonenumber_verified
+          #   AttributeDataType: Boolean
+          #   DeveloperOnlyAttribute: false
+          #   Mutable: true
+          #   Required: false
+          - Name: address
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: updated_at
+            AttributeDataType: Number
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            NumberAttributeConstraints:
+              MinValue: "0"
+          # - Name: identities
+          #   AttributeDataType: String
+          #   DeveloperOnlyAttribute: false
+          #   Mutable: true
+          #   Required: false
+          #   StringAttributeConstraints:
+          #     MaxLength: "2048"
+        AliasAttributes:
+          - preferred_username
+        VerificationMessageTemplate:
+          DefaultEmailOption: CONFIRM_WITH_CODE
+        UserAttributeUpdateSettings:
+          AttributesRequireVerificationBeforeUpdate: []
+        MfaConfiguration: "OFF"
+        # EnabledMfas:
+        #   - SOFTWARE_TOKEN_MFA
+        EmailConfiguration:
+          EmailSendingAccount: COGNITO_DEFAULT
+        UsernameConfiguration:
+          CaseSensitive: true
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Priority: 1
+              Name: admin_only
+        
+    
+    
+    
+    GoogleAuth:
+      Type: "AWS::Cognito::UserPoolIdentityProvider"
+      Properties:
+        AttributeMapping:
+          preferred_username: "email"
+          username: "sub"
+          email: "email"
+        ProviderName: Google
+        ProviderType: Google
+        ProviderDetails:
+          client_id: ${env:GOOGLE_CLIENT_ID}
+          client_secret: ${env:GOOGLE_CLIENT_SECRET}
+          authorize_scopes: "email openid profile"
+        UserPoolId: { Ref: Buyers }
+          
+    
+    FacebookAuth:
+      Type: "AWS::Cognito::UserPoolIdentityProvider"
+      Properties:
+        AttributeMapping:
+          preferred_username: "email"
+          username: "id"
+          email: "email"
+        ProviderName: Facebook
+        ProviderType: Facebook
+        ProviderDetails:
+          client_id: ${env:FACEBOOK_CLIENT_ID}
+          client_secret: ${env:FACEBOOK_CLIENT_SECRET}
+          authorize_scopes: "email openid profile"
+        UserPoolId: { Ref: Buyers }
+    
+    
+    
+    BuyersDomain:
+      Type: "AWS::Cognito::UserPoolDomain"
+      Properties:
+        Domain: buyers-indyauction-${self:provider.stage}
+        UserPoolId: { Ref: Buyers }
+
+    BuyersClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        AccessTokenValidity: 60
+        AllowedOAuthFlowsUserPoolClient: true
+        AuthSessionValidity: 10
+        ClientName: default-client
+        UserPoolId: { Ref: Buyers }
+        EnablePropagateAdditionalUserContextData: false
+        EnableTokenRevocation: true
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        SupportedIdentityProviders:
+          - "COGNITO"
+          # - "Google"
+          # - "Facebook"
+        AllowedOAuthFlows:
+          - implicit
+          - code
+        AllowedOAuthScopes:
+          - openid
+          - profile
+          - email
+          - aws.cognito.signin.user.admin
+        CallbackURLs:
+          - "https://www-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/login"
+          - "https://www-${opt:stage}.indyauction.net/register"
+          - "http://localhost:3000/"
+          - "http://localhost:3001/"
+          - "http://localhost:3000/login"
+          - "http://localhost:3000/register"
+        LogoutURLs:
+          - "https://www-${opt:stage}.indyauction.net/"
+          - "https://www-${opt:stage}.indyauction.net/login"
+          - "https://www-${opt:stage}.indyauction.net/register"
+          - "http://localhost:3000/"
+          - "http://localhost:3001/"
+          - "http://localhost:3000/login"
+          - "http://localhost:3000/register"
+        IdTokenValidity: 60
+        PreventUserExistenceErrors: ENABLED
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+        
+
+    
+    CognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: indyauction-buyers-${self:provider.stage}
+        AllowUnauthenticatedIdentities: true
+        AllowClassicFlow: true
+        CognitoIdentityProviders: 
+          - ClientId: !Ref BuyersClient
+            ProviderName: !GetAtt Buyers.ProviderName
+            ServerSideTokenCheck: false
+        # Define more configuration properties as needed
+
+     # Replace with your IAM role
+    
+    MyRoleLogicalName: # Define your IAM role here
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated: "cognito-identity.amazonaws.com"
+              Action: "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud": 
+                    Ref: CognitoIdentityPool
+                "ForAnyValue:StringLike":
+                  "cognito-identity.amazonaws.com:amr": "authenticated"
+
+        Policies:
+          - PolicyName: S3AccessPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "s3:*" # Adjust permissions as needed
+                    
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+  
+    CognitoIdentityPoolRole:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: CognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt: [MyRoleLogicalName, Arn]
+    AdminCognitoIdentityPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_IDENTITY_POOL_ID
+          Type: String
+          Value: { Ref: CognitoIdentityPool }
+
+    AdminCognitoPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_USERPOOL_ID
+          Type: String
+          Value: { Ref: Buyers }
+
+    AdminCognitoPoolNameStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_USERPOOL_NAME
+          Type: String
+          Value: indyauction-buyers-${self:provider.stage}
+    AdminCognitoClientIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_CLIENT_ID
+          Type: String
+          Value: { Ref: BuyersClient }
+    
+    AdminCognitoPoolARNStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_AUTH_ARN
+          Type: String
+          Value:
+            Fn::GetAtt:
+              - Buyers
+              - Arn
+    
+    BuyersDomainStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_USERPOOL_DOMAIN
+          Type: String
+          Value: buyers-indyauction-${self:provider.stage}
+
+    BuyersCognitoIdentityPoolNameStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: BUYER_COGNITO_IDENTITY_POOL_NAME
+          Type: String
+          Value: indyauction-buyers-${self:provider.stage}
+            
 plugins:
   - serverless-offline
   - serverless-package-external

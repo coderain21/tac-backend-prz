@@ -16,12 +16,18 @@ provider "aws" {
 provider "aws" {
   region = data.external.env.result["REGION"]
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-prod"
+}
+
+
+resource "aws_vpc" "mongodb_vpc" {
+  cidr_block = "10.0.0.0/16"
+  provider = aws.deployment-us
 }
 
 # Create a subnet within the VPC
 resource "aws_subnet" "mongodb_subnet" {
-  vpc_id     = aws_default_vpc.default.id
+  vpc_id     = aws_vpc.mongodb_vpc.id
   cidr_block = "10.0.0.0/24"
   provider = aws.deployment-us
 }
@@ -32,6 +38,7 @@ resource "aws_key_pair" "my_key"{
     key_name = "tf-key-pair"
     public_key = tls_private_key.rsa.public_key_openssh
     provider = aws.deployment-us
+  
 }
 resource "tls_private_key" "rsa"{
     algorithm = "RSA"
@@ -46,7 +53,7 @@ resource "local_file" "tf-key"{
 
 
 resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
-  name        = "${data.external.env.result["APPLICATION"]}-parameter-group"
+  name        = "${data.external.env.result["STAGE"]}-parameter-group"
   family      = "docdb5.0" # Adjust the family to match your DocumentDB version
   description = "My DocumentDB Parameter Group"
   parameter {
@@ -68,7 +75,7 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
 
 # Create the DocumentDB instance
 resource "aws_docdb_cluster" "my_documentdb_cluster" {
-  cluster_identifier        = "${data.external.env.result["APPLICATION"]}"
+  cluster_identifier        = "${data.external.env.result["STAGE"]}"
   engine                    = "docdb"
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
@@ -83,7 +90,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
 
 # Create a security group to allow SSH access
 resource "aws_security_group" "ssh_sg" {
-  name        = "ssh-security-group-1"
+  name        = "ssh-security-group"
   description = "SSH Security Group"
   # Allow SSH traffic
   ingress {
@@ -111,7 +118,7 @@ resource "aws_security_group" "ssh_sg" {
 
 # Create an EC2 instance
 resource "aws_instance" "ssh_tunnel" {
-  ami           = "ami-053b0d53c279acc90" # Specify a valid Amazon Linux AMI ID
+  ami           = "ami-0cfd0973db26b893b" # Specify a valid Amazon Linux AMI ID
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg.id]
@@ -136,7 +143,25 @@ resource "aws_ssm_parameter" "documentdb" {
   type  = "String"
   value = "mongodb://${data.aws_ssm_parameter.mongodb-username.value}:${data.aws_ssm_parameter.mongodb-password.value}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
   provider = aws.deployment-us
+  overwrite = true
 }
+
+resource "aws_ssm_parameter" "subnet_id" {
+  name  = "SUBNET_ID"
+  type  = "String"
+  value = aws_subnet.mongodb_subnet.id
+  provider = aws.deployment-us
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "security_group_id" {
+  name  = "SECURITY_GROUP_ID"
+  type  = "String"
+  value = aws_security_group.ssh_sg.id
+  provider = aws.deployment-us
+  overwrite = true
+}
+
 data "aws_ssm_parameter" "mongodb-username" {
   name = "MONGO_USERNAME"
   provider = aws.deployment-us
@@ -172,14 +197,16 @@ resource "aws_default_vpc" "default" {
   provider = aws.deployment-us
 }
 
+
+
 resource "aws_ram_resource_share" "share_vpc" {
   name               = "vpc-share"
   provider = aws.deployment-us
-  allow_external_principals = false
-  # VPC and subnet ARNs to be shared
-  permission_arns = [
-    aws_default_vpc.default.arn,
-    aws_subnet.mongodb_subnet.arn,
-  ]
-  principals = locals.all_accounts_except_current
+  allow_external_principals = true
+}
+
+resource "aws_ram_resource_association" "example" {
+  resource_arn       = aws_subnet.mongodb_subnet.arn
+  resource_share_arn = aws_ram_resource_share.share_vpc.arn
+  provider = aws.deployment-us
 }

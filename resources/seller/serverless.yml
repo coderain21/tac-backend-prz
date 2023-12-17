@@ -1,4 +1,4 @@
-service: cognito-seller-resources
+service: cognito-seller
 frameworkVersion: "3"
 useDotenv: true
 
@@ -37,7 +37,7 @@ resources:
     SellerUsers:
       Type: "AWS::Cognito::UserPool"
       Properties:
-        UserPoolName: ${self:provider.stage}-indyauction
+        UserPoolName: ${self:provider.stage}-indyauction-seller
         Policies:
           PasswordPolicy:
             MinimumLength: 8
@@ -181,11 +181,11 @@ resources:
             StringAttributeConstraints:
               MinLength: "0"
               MaxLength: "2048"
-          - Name: phonenumber_verified
-            AttributeDataType: Boolean
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
+          # - Name: phonenumber_verified
+          #   AttributeDataType: Boolean
+          #   DeveloperOnlyAttribute: false
+          #   Mutable: true
+          #   Required: false
           - Name: address
             AttributeDataType: String
             DeveloperOnlyAttribute: false
@@ -229,13 +229,13 @@ resources:
             Required: false
             StringAttributeConstraints:
               MinLength: "0"
-          - Name: identities
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
+          # - Name: identities
+          #   AttributeDataType: String
+          #   DeveloperOnlyAttribute: false
+          #   Mutable: true
+          #   Required: false
+          #   StringAttributeConstraints:
+          #     MaxLength: "2048"
           - Name: is_first_time_login
             AttributeDataType: String
             DeveloperOnlyAttribute: false
@@ -265,43 +265,49 @@ resources:
     
     
     
-    GoogleAuth:
-      Type: "AWS::Cognito::UserPoolIdentityProvider"
-      Properties:
-        AttributeMapping:
-          preferred_username: "email"
-          username: "email"
-          email: "sub"
-        ProviderName: Google
-        ProviderType: Google
-        ProviderDetails:
-          client_id: ${env:GOOGLE_CLIENT_ID}
-          client_secret: ${env:GOOGLE_CLIENT_SECRET}
-          authorize_scopes: "email openid profile"
-        UserPoolId: { Ref: SellerUsers }
-          
+    # GoogleAuth:
+    #   Type: "AWS::Cognito::UserPoolIdentityProvider"
+    #   Properties:
+    #     AttributeMapping:
+    #       preferred_username: "email"
+    #       username: "sub"
+    #       email: "email"
+    #     ProviderName: Google
+    #     ProviderType: Google
+    #     ProviderDetails:
+    #       client_id: ${env:GOOGLE_CLIENT_ID}
+    #       client_secret: ${env:GOOGLE_CLIENT_SECRET}
+    #       authorize_scopes: "email openid profile"
+    #     UserPoolId: { Ref: SellerUsers }
     
-    FacebookAuth:
-      Type: "AWS::Cognito::UserPoolIdentityProvider"
+    Group:
+      Type: AWS::Cognito::UserPoolGroup
       Properties:
-        AttributeMapping:
-          preferred_username: "email"
-          username: "id"
-          email: "email"
-        ProviderName: Facebook
-        ProviderType: Facebook
-        ProviderDetails:
-          client_id: ${env:FACEBOOK_CLIENT_ID}
-          client_secret: ${env:FACEBOOK_CLIENT_SECRET}
-          authorize_scopes: "email openid profile"
+        GroupName: "seller"
         UserPoolId: { Ref: SellerUsers }
+                
+    
+    # FacebookAuth:
+    #   Type: "AWS::Cognito::UserPoolIdentityProvider"
+    #   Properties:
+    #     AttributeMapping:
+    #       preferred_username: "email"
+    #       username: "id"
+    #       email: "email"
+    #     ProviderName: Facebook
+    #     ProviderType: Facebook
+    #     ProviderDetails:
+    #       client_id: ${env:FACEBOOK_CLIENT_ID}
+    #       client_secret: ${env:FACEBOOK_CLIENT_SECRET}
+    #       authorize_scopes: "email openid profile"
+    #     UserPoolId: { Ref: SellerUsers }
     
     
     
     SellerUsersDomain:
       Type: "AWS::Cognito::UserPoolDomain"
       Properties:
-        Domain: seller-indyauction-${self:provider.stage}
+        Domain: indyauction-seller-${self:provider.stage}
         UserPoolId: { Ref: SellerUsers }
 
     SellerUsersClient:
@@ -346,57 +352,12 @@ resources:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
-        ReadAttributes:
-          - "address"
-          - "birthdate"
-          - "custom:first_time_login"
-          - "custom:is_first_time_login"
-          - "custom:user_type"
-          - "email"
-          - "email_verified"
-          - "family_name"
-          - "gender"
-          - "given_name"
-          - "locale"
-          - "middle_name"
-          - "name"
-          - "nickname"
-          - "phone_number"
-          - "phone_number_verified"
-          - "picture"
-          - "preferred_username"
-          - "profile"
-          - "updated_at"
-          - "website"
-          - "zoneinfo"
-
-        WriteAttributes:
-          - "address"
-          - "birthdate"
-          - "custom:first_time_login"
-          - "custom:is_first_time_login"
-          - "custom:user_type"
-          - "email"
-          - "family_name"
-          - "gender"
-          - "given_name"
-          - "locale"
-          - "middle_name"
-          - "name"
-          - "nickname"
-          - "phone_number"
-          - "picture"
-          - "preferred_username"
-          - "profile"
-          - "updated_at"
-          - "website"
-          - "zoneinfo"
-
+        
     
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
-        IdentityPoolName: indyauction-${self:provider.stage}
+        IdentityPoolName: indyauction-seller-${self:provider.stage}
         AllowUnauthenticatedIdentities: true
         AllowClassicFlow: true
         CognitoIdentityProviders: 
@@ -441,37 +402,37 @@ resources:
                     - "s3:*" # Adjust permissions as needed
                   Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
   
-    AdminCognitoIdentityPoolIDStore:
+    SellerCognitoIdentityPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: ADMIN_COGNITO_IDENTITY_POOL_ID
+          Name: SELLER_COGNITO_IDENTITY_POOL_ID
           Type: String
           Value: { Ref: CognitoIdentityPool }
 
-    AdminCognitoPoolIDStore:
+    SellerCognitoPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: ADMIN_COGNITO_USERPOOL_ID
+          Name: SELLER_COGNITO_USERPOOL_ID
           Type: String
           Value: { Ref: SellerUsers }
 
-    AdminCognitoPoolNameStore:
+    SellerCognitoPoolNameStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: ADMIN_COGNITO_USERPOOL_NAME
+          Name: SELLER_COGNITO_USERPOOL_NAME
           Type: String
           Value: indyauction-${self:provider.stage}
-    AdminCognitoClientIDStore:
+    SellerCognitoClientIDStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: ADMIN_COGNITO_CLIENT_ID
+          Name: SELLER_COGNITO_CLIENT_ID
           Type: String
           Value: { Ref: SellerUsersClient }
     
-    AdminCognitoPoolARNStore:
+    SellerCognitoPoolARNStore:
         Type: AWS::SSM::Parameter
         Properties:
-          Name: ADMIN_COGNITO_AUTH_ARN
+          Name: SELLER_COGNITO_AUTH_ARN
           Type: String
           Value:
             Fn::GetAtt:

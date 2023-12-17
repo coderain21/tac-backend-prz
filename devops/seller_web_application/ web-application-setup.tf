@@ -8,6 +8,11 @@ variable "certificate_domain" {
   default     = "*.indyauction.net"
 }
 provider "aws" {
+  region = "eu-west-2"
+  alias = "deployment-eu"   # Specify a default AWS region here
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
+}
+provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${data.external.env.result["STAGE"]}"
@@ -50,7 +55,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     domain_name = aws_s3_bucket.b.bucket_regional_domain_name
     origin_id = local.s3_origin_id
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Some comment"
@@ -119,12 +124,36 @@ resource "aws_ssm_parameter" "s3_bucket" {
   name  = "SELLER_S3_BUCKET"
   type  = "String"
   value = "${data.external.env.result["SELLER_APPLICATION"]}-${data.external.env.result["STAGE"]}"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_ssm_parameter" "distribution_id" {
   name  = "SELLER_DISTRIBUTION_ID"
   type  = "String"
   value = aws_cloudfront_distribution.s3_distribution.id
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "application_url" {
+  name  = "SELLER_APPLICATION_URL"
+  type  = "String"
+  value = "${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "application_url" {
+  name  = "SELLER_DASHBOARD_APPLICATION_URL"
+  type  = "String"
+  value = "https://-${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}-/"
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "application_url" {
+  name  = "DEFAULT_SUB_DOMAIN"
+  type  = "String"
+  value = "www-${data.external.env.result["STAGE"]}"
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "application_url" {
+  name  = "AMPLIFY_DOMAIN_NAME"
+  type  = "String"
+  value = "${data.external.env.result["DOMAIN"]}"
+  provider = aws.deployment-eu
 }

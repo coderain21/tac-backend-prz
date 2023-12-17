@@ -2,6 +2,11 @@ data "external" "env" {
   program = ["../envs.sh"]
 }
 provider "aws" {
+  region = "eu-west-2"
+  alias = "deployment-eu"   # Specify a default AWS region here
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
+}
+provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${data.external.env.result["STAGE"]}"
@@ -44,7 +49,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     domain_name = aws_s3_bucket.b.bucket_regional_domain_name
     origin_id = local.s3_origin_id
   }
-
+  provider = aws.deployment-eu
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Some comment"
@@ -112,12 +117,19 @@ resource "aws_ssm_parameter" "s3_bucket" {
   name  = "ADMIN_S3_BUCKET"
   type  = "String"
   value = "${data.external.env.result["ADMIN_APPLICATION"]}-${data.external.env.result["STAGE"]}"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_ssm_parameter" "distribution_id" {
   name  = "ADMIN_DISTRIBUTION_ID"
   type  = "String"
   value = aws_cloudfront_distribution.s3_distribution.id
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
+}
+
+resource "aws_ssm_parameter" "application_url" {
+  name  = "ADMIN_APPLICATION_URL"
+  type  = "String"
+  value = "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"
+  provider = aws.deployment-eu
 }

@@ -12,6 +12,8 @@ dist/
 services/**/package-lock.json
 services/**/node_modules
 services/**/.env
+resources/**/.env
+resources/**/.serverless/**
 services/**/.serverless/**
 services/**/entities
 services/**/lib
@@ -20,7 +22,12 @@ services/**/api-testing.sh
 test-results
 /test_results
 logins.sh
-devops/**/.terraform/**
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
+nodejs.zip
+nodejs
 # Compiled Java class files
 *.class
 # Compiled Python bytecode

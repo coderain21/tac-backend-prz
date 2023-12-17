@@ -14,32 +14,32 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${env:REGION}
   versionFunctions: false
-  layers: ${env:COMMON_LIB_ARN}
+  layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     LOTS_TABLE_NAME: ${opt:stage, self:provider.stage}-lots
     BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
-    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${env:DATABASE}
-    MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
-    MONGO_CLIENT: ${env:MONGO_CLIENT}
-    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
-    COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    DATABASE: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_NAME: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     CSV_FILE: ${env:CSV_FILE}
-    S3_BUCKET: ${env:S3_BUCKET}
-    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
-    COUNTER_LOT: ${env:COUNTER_LOT}
-    REGISTER_AUCTION_COLLECTION: ${env:REGISTER_AUCTION_COLLECTION}
-    SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
-    USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
-    KMS_KEY_ID: ${env:KMS_KEY_ID}
+    S3_BUCKET:  ${ssm:BUCKET_NAME}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
+    USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -51,12 +51,12 @@ provider:
           - "template/${self:provider.stage}-buyer_email_otp"
           - "EMAIL"
     ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
-    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
     RECAPTCHA_URL: ${env:RECAPTCHA_URL}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
-    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN}
+    SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL}
+    DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
@@ -70,9 +70,9 @@ provider:
           - "EMAIL"
    
     BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    CDN_LINK: ${env:CDN_LINK}
-    DEFAULT_USERPOOL_ID: ${env:DEFAULT_USERPOOL_ID}
-    DEFAULT_COGNITO_DOMAIN: ${env:DEFAULT_COGNITO_DOMAIN}
+    CDN_LINK: ${ssm:CDN_URL}
+    DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
     STRIPE_API_KEY: ${env:STRIPE_API_KEY}
     CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
@@ -113,10 +113,10 @@ custom:
       
   customDomain:
     rest:
-      domainName: ${env:DOMAIN_NAME}
+      domainName: ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
       basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
-      certificateName: ${env:DOMAIN_CERTIFICATE}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
@@ -128,12 +128,12 @@ functions:
     runtime: python3.8
     memorySize: 128
     layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -149,19 +149,19 @@ functions:
               - Access-Control-Allow-Headers
           path: /
           method: post
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   remove_wishlist:
     handler: handlers/remove_wishlist.remove
     runtime: python3.8
     memorySize: 128
     layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -177,7 +177,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /remove
           method: delete
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:

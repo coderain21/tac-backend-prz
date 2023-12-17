@@ -14,26 +14,26 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${env:REGION}
   versionFunctions: false
-  layers: ${env:COMMON_LIB_ARN}
+  layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${env:DATABASE}
-    MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
-    MONGO_CLIENT: ${env:MONGO_CLIENT}
-    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
-    COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    DATABASE: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_NAME: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     CSV_FILE: ${env:CSV_FILE}
-    S3_BUCKET: ${env:S3_BUCKET}
-    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
-    COUNTER_LOT: ${env:COUNTER_LOT}
+    S3_BUCKET:  ${ssm:BUCKET_NAME}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     
     
   http:
@@ -70,10 +70,10 @@ custom:
       
   customDomain:
     rest:
-      domainName: ${env:DOMAIN_NAME}
+      domainName: ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
       basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
-      certificateName: ${env:DOMAIN_CERTIFICATE}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
@@ -83,261 +83,261 @@ functions:
   create:
     handler: handlers/create.create_auction
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /
           method: post
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
     
   list_auction:
       handler: handlers/list.list_auction
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /
             method: get
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
   delete_note:
       handler: handlers/delete_note.delete_note
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /
             method: patch
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
   create_lots:
     handler: handlers/create_lots.lambda_handler
     runtime: python3.8
     layers:
-      - ${env:PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /lots
           method: post
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
             
   list_lots:
     handler: handlers/view_lots.list_lots
     runtime: python3.8
     layers:
-      - ${env:PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /lots
           method: get
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
   delete_lot:
       handler: handlers/delete_lot.delete_lot
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /lots
             method: delete
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   reorder_lot:
       handler: handlers/reorder_lots.lambda_handler
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /reorder-lots
             method: post
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
     
   clone_auction:
       handler: handlers/clone_auction.clone_auction
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /clone
             method: post
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   view:
     handler: handlers/view.view
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /view
           method: get
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   update_lot:
       handler: handlers/update_lot.update
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /lots
             method: patch
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   import_lots:
     handler: handlers/import_lots.import_lots
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /import
           method: post
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   update_auction:
       handler: handlers/update.update_auction
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /update/{auction_id}
             method: patch
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   delete_auction:
       handler: handlers/delete.delete_auction
       runtime: python3.8
       memorySize: 128
       layers:
-        - ${env:PYTHON_LIB_ARN}
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - sg-0882c1da39e729097
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+          - ${ssm:SUBNET_ID}
       events:
         - http:
             cors: true
             path: /{auction_id}
             method: delete
             authorizer:
-                arn: ${env:COGNITO_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   deactivate:
     handler: handlers/deactivate.deactivate
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
           path: /deactivate
           method: post
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 plugins:
   - serverless-offline

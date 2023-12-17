@@ -205,3 +205,9 @@ resource "aws_ssm_parameter" "assets_bucket" {
   value = "indyauction-assets-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-ap
 }
+resource "aws_ssm_parameter" "application_url" {
+  name  = "CDN_URL"
+  type  = "String"
+  value = "${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}"
+  provider = aws.deployment-ap
+}
