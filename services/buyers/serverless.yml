@@ -142,331 +142,331 @@ functions:
           trigger: PreSignUp
           existing: true
 
-  view:
-    handler: handlers/view.view
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /view
-          method: get
+#   view:
+#     handler: handlers/view.view
+#     runtime: python3.8
+#     layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#         - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /view
+#           method: get
           
-  create_userpools:
-    handler: handlers/userpool.create
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /
-          method: get
+#   create_userpools:
+#     handler: handlers/userpool.create
+#     runtime: python3.8
+#     layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#         - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /
+#           method: get
 
-  verify-recaptha:
-    handler: handlers/verify_the_recaptcha.verify
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          path: /verify-captcha
-          method: post
-          cors: true
+#   verify-recaptha:
+#     handler: handlers/verify_the_recaptcha.verify
+#     runtime: python3.8
+#     layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#         - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           path: /verify-captcha
+#           method: post
+#           cors: true
 
-  otp-validation:
-    handler: handlers/otp_validation.validate
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          path: /otp-validation
-          method: post
-          cors: true
+#   otp-validation:
+#     handler: handlers/otp_validation.validate
+#     runtime: python3.8
+#     layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#       - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+#     vpc:
+#       securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#         - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           path: /otp-validation
+#           method: post
+#           cors: true
 
-  view_lots:
-    handler: handlers/view_list_lots.view_list_lots
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /view-lots
-          method: get
+#   view_lots:
+#     handler: handlers/view_list_lots.view_list_lots
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /view-lots
+#           method: get
   
-  search_lots:
-    handler: handlers/search_lots.lot_search
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /search-lots
-          method: get
+#   search_lots:
+#     handler: handlers/search_lots.lot_search
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /search-lots
+#           method: get
 
               
-  view_lot_details:
-    handler: handlers/view_lots.lot_details
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /lot-details
-          method: get
+#   view_lot_details:
+#     handler: handlers/view_lots.lot_details
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /lot-details
+#           method: get
           
-  credit_card:
-    handler: handlers/credit_card.credit_card
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /verify-card
-          method: post
+#   credit_card:
+#     handler: handlers/credit_card.credit_card
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /verify-card
+#           method: post
 
-  acceting_buyer:
-      handler: handlers/accept_buyer.accept_buyer
-      runtime: python3.8
-      layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-      vpc:
-        securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-        subnetIds:
-        - ${ssm:SUBNET_ID}
-      events:
-        - http:
-            cors: true
-            path: /approval
-            method: patch
-            authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+#   acceting_buyer:
+#       handler: handlers/accept_buyer.accept_buyer
+#       runtime: python3.8
+#       layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#       vpc:
+#         securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#         subnetIds:
+#         - ${ssm:SUBNET_ID}
+#       events:
+#         - http:
+#             cors: true
+#             path: /approval
+#             method: patch
+#             authorizer:
+#               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
-  update_password:
-    handler: handlers/update_password.update_password
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
-          path: /update-password
-          method: post
+#   update_password:
+#     handler: handlers/update_password.update_password
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors:
+#             origin: '*'
+#             headers:
+#               - Content-Type
+#               - X-Amz-Date
+#               - Authorization
+#               - X-Api-Key
+#               - X-Amz-Security-Token
+#               - X-Requested-With
+#               - Accept
+#               - Access-Control-Allow-Headers
+#           authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+#           path: /update-password
+#           method: post
   
 
 
-  auction_register:
-    handler: handlers/register_auction.register_auction
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          path: /auction-register
-          method: get
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+#   auction_register:
+#     handler: handlers/register_auction.register_auction
+#     runtime: python3.8
+#     layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#         - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           path: /auction-register
+#           method: get
+#           cors:
+#             origin: '*'
+#             headers:
+#               - Content-Type
+#               - X-Amz-Date
+#               - Authorization
+#               - X-Api-Key
+#               - X-Amz-Security-Token
+#               - X-Requested-With
+#               - Accept
+#               - Access-Control-Allow-Headers
+#           authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
-  view_profile:
-    handler: handlers/view_profile.view_profile
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /profile
-          method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+#   view_profile:
+#     handler: handlers/view_profile.view_profile
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors:
+#             origin: '*'
+#             headers:
+#               - Content-Type
+#               - X-Amz-Date
+#               - Authorization
+#               - X-Api-Key
+#               - X-Amz-Security-Token
+#               - X-Requested-With
+#               - Accept
+#               - Access-Control-Allow-Headers
+#           path: /profile
+#           method: patch
+#           authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
-  add_address:
-    handler: handlers/add_address.add_address
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /add-address
-          method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+#   add_address:
+#     handler: handlers/add_address.add_address
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors:
+#             origin: '*'
+#             headers:
+#               - Content-Type
+#               - X-Amz-Date
+#               - Authorization
+#               - X-Api-Key
+#               - X-Amz-Security-Token
+#               - X-Requested-With
+#               - Accept
+#               - Access-Control-Allow-Headers
+#           path: /add-address
+#           method: patch
+#           authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
       
-  paddle_number:
-    handler: handlers/get_paddle.paddle_number
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /paddle
-          method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+#   paddle_number:
+#     handler: handlers/get_paddle.paddle_number
+#     runtime: python3.8
+#     layers:
+#     - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#       - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#       - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors:
+#             origin: '*'
+#             headers:
+#               - Content-Type
+#               - X-Amz-Date
+#               - Authorization
+#               - X-Api-Key
+#               - X-Amz-Security-Token
+#               - X-Requested-With
+#               - Accept
+#               - Access-Control-Allow-Headers
+#           path: /paddle
+#           method: get
+#           authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
-  send-reset-link:
-    handler: handlers/send_reset_link.send_reset_link
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /forgot_password
-          method: post
+#   send-reset-link:
+#     handler: handlers/send_reset_link.send_reset_link
+#     runtime: python3.8
+#     layers:
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#     vpc:
+#       securityGroupIds:
+#         - ${ssm:SECURITY_GROUP_ID}
+#       subnetIds:
+#         - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /forgot_password
+#           method: post
 
-  update-new-password:
-    handler: handlers/reset.password_reset
-    runtime: python3.8
-    layers: 
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
-    vpc:
-        securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
-        subnetIds:
-          - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors: true
-          path: /reset_password
-          method: post
+#   update-new-password:
+#     handler: handlers/reset.password_reset
+#     runtime: python3.8
+#     layers: 
+#       - ${ssm:COMMON_LIB_ARN_PYTHON}
+#       - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+#     vpc:
+#         securityGroupIds:
+#           - ${ssm:SECURITY_GROUP_ID}
+#         subnetIds:
+#           - ${ssm:SUBNET_ID}
+#     events:
+#       - http:
+#           cors: true
+#           path: /reset_password
+#           method: post
 
   
-    # # events:
-    #   - cognitoUserPool:
-    #       pool: 'indyauction-staging-buyers'
-    #       trigger: PreSignUp
-    #       existing: true
+#     # # events:
+#     #   - cognitoUserPool:
+#     #       pool: 'indyauction-staging-buyers'
+#     #       trigger: PreSignUp
+#     #       existing: true
 
 resources:
    Resources:
