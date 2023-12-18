@@ -112,8 +112,7 @@ def list_lots(event, context):
 
 def export_lots_as_csv(lots, db):
     """
-    The function exports lots of data as a CSV file using a database connection.
-
+    The function exports lots of data as a CSV file using a database connection.    
     :param lots: A list of dictionaries representing lots of data
     :param db: The `db` parameter is a database connection object that allows you to interact with a
     database. It can be used to execute SQL queries, fetch data, and perform other database operations
