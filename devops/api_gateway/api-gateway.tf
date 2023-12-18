@@ -70,7 +70,7 @@ resource "aws_ssm_parameter" "api_gateway_domain_name" {
   value = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-us
 }
-resource "aws_ssm_parameter" "api_gateway_domain_name" {
+resource "aws_ssm_parameter" "api_gateway_domain_name_frontend" {
   name  = "/DOMAIN_NAME_FRONT_END"
   type  = "String"
   value = "https://apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
