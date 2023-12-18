@@ -35,6 +35,24 @@ resource "aws_s3_bucket" "b" {
     Name = "${data.external.env.result["STAGE"]}"
   }
 }
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
+  bucket = aws_s3_bucket.b.id
+
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+
+resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
+  bucket = aws_s3_bucket.b.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
 
 data "aws_acm_certificate" "existing_certificate" {
   domain   = data.external.env.result["CERTIFICATE_DOMAIN"]

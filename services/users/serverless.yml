@@ -482,7 +482,7 @@ resources:
             RequireNumbers: true
             RequireSymbols: true
             TemporaryPasswordValidityDays: 7
-        DeletionProtection: ACTIVE
+        # DeletionProtection: ACTIVE
         Schema:
           - Name: sub
             AttributeDataType: String
@@ -875,7 +875,12 @@ resources:
               - SellerUsers
               - Arn
        
-    
+    SellerDomainStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: SELLER_COGNITO_USERPOOL_DOMAIN
+          Type: String
+          Value: indyauction-seller-${self:provider.stage}
 
     
 

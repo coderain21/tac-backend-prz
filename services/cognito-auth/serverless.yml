@@ -31,16 +31,6 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
-            - cognito-idp:AdminAddUserToGroup
-            - cognito-idp:AdminConfirmSignUp
-            - cognito-idp:AdminCreateUser
-            - cognito-idp:AdminDeleteUser
-            - cognito-idp:AdminDisableUser
-            - cognito-idp:AdminEnableUser
-            - cognito-idp:AdminGetUser
-            - cognito-idp:AdminRemoveUserFromGroup
-            - cognito-idp:AdminResetUserPassword
-            - cognito-idp:AdminUpdateUserAttributes
           Resource: "*"
   
 
@@ -106,7 +96,7 @@ resources:
             RequireNumbers: true
             RequireSymbols: false
             TemporaryPasswordValidityDays: 7
-        DeletionProtection: ACTIVE
+        # DeletionProtection: ACTIVE
         Schema:
           - Name: sub
             AttributeDataType: String

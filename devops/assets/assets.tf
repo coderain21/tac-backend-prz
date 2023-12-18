@@ -92,6 +92,25 @@ resource "aws_s3_bucket" "assets" {
   }
   provider = aws.deployment-ap
 }
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
+  bucket = aws_s3_bucket.assets.id
+
+  rule {
+    object_ownership = "ObjectWriter"
+  }
+}
+
+
+resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
+  bucket = aws_s3_bucket.assets.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
+}
+
+
 
 resource "aws_s3_bucket_cors_configuration" "enable_cors_assets" {
   bucket = aws_s3_bucket.assets.id
@@ -164,6 +183,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     acm_certificate_arn = aws_acm_certificate.cert_us_east_1.arn
     ssl_support_method = "sni-only"
   }
+
 
 
 }
