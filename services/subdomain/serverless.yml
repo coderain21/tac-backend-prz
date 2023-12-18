@@ -118,7 +118,7 @@ custom:
     rest:
       domainName: ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
-      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
+      basePath: v1/${self:service}
       certificateName: ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
