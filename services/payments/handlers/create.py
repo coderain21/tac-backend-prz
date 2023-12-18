@@ -211,9 +211,7 @@ def create_intent(event, context):
         shipping = data.get("shipping")
         time_stamp = int(data.get("timestamp"))
         payment= data.get("payment")
-        seller_data_of_auction = # The above code is defining a function called
-        # "fetch_seller_data_from_auction".
-        fetch_seller_data_from_auction(auction_id)
+        seller_data_of_auction = fetch_seller_data_from_auction(auction_id)
         if seller_data_of_auction is None:
             return {
                 "statusCode": 404,
