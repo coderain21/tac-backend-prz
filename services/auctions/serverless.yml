@@ -403,7 +403,7 @@ functions:
   send-email_auction:
     handler: handlers/auto_completion_bid.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:12
     vpc:
         securityGroupIds:
           - sg-0882c1da39e729097
