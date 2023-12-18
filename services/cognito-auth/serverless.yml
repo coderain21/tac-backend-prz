@@ -12,7 +12,7 @@ provider:
   endpointType: REGIONAL
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${env:REGION}
+  region: eu-west-2
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   http:
@@ -31,7 +31,26 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
+            - cognito-idp:AdminAddUserToGroup
+            - cognito-idp:AdminConfirmSignUp
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminDeleteUser
+            - cognito-idp:AdminDisableUser
+            - cognito-idp:AdminEnableUser
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminRemoveUserFromGroup
+            - cognito-idp:AdminResetUserPassword
+            - cognito-idp:AdminUpdateUserAttributes
           Resource: "*"
+  
+
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+  
+
+    
  
 package:
   patterns:
@@ -48,15 +67,7 @@ custom:
       - '../../lib'
       - '../../entities'
       
-  customDomain:
-    rest:
-      domainName: ${ssm:DOMAIN_NAME}
-      stage: ${opt:stage, self:provider.stage}
-      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
-      certificateName: ${ssm:DOMAIN_CERTIFICATE}
-      createRoute53Record: true
-      securityPolicy: tls_1_2
-      endpointType: REGIONAL
+  
 
 functions: 
   pre-auth:
@@ -475,4 +486,4 @@ resources:
 plugins:
   - serverless-offline
   - serverless-package-external
-  - serverless-domain-manager
+  # - serverless-domain-manager
