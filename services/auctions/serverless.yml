@@ -400,8 +400,8 @@ functions:
         subnetIds:
           - subnet-0ff05c7c2bd2a3f87
 
-  send-email:
-    handler: handlers/send_email.handler
+  send-email_auction:
+    handler: handlers/auto_completion_bid.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
     vpc:
@@ -409,12 +409,7 @@ functions:
           - sg-0882c1da39e729097
         subnetIds:
           - subnet-0ff05c7c2bd2a3f87
-    events:
-        - http:
-            cors: true
-            path: /sendmail
-            method: post
-
+    
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
@@ -437,15 +432,7 @@ functions:
         subnetIds:
           - subnet-0ff05c7c2bd2a3f87
   
-  send-email_auction:
-    handler: handlers/send_email.handler
-    layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+
       
 
 plugins:
