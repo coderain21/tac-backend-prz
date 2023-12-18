@@ -3,9 +3,11 @@ import json
 import re
 import random
 import os
+import boto3
 from bson import ObjectId
 import requests
 from pymongo import MongoClient
+from botocore.exceptions import ClientError
 from lib.helper_python import encrypt_with_time_validation, send_pinpoint_email
 
 headers = {
@@ -53,6 +55,26 @@ def verify_buyer_recaptcha(token, hostname):
         print(str(e))
         return {'success': False}
 
+def check_user_in_cognito(email_address):
+    client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
+
+    try:
+        response = client.admin_get_user(
+            UserPoolId=os.environ['DEFAULT_USERPOOL_ID'],
+            Username=email_address
+        )
+        # If the user is found, return True
+        return True
+    except ClientError as e:
+        # If the error is UserNotFoundException, the user does not exist
+        if e.response['Error']['Code'] == 'UserNotFoundException':
+            return False
+        else:
+            # Handle other exceptions if needed
+            print(f"Error checking user in Cognito: {e}")
+            return False
+
+
 def verify(event, context):
     try:
         data = json.loads(event['body'])
@@ -77,10 +99,9 @@ def verify(event, context):
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
-        user_exist = user_collection.find_one(
-            {'email_address': data['email_address'],'seller_email': seller_details['seller_email'], 'user_type': data['user_type']})
+        user_exist = check_user_in_cognito(data['email_address'])
 
-        if user_exist:
+        if user_exist is True:
             client.close()
             return {
                 'statusCode': 409,
@@ -96,6 +117,7 @@ def verify(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': "Password Doesn't match"})
             }
+
 
         if is_valid_password(password):
             if password == confirm_password:
@@ -132,6 +154,7 @@ def verify(event, context):
             'body': json.dumps({'encrypted_token': encrypted_data})
         }
     except Exception as e:
+        print('Error:', str(e))
         print('Error:', str(e))
         return {
             'statusCode': 500,
