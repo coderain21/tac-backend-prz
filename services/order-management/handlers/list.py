@@ -132,6 +132,7 @@ def list_orders(event, context):
                 "headers": headers,
                 "body": json.dumps({"data":list(orders_list),
                                     "total_pages": total_pages,
+                                    "total_records": total_records,
                                     "current_page": page,
                                     "total_orders": total_orders},cls = Encoder)
             }
