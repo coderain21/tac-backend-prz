@@ -14,6 +14,11 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${env:REGION}
   versionFunctions: false
+  vpc:
+    securityGroupIds:
+      - sg-0882c1da39e729097
+    subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
   layers: ${env:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
@@ -39,6 +44,9 @@ provider:
     STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
+    BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
+    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-bid-dev.fifo
+    QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-bid-dev.fifo
     
     
   http:
@@ -58,6 +66,7 @@ provider:
             - cognito-idp:*
             - ses:*
             - s3:*
+            - sqs:*
             - states:*
             - lambda:*
             - mobiletargeting:*
@@ -394,22 +403,18 @@ functions:
     handler: handlers/add_to_cart.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
 
   send-email_auction:
     handler: handlers/auto_completion_bid.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:12
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
-    
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
+
+    # events:
+    #   - http:
+    #       cors: true
+    #       path: /auto-completion
+    #       method: post
+
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
@@ -420,20 +425,27 @@ functions:
         subnetIds:
           - subnet-0ff05c7c2bd2a3f87
       
-         #${env:LAMBDA_LAYER}
+  sqs-trigger-function:
+    handler: handlers/sqs_trigger_function.sqsTriggerFunction
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
   
 
-      
+resources:
+  Resources:
+    messageQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
+        FifoQueue: true
+ 
 
 plugins:
   - serverless-offline
