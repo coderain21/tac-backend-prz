@@ -57,6 +57,48 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
 }
 
 
+resource "aws_eip" "nat_gateway" {
+  vpc = true
+  provider = aws.deployment-us
+}
+
+resource "aws_nat_gateway" "nat_gateway" {
+  allocation_id = aws_eip.nat_gateway.id
+  subnet_id = aws_default_subnet.default_az1.id
+  tags = {
+    "Name" = "DummyNatGateway"
+  }
+  provider = aws.deployment-us
+}
+
+output "nat_gateway_ip" {
+  value = aws_eip.nat_gateway.public_ip
+}
+
+resource "aws_route_table" "instance" {
+  vpc_id = aws_default_vpc.def_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  }
+  provider = aws.deployment-us
+}
+
+resource "aws_route_table_association" "instance" {
+  subnet_id = aws_subnet.mongodb_subnet.id
+  route_table_id = aws_route_table.instance.id
+  provider = aws.deployment-us
+}
+
+data "aws_availability_zones" "available" {
+  provider = aws.deployment-us
+  }
+
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = data.aws_availability_zones.available.names[0]
+  provider = aws.deployment-us
+}
+
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id

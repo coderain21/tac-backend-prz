@@ -32,16 +32,18 @@ terraform -chdir=devops/api_gateway init
 terraform -chdir=devops/api_gateway apply -auto-approve
 terraform -chdir=devops/dependencies/node init
 terraform -chdir=devops/dependencies/node apply -auto-approve
-terraform -chdir=devops/dependencies/node-2 init
-terraform -chdir=devops/dependencies/node-2 apply -auto-approve
-terraform -chdir=devops/dependencies/node-3 init
-terraform -chdir=devops/dependencies/node-3 apply -auto-approve
+terraform -chdir=devops/dependencies/nodejs-layer init
+terraform -chdir=devops/dependencies/nodejs-layer apply -auto-approve
 terraform -chdir=devops/dependencies/python init
 terraform -chdir=devops/dependencies/python apply -auto-approve
 terraform -chdir=devops/kms init
 terraform -chdir=devops/kms apply -auto-approve
 terraform -chdir=devops/mongodb init
 terraform -chdir=devops/mongodb apply -auto-approve
+if [ "STAGE" = "qa" ]; then
+    terraform -chdir=devops/dependencies/bitbucket-layer-node init
+    terraform -chdir=devops/dependencies/bitbucket-layer-node apply -auto-approve
+fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
