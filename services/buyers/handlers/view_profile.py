@@ -4,6 +4,7 @@ import os
 from pymongo import MongoClient
 # from bson import ObjectId
 from lib.common_helper import Encoder
+from bson import ObjectId
 
 headers = {
     'Content-Type': 'application/json',
@@ -46,6 +47,27 @@ def view_profile(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
+        auction_id = data['auction_id']
+        auction_id= ObjectId(auction_id)
+        auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        auction= auction_collection.find({'_id':auction_id})
+        auction= list(auction)
+        seller_email=auction[0]['seller_email']
+        if 'token' in data:
+            if data['token']=='True':
+                body = json.loads(event['body'])
+                update_data={}
+                if 'token' in body:
+                    update_data['token']= body['token']
+                else:
+                    update_data['token']=""
+                result= collection.update_one({'email_address':email_address,'seller_email':seller_email},
+                                                   {"$set": update_data})
+                return{
+                "statusCode": 200,
+                "headers": headers,
+                "body": json.dumps({"message":"updated token"})
+                }
         if data['update'] == 'True':
             body = json.loads(event['body'])
             update_data={}
@@ -62,13 +84,15 @@ def view_profile(event, context):
                 }
             if 'last_name' in body:
                 update_data['last_name']= body['last_name']
-            result= collection.find_one_and_update({'email_address':email_address},
+            result= collection.find_one_and_update({'email_address':email_address,'seller_email':seller_email},
                                                    {"$set": update_data})
-        result= collection.find_one({'email_address':email_address},
+        result= collection.find_one({'email_address':email_address,'seller_email':seller_email},
                       { "password": 0,
                       "terms_and_condition": 0,
                       "user_type":0,
-                      "newsletter_notification":0})
+                      "newsletter_notification":0,
+                        "token":0
+                      })
         client.close()
         if result is None:
             return {
@@ -94,8 +118,9 @@ def view_profile(event, context):
             "body": json.dumps({'data':result},cls=Encoder)
             }
     except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": e})
+            "body": json.dumps({"message": "internal server error"})
             }
