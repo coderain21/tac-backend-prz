@@ -16,19 +16,13 @@ provider "aws" {
 provider "aws" {
   region = data.external.env.result["REGION"]
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-prod"
-}
-
-
-resource "aws_vpc" "mongodb_vpc" {
-  cidr_block = "10.0.0.0/16"
-  provider = aws.deployment-us
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
 # Create a subnet within the VPC
 resource "aws_subnet" "mongodb_subnet" {
-  vpc_id     = aws_vpc.mongodb_vpc.id
-  cidr_block = "10.0.0.0/24"
+  vpc_id     = aws_default_vpc.def_vpc.id
+  cidr_block = "172.31.96.0/20"
   provider = aws.deployment-us
 }
 
@@ -38,7 +32,6 @@ resource "aws_key_pair" "my_key"{
     key_name = "tf-key-pair"
     public_key = tls_private_key.rsa.public_key_openssh
     provider = aws.deployment-us
-  
 }
 resource "tls_private_key" "rsa"{
     algorithm = "RSA"
@@ -80,9 +73,9 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   skip_final_snapshot        = true
-  master_username         = "indyauctionmaster"
-  master_password         = "masterindyauction"
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id]
+  master_username         = "arcmmaster"
+  master_password         = "masterarcm"
+  vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-us
 }
 
@@ -92,6 +85,35 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
 resource "aws_security_group" "ssh_sg" {
   name        = "ssh-security-group"
   description = "SSH Security Group"
+  vpc_id = aws_default_vpc.def_vpc.id
+  # Allow SSH traffic
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+  }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  provider = aws.deployment-us
+}
+
+
+resource "aws_security_group" "ssh_sg_1" {
+  name        = "ssh-security-group1"
+  description = "SSH Security Group"
+  vpc_id = aws_default_vpc.def_vpc.id
   # Allow SSH traffic
   ingress {
     from_port   = 22
@@ -121,7 +143,7 @@ resource "aws_instance" "ssh_tunnel" {
   ami           = "ami-0cfd0973db26b893b" # Specify a valid Amazon Linux AMI ID
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
-  vpc_security_group_ids = [aws_security_group.ssh_sg.id]
+  vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-us
   # User data to create the SSH tunnel
   user_data = <<-EOF
@@ -157,7 +179,7 @@ resource "aws_ssm_parameter" "subnet_id" {
 resource "aws_ssm_parameter" "security_group_id" {
   name  = "SECURITY_GROUP_ID"
   type  = "String"
-  value = aws_security_group.ssh_sg.id
+  value = aws_security_group.ssh_sg_1.id
   provider = aws.deployment-us
   overwrite = true
 }
@@ -171,42 +193,6 @@ data "aws_ssm_parameter" "mongodb-password" {
   provider = aws.deployment-us
 }
 
-data "aws_organizations_organization" "org" {
-  provider = aws.main
-}
-
-data "aws_organizations_organizational_unit_child_accounts" "accounts" {
-  parent_id = data.aws_organizations_organization.org.roots[0].id
-  provider = aws.main
-}
-
-# Get the current AWS account ID
-data "aws_caller_identity" "current" {
-  provider = aws.deployment-us
-}
-
-# Filter out the current account from the list of child accounts
-locals {
-  all_accounts_except_current = [
-    for account in data.aws_organizations_organizational_unit_child_accounts.accounts.accounts :
-    account.id if account.id != data.aws_caller_identity.current.account_id
-  ]
-}
-
-resource "aws_default_vpc" "default" {
-  provider = aws.deployment-us
-}
-
-
-
-resource "aws_ram_resource_share" "share_vpc" {
-  name               = "vpc-share"
-  provider = aws.deployment-us
-  allow_external_principals = true
-}
-
-resource "aws_ram_resource_association" "example" {
-  resource_arn       = aws_subnet.mongodb_subnet.arn
-  resource_share_arn = aws_ram_resource_share.share_vpc.arn
+resource "aws_default_vpc" "def_vpc"{
   provider = aws.deployment-us
 }

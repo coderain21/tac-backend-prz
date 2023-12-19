@@ -38,10 +38,8 @@ terraform -chdir=devops/dependencies/python init
 terraform -chdir=devops/dependencies/python apply -auto-approve
 terraform -chdir=devops/kms init
 terraform -chdir=devops/kms apply -auto-approve
-if [ "STAGE" = "prod" ]; then
-    terraform -chdir=devops/mongodb init
-    terraform -chdir=devops/mongodb apply -auto-approve
-fi
+terraform -chdir=devops/mongodb init
+terraform -chdir=devops/mongodb apply -auto-approve
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
