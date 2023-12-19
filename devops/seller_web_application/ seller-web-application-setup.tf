@@ -169,7 +169,7 @@ resource "aws_ssm_parameter" "default_subdomain" {
   value = "www-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "default_subdomain" {
+resource "aws_ssm_parameter" "static_auction_url" {
   name  = "BUYER_STATIC_AUCTION_URL"
   type  = "String"
   value = "https://www-${data.external.env.result["STAGE"]}/"
