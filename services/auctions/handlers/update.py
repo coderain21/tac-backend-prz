@@ -202,7 +202,6 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "No Lots Found"})
                 }
             else:
-                print('eventtttttttttttttttt', event)
                 # invoke_state_machine(event)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
@@ -215,16 +214,13 @@ def update_auction(event, context):
                     print('invoking', invoking)
                     collection = db["dev-step-function-arns"]
                     step_request={}
-                    print('11', invoking['executionArn'])
                     step_request['arn'] = invoking['executionArn']
-                    print('2222',itemData )
                     id_value = item['_id']
                     step_request['lot_id'] = str(id_value)
                     step_request['auction_id'] = auction_id
                     step_request['seller_email'] = seller_email
-                    print('step', step_request)
-                    x = collection.insert_one(step_request)
-                    print('xxxx', x)
+                    inserted = collection.insert_one(step_request)
+                    print('inserted', inserted)
                     # for item in listLots:
                     #     print('inside for', item)
                     #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
