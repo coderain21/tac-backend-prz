@@ -45,8 +45,8 @@ provider:
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
-    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-bid-dev.fifo
-    QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-bid-dev.fifo
+    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
     
     
   http:
@@ -144,11 +144,6 @@ functions:
     handler: handlers/create.create_auction
     layers:
       - ${env:COMMON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -163,11 +158,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -182,11 +172,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -200,11 +185,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -218,11 +198,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -237,11 +212,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -256,11 +226,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -275,11 +240,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -293,11 +253,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -312,11 +267,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -330,11 +280,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -349,11 +294,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -368,11 +308,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -386,11 +321,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -419,11 +349,6 @@ functions:
     handler: handlers/save_to_cache.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       
   sqs-trigger-function:
     handler: handlers/sqs_trigger_function.sqsTriggerFunction
@@ -443,7 +368,7 @@ resources:
     messageQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
+        QueueName: ${env:SQS_QUEUE_ARN}
         FifoQueue: true
  
 

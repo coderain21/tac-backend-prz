@@ -140,24 +140,12 @@ def update_auction(event, context):
             auction_information = auction_record.copy()
             # Extract end_date from auction_record
             end_date_timestamp = auction_record['end_date'] / 1000
-            print('1111111111111')
             # Convert timestamp to datetime object
             date_time = datetime.utcfromtimestamp(end_date_timestamp)
-            print('444444444444444')
             iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
-            print('2222222222')
-
-            # Format the datetime object as an ISO 8601 string
-            # iso_string = date_time.isoformat()
-            print('isoformat', iso_date_with_offset)
-            
-            
-
             # Assign the ISO 8601 string to 'end_date' key in auction_information
             # auction_information['_id'] = str(auction_information['_id'])
             auction_information['end_date'] = iso_date_with_offset
-            print('auction_information', auction_information)
-            json_string = json.dumps(auction_information, cls= Encoder)
             del auction_information['created_at']
             del auction_information['updated_at']
             auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
