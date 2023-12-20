@@ -12,7 +12,7 @@ provider "aws" {
 
 resource "null_resource" "nodejs" {
   provisioner "local-exec" {
-    command = "npm i --force && mv node_modules layer/nodejs"
+    command = "npm i --force && mkdir layer && mv node_modules layer && cd layer && mkdir nodejs && mv node_modules nodejs"
   }
 }
 
