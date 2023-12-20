@@ -16,7 +16,7 @@ provider "aws" {
 
 provider "aws" {
   region = "eu-west-2"
-  alias = "deployment-ap"   # Specify a default AWS region here
+  alias = "deployment-ap"   
   profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
