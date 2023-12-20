@@ -3,6 +3,9 @@ import os
 import json
 import pymongo
 from lib.get import get_by_email
+from lib.invoke_step_function import invoke_state_machine
+from lib.common_helper import Encoder
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -53,7 +56,9 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     # Execute the aggregation pipeline
     result = list(collection_lot.aggregate(pipeline))
     return bool(result)  # True if at least one lot has non-empty images array
+
 def update_auction(event, context):
+    print('event data', event)
     """
     The `update_auction` function updates the specified fields of an auction
     in a MongoDB database based on the request body and the auction ID.
@@ -70,6 +75,7 @@ def update_auction(event, context):
     """
     try:
         try:
+            print('eventtttttttttttttttt', event)
             seller_email = event['requestContext']['authorizer']['claims']['email']
             print('email ', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
@@ -102,8 +108,11 @@ def update_auction(event, context):
         collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
+        listLots = list(collection_lot.find({"seller_email": seller_email,
+                                                     "auction_id": auction_id}))
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+
 
         if auction_record is None:
             return {
@@ -164,10 +173,32 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "No Lots Found"})
                 }
             else:
+                print('eventtttttttttttttttt', event)
+                # invoke_state_machine(event)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
+                for item in listLots:
+                    print('inside for', item)
+                    itemData = json.dumps(item, cls= Encoder)
+                    invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
+                    print('invoking', invoking)
+                    collection = db["dev-step-function-arns"]
+                    step_request={}
+                    print('11', invoking['executionArn'])
+                    step_request['arn'] = invoking['executionArn']
+                    print('2222',itemData )
+                    id_value = item['_id']
+                    step_request['lot_id'] = str(id_value)
+                    step_request['auction_id'] = auction_id
+                    step_request['seller_email'] = seller_email
+                    print('step', step_request)
+                    x = collection.insert_one(step_request)
+                    print('xxxx', x)
+                    # for item in listLots:
+                    #     print('inside for', item)
+                    #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
                 return {
                     "statusCode": 204,
                     'headers': headers,

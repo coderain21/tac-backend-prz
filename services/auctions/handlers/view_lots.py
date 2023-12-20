@@ -3,6 +3,9 @@ import os
 import json
 import pymongo
 import re
+import csv
+import tempfile
+import boto3
 from lib.common_helper import Encoder
 
 headers = {
@@ -45,12 +48,15 @@ def list_lots(event, context):
         query_parameters = event.get('queryStringParameters')
         auction_id = query_parameters.get('auction_id')
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
-        sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
+        sort_order = query_parameters.get('sorsandhyashri+auction@7edge.com A0003sandhyashri+auction@7edge.com A0003t_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
         page = int(event['queryStringParameters'].get(
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
             'per_page', '200'))  # Number of records per page
+
+        export = event['queryStringParameters'].get('export', False)
+        download_link = None
 
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
@@ -79,8 +85,6 @@ def list_lots(event, context):
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
         total_documents = collection.count_documents(query)
         total_lots = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
-        client.close()
-
         body = {
             "data": lots,
             "total_records_found": total_documents,
@@ -88,6 +92,11 @@ def list_lots(event, context):
             "current_page": page,
             "total_pages": (total_documents + limit - 1) // limit
         }
+        if export:
+            download_link = export_lots_as_csv(lots, db)
+        if download_link is not None:
+            body["csv_url"] = download_link
+        client.close()
         return {
             'headers': headers,
             "statusCode": 200,
@@ -99,3 +108,103 @@ def list_lots(event, context):
             'headers': headers,
             "body": json.dumps({"error": str(e)})
         }
+
+
+def export_lots_as_csv(lots, db):
+    """
+    The function exports lots of data as a CSV file using a database connection.
+
+    :param lots: A list of dictionaries representing lots of data
+    :param db: The `db` parameter is a database connection object that allows you to interact with a
+    database. It can be used to execute SQL queries, fetch data, and perform other database operations
+    """
+    try:
+        auction_id = str(lots[0].get('auction_id', ''))
+        filename = auction_id
+        auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        seller_email = lots[0]["seller_email"]
+        auction_status = auction_collection.find_one({
+            "seller_email": seller_email,
+            "auction_id": auction_id
+        }, {"status": 1})
+        # Use a temporary directory
+        temp_dir = tempfile.mkdtemp()
+        csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
+
+        s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
+        s3_bucket = os.environ['S3_BUCKET']
+        print('Lots details------------', lots)
+
+        with open(csv_file_path, "w") as file:
+            writer = csv.DictWriter(file, [
+                 "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
+            ])
+            writer.writeheader()
+            for lot in lots:
+                lot_images = lot.get("images", [])
+                featured_image = next((img["url"] for img in lot_images if img.get("featured")), None)
+                thumbnail_url = featured_image or ""
+
+
+                bid_collection = db[os.environ['BID_INFORMATION_COLLECTION']]
+                bids_info_cursor = bid_collection.find({"auction_id": lot["auction_id"], "seller_email": lot["seller_email"], "auction_uuid": auction_status["_id"]})
+                bids_info = list(bids_info_cursor)  # Convert cursor to list to get count
+
+                total_current_bid = sum(bid["bid_amount"] for bid in bids_info)
+                total_bids = len(bids_info)
+                active_bidders = len(set(bid["buyer_id"] for bid in bids_info if bid["bid_status"] == "UnderBidder"))
+
+                # Identify top bid and top bidder based on the winning status
+                top_bid = max(bids_info, key=lambda bid: bid.get("bid_amount", 0), default={})
+                top_bidder = top_bid.get("buyer_id", "")
+                paddle_number = top_bid.get("paddle_number", "")
+
+                # Check if 'total_bids' is not None before converting to int
+                total_bids_lot = lot.get('total_bids')
+                if total_bids_lot is not None and int(total_bids_lot) > 0:
+                    status = 'Selling'
+                else:
+                    status = 'No Bids'
+
+                # Prepend the S3 URL to the thumbnail URL
+                s3_url_prefix = os.environ['CDN_LINK']
+                thumbnail_url = s3_url_prefix + thumbnail_url
+
+                writer.writerow({
+                    "Lot Number": lot.get("lot_number", ""),
+                    "Thumbnail URL": thumbnail_url,
+                    "Title": lot.get("title1", ""),
+                    "Starting Bid": lot.get("starting_bid", ""),
+                    "Top(Current) Bid": lot.get("current_bid", ""),
+                    "Top Bidder": lot.get("top_bidder", ""),
+                    "Total Current Bid": lot.get("total_current_bid",""),
+                    "Total Bids": lot.get("total_bids", ""),
+                    "Active Bidders": lot.get("active_bidders", ""),
+                    "Paddle Number": lot.get("paddle_number", ""),
+                    "Status(Selling, No Bids)": status,
+                    "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
+                })
+
+        # Upload the file to S3
+        s3_client = boto3.client("s3", region_name='eu-west-2')
+        s3_client.upload_file(csv_file_path, s3_bucket, s3_key)
+
+        # Ensure that the file is made public
+        s3_resource = boto3.resource("s3", region_name='eu-west-2')
+        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
+        object_acl.put(ACL="public-read")
+
+        # Generate a presigned URL
+        s3_signed_url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": s3_bucket, "Key": s3_key},
+            ExpiresIn=3600,
+        )
+
+        # print("CSV file uploaded successfully.")
+        # print("Presigned URL:", s3_signed_url)
+
+        return s3_signed_url
+    except Exception as err:
+        print("Error:", err)
+        return None

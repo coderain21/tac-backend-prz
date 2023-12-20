@@ -11,7 +11,7 @@ import boto3
 import jwt
 from passlib.hash import pbkdf2_sha256
 from pymongo import MongoClient
-from lib.get import fetch_seller_data_from_auction, fetch_buyer_data, fetch_user_pool_data
+from lib.get import fetch_seller_data_from_auction, fetch_user_pool_data
 
 headers = {
     'Content-Type': 'application/json',
@@ -58,7 +58,29 @@ def hash_password(password):
     hashed_password = pbkdf2_sha256.using(salt=b"indy@auction").hash(password)
     return hashed_password
 
+def fetch_buyer_data(buyer_email):
+    """
+    Fetch the seller's email from the auction collection in MongoDB.
 
+    Args:
+        auction_id (str): The unique identifier of the auction.
+
+    Returns:
+        str: The seller's email associated with the given auction_id or None if not found.
+    """
+    try:
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["BUYER_COLLECTION"]]
+        data = auction_collection.find_one({"email_address": buyer_email})
+        client.close()
+        if data:
+            return data
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
 def password_reset(event, context):
     """
     Reset a user's password.
@@ -112,8 +134,7 @@ def password_reset(event, context):
                     "headers": headers,
                     "statusCode": 404,
                     "body": json.dumps({"message": "Seller doesn't exists"})}
-            buyer_data = fetch_buyer_data(
-                seller_data["seller_email"], encoded_data.get("email_address"))
+            buyer_data = fetch_buyer_data(encoded_data.get("email_address"))
             if not buyer_data:
                 return {
                     "headers": headers,
@@ -124,17 +145,16 @@ def password_reset(event, context):
 
             client = MongoClient(os.environ['MONGO_CLIENT'])
             db = client[os.environ['DATABASE']]
-            buyer_collection = db["BUYER_COLLECTION"]
+            buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
             response = reset_password(
-                cognito_client, encoded_data['email_address'], password, user_pool["user_pool_id"])
+                cognito_client, encoded_data['email_address'], password, os.environ["DEFAULT_USERPOOL_ID"])
 
-            filter = {'seller_email': seller_data["seller_email"], 'email_address': data.get(
-                "email_address")}
+            filter = {'email_address': encoded_data['email_address']}
 
             update = {'$set': {'password': hash_password(password)}}
 
-            result = buyer_collection.update_one(filter, update)
+            result = buyer_collection.update_many(filter, update)
 
             client.close()
 

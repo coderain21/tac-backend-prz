@@ -7,7 +7,6 @@ This module provides common helper functions for encoding and headers.
 import decimal
 import datetime
 import json
-import decimal
 from pymongo import MongoClient
 from bson import ObjectId  # Import ObjectId from pymongo
 
@@ -43,13 +42,10 @@ headers = {
 
 import hashlib
 import hmac
-import json
 import logging
 import time
-import uuid
 import os
 import requests
-
 
 SUMSUB_SECRET_KEY = os.environ['SUMSUB_SECRET_KEY']
 SUMSUB_APP_TOKEN = os.environ['SUMSUB_APP_TOKEN']
@@ -72,7 +68,7 @@ def create_applicant(external_user_id, level_name):
                          headers=headers))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
-    applicant_id = (response.json()['id'])
+    applicant_id = response.json()['id']
     return applicant_id
 
 
@@ -119,7 +115,7 @@ def get_access_token(external_user_id, level_name):
                                          headers=headers))
     s = requests.Session()
     response = s.send(resp, timeout=REQUEST_TIMEOUT)
-    token = (response.json()['token'])
+    token = response.json()['token']
 
     return token
 
@@ -195,7 +191,6 @@ def update_by_email(email, update_data,table_name):
         # Update the user's data in the collection
         update_result = collection.update_one(
             {'email_address': email}, {'$set': update_data})
-        
         client.close()
 
         if update_result.modified_count > 0:
