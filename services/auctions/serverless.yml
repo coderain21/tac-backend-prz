@@ -41,17 +41,12 @@ provider:
     COUNTER_LOT: ${env:COUNTER_LOT}
     CDN_LINK: ${env:CDN_LINK}
     BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
-<<<<<<< HEAD
     STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
     QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
-=======
-    # STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
-    # REDIS_URL: ${env:REDIS_URL}
->>>>>>> caa4ab1e866f5e166be426b3f7035042768e157c
     
     
   http:
@@ -348,12 +343,6 @@ functions:
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
 
-    # events:
-    #   - http:
-    #       cors: true
-    #       path: /auto-completion
-    #       method: post
-
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
@@ -362,7 +351,7 @@ functions:
   sqs-trigger-function:
     handler: handlers/sqs_trigger_function.sqsTriggerFunction
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
     events:
       - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
 
@@ -385,4 +374,4 @@ plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
-  # - serverless-step-functions
+  - serverless-step-functions
