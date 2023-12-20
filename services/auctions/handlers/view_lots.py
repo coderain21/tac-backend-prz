@@ -83,7 +83,7 @@ def list_lots(event, context):
         # Query the MongoDB collection to find lots matching the criteria
         lots = list(collection.find(query, {"_id": 0}).
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
-        combined_pipeline = [   
+        combined_pipeline = [
             {
                 '$match': {
                     'seller_email': seller_email,
