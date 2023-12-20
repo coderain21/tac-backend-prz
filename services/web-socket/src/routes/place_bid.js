@@ -236,9 +236,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             await client.connect()
         }
         const getLotHistoryDetails = await redisHelper.getLotData(`auction:${data.auction_id}#${data.lot_id}`, client)
-        console.log('getL', getLotHistoryDetails)
         let currentLotDetails = await getLotFromRedis(data.lot_id, client)
-        console.log('first console', currentLotDetails)
         data.time_stamp = new Date().getTime()
         currentLotDetails.email_address = data.email_address
         await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
@@ -257,11 +255,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             }
             const checkAuctionEnd = await mongodbHelpers.getAuction(payload)
             const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
-            console.log('stop', stopStateMachine)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
-            console.log('33333333333333333333333333333333335', currentLotDetails)
         }
-        console.log('%%%%%%%%%%%%%%%%%%%5', currentLotDetails)
         if (getLotHistoryDetails.length <= 0) {
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.starting_price)
@@ -313,7 +308,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                         currentLotDetails.winning_user = highestBidder.buyer_id
                         currentLotDetails.bid_amount = highestBidder.bid_amount
                     } else {
-                        console.log('44444444444444444')
                         currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                     }
                 }
@@ -326,6 +320,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         await listBidHistory(socket, data, io)
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
         const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
+        const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
+        console.log('updatetop', updateLot)
         const all_bidders = []
         for (let i = 0; i < getLotHistoryDetails.length; i++) {
             all_bidders.push(JSON.parse(getLotHistoryDetails[i]))

@@ -394,3 +394,29 @@ module.exports.update = async (arnData, data) => {
         return false
     }
 }
+
+module.exports.updateLotDetails = async (document) => {
+    try {
+        console.log('updateLotDetails mongo', document)
+        const client = await this.connect()
+        const database = client.connection.db // Access the database
+        const collection = database.collection('dev-lots') //
+        const getBuyerInfo = await this.getBuyer(document.winning_user)
+        console.log('mongo buyer', getBuyerInfo)
+        const updateResult = await collection.updateOne(
+            { _id: new ObjectId(document._id) },
+            {
+                $set: {
+                    starting_bid: document.starting_price, current_bid: document.bid_amount, top_bidder: getBuyerInfo[0].first_name,
+                },
+            },
+        )
+        console.log('update ', updateResult)
+        client.disconnect()
+        return updateResult
+        // await connection.disconnect()
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}

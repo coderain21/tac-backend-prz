@@ -14,6 +14,11 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: ${env:REGION}
   versionFunctions: false
+  vpc:
+    securityGroupIds:
+      - sg-0882c1da39e729097
+    subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
   layers: ${env:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
@@ -36,8 +41,12 @@ provider:
     COUNTER_LOT: ${env:COUNTER_LOT}
     CDN_LINK: ${env:CDN_LINK}
     BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
-    # STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
-    # REDIS_URL: ${env:REDIS_URL}
+    STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
+    REDIS_URL: ${env:REDIS_URL}
+    STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
+    BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
+    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
     
     
   http:
@@ -57,6 +66,7 @@ provider:
             - cognito-idp:*
             - ses:*
             - s3:*
+            - sqs:*
             - states:*
             - lambda:*
             - mobiletargeting:*
@@ -78,8 +88,12 @@ stepFunctions:
       name: ${opt:stage}-lot-published
       definition:
         Comment: "Step function will trigger when lot published"
-        StartAt: process-cache-lots
+        StartAt: wait-for-auction-start
         States:
+          wait-for-auction-start:
+            Type: Wait
+            TimestampPath: "$.start_date"
+            Next:  process-cache-lots
           process-cache-lots:
             Type: Task
             Resource:
@@ -95,6 +109,22 @@ stepFunctions:
                 Fn::GetAtt: ["process-cart", Arn]
               End: true
 
+    auction-ended:
+     name: ${opt:stage}-auction-ended
+     definition:
+        Comment: "Step function will trigger when auction ended"
+        StartAt: check-auction-ends
+        States:
+          check-auction-ends:
+                Type: Wait
+                TimestampPath: "$.end_date"
+                Next: process-next-steps
+          process-next-steps:
+            Type: Task
+            Resource:
+              Fn::GetAtt: ["send-email_auction", Arn]
+            End: true
+        
 
 custom:
   packageExternal:
@@ -118,11 +148,6 @@ functions:
     handler: handlers/create.create_auction
     layers:
       - ${env:COMMON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -137,11 +162,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -156,11 +176,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -174,11 +189,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -192,11 +202,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -211,11 +216,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -230,11 +230,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -249,11 +244,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -267,11 +257,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -286,11 +271,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -304,11 +284,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -323,11 +298,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -342,11 +312,6 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       events:
         - http:
             cors: true
@@ -360,11 +325,6 @@ functions:
     runtime: python3.8
     layers:
       - ${env:COMMON_PYTHON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - sg-0882c1da39e729097
-      subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
     events:
       - http:
           cors: true
@@ -377,37 +337,41 @@ functions:
     handler: handlers/add_to_cart.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+
+  send-email_auction:
+    handler: handlers/auto_completion_bid.handler
+    layers:
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
       
-         #${env:LAMBDA_LAYER}
+  sqs-trigger-function:
+    handler: handlers/sqs_trigger_function.sqsTriggerFunction
+    layers:
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
+    events:
+      - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
-    vpc:
-        securityGroupIds:
-          - sg-0882c1da39e729097
-        subnetIds:
-          - subnet-0ff05c7c2bd2a3f87
+  
 
+resources:
+  Resources:
+    messageQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: ${env:SQS_QUEUE_ARN}
+        FifoQueue: true
+ 
 
 plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
-  # - serverless-step-functions
+  - serverless-step-functions
