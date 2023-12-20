@@ -172,12 +172,11 @@ functions:
         - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
         - ${ssm:SUBNET_ID}
-  
-  #   events:
-  #     - http:
-  #         path: /verify-captcha
-  #         method: post
-  #         cors: true
+    events:
+      - http:
+          path: /verify-captcha
+          method: post
+          cors: true
   
   otp-validation:
     handler: handlers/otp_validation.otpValidation
