@@ -66,7 +66,7 @@ resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.nat_gateway.id
   subnet_id = aws_default_subnet.default_az1.id
   tags = {
-    "Name" = "DummyNatGateway"
+    "Name" = "NatGateway"
   }
   provider = aws.deployment-us
 }
@@ -115,8 +115,8 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   skip_final_snapshot        = true
-  master_username         = "arcmmaster"
-  master_password         = "masterarcm"
+  master_username         = "indyacutionmaster"
+  master_password         = "masterindyacution"
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-us
 }
@@ -182,7 +182,7 @@ resource "aws_security_group" "ssh_sg_1" {
 
 # Create an EC2 instance
 resource "aws_instance" "ssh_tunnel" {
-  ami           = "ami-0cfd0973db26b893b" # Specify a valid Amazon Linux AMI ID
+  ami           = "ami-0e5f882be1900e43b" # Specify a valid Amazon Linux AMI ID
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
