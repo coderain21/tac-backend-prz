@@ -60,7 +60,7 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
                 TemplateData: templateData,
             },
         },
-        FromEmailAddress: ProcessCredentials.env.SENDER_EMAIL_ADDRESS,
+        FromEmailAddress: process.env.SENDER_EMAIL_ADDRESS,
         Destination: {
             ToAddresses: [destinationId],
         },
