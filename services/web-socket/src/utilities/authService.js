@@ -13,11 +13,13 @@ const cognitoRegion = 'eu-west-2'
 const client = jwksClient({
     jwksUri: `https://cognito-idp.${cognitoRegion}.amazonaws.com/${cognitoPoolId}/.well-known/jwks.json`,
 })
+console.log('client', client)
 
 const mongodbHelper = require('../utilities/mongodb_helper')
 
 module.exports.checkBuyerAuthentication = async (authParams) => {
     try {
+        console.log('authpa', authParams)
         const connection = await mongodbHelper.connect()
         const database = connection.connection.db // Access the database
         const collection = database.collection('dev-register-auction') // Replace with your collection name
@@ -56,7 +58,7 @@ async function getKey(kid) {
 
 module.exports.authenticationCheck = async (token) => {
     try {
-        console.log('tokenn', token)
+        console.log('tokenn', token, cognitoPoolId)
         // Decode the token (no verification at this stage)
         const decodedToken = jwt.decode(token, { complete: true })
 
@@ -75,6 +77,7 @@ module.exports.authenticationCheck = async (token) => {
             statusCode: 200,
         }
     } catch (error) {
+        console.log('errr', error)
         // Token is invalid
         return {
             statusCode: 401,
