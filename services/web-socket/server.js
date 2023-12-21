@@ -70,8 +70,7 @@ io.on('connection', async (socket, data) => {
         return socket.disconnect()
     })
 
-    users.addUser(socket.id, token.userId)
-    console.log('users', users)
+    users.addUser(socket.id)
     /**
 	 * @event - CONNECTION_INITIATE
 	 * @eventDescription -
