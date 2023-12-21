@@ -205,7 +205,7 @@ resource "aws_eip" "example" {
 resource "aws_ssm_parameter" "documentdb" {
   name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
-  value = "mongodb://${data.aws_ssm_parameter.mongodb-username.value}:${data.aws_ssm_parameter.mongodb-password.value}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/?replicaSet=rs0&readPreference=secondaryPreferred&retryWrites=false"
+  value = "mongodb://${data.aws_ssm_parameter.mongodb-username.value}:${data.aws_ssm_parameter.mongodb-password.value}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${data.external.env.result["STAGE"]}?authMechanism=DEFAULT&authSource=${data.external.env.result["STAGE"]}&retryWrites=false"
   provider = aws.deployment-us
   overwrite = true
 }
