@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken')
 const jwksClient = require('jwks-rsa')
 
 // Cognito pool information
-const cognitoPoolId = 'eu-west-2_kqcLIvA4D'
+const cognitoPoolId = 'eu-west-2_72rz6biiL'
 const cognitoRegion = 'eu-west-2'
 
 // Initialize the JWKS (JSON Web Key Set) client
