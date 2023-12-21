@@ -53,7 +53,7 @@ io.on('connection', async (socket, data) => {
     if (authStatus.statusCode === 401) {
         console.log('emitiinh')
         socket.emit('connection', JSON.stringify({ status: false, message: 'unauthorized' }))
-        return socket.disconnect()
+        // return socket.disconnect()
     }
 
     /**
