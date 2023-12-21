@@ -115,8 +115,8 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   skip_final_snapshot        = true
-  master_username         = "indyacutionmaster"
-  master_password         = "masterindyacution"
+  master_username         = "indyauctionmaster"
+  master_password         = "masterindyauction"
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-us
 }
