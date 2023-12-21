@@ -47,7 +47,7 @@ io.on('connection', async (socket, data) => {
     console.log('===========================', socket)
     console.log('SOCKET :: ')
     console.log('===========================')
-    const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
+    // const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
     // const authStatus = await authenticationCheck(token)
     // console.log('authStatus', authStatus)
     // if (authStatus.statusCode === 401) {
