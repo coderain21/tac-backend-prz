@@ -3,9 +3,9 @@ import os
 import json
 import pymongo
 from lib.get import get_by_email
-from lib.invoke_step_function import invoke_state_machine
+from lib.invoke_step_function import invoke_state_machine, invoke_state_machine_for_auction_end
 from lib.common_helper import Encoder
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 headers = {
@@ -121,7 +121,35 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+        # auction_information = auction_record.copy()
+
+        # # Extract end_date from auction_record
+        # end_date_timestamp = auction_record['end_date'] / 1000
+
+        # # Convert timestamp to datetime object
+        # date_time = datetime.utcfromtimestamp(end_date_timestamp)
+        # iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+        # print('isoformat', iso_date_with_offset)
+        # auction_information['end_date'] = iso_date_with_offset
+        # print('auction_information', auction_record)
+        # del auction_information['created_at']
+        # del auction_information['updated_at']
+        # auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
+        # print('@@', auction_complete_state_machine)
         if published_status == 'true':
+            auction_information = auction_record.copy()
+            # Extract end_date from auction_record
+            end_date_timestamp = auction_record['end_date'] / 1000
+            # Convert timestamp to datetime object
+            date_time = datetime.utcfromtimestamp(end_date_timestamp)
+            iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+            # Assign the ISO 8601 string to 'end_date' key in auction_information
+            # auction_information['_id'] = str(auction_information['_id'])
+            auction_information['end_date'] = iso_date_with_offset
+            del auction_information['created_at']
+            del auction_information['updated_at']
+            auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
+            print('@@', auction_complete_state_machine)
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             if kyc_kyb_review is not True:
                 return {
@@ -174,7 +202,6 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "No Lots Found"})
                 }
             else:
-                print('eventtttttttttttttttt', event)
                 # invoke_state_machine(event)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
@@ -182,22 +209,18 @@ def update_auction(event, context):
                 )
                 for item in listLots:
                     print('inside for', item)
-                    item['start_date'] = datetime.fromtimestamp(auction_record['start_date']).isoformat()
                     itemData = json.dumps(item, cls= Encoder)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)
                     collection = db["dev-step-function-arns"]
                     step_request={}
-                    print('11', invoking['executionArn'])
                     step_request['arn'] = invoking['executionArn']
-                    print('2222',itemData )
                     id_value = item['_id']
                     step_request['lot_id'] = str(id_value)
                     step_request['auction_id'] = auction_id
                     step_request['seller_email'] = seller_email
-                    print('step', step_request)
-                    x = collection.insert_one(step_request)
-                    print('xxxx', x)
+                    inserted = collection.insert_one(step_request)
+                    print('inserted', inserted)
                     # for item in listLots:
                     #     print('inside for', item)
                     #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])

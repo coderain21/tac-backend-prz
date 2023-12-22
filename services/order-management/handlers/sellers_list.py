@@ -98,7 +98,7 @@ def list_orders(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists"})
             }
 
-        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type']:
+        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type','auction_title','payment','amount']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
 
@@ -131,7 +131,7 @@ def list_orders(event, context):
             download_link = export_as_csv(list(orders_collection.find(query)))
 
         # Query the MongoDB collection to find lots matching the criteria
-        orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
+        orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1,'currency':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
         # Count the total number of records
         total_records = orders_collection.count_documents(query)
         # Calculate total pages
@@ -180,7 +180,7 @@ def export_as_csv(sales):
     """
     try:
         # Export QR codes as CSV and upload to S3
-        csv_file = os.environ["CSV_FILE"]
+        csv_file = os.environ["SALES_CSV_FILE"]
         s3_key = f"exports/{csv_file}"
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))

@@ -48,7 +48,7 @@ def list_lots(event, context):
         query_parameters = event.get('queryStringParameters')
         auction_id = query_parameters.get('auction_id')
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
-        sort_order = query_parameters.get('sorsandhyashri+auction@7edge.com A0003sandhyashri+auction@7edge.com A0003t_order', 'asc')  # Default sort order is ascending
+        sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
         page = int(event['queryStringParameters'].get(
             'page', '1'))
@@ -83,6 +83,32 @@ def list_lots(event, context):
         # Query the MongoDB collection to find lots matching the criteria
         lots = list(collection.find(query, {"_id": 0}).
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
+        combined_pipeline = [
+            {
+                '$match': {
+                    'seller_email': seller_email,
+                    'auction_id': auction_id
+                }
+            },
+            {
+                '$group': {
+                    '_id': None,
+                    'totalBids': {'$sum': '$current_bid'},
+                    'maxBid': {'$max': '$current_bid'},
+                    'countBidsGreaterThanZero': {
+                        '$sum': {
+                            '$cond': [{'$gt': ['$current_bid', 0]}, 1, 0]
+                        }
+                    }
+                }
+            }
+        ]
+
+        result = list(collection.aggregate(combined_pipeline))
+        if result:
+            total_bids = result[0]['totalBids']
+            max_bid = result[0]['maxBid']
+            percentage_bids_gt_zero = result[0]['countBidsGreaterThanZero']
         total_documents = collection.count_documents(query)
         total_lots = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
         body = {
@@ -90,7 +116,10 @@ def list_lots(event, context):
             "total_records_found": total_documents,
             "total_lots": total_lots,
             "current_page": page,
-            "total_pages": (total_documents + limit - 1) // limit
+            "total_pages": (total_documents + limit - 1) // limit,
+            "max_bid": max_bid,
+            "sum_current_bid": total_bids,
+            "total selling":percentage_bids_gt_zero
         }
         if export:
             download_link = export_lots_as_csv(lots, db)
@@ -113,7 +142,6 @@ def list_lots(event, context):
 def export_lots_as_csv(lots, db):
     """
     The function exports lots of data as a CSV file using a database connection.
-    
     :param lots: A list of dictionaries representing lots of data
     :param db: The `db` parameter is a database connection object that allows you to interact with a
     database. It can be used to execute SQL queries, fetch data, and perform other database operations
