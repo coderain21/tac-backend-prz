@@ -23,6 +23,8 @@ Returns:
 import os
 import json
 import pymongo
+from datetime import timedelta
+
 
 
 headers = {
@@ -108,8 +110,27 @@ def lambda_handler(event, context):
                                                      return_document=pymongo.ReturnDocument.AFTER,
                                                      upsert=True)
         auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+        # Get the extension type from the auction record
+        extension_type = auction_record.get('extension_type', '')
+        if extension_type in ['All Lots', 'Individual Lots']:
+            request_body['start_date'] = auction_record['start_date']
+            request_body['end_date'] = auction_record['end_date']
+        elif extension_type == 'Cascaded':
+            auction_record.get('')
+            time_between_lots = auction_record.get('time_between_lots', 0)
+            latest_lot = lot_collection.find_one(
+                    {"seller_email": seller_email, "auction_id": auction_id},
+                    sort=[("created_at", pymongo.DESCENDING)]
+                )
+            if latest_lot:
+                    latest_end_date = latest_lot['end_date']
+                    request_body['end_date'] = latest_end_date + timedelta(minutes=2)  # Adjust as needed
+            else:
+                    # If no previous lots, use auction start_date and add time_between_lots
+                    request_body['end_date'] = request_body['end_date'] + timedelta(minutes=2)  # Adjust as needed
+        request_body['end_date'] = int(request_body['end_date'].timestamp() * 1000)
         request_body['start_date'] = auction_record['start_date']
-        request_body['end_date'] = auction_record['end_date']
+        # request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]
         request_body["seller_email"] = seller_email
         # Insert the lot data into the MongoDB collection
