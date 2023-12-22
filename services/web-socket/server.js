@@ -45,7 +45,6 @@ io.on('connection', async (socket, data) => {
 	 * @returns { Object }
 	 */
     console.log('===========================', socket)
-    console.log('SOCKET :: ')
     console.log('===========================')
     // const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
     // const authStatus = await authenticationCheck(token)
