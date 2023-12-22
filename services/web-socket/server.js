@@ -52,8 +52,8 @@ io.on('connection', async (socket, data) => {
     // console.log('authStatus', authStatus)
     // if (authStatus.statusCode === 401) {
     //     console.log('emitiinh')
-    //     socket.emit('unAuthorized', JSON.stringify({ status: false, message: 'unauthorised' }))
-    //     return socket.disconnect()
+    //     socket.emit('connection', JSON.stringify({ status: false, message: 'unauthorized' }))
+    //     // return socket.disconnect()
     // }
 
     /**
@@ -71,7 +71,6 @@ io.on('connection', async (socket, data) => {
     })
 
     users.addUser(socket.id)
-    console.log('users', users)
     /**
 	 * @event - CONNECTION_INITIATE
 	 * @eventDescription -
