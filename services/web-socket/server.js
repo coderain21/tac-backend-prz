@@ -47,14 +47,14 @@ io.on('connection', async (socket, data) => {
     console.log('===========================', socket)
     console.log('SOCKET :: ')
     console.log('===========================')
-    const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
-    const authStatus = await authenticationCheck(token)
-    console.log('authStatus', authStatus)
-    if (authStatus.statusCode === 401) {
-        console.log('emitiinh')
-        socket.emit('unAuthorized', JSON.stringify({ status: false, message: 'unauthorised' }))
-        return socket.disconnect()
-    }
+    // const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
+    // const authStatus = await authenticationCheck(token)
+    // console.log('authStatus', authStatus)
+    // if (authStatus.statusCode === 401) {
+    //     console.log('emitiinh')
+    //     socket.emit('unAuthorized', JSON.stringify({ status: false, message: 'unauthorised' }))
+    //     return socket.disconnect()
+    // }
 
     /**
 	 * @event - DISCONNECT
@@ -70,7 +70,7 @@ io.on('connection', async (socket, data) => {
         return socket.disconnect()
     })
 
-    users.addUser(socket.id, token.userId)
+    users.addUser(socket.id)
     console.log('users', users)
     /**
 	 * @event - CONNECTION_INITIATE
