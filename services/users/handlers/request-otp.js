@@ -29,13 +29,11 @@ function encryptWithTimeValidation(data, secretKey) {
 module.exports.generate_otp = async (event) => {
     try {
         const userData = JSON.parse(event.body)
-        console.log(userData)
         // eslint-disable-next-line no-unused-vars
         const connection = await mongoConnection.connect()
 
         const userExist = await Users.findOne({ email_address: userData.email_address, user_type: userData.user_type })
-        console.log(userExist)
-        if (!userExist) {
+        if (!userExist || !userData) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
