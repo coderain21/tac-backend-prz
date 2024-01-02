@@ -12,7 +12,7 @@ provider "aws" {
 
 resource "null_resource" "nodejs" {
   provisioner "local-exec" {
-    command = "npm i --force && mv node_modules nodejs"
+    command = "npm i --force && mkdir layer && mv node_modules layer && cd layer && mkdir nodejs && mv node_modules nodejs"
   }
 }
 
@@ -25,7 +25,7 @@ resource "aws_lambda_layer_version" "lambda_node_layer" {
 
 data "archive_file" "node_layer_code_zip" {
   type        = "zip"
-  source_dir  = "./nodejs"
+  source_dir  = "./layer"
   output_path = "./nodejs.zip"
   depends_on = [resource.null_resource.nodejs]
 }
