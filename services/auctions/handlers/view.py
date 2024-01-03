@@ -105,7 +105,6 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        print(2,result)
         if result['status']=='draft':
             if "paddle" in result and "_id" in result["paddle"]:
                 del result["paddle"]["_id"]
@@ -119,15 +118,14 @@ def view(event, context):
                 "body": json.dumps(body, cls=Encoder)
             }
         end_time= result['end_date']
-        print(3,end_time)
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
-        print(current_time)
-        print(4,current_time)
-        if current_time >= end_time:
-            # Auction has ended
-            updated_status = "Completed"
-            print(6,updated_status)
+        if end_time != '':
+            if current_time >= end_time:
+                # Auction has ended
+                updated_status = "Completed"
+            else:
+                updated_status = result["status"]
         else:
             updated_status = result["status"]  # No change in status
 
@@ -136,8 +134,6 @@ def view(event, context):
                               "$set": {"status": updated_status}})
         result = collection.find_one({"seller_email": email_address,
                                       "auction_id": auction_id}, projection)
-        print(7,result)
-
         if result is None:
             return {
                 "headers": headers,
