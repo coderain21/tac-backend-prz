@@ -3,9 +3,9 @@ import json
 import os
 from pymongo import MongoClient
 import boto3
-
-
-amplify_client = boto3.client('amplify',region_name= 'eu-west-2')
+access_key=os.environ.get('AWS_MAIN_ACCESS_KEY_ID')
+secret_key=os.environ.get('AWS_MAIN_SECRET_ACCESS_KEY')
+amplify_client = boto3.client('amplify',region_name= 'eu-west-2', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
 
 cognito_client = boto3.client('cognito-idp')
 
@@ -36,10 +36,10 @@ def create_app_client(userpoolid,client_name,subdomain):
         IdTokenValidity=5,
         RefreshTokenValidity=3650,
         CallbackURLs=[
-        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
+        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/register',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/login'
         ],
         LogoutURLs=[
-            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
+            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/register',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/login'
         ],
         SupportedIdentityProviders=[
         'COGNITO','Facebook','Google'
@@ -74,10 +74,10 @@ def update_app_client(userpoolid,client_id,client_name,subdomain):
         IdTokenValidity=5,
         RefreshTokenValidity=3650,
         CallbackURLs=[
-        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
+        'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/register',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/login'
         ],
         LogoutURLs=[
-            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.indyauction.net/',f'https://{subdomain}.indyauction.net/register',f'https://{subdomain}.indyauction.net/login'
+            'http://localhost:3000/','http://localhost:3000/register','http://localhost:3000/login',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/register',f'https://{subdomain}.{os.environ.get("AMPLIFY_DOMAIN_NAME")}/login'
         ],
         SupportedIdentityProviders=[
         'COGNITO','Facebook','Google'
