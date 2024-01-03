@@ -118,20 +118,22 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps(body, cls=Encoder)
             }
-        if result['end_date'] is not None:
-            end_time= result['end_date']
-            print(3,end_time)
-            current_time = datetime.timestamp(datetime.now())
-            current_time=current_time
-            print(current_time)
-            print(4,current_time)
-            if current_time >= end_time:
-                # Auction has ended
-                updated_status = "Completed"
-                print(6,updated_status)
-                collection.update_one({"_id": auction_id}, {
-                              "$set": {"status": updated_status}})
+        end_time= result['end_date']
+        print(3,end_time)
+        current_time = datetime.timestamp(datetime.now())
+        current_time=current_time*1000
+        print(current_time)
+        print(4,current_time)
+        if current_time >= end_time:
+            # Auction has ended
+            updated_status = "Completed"
+            print(6,updated_status)
+        else:
+            updated_status = result["status"]  # No change in status
 
+        # Update the status in the database
+        collection.update_one({"_id": auction_id}, {
+                              "$set": {"status": updated_status}})
         result = collection.find_one({"seller_email": email_address,
                                       "auction_id": auction_id}, projection)
         print(7,result)
