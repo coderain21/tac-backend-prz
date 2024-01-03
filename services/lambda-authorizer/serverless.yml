@@ -13,7 +13,7 @@ provider:
     SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
-    DATABASE: indyauction-${opt:stage, self:provider.stage}
+    DATABASE: ${opt:stage, self:provider.stage}
     
 
   iam:

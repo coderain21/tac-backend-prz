@@ -21,7 +21,7 @@ provider:
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    MONGODB_NAME: indyauction-${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
@@ -50,7 +50,7 @@ provider:
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
     SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL}
-    DATABASE: indyauction-${opt:stage, self:provider.stage}
+    DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
     FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: 
       Fn::Join:
