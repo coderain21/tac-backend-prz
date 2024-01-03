@@ -115,7 +115,7 @@ def list_orders(event, context):
             query['created_at'] = {"$lte": end_timestamp}
 
         # Query the MongoDB collection to find lots matching the criteria
-        orders_list = orders_collection.find(query, {"_id": 1,"auction_title": 1,"auction_image": 1,"lots": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
+        orders_list = orders_collection.find(query, {"_id": 1,"auction_title": 1,"auction_image": 1,"lots": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1, "currency": 1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
         # Count the total number of records
         total_records = orders_collection.count_documents(query)
         # Calculate total pages
