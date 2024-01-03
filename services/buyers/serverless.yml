@@ -180,7 +180,6 @@ functions:
     runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
-      # - ${ssm:COMMON_LIB_ARN_PYTHON_2}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
