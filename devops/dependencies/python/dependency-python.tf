@@ -17,7 +17,7 @@ resource "null_resource" "python" {
 }
 
 resource "aws_lambda_layer_version" "lambda_python_layer" {
-  layer_name          = "python_dependency-${data.external.env.result["STAGE"]}"
+  layer_name          = "python-dependency-${data.external.env.result["STAGE"]}"
   filename            = data.archive_file.python_layer_code_zip.output_path
   provider=aws.deployment-us
 }
@@ -45,7 +45,7 @@ resource "null_resource" "python2" {
 }
 
 resource "aws_lambda_layer_version" "lambda_python_layer_2" {
-  layer_name          = "python_dependency-2-${data.external.env.result["STAGE"]}"
+  layer_name          = "python-dependency-2-${data.external.env.result["STAGE"]}"
   filename            = data.archive_file.python_layer_code_zip_2.output_path
   provider=aws.deployment-us
 }

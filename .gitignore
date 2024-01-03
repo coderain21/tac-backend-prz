@@ -28,6 +28,10 @@ terraform.tfstate.backup
 .terraform.lock.hcl
 nodejs.zip
 nodejs
+python_lib
+python2.zip
+python_lib2
+python.zip
 # Compiled Java class files
 *.class
 # Compiled Python bytecode

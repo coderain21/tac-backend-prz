@@ -24,26 +24,26 @@ aws configure list --profile $PROFILE_ENV
 
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
-# terraform -chdir=devops/admin_web_application init
-# terraform -chdir=devops/admin_web_application apply -auto-approve
-# terraform -chdir=devops/seller_web_application init
-# terraform -chdir=devops/seller_web_application apply -auto-approve
-# terraform -chdir=devops/api_gateway init
-# terraform -chdir=devops/api_gateway apply -auto-approve
-# terraform -chdir=devops/dependencies/node init
-# terraform -chdir=devops/dependencies/node apply -auto-approve
-# terraform -chdir=devops/dependencies/nodejs-auth-layer init
-# terraform -chdir=devops/dependencies/nodejs-auth-layer apply -auto-approve
+terraform -chdir=devops/admin_web_application init
+terraform -chdir=devops/admin_web_application apply -auto-approve
+terraform -chdir=devops/seller_web_application init
+terraform -chdir=devops/seller_web_application apply -auto-approve
+terraform -chdir=devops/api_gateway init
+terraform -chdir=devops/api_gateway apply -auto-approve
+terraform -chdir=devops/dependencies/node init
+terraform -chdir=devops/dependencies/node apply -auto-approve
+terraform -chdir=devops/dependencies/nodejs-auth-layer init
+terraform -chdir=devops/dependencies/nodejs-auth-layer apply -auto-approve
 terraform -chdir=devops/dependencies/python init
 terraform -chdir=devops/dependencies/python apply -auto-approve
-# terraform -chdir=devops/kms init
-# terraform -chdir=devops/kms apply -auto-approve
-# terraform -chdir=devops/mongodb init
-# terraform -chdir=devops/mongodb apply -auto-approve
-# if [ "STAGE" = "qa" ]; then
-#     terraform -chdir=devops/dependencies/bitbucket-layer-node init
-#     terraform -chdir=devops/dependencies/bitbucket-layer-node apply -auto-approve
-# fi
+terraform -chdir=devops/kms init
+terraform -chdir=devops/kms apply -auto-approve
+terraform -chdir=devops/mongodb init
+terraform -chdir=devops/mongodb apply -auto-approve
+if [ "STAGE" = "qa" ]; then
+    terraform -chdir=devops/dependencies/bitbucket-layer-node init
+    terraform -chdir=devops/dependencies/bitbucket-layer-node apply -auto-approve
+fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
@@ -63,16 +63,16 @@ done <<< "$parameter_names"
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair" --exclude "*/dependencies/*" --profile $PROFILE_ENV
 
 
-# npm i -g serverless@3.15.2
-# npm i -g @serverless/compose
-# npm i serverless-aws-documentation
-# npm i serverless-domain-manager
-# npm i serverless-dynamodb-autoscaling
-# npm i serverless-dynamodb-ttl
-# npm i serverless-offline
-# npm i serverless-package-external
-# npm i serverless-python-requirements
-# npm i serverless-appsync-plugin
-# export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-# export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-# sls deploy --stage ${STAGE} --max-concurrency 5
+npm i -g serverless@3.15.2
+npm i -g @serverless/compose
+npm i serverless-aws-documentation
+npm i serverless-domain-manager
+npm i serverless-dynamodb-autoscaling
+npm i serverless-dynamodb-ttl
+npm i serverless-offline
+npm i serverless-package-external
+npm i serverless-python-requirements
+npm i serverless-appsync-plugin
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+sls deploy --stage ${STAGE} --max-concurrency 5
