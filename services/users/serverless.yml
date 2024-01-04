@@ -724,7 +724,6 @@ resources:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
         AttributeMapping:
-          preferred_username: "email"
           username: "id"
           email: "email"
         ProviderName: Facebook
