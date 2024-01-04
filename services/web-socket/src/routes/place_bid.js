@@ -320,7 +320,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         })
         await listBidHistory(socket, data, io)
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
-        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
+        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
+        console.log('getBuyerToken', getBuyerToken)
         const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
         console.log('updatetop', updateLot)
         const all_bidders = []
@@ -331,6 +332,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus
         if (all_bidders.length <= 0) {
             const token = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
+            console.log('getBuyerToken', token)
             message = 'Congratulations! 🎉 You\'re the highest bidder! '
             bidStatus = 'Winning'
             const payload = JSON.stringify({ title: 'Bidding', body: message })
