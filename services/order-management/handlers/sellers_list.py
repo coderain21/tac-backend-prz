@@ -9,6 +9,8 @@ import math
 from lib.get import fetch_seller_data_from_auction
 import csv
 import boto3
+from datetime import datetime
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -16,6 +18,7 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
 
 def prepend_backslash(text):
     """
@@ -95,7 +98,7 @@ def list_orders(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists"})
             }
 
-        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type']:
+        if sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'type','auction_title','payment','amount']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
 
@@ -128,7 +131,7 @@ def list_orders(event, context):
             download_link = export_as_csv(list(orders_collection.find(query)))
 
         # Query the MongoDB collection to find lots matching the criteria
-        orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
+        orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1,'currency':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
         # Count the total number of records
         total_records = orders_collection.count_documents(query)
         # Calculate total pages
@@ -177,7 +180,7 @@ def export_as_csv(sales):
     """
     try:
         # Export QR codes as CSV and upload to S3
-        csv_file = os.environ["CSV_FILE"]
+        csv_file = os.environ["SALES_CSV_FILE"]
         s3_key = f"exports/{csv_file}"
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
@@ -188,14 +191,17 @@ def export_as_csv(sales):
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
+                date = datetime.fromtimestamp(sale['created_at'])
+                # Format the date as a string with only the date
+                formatted_date = date.strftime('%Y-%m-%d')
                 shipping_address = sale['shipping_address']
                 full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
                 modified_sales["ORDER ID"] = sale["order_number"]
                 modified_sales["Customer Name"] = full_name
                 modified_sales["Auction Name"] = sale['auction_title']
-                modified_sales["Order Date"] = sale["created_at"]
-                modified_sales["Payment Status"] = sale["status"]
-                modified_sales["Payment Type"]= sale["payment_method_types"]
+                modified_sales["Order Date"] = formatted_date
+                modified_sales["Payment Status"] = sale["payment_status"]
+                modified_sales["Payment Type"]= sale["payment"]
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)

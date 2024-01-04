@@ -5,7 +5,8 @@ import os
 import datetime
 import jwt
 import json
-from lib.get import fetch_seller_data_from_auction, fetch_buyer_data
+from pymongo import MongoClient
+from lib.get import fetch_seller_data_from_auction
 from lib.helper_python import send_pinpoint_email
 headers = {
     'Content-Type': 'application/json',
@@ -16,6 +17,29 @@ headers = {
 jwt_secret = os.environ.get('JWT_SECRET_KEY')
 dt = datetime.datetime.now() + datetime.timedelta(hours=1)
 
+def fetch_buyer_data(buyer_email):
+    """
+    Fetch the seller's email from the auction collection in MongoDB.
+
+    Args:
+        auction_id (str): The unique identifier of the auction.
+
+    Returns:
+        str: The seller's email associated with the given auction_id or None if not found.
+    """
+    try:
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        auction_collection = db[os.environ["BUYER_COLLECTION"]]
+        data = auction_collection.find_one({"email_address": buyer_email})
+        client.close()
+        if data:
+            return data
+        return None
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
 
 def send_reset_link(event, context):
     """
@@ -55,9 +79,7 @@ def send_reset_link(event, context):
             str(token) + '&_id=' + auction_id
 
         if seller_data:
-            buyer_data = fetch_buyer_data(
-                seller_data["seller_email"], email_address)
-
+            buyer_data = fetch_buyer_data(email_address)
             if buyer_data:
                 send_pinpoint_email(email_address, os.environ["SENDER_EMAIL_ADDRESS"], json.dumps(
                     {'link': link, 'logo_image': data['logo_image']}), os.environ["TEMPLATE_ARN_EMAIL_RESET_PASSWORD"])

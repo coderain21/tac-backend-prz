@@ -228,6 +228,6 @@ resource "aws_ssm_parameter" "assets_bucket" {
 resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
-  value = "https://${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}"
+  value = "https://${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}/public/"
   provider = aws.deployment-ap
 }

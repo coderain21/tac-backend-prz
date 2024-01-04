@@ -3,6 +3,10 @@ import os
 import json
 import pymongo
 from lib.get import get_by_email
+from lib.invoke_step_function import invoke_state_machine, invoke_state_machine_for_auction_end
+from lib.common_helper import Encoder
+from datetime import datetime, timezone
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -53,7 +57,9 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     # Execute the aggregation pipeline
     result = list(collection_lot.aggregate(pipeline))
     return bool(result)  # True if at least one lot has non-empty images array
+
 def update_auction(event, context):
+    print('event data', event)
     """
     The `update_auction` function updates the specified fields of an auction
     in a MongoDB database based on the request body and the auction ID.
@@ -70,6 +76,7 @@ def update_auction(event, context):
     """
     try:
         try:
+            print('eventtttttttttttttttt', event)
             seller_email = event['requestContext']['authorizer']['claims']['email']
             print('email ', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
@@ -102,8 +109,11 @@ def update_auction(event, context):
         collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
+        listLots = list(collection_lot.find({"seller_email": seller_email,
+                                                     "auction_id": auction_id}))
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+
 
         if auction_record is None:
             return {
@@ -111,7 +121,35 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+        # auction_information = auction_record.copy()
+
+        # # Extract end_date from auction_record
+        # end_date_timestamp = auction_record['end_date'] / 1000
+
+        # # Convert timestamp to datetime object
+        # date_time = datetime.utcfromtimestamp(end_date_timestamp)
+        # iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+        # print('isoformat', iso_date_with_offset)
+        # auction_information['end_date'] = iso_date_with_offset
+        # print('auction_information', auction_record)
+        # del auction_information['created_at']
+        # del auction_information['updated_at']
+        # auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
+        # print('@@', auction_complete_state_machine)
         if published_status == 'true':
+            auction_information = auction_record.copy()
+            # Extract end_date from auction_record
+            end_date_timestamp = auction_record['end_date'] / 1000
+            # Convert timestamp to datetime object
+            date_time = datetime.utcfromtimestamp(end_date_timestamp)
+            iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+            # Assign the ISO 8601 string to 'end_date' key in auction_information
+            # auction_information['_id'] = str(auction_information['_id'])
+            auction_information['end_date'] = iso_date_with_offset
+            del auction_information['created_at']
+            del auction_information['updated_at']
+            auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
+            print('@@', auction_complete_state_machine)
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             if kyc_kyb_review is not True:
                 return {
@@ -164,10 +202,28 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "No Lots Found"})
                 }
             else:
+                # invoke_state_machine(event)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
+                for item in listLots:
+                    print('inside for', item)
+                    itemData = json.dumps(item, cls= Encoder)
+                    invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
+                    print('invoking', invoking)
+                    collection = db["dev-step-function-arns"]
+                    step_request={}
+                    step_request['arn'] = invoking['executionArn']
+                    id_value = item['_id']
+                    step_request['lot_id'] = str(id_value)
+                    step_request['auction_id'] = auction_id
+                    step_request['seller_email'] = seller_email
+                    inserted = collection.insert_one(step_request)
+                    print('inserted', inserted)
+                    # for item in listLots:
+                    #     print('inside for', item)
+                    #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
                 return {
                     "statusCode": 204,
                     'headers': headers,
