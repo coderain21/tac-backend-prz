@@ -21,6 +21,7 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '403' or
         '/password-update/' in transaction['request']['uri'] or
         '/verify-captcha' in transaction['request']['uri'] or
+        '/request-otp' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
         '/reset_password' in transaction['request']['uri'] or
         '/forgot_password' in transaction['request']['uri']

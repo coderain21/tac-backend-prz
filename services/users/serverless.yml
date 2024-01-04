@@ -169,6 +169,21 @@ functions:
           path: /otp-validation
           method: post
           cors: true
+  
+  request-otp:
+    handler: handlers/request-otp.generate_otp
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          path: /request-otp
+          method: post
+          cors: true
       
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
@@ -422,9 +437,6 @@ functions:
               method: post
               # authorizer:
               #   arn: ${env:COGNITO_AUTH_ARN}
-
-
-  
 
 plugins:
   - serverless-offline
