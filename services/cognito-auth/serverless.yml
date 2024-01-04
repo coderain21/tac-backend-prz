@@ -346,17 +346,17 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://www-${opt:stage}.indyauction.net/"
-          - "https://www-${opt:stage}.indyauction.net/login"
-          - "https://www-${opt:stage}.indyauction.net/register"
+          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/"
+          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/login"
+          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
         LogoutURLs:
-          - "https://www-${opt:stage}.indyauction.net/"
-          - "https://www-${opt:stage}.indyauction.net/login"
-          - "https://www-${opt:stage}.indyauction.net/register"
+          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/"
+          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/login"
+          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"

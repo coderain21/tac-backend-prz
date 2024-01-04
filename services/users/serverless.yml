@@ -710,7 +710,7 @@ resources:
         ProviderDetails:
           client_id: ${env:GOOGLE_CLIENT_ID}
           client_secret: ${env:GOOGLE_CLIENT_SECRET}
-          authorize_scopes: "email openid profile"
+          authorize_scopes: "email"
         UserPoolId: { Ref: SellerUsers }
     
     Group:
@@ -732,7 +732,7 @@ resources:
         ProviderDetails:
           client_id: ${env:FACEBOOK_CLIENT_ID}
           client_secret: ${env:FACEBOOK_CLIENT_SECRET}
-          authorize_scopes: "email openid profile"
+          authorize_scopes: "email"
         UserPoolId: { Ref: SellerUsers }
     
     
@@ -771,12 +771,12 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://seller-${opt:stage}.indyauction.net/"
-          - "https://seller-${opt:stage}.indyauction.net/"
+          - "https://seller-${opt:stage}${env:BASE_URL_BUYER}/"
+          - "https://seller-${opt:stage}${env:BASE_URL_BUYER}/"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
         LogoutURLs:
-          - "https://seller-${opt:stage}.indyauction.net/"
+          - "https://seller-${opt:stage}${env:BASE_URL_BUYER}/"
           - "http://localhost:3000/"
         IdTokenValidity: 60
         PreventUserExistenceErrors: ENABLED
