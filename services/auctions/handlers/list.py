@@ -254,15 +254,16 @@ def export_as_csv(auctions):
 
             # Format the created_at field as dd-mm-year
             for auction in auctions:
+                print('datee', auction['start_date'], auction['end_date'])
                 modified_auction = {}
                 modified_auction["Auction ID"] = auction["auction_id"]
                 modified_auction["Auction Name"] = auction["title"]
                 modified_auction["Auction Description"] = re.sub(re.compile(r'<.*?>'), '', auction["description"])
                 modified_auction["Timezone"] = auction["time_zone"]
-                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
-                modified_auction["Auction Start Time"] = "" if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%H:%M")
-                modified_auction["Auction End Date"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%d %B %Y")
-                modified_auction["Auction End Time"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%H:%M")
+                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]/1000).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]/1000).strftime("%d %B %Y")
+                modified_auction["Auction Start Time"] = "" if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]/1000).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]/1000).strftime("%H:%M")
+                modified_auction["Auction End Date"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]/1000).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]/1000).strftime("%d %B %Y")
+                modified_auction["Auction End Time"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]/1000).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]/1000).strftime("%H:%M")
                 modified_auction["Registration Type"] = auction["registration_type"]
                 modified_auction["Currency"] = auction["currency"]
                 modified_auction["Extension Type"] = auction["extension_type"]
