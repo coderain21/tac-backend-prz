@@ -1,3 +1,4 @@
+// This code calculates the next bid amount based on a given value and checks if it is between 1 or 2. It also includes various functions to determine the first digit of the current bid, checking its increment
 /* eslint-disable radix */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-prototype-builtins */
@@ -329,7 +330,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         let message; let 
             bidStatus
         if (all_bidders.length <= 0) {
-            const token = await mongodbHelpers.getBuyer(data.buyer_id)
+            const token = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
             message = 'Congratulations! 🎉 You\'re the highest bidder! '
             bidStatus = 'Winning'
             const payload = JSON.stringify({ title: 'Bidding', body: message })
