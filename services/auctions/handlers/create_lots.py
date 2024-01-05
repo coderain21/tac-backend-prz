@@ -116,7 +116,7 @@ def lambda_handler(event, context):
         if extension_type in ['All Lots', 'Individual Lots']:
             request_body['start_date'] = auction_record['start_date']
             request_body['end_date'] = auction_record['end_date']
-        elif extension_type == 'Cascade':
+        elif  extension_type in ['Cascade', 'Individual Lots']:
             print('inside cascaded')
             auction_record.get('')
             time_between_lots = auction_record.get('time_between_lots', 0)
