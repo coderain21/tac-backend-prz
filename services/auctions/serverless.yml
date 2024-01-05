@@ -46,8 +46,8 @@ provider:
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
-    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
-    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
+    # SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+    # QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
     
     
   http:
@@ -63,7 +63,7 @@ provider:
             - cognito-idp:*
             - ses:*
             - s3:*
-            - sqs:*
+            # - sqs:*
             - states:*
             - lambda:*
             - mobiletargeting:*
@@ -253,7 +253,7 @@ functions:
     handler: handlers/view.view
     runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
       - http:
           cors: true
@@ -280,7 +280,7 @@ functions:
     handler: handlers/import_lots.import_lots
     runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
       - http:
           cors: true
@@ -321,7 +321,7 @@ functions:
     handler: handlers/deactivate.deactivate
     runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
       - http:
           cors: true
@@ -338,19 +338,19 @@ functions:
   send-email_auction:
     handler: handlers/auto_completion_bid.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
+      - ${ssm:COMMON_LIB_ARN}
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
       
-  sqs-trigger-function:
-    handler: handlers/sqs_trigger_function.sqsTriggerFunction
-    layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
-    events:
-      - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+  # sqs-trigger-function:
+  #   handler: handlers/sqs_trigger_function.sqsTriggerFunction
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
@@ -363,7 +363,7 @@ functions:
 #     messageQueue:
 #       Type: "AWS::SQS::Queue"
 #       Properties:
-#         QueueName: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+#         QueueName: auto-completion-email-dev.fifo
 #         FifoQueue: true
  
 
