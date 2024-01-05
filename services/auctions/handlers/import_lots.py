@@ -115,7 +115,6 @@ def import_lots(event, context):
             'Product Shipping Location',
             'Tags'
         ]
-        
         # Initialize the MongoDB client
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
@@ -142,7 +141,6 @@ def import_lots(event, context):
             {"seller_email": email_address, "auction_id": data["auction_id"]})
         auction_record = auction_collection.find_one(
             {"auction_id": auction_id, "seller_email": email_address}, {"_id": 0})
-        
         if auction_record is None:
             return {
                 "statusCode": 404,
