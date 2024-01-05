@@ -353,7 +353,8 @@ functions:
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
     events:
-      - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+      - sqs:
+          arn: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
@@ -366,7 +367,7 @@ resources:
     messageQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: ${env:SQS_QUEUE_ARN}
+        QueueName: auto-completion-email-dev.fifo
         FifoQueue: true
  
 

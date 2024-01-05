@@ -113,7 +113,7 @@ def lambda_handler(event, context):
         # Get the extension type from the auction record
         extension_type = auction_record.get('extension_type', '')
         print('extension', extension_type)
-        if extension_type in ['All Lots', 'Individual Lots']:
+        if extension_type in ['All Lots']:
             request_body['start_date'] = auction_record['start_date']
             request_body['end_date'] = auction_record['end_date']
         elif  extension_type in ['Cascade', 'Individual Lots']:
@@ -139,7 +139,11 @@ def lambda_handler(event, context):
                     # If no previous lots, use auction start_date and add time_between_lots
                     request_body['start_date'] = auction_record.get('start_date', 0)
                     end_date = auction_record.get('end_date', 0)  # Assuming a default value of current datetime if 'end_date' is not available
-                    request_body['end_date'] = end_date + extension_time*60*1000
+                    enddate=end_date + extension_time*60*1000
+                    request_body['end_date'] = enddate
+                    x = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': enddate}})
+                    print('xxxxxxxxxxxxx', x)
+
         # request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]
         request_body["seller_email"] = seller_email

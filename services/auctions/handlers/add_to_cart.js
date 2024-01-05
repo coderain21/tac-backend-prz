@@ -5,6 +5,7 @@
 /* eslint-disable no-underscore-dangle */
 const redis = require('redis')
 const mongodbHelper = require('../lib/mongodb_helper')
+const { sqsTriggerFunction } = require('./sqs_trigger_function')
 
 async function getLot(rediskey, client, id) {
     const allBidders = await client.hGetAll('lot', rediskey)
@@ -37,5 +38,11 @@ module.exports.handler = async (event) => {
     const auctionData = await mongodbHelper.getAuction(event)
     const saveToCart = await mongodbHelper.lotToCart(JSON.parse(getLotInfo), auctionData)
     console.log(saveToCart)
+    const currentTimestamp = new Date().getTime();
+    console.log('currentTimestamp', currentTimestamp)
+    if (auctionData[0].end_date > currentTimestamp) {
+        const callSQS = await sqsTriggerFunction(event)
+        console.log('callSQS', callSQS)
+    }
     return true
 }
