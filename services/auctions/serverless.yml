@@ -358,13 +358,13 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
   
 
-resources:
-  Resources:
-    messageQueue:
-      Type: "AWS::SQS::Queue"
-      Properties:
-        QueueName: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
-        FifoQueue: true
+# resources:
+#   Resources:
+#     messageQueue:
+#       Type: "AWS::SQS::Queue"
+#       Properties:
+#         QueueName: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+#         FifoQueue: true
  
 
 plugins:
