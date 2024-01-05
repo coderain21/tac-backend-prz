@@ -363,7 +363,7 @@ resources:
     messageQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: ${env:SQS_QUEUE_ARN}
+        QueueName: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
         FifoQueue: true
  
 
