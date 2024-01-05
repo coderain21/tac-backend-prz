@@ -115,16 +115,7 @@ def import_lots(event, context):
             'Product Shipping Location',
             'Tags'
         ]
-
-        additional_fields = {
-            "auction_id": auction_id,
-            "seller_email": email_address,
-            "starting_bid": 0,
-            "current_bid": 0,
-            "Top_bidder": "",
-            "images": []
-        }
-
+        
         # Initialize the MongoDB client
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
@@ -151,12 +142,27 @@ def import_lots(event, context):
             {"seller_email": email_address, "auction_id": data["auction_id"]})
         auction_record = auction_collection.find_one(
             {"auction_id": auction_id, "seller_email": email_address}, {"_id": 0})
+        
         if auction_record is None:
             return {
                 "statusCode": 404,
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+        start_date=auction_record['start_date']
+        end_date= auction_record['end_date']
+        print(123,auction_record)
+        print(3333, start_date, end_date)
+        additional_fields = {
+            "auction_id": auction_id,
+            "seller_email": email_address,
+            "starting_bid": 0,
+            "current_bid": 0,
+            "Top_bidder": "",
+            "images": [],
+            "start_date":start_date,
+            "end_date":end_date
+        }
         print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
@@ -212,7 +218,6 @@ def import_lots(event, context):
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
                 dict1["tags"] = tags
-
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number
