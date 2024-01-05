@@ -328,7 +328,7 @@ functions:
           path: /deactivate
           method: post
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   process-cart:
     handler: handlers/add_to_cart.handler
