@@ -391,6 +391,7 @@ module.exports.updateLotDetails = async (document) => {
         const database = client.connection.db // Access the database
         const collection = database.collection('dev-lots') //
         const getBuyerInfo = await this.getBuyer(document.winning_user)
+        console.log('Getting BUYER IN', getBuyerInfo)
         const updateResult = await collection.updateOne(
             { _id: new ObjectId(document._id) },
             {
