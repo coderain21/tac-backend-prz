@@ -138,7 +138,7 @@ module.exports.updateSignleLot = async (document) => {
         { _id: new ObjectId(document.lot_id) },
         {
             $set: {
-                is_extended: true, extension_time: document.extension_time, start_date: document.start_date, end_date: document.end_date,
+                end_date: document.end_date,
             },
         },
     )

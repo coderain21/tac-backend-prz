@@ -66,6 +66,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             end_date: lotInformation.lot_end_time,
         }
         const updateRedis = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
+        console.log('updateee', updateRedis)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
@@ -73,8 +74,6 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             extension_type: auctionDetails.extension_type,
         }
         const sendEmit = await extensionAlert(socket, lotData, io)
-        socket.emit('joinBidRoom', auctionLots)
-
         return true
     } catch (err) {
         console.log(err)
@@ -108,7 +107,9 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                     cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
                 }).promise()
                 const executeStepFunction = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
+                const updateLot = await mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time })
             }
+            socket.emit('joinBidRoom', auctionLots)
             const updatedInformation = {
                 end_date: auctionDetails.end_date + extend_time,
             }
@@ -131,6 +132,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                 end_date: auctionDetails.end_date + extend_time,
             }
             const changeAuctionEnddate = await mongodbHelper.updateAuctionData('indyauction-develop', 'dev-auctions', auctionDetails._id, updatedInformation)
+            const updateLot = await mongodbHelper.updateSignleLot({ lot_id: currentLotDetails._id, end_date: currentLotDetails.lot_end_time })
         }
         return true
     } catch (error) {
