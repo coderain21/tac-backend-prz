@@ -323,7 +323,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
         console.log('getBuyerToken', getBuyerToken)
         const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
-        console.log('updatetop', updateLot)
         const all_bidders = []
         for (let i = 0; i < getLotHistoryDetails.length; i++) {
             all_bidders.push(JSON.parse(getLotHistoryDetails[i]))

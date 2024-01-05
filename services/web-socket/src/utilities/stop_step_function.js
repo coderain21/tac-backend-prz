@@ -59,16 +59,13 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         const bidKey = `lot:${lot_id}`
         const existingRecord = await client.hGet('lot', bidKey)
         const get_lot = JSON.parse(existingRecord)
-        console.log('get lot', get_lot)
         const updateRequest = {
             ...get_lot,
             lot_end_date: lotInformation.lot_end_time,
             lot_extended: true,
             end_date: lotInformation.lot_end_time,
         }
-        console.log('bidkey', bidKey)
         const updateRedis = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        console.log('updateRedis', updateRedis)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
@@ -94,6 +91,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
 
 module.exports.stopExecution = async (currentLotDetails, auctionDetails, auctionLots, client, io, socket) => {
     try {
+        console.log('auctionDetails', auctionDetails)
         const stepFunctions = new StepFunctions()
         if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascade')) {
         // if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascaded') && currentLotDetails.lot_extended !== true) {
@@ -109,10 +107,12 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                     executionArn,
                     cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
                 }).promise()
-                console.log('stop response', response)
                 const executeStepFunction = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
-                console.log('executeStepFunction', executeStepFunction)
             }
+            const updatedInformation = {
+                end_date: auctionDetails.end_date + extend_time,
+            }
+            const changeAuctionEnddate = await mongodbHelper.updateAuctionData('indyauction-develop', 'dev-auctions', auctionDetails._id, updatedInformation)
         }
         if (auctionDetails.extension_type === 'Individual Lots') {
             let extend_time = auctionDetails.extension_time.replace('m', '')
@@ -127,6 +127,10 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                 cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
             }).promise()
             await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', currentLotDetails)
+            const updatedInformation = {
+                end_date: auctionDetails.end_date + extend_time,
+            }
+            const changeAuctionEnddate = await mongodbHelper.updateAuctionData('indyauction-develop', 'dev-auctions', auctionDetails._id, updatedInformation)
         }
         return true
     } catch (error) {
