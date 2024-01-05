@@ -253,7 +253,7 @@ functions:
     handler: handlers/view.view
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}}
     events:
       - http:
           cors: true
@@ -280,7 +280,7 @@ functions:
     handler: handlers/import_lots.import_lots
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}}
     events:
       - http:
           cors: true
@@ -321,14 +321,14 @@ functions:
     handler: handlers/deactivate.deactivate
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}}
     events:
       - http:
           cors: true
           path: /deactivate
           method: post
           authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}}
 
   process-cart:
     handler: handlers/add_to_cart.handler
