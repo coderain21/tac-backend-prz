@@ -44,7 +44,7 @@ io.on('connection', async (socket, data) => {
 	 * @param { Object }
 	 * @returns { Object }
 	 */
-    console.log('===========================', socket)
+    console.log('===========================')
     console.log('===========================')
     // const token = JSON.parse(JSON.stringify(socket.handshake.query.token))
     // const authStatus = await authenticationCheck(token)
@@ -63,7 +63,7 @@ io.on('connection', async (socket, data) => {
 	 * @eventType - Private
 	 */
     socket.on('disconnect', (data1) => {
-        console.log('Users List before', data1)
+        console.log('Users List before')
         users.removeUser(socket.id)
         console.log('Users List After')
         return socket.disconnect()
