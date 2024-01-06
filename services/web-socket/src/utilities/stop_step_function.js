@@ -59,6 +59,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         const bidKey = `lot:${lot_id}`
         const existingRecord = await client.hGet('lot', bidKey)
         const get_lot = JSON.parse(existingRecord)
+        console.log('findandup', lot_id, typeof lot_id)
         const updateRequest = {
             ...get_lot,
             lot_end_date: lotInformation.lot_end_time,
