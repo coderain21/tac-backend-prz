@@ -19,6 +19,7 @@ module.exports.checkExtensionType = async (documents) => {
 
 module.exports.extensionAlert = async (socket, data, io) => {
     const lotID = data.lot_id.toString()
+    console.log('lot id extesnion triggered', lotID, typeof data.lot_id)
     try {
         io.to(lotID).emit('extensionAlert', {
             success: true,
