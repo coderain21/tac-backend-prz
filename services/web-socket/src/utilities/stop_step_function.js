@@ -75,6 +75,7 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             extension_type: auctionDetails.extension_type,
         }
         const sendEmit = await extensionAlert(socket, lotData, io)
+        console.log('email check', sendEmit)
         return true
     } catch (err) {
         console.log(err)
