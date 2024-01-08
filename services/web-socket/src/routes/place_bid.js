@@ -338,8 +338,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
             console.log('pushResponse', pushresponse)
         } else {
+            console.log('all bidders', all_bidders)
             const buyerIds = all_bidders.map((buyer) => buyer.buyer_id)
-            console.log('buyers', buyerIds)
+            console.log('buyers2222222222222', buyerIds)
             const buyers = await mongodbHelpers.getBuyer(buyerIds, data.seller_email)
             console.log('one', buyers)
             for (let i = 0; i < buyers.length; i++) {
