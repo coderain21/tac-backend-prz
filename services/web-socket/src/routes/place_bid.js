@@ -336,11 +336,13 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus = 'Winning'
             const payload = JSON.stringify({ title: 'Bidding', body: message })
             const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
+            console.log('pushResponse', pushresponse)
         }
        
 
         for (let i = 0; i < all_bidders.length; i++) {
             const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id)
+            console.log('one', token)
             if (currentLotDetails.winning_user !== all_bidders[i].buyer_id) {
                 message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                 bidStatus = 'UnderBidder'
@@ -350,6 +352,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             }
             const payload = JSON.stringify({ title: 'Bidding', body: message })
             const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
+            console.log(pushresponse)
         }
 
         bidStatus = 'Winning'
