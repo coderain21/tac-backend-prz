@@ -9,6 +9,7 @@ wkhtmltopdf
 pymongo
 marshmallow
 pytz
+urllib3
 
 
 

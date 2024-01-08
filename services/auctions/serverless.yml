@@ -63,7 +63,8 @@ provider:
             - cognito-idp:*
             - ses:*
             - s3:*
-            # - sqs:*
+            - sts:*
+            - sqs:*
             - states:*
             - lambda:*
             - mobiletargeting:*
