@@ -154,7 +154,7 @@ async function getLotFromRedis(lot_id, client) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
-            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
+            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees === undefined ? 0 : checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
             getLotData[0].extended_time = checkAuctionEnd[0].extension_time
@@ -322,7 +322,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
         const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
         console.log('getBuyerToken', getBuyerToken)
-        // const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
+        const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
         const all_bidders = []
         for (let i = 0; i < getLotHistoryDetails.length; i++) {
             all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
