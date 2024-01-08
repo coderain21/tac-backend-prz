@@ -322,7 +322,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
         const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
         console.log('getBuyerToken', getBuyerToken)
-        const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
+        // const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
         const all_bidders = []
         for (let i = 0; i < getLotHistoryDetails.length; i++) {
             all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
