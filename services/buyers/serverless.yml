@@ -49,8 +49,8 @@ provider:
           - "mobiletargeting"
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
-          - "template/${self:provider.stage}-buyer_email_otp"
-          - "EMAIL"
+          - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
+      
     ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
@@ -72,8 +72,8 @@ provider:
           - "mobiletargeting"
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
-          - "template/${self:provider.stage}-buyer_reset_password"
-          - "EMAIL"
+          - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
+         
    
     BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
     CDN_LINK: ${ssm:CDN_URL}
