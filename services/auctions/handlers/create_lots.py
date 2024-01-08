@@ -23,7 +23,7 @@ Returns:
 import os
 import json
 import pymongo
-from datetime import timedelta, datetime
+
 
 
 
@@ -130,19 +130,19 @@ def lambda_handler(event, context):
             extension_time = int(extension_time_str)  # Convert the string to an integer
             print('times', extension_time)
             if len(latest_lot) > 0:
-                    print('iffffffffffffffffff',latest_lot)
-                    latest_end_date = latest_lot[0]['end_date']
-                    request_body['start_date'] = latest_lot[0]['start_date']
-                    request_body['end_date'] = latest_end_date + extension_time*60*1000
+                print('iffffffffffffffffff',latest_lot)
+                latest_end_date = latest_lot[0]['end_date']
+                request_body['start_date'] = latest_lot[0]['start_date']
+                request_body['end_date'] = latest_end_date + extension_time*60*1000
             else:
-                    print('entering else', request_body)
-                    # If no previous lots, use auction start_date and add time_between_lots
-                    request_body['start_date'] = auction_record.get('start_date', 0)
-                    end_date = auction_record.get('end_date', 0)  # Assuming a default value of current datetime if 'end_date' is not available
-                    enddate=end_date + extension_time*60*1000
-                    request_body['end_date'] = enddate
-                    x = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': enddate}})
-                    print('xxxxxxxxxxxxx', x)
+                print('entering else', request_body)
+                # If no previous lots, use auction start_date and add time_between_lots
+                request_body['start_date'] = auction_record.get('start_date', 0)
+                end_date = auction_record.get('end_date', 0)  # Assuming a default value of current datetime if 'end_date' is not available
+                enddate=end_date + extension_time*60*1000
+                request_body['end_date'] = enddate
+                updateCheck = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': enddate}})
+                print('updateCheck', updateCheck)
 
         # request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]
