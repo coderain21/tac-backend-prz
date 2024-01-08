@@ -109,7 +109,6 @@ module.exports.changeStatus = async (allBidders) => {
 }
 
 module.exports.changeStartingBid = async (data) => {
-    console.log('1111111111111111111111111111111111111')
     try {
         const connectionData = await this.connect()
         const database = connectionData.connection.db // Access the database
@@ -139,7 +138,7 @@ module.exports.updateSignleLot = async (document) => {
         { _id: new ObjectId(document.lot_id) },
         {
             $set: {
-                is_extended: true, extension_time: document.extension_time, start_date: document.start_date, end_date: document.end_date,
+                end_date: document.end_date,
             },
         },
     )
@@ -174,7 +173,6 @@ module.exports.getAuction = async (document) => {
         const query = {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
-        console.log('query', query)
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
         return documents
@@ -190,7 +188,6 @@ module.exports.getLot = async (lot_id) => {
         const query = {
             _id: ObjectId(lot_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
-        console.log('seller', query)
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
         return documents
@@ -209,9 +206,7 @@ module.exports.getAllLots = async (document, lotData) => {
             auction_id: document.auction_id,
         }
         let documents
-        console.log('document extensi', document)
         if (document.extension_type === 'All Lots') {
-            console.log('1111111')
             documents = await collection.find(query).toArray()
             const timestamp = documents[0].end_date
             const dateObject = new Date(timestamp)
@@ -223,7 +218,6 @@ module.exports.getAllLots = async (document, lotData) => {
             dateObject.setMinutes(newMinutes)
             // Convert the Date object back to a timestamp
             const newTimestamp = dateObject.getTime()
-            console.log(newTimestamp) // Output:
             const updateQuery = {
                 $set: {
                     end_date: newTimestamp,
@@ -244,7 +238,6 @@ module.exports.getAllLots = async (document, lotData) => {
             dateObject.setMinutes(newMinutes)
             // Convert the Date object back to a timestamp
             const newTimestamp = dateObject.getTime()
-            console.log(newTimestamp) // Output:
             documents = await collection.find({ ...query, _id: lotId }).toArray()
             const updateQuery = {
                 $set: {
@@ -322,16 +315,15 @@ module.exports.lotToCart = async (document) => {
     }
 }
 
-module.exports.getBuyer = async (buyer_id) => {
+module.exports.getBuyer = async (buyer_id, seller_email) => {
     try {
-        console.log('buyerid', buyer_id)
         const connectionData = await this.connect()
         const database = connectionData.connection.db// Access the database
         const collection = database.collection('dev-buyers') // Replace with your collection name
         const query = {
             _id: ObjectId(buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+            seller_email,
         } // Corrected 'document.buyer_id'
-        console.log('seller', query)
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
         return documents
@@ -374,12 +366,10 @@ module.exports.getExecutionArn = async (currentLotDetails) => {
 module.exports.update = async (arnData, data) => {
     try {
         const connectionData = await this.connect()
-        console.log('update', arnData, data)
         const update_information = {
             arn: data.executionArn,
         }
         // const connection = await mongoConnection.connect()
-        console.log(update_information, 'updateddd')
         const database = connectionData.connection.db// Access the database
         const collection = database.collection('dev-step-function-arns') // R
         const updateResult = await collection.updateOne(
@@ -397,12 +387,11 @@ module.exports.update = async (arnData, data) => {
 
 module.exports.updateLotDetails = async (document) => {
     try {
-        console.log('updateLotDetails mongo', document)
         const client = await this.connect()
         const database = client.connection.db // Access the database
         const collection = database.collection('dev-lots') //
         const getBuyerInfo = await this.getBuyer(document.winning_user)
-        console.log('mongo buyer', getBuyerInfo)
+        console.log('Getting BUYER IN', getBuyerInfo)
         const updateResult = await collection.updateOne(
             { _id: new ObjectId(document._id) },
             {
@@ -411,10 +400,26 @@ module.exports.updateLotDetails = async (document) => {
                 },
             },
         )
-        console.log('update ', updateResult)
         client.disconnect()
         return updateResult
         // await connection.disconnect()
+    } catch (error) {
+        console.log(error)
+        return false
+    }
+}
+
+module.exports.updateAuctionData = async (dbName, collectionName, user_id, updateInformation) => {
+    try {
+        const client = await this.connect()
+        const db = client.db(dbName)
+        const collection = db.collection(collectionName)
+        const updateResult = await collection.updateOne(
+            { _id: user_id },
+            { $set: updateInformation },
+        )
+        client.close()
+        return updateResult
     } catch (error) {
         console.log(error)
         return false

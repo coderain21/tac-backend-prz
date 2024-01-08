@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-unresolved */
@@ -6,7 +7,7 @@ const jwt = require('jsonwebtoken')
 const jwksClient = require('jwks-rsa')
 
 // Cognito pool information
-const cognitoPoolId = 'eu-west-2_kqcLIvA4D'
+const cognitoPoolId = 'eu-west-2_72rz6biiL'
 const cognitoRegion = 'eu-west-2'
 
 // Initialize the JWKS (JSON Web Key Set) client
@@ -56,7 +57,6 @@ async function getKey(kid) {
 
 module.exports.authenticationCheck = async (token) => {
     try {
-        console.log('tokenn', token)
         // Decode the token (no verification at this stage)
         const decodedToken = jwt.decode(token, { complete: true })
 
@@ -70,11 +70,11 @@ module.exports.authenticationCheck = async (token) => {
         const verifiedToken = jwt.verify(token, key.publicKey, { algorithms: ['RS256'] })
 
         // Token is valid
-        console.log('Token is valid:', verifiedToken)
         return {
             statusCode: 200,
         }
     } catch (error) {
+        console.log('errr', error)
         // Token is invalid
         return {
             statusCode: 401,

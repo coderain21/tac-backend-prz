@@ -1,3 +1,4 @@
+// This code calculates the next bid amount based on a given value and checks if it is between 1 or 2. It also includes various functions to determine the first digit of the current bid, checking its increment
 /* eslint-disable radix */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-prototype-builtins */
@@ -319,9 +320,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         })
         await listBidHistory(socket, data, io)
         webpush.setVapidDetails('mailto: <sandhyashri@7edge.com>', 'BA3rSGSik3c8-pT1tspVZdvESBJlPs8Jk9kJJbwAV618yVlZZtgDwV5VLVsfC06IJ2L9IpfPRSD-riXOHKUyyro', 'qE9SJ9dbfZxGdE3jAw0NVHhGrGAhkjTNluvGltiUhNQ')
-        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id)
+        const getBuyerToken = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
+        console.log('getBuyerToken', getBuyerToken)
         const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails)
-        console.log('updatetop', updateLot)
         const all_bidders = []
         for (let i = 0; i < getLotHistoryDetails.length; i++) {
             all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
@@ -329,7 +330,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         let message; let 
             bidStatus
         if (all_bidders.length <= 0) {
-            const token = await mongodbHelpers.getBuyer(data.buyer_id)
+            const token = await mongodbHelpers.getBuyer(data.buyer_id, data.seller_email)
+            console.log('getBuyerToken', token)
             message = 'Congratulations! 🎉 You\'re the highest bidder! '
             bidStatus = 'Winning'
             const payload = JSON.stringify({ title: 'Bidding', body: message })
