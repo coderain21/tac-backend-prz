@@ -15,6 +15,7 @@ config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
     console.log('start execution start', lots)
+    lots.start_date = new Date(lots.start_date).toISOString()
     const params = {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),

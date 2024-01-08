@@ -193,7 +193,7 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
         }
         // Join the socket to the specified bid room (lotID)
         socket.join(lotID)
-
+        
         // Retrieve lot details from Redis
         const lotDetails = await getLotFromRedis(lotID, client)
 

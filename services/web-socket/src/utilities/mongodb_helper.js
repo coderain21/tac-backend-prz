@@ -324,7 +324,7 @@ module.exports.getBuyer = async (buyer_id, seller_email) => {
             _id: ObjectId(buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
             seller_email,
         } // Corrected 'document.buyer_id'
-        console.log(query,'queryy')
+        console.log(query, 'queryy')
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
         return documents
