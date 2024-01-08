@@ -116,7 +116,6 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
                 end_date: auctionDetails.end_date + extend_time,
             }
             const changeAuctionEnddate = await mongodbHelper.updateAuctionData('indyauction-develop', 'dev-auctions', auctionDetails._id, updatedInformation)
-            
         }
         if (auctionDetails.extension_type === 'Individual Lots') {
             let extend_time = auctionDetails.extension_time.replace('m', '')
