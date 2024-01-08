@@ -66,14 +66,14 @@ module.exports.sqsTriggerFunction = async (event) => {
     try {
         console.log('event', event)
 
-        const parsedRecords = event.Records.map((record) => ({
-            ...record,
-            body: JSON.parse(record.body),
-        }))
-        console.log('parsed', JSON.stringify(parsedRecords))
+        // const parsedRecords = event.Records.map((record) => ({
+        //     ...record,
+        //     body: JSON.parse(record.body),
+        // }))
+        console.log('parsed', JSON.stringify(event))
 
         const connection = await mongodbHelper.connect()
-        const getBidders = await mongodbHelper.getBidders(parsedRecords[0].body[0])
+        const getBidders = await mongodbHelper.getBidders(event)
         console.log('get', getBidders)
         // const getLots = await mongodbHelper.getAuctionLots(event)
         // console.log('getting lots', getLots)
@@ -84,14 +84,14 @@ module.exports.sqsTriggerFunction = async (event) => {
         if (!client.isOpen) {
             await client.connect()
         }
-        const getAllLots = await getLot('lot', client, parsedRecords[0].body[0])
+        const getAllLots = await getLot('lot', client, event)
         const get_lot = []
         for (let i = 0; i < getAllLots.length; i++) {
             get_lot.push(JSON.parse(getAllLots[i]))
         }
         console.log('lot from redis', get_lot)
         // const uniqueWinningUsers = [...new Set(get_lot.map((item) => item.winning_user))]
-        const auctionData = await mongodbHelper.getAuction(parsedRecords[0].body[0])
+        const auctionData = await mongodbHelper.getAuction(event)
         const promiseList = []
 
         for (const user of getBidders) {
@@ -101,10 +101,11 @@ module.exports.sqsTriggerFunction = async (event) => {
                 _id: new ObjectId(user.buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
             }
             const sellerQuery = {
-                email_address: parsedRecords[0].body[0].seller_email,
+                email_address: event.seller_email,
             }
             const buyerInformation = await mongodbHelper.getUser(query, process.env.BUYERS_TABLE)
             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
+            let subjectDescription = 'You Won the Auction'
             get_lot.map((item) => {
                 item.lot_image = `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
@@ -124,8 +125,10 @@ module.exports.sqsTriggerFunction = async (event) => {
                     notWinning.push(item)
                 }
             })
+            if (winningLot.length <= 0) {
+                subjectDescription = 'You lost the Auction'
+            }
             console.log('buyerInformation', notWinning)
-
             const template_data = {
                 url: 'sdhfjk',
                 winning_lot: winningLot,
@@ -137,6 +140,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
                 seller_email: auctionData[0].seller_email,
+                subject: subjectDescription,
             }
             promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL'))
             // await sendMail(user, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL')

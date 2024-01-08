@@ -7,6 +7,7 @@ import boto3
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 from datetime import datetime
+import pytz
 
 headers = {
     'Content-Type': 'application/json',
@@ -245,6 +246,40 @@ def export_as_csv(auctions):
         csv_file = os.environ["CSV_FILE"]
         s3_key = f"exports/{csv_file}"
         s3_bucket = os.environ['S3_BUCKET']
+        time_zones = {
+            'GMT': 'GMT',
+            'BST': 'Europe/London',
+            'IST': 'Asia/Kolkata',
+            'CET': 'Europe/Paris',
+            'JST': 'Asia/Tokyo',
+            'AES': 'Australia/Sydney',
+            'NZS': 'Pacific/Auckland',
+            'PST': 'America/Los_Angeles',
+            'MST': 'America/Denver',
+            'CST': 'America/Chicago',
+            'EST': 'America/New_York',
+            'UTC': 'UTC'
+        }
+        # Extracting data
+        start_date_epoch = auctions["start_date"]
+        end_date_epoch = auctions["end_date"]
+        time_zone = auctions.get("time_zone")
+        time_zone_str = time_zone[:3]
+        timezone_str = time_zones[time_zone_str]
+
+        # Convert epochs to datetime
+        start_date = datetime.utcfromtimestamp(start_date_epoch)
+        end_date = datetime.utcfromtimestamp(end_date_epoch)
+
+        # Get timezone from the mapping or default to UTC
+        timezone = pytz.timezone(time_zones.get(timezone_str, 'UTC'))
+
+        # Localize datetimes to the provided timezone
+        start_date = timezone.localize(start_date)
+        end_date = timezone.localize(end_date)
+
+        print("Start Date (in specified timezone):", start_date)
+        print("End Date (in specified timezone):", end_date)
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
             writer = csv.DictWriter(file, ["Auction ID", "Auction Name", "Auction Description", "Timezone", "Auction Start Date", "Auction Start Time", "Auction End Date", "Auction End Time",
@@ -259,10 +294,10 @@ def export_as_csv(auctions):
                 modified_auction["Auction Name"] = auction["title"]
                 modified_auction["Auction Description"] = re.sub(re.compile(r'<.*?>'), '', auction["description"])
                 modified_auction["Timezone"] = auction["time_zone"]
-                modified_auction["Auction Start Date"] = "" if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
-                modified_auction["Auction Start Time"] = "" if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%H:%M")
-                modified_auction["Auction End Date"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%d %B %Y")
-                modified_auction["Auction End Time"] = "" if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%H:%M")
+                modified_auction["Auction Start Date"] = start_date.date #if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
+                modified_auction["Auction Start Time"] =  start_date.time()#if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%H:%M")
+                modified_auction["Auction End Date"] = end_date.date() #if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%d %B %Y")
+                modified_auction["Auction End Time"] = end_date.time()#if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%H:%M")
                 modified_auction["Registration Type"] = auction["registration_type"]
                 modified_auction["Currency"] = auction["currency"]
                 modified_auction["Extension Type"] = auction["extension_type"]

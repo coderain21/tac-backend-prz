@@ -206,7 +206,13 @@ def update_auction(event, context):
                 )
                 for item in listLots:
                     print('inside for', item)
-                    itemData = json.dumps(item, cls= Encoder)
+                    start_date_timestamp = auction_record['start_date'] / 1000
+                    date_time = datetime.utcfromtimestamp(start_date_timestamp)
+                    iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+                    item['start_date'] = iso_date_with_offset
+                    print('item', item)
+                    itemData = json.loads(json.dumps(item, cls= Encoder)) 
+                    print('itemdata:', itemData)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)
                     collection = db["dev-step-function-arns"]

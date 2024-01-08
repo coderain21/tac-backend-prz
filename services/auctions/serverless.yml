@@ -336,7 +336,7 @@ functions:
   process-cart:
     handler: handlers/add_to_cart.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:12
 
   send-email_auction:
     handler: handlers/auto_completion_bid.handler
@@ -359,7 +359,7 @@ functions:
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
   
 
 resources:
