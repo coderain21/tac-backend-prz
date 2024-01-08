@@ -193,7 +193,7 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
         }
         // Join the socket to the specified bid room (lotID)
         socket.join(lotID)
-        
+
         // Retrieve lot details from Redis
         const lotDetails = await getLotFromRedis(lotID, client)
 
@@ -338,10 +338,13 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
             console.log('pushResponse', pushresponse)
         } else {
-            for (let i = 0; i < all_bidders.length; i++) {
-                const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id, data.seller_email)
-                console.log('one', token)
-                if (currentLotDetails.winning_user !== all_bidders[i].buyer_id) {
+            const buyerIds = all_bidders.map((buyer) => buyer.buyer_id)
+            console.log('buyers', buyerIds)
+            const buyers = await mongodbHelpers.getBuyer(buyerIds, data.seller_email)
+            console.log('one', buyers)
+            for (let i = 0; i < buyers.length; i++) {
+                console.log('buyers', buyers[i])
+                if (currentLotDetails.winning_user !== buyers[i]._id) {
                     message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                     bidStatus = 'UnderBidder'
                 } else {
@@ -349,7 +352,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                     bidStatus = 'Winning'
                 }
                 const payload = JSON.stringify({ title: 'Bidding', body: message })
-                const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
+                const pushresponse = await webpush.sendNotification(buyers.token, payload).catch(console.log)
                 console.log(pushresponse)
             }
         }

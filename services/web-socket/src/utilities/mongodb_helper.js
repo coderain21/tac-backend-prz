@@ -315,15 +315,19 @@ module.exports.lotToCart = async (document) => {
     }
 }
 
-module.exports.getBuyer = async (buyer_id, seller_email) => {
+module.exports.getBuyer = async (buyerIds, seller_email) => {
     try {
         const connectionData = await this.connect()
         const database = connectionData.connection.db// Access the database
         const collection = database.collection('dev-buyers') // Replace with your collection name
+        // const query = {
+        //     _id: ObjectId(buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+        //     seller_email,
+        // } // Corrected 'document.buyer_id'
         const query = {
-            _id: ObjectId(buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+            _id: { $nin: buyerIds.map((buyerId) => ObjectId(buyerId)) },
             seller_email,
-        } // Corrected 'document.buyer_id'
+        }
         console.log(query, 'queryy')
         const documents = await collection.find(query).toArray() // Await the query result
         connectionData.disconnect()
