@@ -46,7 +46,7 @@ provider:
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${ssm:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
-    # SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
+    SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
     # QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
     
     
@@ -346,12 +346,12 @@ functions:
     layers:
       - ${ssm:COMMON_LIB_ARN}
       
-  # sqs-trigger-function:
-  #   handler: handlers/sqs_trigger_function.sqsTriggerFunction
-  #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
-  #   events:
-  #     - sqs: ${ssm:SQS_QUEUE_ARN}
+  sqs-trigger-function:
+    handler: handlers/sqs_trigger_function.sqsTriggerFunction
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs: ${ssm:SQS_QUEUE_ARN}
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
@@ -361,34 +361,51 @@ functions:
 
 resources:
   Resources:
-      LotStateMachineSSMParameter:
-        Type: 'AWS::SSM::Parameter'
-        Properties:
-          Name: STATE_MACHINE_LOT_ARN
-          Description: 'ARN of the Hello Step Functions state machine'
-          Type: 'String'
-          Value: !Sub
-            - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
-            - StateMachineName: ${opt:stage}-lot-published
-      
-      AuctionStateMachineSSMParameter:
-        Type: 'AWS::SSM::Parameter'
-        Properties:
-          Name: STATE_MACHINE_AUCTION_ARN
-          Description: 'ARN of the Hello Step Functions state machine'
-          Type: 'String'
-          Value: !Sub
-            - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
-            - StateMachineName: ${opt:stage}-auction-ended
+    LotStateMachineSSMParameter:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: STATE_MACHINE_LOT_ARN
+        Description: 'ARN of the Hello Step Functions state machine'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
+          - StateMachineName: ${opt:stage}-lot-published
+    
+    AuctionStateMachineSSMParameter:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: STATE_MACHINE_AUCTION_ARN
+        Description: 'ARN of the Hello Step Functions state machine'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
+          - StateMachineName: ${opt:stage}-auction-ended
 
 
-    # messageQueue:
-    #   Type: "AWS::SQS::Queue"
+    messageQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: auto-completion-email-${opt:stage}.fifo
+        FifoQueue: true
+
+    SQSSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: SQS_QUEUE_ARN
+        Type: String
+        Value: 
+          Fn::GetAtt:
+            - messageQueue
+            - Arn
+    # SQSURLSSMParameter:
+    #   Type: AWS::SSM::Parameter
     #   Properties:
-    #     QueueName: auto-completion-email-${opt:stage}.fifo
-    #     FifoQueue: true
+    #     Name: QUEUE_URL
+    #     Type: String
+    #     Value: !Sub
+    #       - https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo
  
-
+    
 plugins:
   - serverless-offline
   - serverless-package-external
