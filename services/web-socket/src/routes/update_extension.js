@@ -6,10 +6,12 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-empty */
 const mongodbHelper = require('../utilities/mongodb_helper')
+const Auction = require('../models/Auction')
 
 module.exports.checkExtensionType = async (documents) => {
     try {
-        const getAuctionDetails = await mongodbHelper.getAuction(documents)
+        console.log('checkExtensionType', documents)
+        const getAuctionDetails = await mongodbHelper.getAuction(documents, Auction)
         await mongodbHelper.getAllLots(getAuctionDetails[0], documents)
         return false
     } catch (err) {
