@@ -194,7 +194,7 @@ module.exports.getAuctionLots = async (document, Lot) => {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
         }
-        const documents = await Lot.find(query).toArray()
+        const documents = await Lot.find(query)
         return documents
     } catch (error) {
         console.log(error)
