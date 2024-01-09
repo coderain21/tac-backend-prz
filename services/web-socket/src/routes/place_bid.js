@@ -154,7 +154,7 @@ async function getLotFromRedis(lot_id, client) {
             const connectionData = await mongodbHelpers.connect()
             const getLotData = await mongodbHelpers.getLot(lot_id)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0])
-            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees
+            getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees === undefined ? 0 : checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
             getLotData[0].extended_time = checkAuctionEnd[0].extension_time
@@ -193,7 +193,6 @@ module.exports.joinBidRoom = async (socket, lotID, io) => {
         }
         // Join the socket to the specified bid room (lotID)
         socket.join(lotID)
-
         // Retrieve lot details from Redis
         const lotDetails = await getLotFromRedis(lotID, client)
 
@@ -336,22 +335,23 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus = 'Winning'
             const payload = JSON.stringify({ title: 'Bidding', body: message })
             const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
-        }
-       
-
-        for (let i = 0; i < all_bidders.length; i++) {
-            const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id)
-            if (currentLotDetails.winning_user !== all_bidders[i].buyer_id) {
-                message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
-                bidStatus = 'UnderBidder'
-            } else {
-                message = 'Congratulations! 🎉 You\'re the highest bidder! '
-                bidStatus = 'Winning'
+            console.log('pushResponse', pushresponse)
+        } else {
+            for (let i = 0; i < all_bidders.length; i++) {
+                const token = await mongodbHelpers.getBuyer(all_bidders[i].buyer_id, data.seller_email)
+                console.log('one', token)
+                if (currentLotDetails.winning_user !== all_bidders[i].buyer_id) {
+                    message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
+                    bidStatus = 'UnderBidder'
+                } else {
+                    message = 'Congratulations! 🎉 You\'re the highest bidder! '
+                    bidStatus = 'Winning'
+                }
+                const payload = JSON.stringify({ title: 'Bidding', body: message })
+                const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
+                console.log(pushresponse)
             }
-            const payload = JSON.stringify({ title: 'Bidding', body: message })
-            const pushresponse = await webpush.sendNotification(token[0].token, payload).catch(console.log)
         }
-
         bidStatus = 'Winning'
         if (currentLotDetails.winning_user !== data.buyer_id && currentLotDetails.winning_user !== data.buyer_id) {
             message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
