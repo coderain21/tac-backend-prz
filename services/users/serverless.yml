@@ -778,7 +778,7 @@ resources:
           - "https://seller-${opt:stage}${env:BASE_URL_BUYER}/"
           - "http://localhost:3000/"
         IdTokenValidity: 60
-        PreventUserExistenceErrors: DISABLED
+        PreventUserExistenceErrors: LEGACY
         RefreshTokenValidity: 30
         TokenValidityUnits:
           AccessToken: minutes

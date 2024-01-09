@@ -361,7 +361,7 @@ resources:
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
         IdTokenValidity: 60
-        PreventUserExistenceErrors: DISABLED
+        PreventUserExistenceErrors: LEGACY
         RefreshTokenValidity: 30
         TokenValidityUnits:
           AccessToken: minutes
