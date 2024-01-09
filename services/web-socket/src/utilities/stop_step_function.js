@@ -18,7 +18,9 @@ config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
     console.log('start execution start', typeof lots, lots.start_date)
-    lots.start_date = new Date(lots.start_date).toISOString()
+    const newStartDate = Date(lots.start_date).toISOString()
+    console.log('startdate', newStartDate)
+    lots.start_date = newStartDate
     const params = {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),
@@ -33,6 +35,7 @@ async function startExecution(executionARN, lots) {
             if (data) {
                 console.log('start execution relove block', data)
                 const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
+                console.log('getarn', getArn)
                 const updateARN = await mongodbHelper.update(getArn[0], data, StepFunctionArn)
                 console.log('updateARN', updateARN)
                 resolve(data)
