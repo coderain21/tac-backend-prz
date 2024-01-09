@@ -249,7 +249,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         const auctionEndTimeEpoch = currentLotDetails.end_date
         const currentTimeEpoch = Date.now()
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
-        if (timeLeft <= 60000 && timeLeft > 0) {
+        if (timeLeft) {
+        // if (timeLeft <= 60000 && timeLeft > 0) {
             console.log('The bid is within the last minute before the auction ends.')
             const auctionLots = await mongodbHelpers.getAuctionLots(data, Lot)
             // await redisHelper.findAndUpdate(auctionLots, currentLotDetails, client, io, socket)
@@ -265,6 +266,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
+        return
         if (getLotHistoryDetails.length <= 0) {
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.starting_price)

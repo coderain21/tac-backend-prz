@@ -17,7 +17,7 @@ const Auction = require('../models/Auction')
 config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
-    console.log('start execution start', lots)
+    console.log('start execution start', typeof lots, lots.start_date)
     lots.start_date = new Date(lots.start_date).toISOString()
     const params = {
         stateMachineArn: executionARN,
