@@ -231,7 +231,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         // const client = await redis.createClient()
         const connection = await mongodbHelpers.connect()
-        console.log('data', data)
+        console.log('starteddd bid', data)
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
         const client = await redis.createClient({
