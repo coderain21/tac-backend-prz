@@ -741,7 +741,6 @@ resources:
       Properties:
         Domain: indyauction-seller-${self:provider.stage}
         UserPoolId: { Ref: SellerUsers }
-
     SellerUsersClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
