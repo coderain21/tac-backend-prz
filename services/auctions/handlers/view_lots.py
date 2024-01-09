@@ -103,8 +103,13 @@ def list_lots(event, context):
                 }
             }
         ]
+        print('combined_pipeline', combined_pipeline)
 
         result = list(collection.aggregate(combined_pipeline))
+        print(result, "rrrrrrrrrrrrrrrrr")
+        max_bid = 0
+        total_bids = 0
+        percentage_bids_gt_zero = 0
         if result:
             total_bids = result[0]['totalBids']
             max_bid = result[0]['maxBid']
