@@ -152,5 +152,5 @@ const AuctionSchema = new Schema({
 })
 
 AuctionSchema.plugin(mongoosePaginate)
-const auctionManagement = mongoose.model(`${stage}-auctions`, AuctionSchema, `${stage}-auctions`)
+const auctionManagement = mongoose.model('dev-auctions', AuctionSchema, 'dev-auctions')
 module.exports = auctionManagement

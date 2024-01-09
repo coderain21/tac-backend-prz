@@ -76,6 +76,7 @@ module.exports.updateSignleLot = async (document, Lot) => {
 
 module.exports.getAuction = async (document, Auction) => {
     try {
+        console.log('auction schema', Auction)
         const query = {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
