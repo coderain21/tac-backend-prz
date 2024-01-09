@@ -52,16 +52,16 @@ provider:
     SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL}
     DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
-    FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: 
-      Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "mobiletargeting"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "template/${self:provider.stage}-seller-forgot-password"
-          - "EMAIL" 
+    FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${self:provider.stage}-forgot-password
+      # Fn::Join:
+      #   - ":"
+      #   - - "arn"
+      #     - "aws"SendTemplatedEmail
+      #     - "mobiletargeting"
+      #     - !Ref "AWS::Region"
+      #     - !Ref "AWS::AccountId"
+      #     - "templates/${self:provider.stage}-forgot-password"
+      #     - EMAIL
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     LEVEL_NAME: ${env:LEVEL_NAME}
@@ -465,7 +465,7 @@ resources:
         Template:
           HtmlPart: ${file(./templates/seller-forgot-password.html)}
           SubjectPart: Action Required for Document Completion
-          TemplateName: ${self:provider.stage}-seller-forgot-password
+          TemplateName: ${self:provider.stage}-forgot-password
 
     SellerUsers:
       Type: "AWS::Cognito::UserPool"
@@ -757,6 +757,7 @@ resources:
           - ALLOW_REFRESH_TOKEN_AUTH
           - ALLOW_USER_SRP_AUTH
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
         SupportedIdentityProviders:
           - "COGNITO"
           - "Google"
