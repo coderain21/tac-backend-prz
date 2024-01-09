@@ -20,261 +20,214 @@
   "paths": {
     "/auctions": {
       "get": {
-        "tags": ["Address management"],
-        "summary": "add address",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "first_name": {
-                    "type": "string"
-                  },
-                  "last_name": {
-                    "type": "string"
-                  },
-                  "address_line1": {
-                    "type": "string"
-                  },
-                  "address_line2": {
-                    "type": "string"
-                  },
-                  "state": {
-                    "type": "string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "country": {
-                    "type": "string"
-                  },
-                  "postal_code": {
-                    "type": "string"
-                  },
-                  "city": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "first_name": "",
-                "last_name": "",
-                "address_line1": "410",
-                "address_line2": "dukes",
-                "state": "qwert",
-                "country": "usa",
-                "postal_code": "000000",
-                "city": "anti",
-                "type": "billing",
-                "default": true
-            }
-            }
-          }
+        "tags": [
+          "Auction"
           
-
-        },
-        "responses": {
-          "201": {
-            "description": "adding address successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "example": {
-                    "message": "Address added successfully!"
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "You do not have access to perform this API action"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "There was an error while adding the address"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "get": {
-        "tags": ["Address management"],
-        "summary": "listing the all address",
+        ],
+        "summary": "Listing auction",
+        "description": "Listing auction",
         "parameters": [
           {
-            "required": false,
-            "name": "type",
+            "name": "start_date",
             "in": "query",
-            "description": "Type of address to list",
+            "description": "Filter by date range, this is the start date",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1701082800000
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "Filter by date range, this is the end date",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1701088200000
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by status",
             "schema": {
               "type": "string"
             },
-            "example": "billing"
+            "example": "Draft"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "If sort is opted",
+            "schema": {
+              "type": "string"
+            },
+            "example": "true"
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "title"
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ascending"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "C"
           }
+
         ],
         "responses": {
           "200": {
-            "description": "listing addresses",
+            "description": "Successfully retrieved auctions",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "result": {
+                  "properties": { 
+                    "data": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "_id": {
+                          "auction_id": {
                             "type": "string"
                           },
-                          "address_line1": {
-                            "type": "string"
+                          "title": {
+                            "type": "number"
                           },
-                          "address_line2": {
-                            "type": "string"
+                          "start_date": {
+                            "type": "number"
                           },
-                          "first_name": {
-                            "type": "string"
-                          },
-                          "last_name": {
-                            "type": "string"
-                          },
-                          "state": {
+                          "end_date": {
                             "type": "string"
                           },
                           "status": {
                             "type": "string"
                           },
-                          "country": {
+                          "created_at": {
                             "type": "string"
                           },
-                          "postal_code": {
+                          "auction_image": {
                             "type": "string"
                           },
-                          "city": {
+                          "description": {
                             "type": "string"
                           },
-                          "type": {
+                          "currency": {
                             "type": "string"
                           },
-                          "email_address": {
+                          "extension_type": {
                             "type": "string"
                           },
-                          "default": {
-                            "type": "boolean"
+                          "extension_time": {
+                            "type": "string"
+                          },
+                          "extension_time_between_lots": {
+                            "type": "string"
+                          },
+                          "registration_type": {
+                            "type": "string"
+                          },
+                          "add_buyer_fees": {
+                            "type": "string"
+                          },
+                          "time_zone": {
+                            "type": "string"
+                          },
+                          "make_your_auction_private": {
+                            "type": "string"
+                          },
+                          "passcode": {
+                            "type": "string"
+                          },
+                          "fees": {
+                            "type": "string"
                           }
                         }
                       }
+                    },
+                    "total_records_found": {
+                      "type": "integer"
+                    },
+                    "total_auctions": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
                     }
                   }
                 },
                 "example": {
-                  "result": [
-                    {
-                        "_id": "65574b01cfaec8f35e3d7a5a",
-                        "first_name": "",
-                        "last_name": "",
-                        "address_line1": "410",
-                        "address_line2": "dukes",
-                        "city": "anti",
-                        "state": "qwert",
-                        "postal_code": "000000",
-                        "country": "usa",
-                        "type": "billing",
-                        "default": false,
-                        "email_address": "sthuthi+test@7edge.com"
-                    }
-                  ]
-                }
+                        "data": [
+                          {
+                            "auction_id": "A0169",
+                            "title": "Auction Event",
+                            "start_date": 1701082800000,
+                            "end_date": 1701088200000,
+                            "status": "Draft",
+                            "created_at": "2023-08-31 10:27:57.993000",
+                            "auction_image": "",
+                            "description": "",
+                            "currency": "",
+                            "extension_type": "",
+                            "extension_time": "",
+                            "extension_time_between_lots": "",
+                            "registration_type": "",
+                            "add_buyer_fees": "",
+                            "time_zone": "",
+                            "make_your_auction_private": "",
+                            "passcode": "",
+                            "fees": ""
+                          }
+                        ],
+                        "total_records_found": 1,
+                        "total_auctions": 1,
+                        "current_page": 1,
+                        "total_pages": 1
+                      }
+                
               }
             }
           },
           "403": {
-            "description": "Forbidden",
+            "description": "forbidden",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "You do not have access to perform this API action"
+                        "example": "You do not have access to perform this API action"
+                      
                     }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "No addresses found"
-                    }
-                  }
+                  }    
                 }
               }
             }
@@ -287,143 +240,8 @@
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "There was an error getting addresses"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "tags": ["Address management"],
-        "summary": "updating the default address",
-        "parameters": [
-          {
-            "required": false,
-            "name": "address_id",
-            "in": "query",
-            "description": "Get authentication parameters",
-            "schema": {
-              "type": "string"
-            },
-            "example": "65574b01cfaec8f35e3d7a5a"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "plan": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "type": "billing"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Address updated"
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "please provide the address_id."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json ": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "You do not have access to perform this API action"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Address with given address_id not found."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "There was an error while updating the address"
+                      "type": "string",
+                      "example": "Internal server error"
                     }
                   }
                 }

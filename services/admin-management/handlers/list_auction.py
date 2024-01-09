@@ -2,8 +2,6 @@
 import json
 import os
 import re
-import csv
-import boto3
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 from datetime import datetime
@@ -46,10 +44,8 @@ def list_auction(event, context):
     try:
         start_date = event['queryStringParameters'].get('start_date', None)
         end_date = event['queryStringParameters'].get('end_date', None)
-        print(12334)
         status = event['queryStringParameters'].get('status', None)
         key = event['queryStringParameters'].get('key', 'created_at')
-        print(23234234)
         order = event['queryStringParameters'].get('order',
                                                    'descending')  # 'ascending' or 'descending'
         page = int(event['queryStringParameters'].get(
