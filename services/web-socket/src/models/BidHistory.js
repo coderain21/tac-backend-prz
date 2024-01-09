@@ -63,6 +63,7 @@ const BidSchema = new Schema({
     max_bid: {
         type: Number,
     },
+    email_address: { type: String},
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 
