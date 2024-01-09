@@ -69,5 +69,5 @@ const BidSchema = new Schema({
 })
 
 BidSchema.plugin(mongoosePaginate)
-const bidManagement = mongoose.model(`${stage}-bid-information`, BidSchema, `${stage}-bid-information`)
+const bidManagement = mongoose.model(`${stage}-bid-informations`, BidSchema, `${stage}-bid-informations`)
 module.exports = bidManagement
