@@ -6,7 +6,6 @@ const mongoosePaginate = require('mongoose-paginate-v2')
 require('dotenv').config()
 
 const { Schema } = mongoose
-const stage = process.env.STAGE
 
 const fontDetailsSchema = new mongoose.Schema({
     hearder_font: {

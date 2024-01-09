@@ -153,13 +153,10 @@ async function getLotFromRedis(lot_id, client) {
         for (let i = 0; i < getLotDetails.length; i++) {
             get_lot.push(JSON.parse(getLotDetails[i]))
         }
-        console.log('lot from redis', get_lot)
         // if lot is active, then store   history for current bid
         if (getLotDetails.length <= 0) {
             const getLotData = await mongodbHelpers.getLot(lot_id, Lot)
-            console.log('getLotData', getLotData)
             const checkAuctionEnd = await mongodbHelpers.getAuction(getLotData[0], Auction)
-            console.log('Check', checkAuctionEnd)
             getLotData[0].add_buyer_fees = checkAuctionEnd[0].add_buyer_fees === undefined ? 0 : checkAuctionEnd[0].add_buyer_fees
             getLotData[0].percentage = checkAuctionEnd[0].percentage
             getLotData[0].fees = checkAuctionEnd[0].fees
@@ -231,7 +228,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
     try {
         // const client = await redis.createClient()
         const connection = await mongodbHelpers.connect()
-        console.log('starteddd bid', data)
         const redisKey = `lot:${data.lot_id}`
         const bidInformation = data
         const client = await redis.createClient({
@@ -259,9 +255,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 auction_id: data.auction_id,
                 seller_email: data.seller_email,
             }
-            console.log('paylod', payload, data)
             const checkAuctionEnd = await mongodbHelpers.getAuction(payload, Auction)
-            console.log(checkAuctionEnd, 'checkAuctionEnd')
             const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
@@ -340,12 +334,10 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus
         if (all_bidders.length <= 0) {
             const buyerInformation = await mongodbHelpers.getBuyer(query, Buyer)
-            console.log('getBuyerToken', buyerInformation)
             message = 'Congratulations! 🎉 You\'re the highest bidder! '
             bidStatus = 'Winning'
             const payload = JSON.stringify({ title: 'Bidding', body: message })
             const pushresponse = await webpush.sendNotification(buyerInformation[0].token, payload).catch(console.log)
-            console.log('pushResponse', pushresponse)
         } else {
             query = {
                 _id: { $in: all_bidders.map((obj) => new ObjectId(obj.buyer_id)) },
@@ -353,7 +345,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             }
             const buyerData = await mongodbHelpers.getBuyer(query, Buyer)
             for (let i = 0; i <= buyerData.length; i++) {
-                console.log('one', buyerData)
                 if (currentLotDetails.winning_user !== buyerData[i].buyer_id) {
                     message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                     bidStatus = 'UnderBidder'
@@ -362,8 +353,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                     bidStatus = 'Winning'
                 }
                 const payload = JSON.stringify({ title: 'Bidding', body: message })
-                const pushresponse = await webpush.sendNotification(buyerData[0].token, payload).catch(console.log)
-                console.log(pushresponse)
+                await webpush.sendNotification(buyerData[0].token, payload).catch(console.log)
             }
         }
         bidStatus = 'Winning'
@@ -372,8 +362,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             bidStatus = 'UnderBidder'
         }
         bidInformation.bid_status = bidStatus
-        const saveHistory = await mongodbHelpers.save(bidInformation, BidHistory)
-        console.log(saveHistory, 'save history')
+        await mongodbHelpers.save(bidInformation, BidHistory)
         // const saveHistory = await mongodbHelpers.saveBidHistory(bidInformation, BidHistory)
         await connection.disconnect()
     } catch (err) {

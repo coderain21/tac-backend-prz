@@ -17,15 +17,12 @@ const Auction = require('../models/Auction')
 config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
-    console.log('start execution start', typeof lots, lots.start_date)
     const newStartDate = Date(lots.start_date).toISOString()
-    console.log('startdate', newStartDate)
     lots.start_date = newStartDate
     const params = {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),
     }
-    console.log('params', params)
     const stepfunctions = new StepFunctions()
     return new Promise((resolve, reject) => {
         stepfunctions.startExecution(params, async (error, data) => {
@@ -33,11 +30,8 @@ async function startExecution(executionARN, lots) {
                 reject(error)
             }
             if (data) {
-                console.log('start execution relove block', data)
                 const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
-                console.log('getarn', getArn)
                 const updateARN = await mongodbHelper.update(getArn[0], data, StepFunctionArn)
-                console.log('updateARN', updateARN)
                 resolve(data)
             }
             resolve({ status: false })
@@ -66,7 +60,6 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         const bidKey = `lot:${lot_id}`
         const existingRecord = await client.hGet('lot', bidKey)
         const get_lot = JSON.parse(existingRecord)
-        console.log('findandup', lot_id, typeof lot_id)
         const updateRequest = {
             ...get_lot,
             lot_end_date: lotInformation.lot_end_time,
@@ -74,15 +67,13 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             end_date: lotInformation.lot_end_time,
         }
         const updateRedis = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        console.log('updateee', updateRedis)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
             lot_id: lotInformation._id,
             extension_type: auctionDetails.extension_type,
         }
-        const sendEmit = await extensionAlert(socket, lotData, io)
-        console.log('email check', sendEmit)
+        await extensionAlert(socket, lotData, io)
         return true
     } catch (err) {
         console.log(err)
@@ -99,7 +90,6 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
 
 module.exports.stopExecution = async (currentLotDetails, auctionDetails, auctionLots, client, io, socket) => {
     try {
-        console.log('auctionDetails', auctionDetails)
         const stepFunctions = new StepFunctions()
         if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascade')) {
         // if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascaded') && currentLotDetails.lot_extended !== true) {

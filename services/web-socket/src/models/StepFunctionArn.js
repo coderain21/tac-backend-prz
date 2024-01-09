@@ -6,7 +6,6 @@ const mongoosePaginate = require('mongoose-paginate-v2')
 require('dotenv').config()
 
 const { Schema } = mongoose
-const stage = 'dev'
 
 /* This code defines a Mongoose schema for an AdminUser model. The schema specifies the fields and
 their data types for an AdminUser document, including first_name, password, last_name,
