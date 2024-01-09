@@ -28,7 +28,7 @@ module.exports.checkBuyerAuthentication = async (authParams) => {
         if (String(authParams.auction_id) === String(documents[0].auction_id)) {
             return true
         }
-
+        connection.disconnect()
         return false
     } catch (error) {
         return {
