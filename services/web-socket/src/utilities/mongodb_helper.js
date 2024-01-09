@@ -79,7 +79,9 @@ module.exports.getAuction = async (document, Auction) => {
         const query = {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
+        console.log('getauction222', query)
         const documents = await Auction.find(query) // Await the query result
+        console.log('!!!!!!', documents)
         return documents
     } catch (err) {
         console.log('errorrr', err)
@@ -99,18 +101,16 @@ module.exports.getLot = async (lot_id, Lot) => {
     }
 }
 
-module.exports.getAllLots = async (document, lotData) => {
+module.exports.getAllLots = async (document, lotData, Lot) => {
     try {
-        const connectionData = await this.connect()
-        const database = connectionData.connection.db
-        const collection = database.collection('dev-lots')
+        console.log('getall lot payload', document)
         const query = {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
         }
         let documents
         if (document.extension_type === 'All Lots') {
-            documents = await collection.find(query).toArray()
+            documents = await Lot.find(query)
             const timestamp = documents[0].end_date
             const dateObject = new Date(timestamp)
             // Get the current minutes
@@ -128,7 +128,7 @@ module.exports.getAllLots = async (document, lotData) => {
 
                 },
             }
-            await collection.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
+            await Lot.updateMany({ _id: { $in: documents.map((lot) => ObjectId(lot._id)) } }, updateQuery)
         } else if (document.extension_type === 'Individual') {
             const lotId = ObjectId(lotData.lot_id)
             const timestamp = documents[0].end_date
@@ -141,17 +141,17 @@ module.exports.getAllLots = async (document, lotData) => {
             dateObject.setMinutes(newMinutes)
             // Convert the Date object back to a timestamp
             const newTimestamp = dateObject.getTime()
-            documents = await collection.find({ ...query, _id: lotId }).toArray()
+            documents = await Lot.find({ ...query, _id: lotId })
             const updateQuery = {
                 $set: {
                     end_date: newTimestamp,
                     extended_time: document.extension_time,
                 },
             }
-            await collection.updateMany({ _id: lotId }, updateQuery)
+            await Lot.updateMany({ _id: lotId }, updateQuery)
         } else {
             const sortOptions = { lot_number: 1 }
-            documents = await collection.find(query).sort(sortOptions).toArray()
+            documents = await Lot.find(query).sort(sortOptions).toArray()
             const bulkOperations = documents.map((lot) => {
                 const timestamp = lot.end_date
                 const dateObject = new Date(timestamp)
@@ -177,10 +177,8 @@ module.exports.getAllLots = async (document, lotData) => {
                 }
             })
 
-            await collection.bulkWrite(bulkOperations, { ordered: false })
+            await Lot.bulkWrite(bulkOperations, { ordered: false })
         }
-
-        connectionData.disconnect()
         return true
     } catch (error) {
         console.log(error)

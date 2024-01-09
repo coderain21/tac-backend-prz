@@ -7,12 +7,14 @@
 /* eslint-disable no-empty */
 const mongodbHelper = require('../utilities/mongodb_helper')
 const Auction = require('../models/Auction')
+const Lot = require('../models/Lot')
 
 module.exports.checkExtensionType = async (documents) => {
     try {
         console.log('checkExtensionType', documents)
         const getAuctionDetails = await mongodbHelper.getAuction(documents, Auction)
-        await mongodbHelper.getAllLots(getAuctionDetails[0], documents)
+        console.log('getAuctionDetails1234', getAuctionDetails)
+        await mongodbHelper.getAllLots(getAuctionDetails[0], documents, Lot)
         return false
     } catch (err) {
         return err
