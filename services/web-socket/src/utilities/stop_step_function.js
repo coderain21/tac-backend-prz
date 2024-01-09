@@ -50,6 +50,7 @@ An extension alert is sent using a custom function (extensionAlert) with informa
 A socket event is emitted to join a bid room, and the function returns true on successful execution.
 */
 
+
 async function findAndUpdateTime(lotInformation, client, io, socket, currentLotDetails, auctionDetails, auctionLots) {
     try {
         lotInformation.initial_end_time = lotInformation.end_date
