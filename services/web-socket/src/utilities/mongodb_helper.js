@@ -82,6 +82,7 @@ module.exports.getAuction = async (document, Auction) => {
         const documents = await Auction.find(query) // Await the query result
         return documents
     } catch (err) {
+        console.log('errorrr', err)
         return false
     }
 }
@@ -93,6 +94,7 @@ module.exports.getLot = async (lot_id, Lot) => {
         const documents = await Lot.find(query) // Await the query result
         return documents
     } catch (err) {
+        console.log(err, 'getoe')
         return false
     }
 }
