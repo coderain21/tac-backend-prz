@@ -128,6 +128,9 @@ functions:
               - Access-Control-Allow-Headers
           path: /auctions
           method: get
+          # authorizer:
+          #       arn: ${env:COGNITO_AUTH_ARN}
+
 
 resources:
    Resources:

@@ -107,9 +107,13 @@ def list_auction(event, context):
             "terms_and_condition": 1,
             "paddle": 1,
             "show_bidder_location_in_bidder_history": 1,
-            "publish_auction_results": 1
+            "publish_auction_results": 1,
+            "total_lots":1,
+            "seller_name": 1
         }
         if start_date and end_date:
+            start_date=int(start_date)
+            end_date= int(end_date)
             date_range_condition = {
                 "$or": [
                     {
@@ -126,7 +130,7 @@ def list_auction(event, context):
                     }
                 ]
             }
-
+            print(date_range_condition)
             query_conditions.append(date_range_condition)
         print(2)
         # Check if status is provided and not empty
@@ -136,10 +140,16 @@ def list_auction(event, context):
         print(3)
         # Check if keyword is provided
         if keyword:
+            if keyword.isnumeric():
+                int_key=int(keyword)
+                total_lots={"total_lots": int_key}
+            else:
+                total_lots={"total_lots": keyword}
             escaped_search_keyword = prepend_backslash(keyword)
             keyword_condition={"$or": [
                 {"title": {"$regex": escaped_search_keyword, "$options": "i"}},
-                {"total_lots": escaped_search_keyword},
+                total_lots,
+                {"seller_name": {"$regex": escaped_search_keyword, "$options": "i"}},
                 {"status": {"$regex": escaped_search_keyword, "$options": "i"}}]} # Case-insensitive search
             query_conditions.append(keyword_condition)
         queries = []

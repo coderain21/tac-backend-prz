@@ -1,13 +1,13 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Address-Management APIs",
-    "description": "APIs to manage Address for the Buyers",
+    "title": "Admin-Management APIs",
+    "description": "APIs for the Admins to manage.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/address-management"
+      "url": "https://apis.indyauction.net/dev/v1/admin-management"
     }
   ],
   "tags": [
@@ -18,8 +18,8 @@
   ],
 
   "paths": {
-    "/address": {
-      "post": {
+    "/auctions": {
+      "get": {
         "tags": ["Address management"],
         "summary": "add address",
         "requestBody": {
