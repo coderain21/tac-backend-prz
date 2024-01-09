@@ -259,7 +259,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 auction_id: data.auction_id,
                 seller_email: data.seller_email,
             }
+            console.log('paylod', payload, data)
             const checkAuctionEnd = await mongodbHelpers.getAuction(payload, Auction)
+            console.log(checkAuctionEnd, 'checkAuctionEnd')
             const stopStateMachine = await helper.stopExecution(currentLotDetails, checkAuctionEnd[0], auctionLots, client, io, socket)
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
