@@ -464,7 +464,7 @@ resources:
       Properties: 
         Template:
           HtmlPart: ${file(./templates/seller-forgot-password.html)}
-          SubjectPart: Action Required for Document Completion
+          SubjectPart: Indy auction - Password Reset Request
           TemplateName: ${self:provider.stage}-forgot-password
 
     SellerUsers:
@@ -778,7 +778,7 @@ resources:
           - "https://seller-${opt:stage}${env:BASE_URL_BUYER}/"
           - "http://localhost:3000/"
         IdTokenValidity: 60
-        PreventUserExistenceErrors: ENABLED
+        PreventUserExistenceErrors: DISABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
           AccessToken: minutes
