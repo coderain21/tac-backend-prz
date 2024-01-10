@@ -20,12 +20,11 @@ async function startExecution(executionARN, lots) {
     console.log('Starting', typeof lots.start_date, lots.start_date)
     const newStartDate = new Date(lots.start_date).toISOString()
     console.log('new start date', newStartDate)
-    const allLOts = lots
-    allLOts.start_date = newStartDate
-    console.log('before stepfunc', allLOts)
+    lots.start_date = newStartDate
+    console.log('before stepfunc', lots)
     const params = {
         stateMachineArn: executionARN,
-        input: JSON.stringify(allLOts),
+        input: JSON.stringify(lots),
     }
     console.log('params', params)
     const stepfunctions = new StepFunctions()
