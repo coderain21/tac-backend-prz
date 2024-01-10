@@ -102,15 +102,19 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
-                const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
-                const getArn = await mongodbHelper.getExecutionArn(item, StepFunctionArn)
-                const executionArn = getArn[0].arn
-                const response = await stepFunctions.stopExecution({
-                    executionArn,
-                    cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
-                }).promise()
-                const executeStepFunction = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
-                const updateLot = await mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot)
+                const currentTimeEpoch = Date.now()
+                console.log('current', currentTimeEpoch, item.end_date, item.end_date < currentTimeEpoch)
+                if (item.end_date > currentTimeEpoch) {
+                    const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
+                    const getArn = await mongodbHelper.getExecutionArn(item, StepFunctionArn)
+                    const executionArn = getArn[0].arn
+                    const response = await stepFunctions.stopExecution({
+                        executionArn,
+                        cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
+                    }).promise()
+                    const executeStepFunction = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
+                    const updateLot = await mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot)
+                }
             }
             socket.emit('joinBidRoom', auctionLots)
             const updatedInformation = {

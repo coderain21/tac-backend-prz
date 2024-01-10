@@ -295,7 +295,8 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const highestBidder = all_bidders.reduce((maxObj, obj) => ((obj.bid_amount > maxObj.bid_amount) ? obj : maxObj), all_bidders[all_bidders.length - 1])
             if (data.buyer_id === highestBidder.buyer_id) {
                 currentLotDetails.max_bid = data.bid_amount
-                currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+                // currentLotDetails.bid_amount = await calculateNextAmont(highestBidder.bid_amount)
+                currentLotDetails.bid_amount = data.bid_amount
                 currentLotDetails.winning_user = highestBidder.buyer_id
             } else if (data.bid_amount > currentLotDetails.max_bid) {
                 currentLotDetails.max_bid = data.bid_amount
@@ -347,7 +348,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             const buyerData = await mongodbHelpers.getBuyer(query, Buyer)
             console.log('buyerdata' , buyerData)
             for (let i = 0; i <= buyerData.length; i++) {
-                console.log('buyer lopp', buyerData[i])
+                console.log('buyer lopp', buyerData[i], typeof buyerData[i]._id, typeof currentLotDetails.winning_user )
                 if (currentLotDetails.winning_user !== buyerData[i]._id) {
                     message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                     bidStatus = 'UnderBidder'
