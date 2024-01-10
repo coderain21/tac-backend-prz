@@ -260,6 +260,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             currentLotDetails = await getLotFromRedis(data.lot_id, client)
         }
         if (getLotHistoryDetails.length <= 0) {
+            console.log('$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
             currentLotDetails.max_bid = data.bid_amount
             currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.starting_price)
             currentLotDetails.winning_user = data.buyer_id       
