@@ -323,6 +323,9 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                     } else {
                         console.log('6666')
                         currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
+                        const updatingHighestBdder = data
+                        updatingHighestBdder.bid_amount = currentLotDetails.bid_amount
+                        await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, highestBidder.buyer_id, JSON.stringify(data))
                     }
                 }
             } 
