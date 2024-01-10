@@ -283,6 +283,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } else {
                 console.log('============1111 33333')
                 if (data.bid_amount > currentLotDetails.max_bid && data.buyer_id !== all_bidders[0].buyer_id) {
+                    console.log('============09900')
                     currentLotDetails.bid_amount = await calculateNextAmont(currentLotDetails.max_bid) 
                     currentLotDetails.max_bid = data.bid_amount
                     currentLotDetails.winning_user = data.buyer_id 
@@ -296,9 +297,12 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                     data.bid_amount = all_bidders[0].bid_amount
                     data.max_bid = currentLotDetails[0].max_bid
                 } else {
-                    console.log('============1111 5555555555555')
-                    currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
+                    console.log('============1111 5555555555555', all_bidders)
+                    currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount)
                     data.bid_amount = currentLotDetails.bid_amount
+                    all_bidders[0].bid_amount = await calculateNextAmont(data.bid_amount)
+                    all_bidders[1].max_bid = all_bidders[1].max_bid
+                    await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, all_bidders[0].buyer_id, JSON.stringify(all_bidders[0]))
                 }
             } 
         } else {
