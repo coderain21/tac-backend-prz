@@ -20,6 +20,7 @@
   "homepage": "https://bitbucket.org/7EDGE/prw-customer-chat-apis#readme",
   "dependencies": {
     "@redis/client": "^1.5.11",
+    "@socket.io/redis-adapter": "^8.2.1",
     "aws-sdk": "^2.1520.0",
     "body-parser": "^1.19.1",
     "cors": "^2.8.5",
@@ -32,7 +33,7 @@
     "jwks-rsa": "^3.1.0",
     "moment": "^2.29.1",
     "mongoose": "^5.9.18",
-    "npm": "^10.2.4",
+    "npm": "^10.2.5",
     "redis": "^4.6.10",
     "socket.io": "^4.4.1",
     "superagent": "^7.1.1",

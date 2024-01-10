@@ -54,10 +54,10 @@ const LotSchema = new Schema({
         type: Number,
     },
     start_date: {
-        type: Number, trim: true,
+        type: Number,
     },
     end_date: {
-        type: Number, trim: true,
+        type: Number,
 
     },
     current_bid: {
