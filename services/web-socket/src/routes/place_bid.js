@@ -324,7 +324,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
-        data.bid_amount = currentLotDetails.bid_amount
         await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
@@ -335,6 +334,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             _id: new ObjectId(data.buyer_id),
             seller_email: data.seller_email,
         }
+        console.log('at last', currentLotDetails)
         const updateLot = await mongodbHelpers.updateLotDetails(currentLotDetails, Lot)
         const all_bidders = []
         for (let i = 0; i < getLotHistoryDetails.length; i++) {
@@ -354,7 +354,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 seller_email: data.seller_email,
             }
             const buyerData = await mongodbHelpers.getBuyer(query, Buyer)
-            console.log('buyerdata' , buyerData)
+            console.log('buyerdata', buyerData)
             for (let i = 0; i <= buyerData.length; i++) {
                 const buyerID = buyerData[i]._id.toString()
                 if (currentLotDetails.winning_user !== buyerID) {
