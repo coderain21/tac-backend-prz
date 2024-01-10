@@ -1,4 +1,18 @@
 """This module is used to list the auctions """
+    """
+    The `list_auction` function retrieves a list of auctions based on various query parameters and
+    returns a JSON response with the list of auctions, total records found, current page, and total
+    pages.
+    
+    :param text: The above code is a Python module that defines a function called `list_auction`. This
+    function is used to retrieve a list of auctions based on various query parameters
+    :return: The function `list_auction` returns a JSON response with the following properties:
+    - "statusCode": The HTTP status code of the response (200 for success, 403 for access denied, 500
+    for error)
+    - "headers": The headers for the response, including the content type, access control, and allowed
+    methods
+    - "body": A JSON string containing the response data, including the message
+    """
 import json
 import os
 import re
@@ -25,22 +39,22 @@ def prepend_backslash(text):
 
 def list_auction(event, context):
     """
-    The `list_auction` function retrieves a list of auctions based on various query parameters, such as
-    start date, end date, status, sort order, page number, and keyword.
-
+    The `list_auction` function retrieves a list of auctions based on specified filters and pagination
+    parameters.
+    
     :param event: The `event` parameter is a dictionary that contains the input data for the function.
-    It typically includes information about the HTTP request, such as query parameters, headers, and the
-    request body. In this case, the function expects the query parameters to include `start_date`,
-    `end_date`, `status
+    It includes the query string parameters that are passed to the function. These parameters are used
+    to filter and paginate the auction list
     :param context: The `context` parameter is an object that provides information about the runtime
     environment of the function. It includes properties such as the AWS request ID, the function name,
-    the function version, and more. This parameter is not used in the provided code snippet
-    :return: a JSON response with the following properties:
-    - "statusCode": The HTTP status code of the response (200 for success, 403 for access denied, 500
-    for error)
-    - "body": A JSON string containing the response data, including the message, results,
-    total_records_found, current_page, and total_pages.
+    the function version, and more. This parameter is not used in the code you provided, but it is
+    commonly included in AWS Lambda functions
+    :return: a dictionary with the following keys:
+    - "statusCode": an integer representing the HTTP status code
+    - "headers": a dictionary representing the HTTP headers
+    - "body": a JSON string representing the response body
     """
+    
     try:
         start_date = event['queryStringParameters'].get('start_date', None)
         end_date = event['queryStringParameters'].get('end_date', None)
