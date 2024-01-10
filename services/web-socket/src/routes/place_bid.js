@@ -265,6 +265,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             currentLotDetails.winning_user = data.buyer_id       
         }
         else if (getLotHistoryDetails.length === 1) {
+            console.log('#######')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
@@ -287,6 +288,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 }
             } 
         } else {
+            console.log('999999999999999999999')
             const all_bidders = []
             for (let i = 0; i < getLotHistoryDetails.length; i++) {
                 all_bidders.push(JSON.parse(getLotHistoryDetails[i]))
@@ -318,6 +320,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                         currentLotDetails.winning_user = highestBidder.buyer_id
                         currentLotDetails.bid_amount = highestBidder.bid_amount
                     } else {
+                        console.log('6666')
                         currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount) 
                     }
                 }
