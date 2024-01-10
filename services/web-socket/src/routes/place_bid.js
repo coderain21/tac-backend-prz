@@ -324,6 +324,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
+        data.bid_amount = currentLotDetails.bid_amount
         await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
