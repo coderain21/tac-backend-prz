@@ -25,6 +25,7 @@ async function startExecution(executionARN, lots) {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),
     }
+    console.log('params', params)
     const stepfunctions = new StepFunctions()
     return new Promise((resolve, reject) => {
         stepfunctions.startExecution(params, async (error, data) => {

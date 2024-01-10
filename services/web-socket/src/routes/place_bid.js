@@ -346,7 +346,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             }
             const buyerData = await mongodbHelpers.getBuyer(query, Buyer)
             for (let i = 0; i <= buyerData.length; i++) {
-                if (currentLotDetails.winning_user !== buyerData[i].buyer_id) {
+                if (currentLotDetails.winning_user !== buyerData[i]._id) {
                     message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                     bidStatus = 'UnderBidder'
                 } else {
