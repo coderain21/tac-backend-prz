@@ -242,7 +242,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
         let currentLotDetails = await getLotFromRedis(data.lot_id, client)
         data.time_stamp = new Date().getTime()
         currentLotDetails.email_address = data.email_address
-        await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         const auctionEndTimeEpoch = currentLotDetails.end_date
         const currentTimeEpoch = Date.now()
         const timeLeft = auctionEndTimeEpoch - currentTimeEpoch
@@ -318,6 +317,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             } 
         }
         await client.hSet('lot', redisKey, JSON.stringify(currentLotDetails))
+        await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, data.buyer_id, JSON.stringify(data))
         io.to(data.lot_id).emit('placeBid', {
             success: true, currentLotDetails,
         })
@@ -349,7 +349,6 @@ module.exports.placeBid = async (socket, data, io, userData) => {
             console.log('buyerdata' , buyerData)
             for (let i = 0; i <= buyerData.length; i++) {
                 const buyerID = buyerData[i]._id.toString()
-                console.log('buyer lopp', buyerData[i], typeof buyerData[i]._id, typeof buyerID, typeof currentLotDetails.winning_user, currentLotDetails.winning_user === buyerID  )
                 if (currentLotDetails.winning_user !== buyerID) {
                     message = 'Oops! 😕 You\'ve been outbid. Bid higher now to stay in the game and secure your desired item!"'
                     bidStatus = 'UnderBidder'
