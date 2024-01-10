@@ -37,6 +37,7 @@ const Buyer = require('../models/Buyer')
 const Lot = require('../models/Lot')
 const BidHistory = require('../models/BidHistory')
 
+
 /**
  * Calculates the next bid amount based on the current bid value.
  * The function considers the first digit of the bid and determines the next bid
