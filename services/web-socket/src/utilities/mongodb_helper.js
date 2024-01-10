@@ -87,8 +87,7 @@ module.exports.getAuction = async (document, Auction) => {
     } catch (err) {
         console.log('errorrr', err)
         return false
-    }
-    
+    }  
 }
 module.exports.getLot = async (lot_id, Lot) => {
     try {
