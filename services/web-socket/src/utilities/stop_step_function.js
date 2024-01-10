@@ -10,17 +10,19 @@
 const { StepFunctions, config } = require('aws-sdk')
 const mongodbHelper = require('./mongodb_helper')
 const { extensionAlert } = require('../routes/update_extension')
+const StepFunctionArn = require('../models/StepFunctionArn')
+const Lot = require('../models/Lot')
+const Auction = require('../models/Auction')
 
 config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
-    console.log('start execution start', lots)
-    lots.start_date = new Date(lots.start_date).toISOString()
+    const newStartDate = Date(lots.start_date).toISOString()
+    lots.start_date = newStartDate
     const params = {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),
     }
-    console.log('params', params)
     const stepfunctions = new StepFunctions()
     return new Promise((resolve, reject) => {
         stepfunctions.startExecution(params, async (error, data) => {
@@ -28,10 +30,8 @@ async function startExecution(executionARN, lots) {
                 reject(error)
             }
             if (data) {
-                console.log('start execution relove block', data)
-                const getArn = await mongodbHelper.getExecutionArn(lots)
-                const updateARN = await mongodbHelper.update(getArn[0], data)
-                console.log('updateARN', updateARN)
+                const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
+                const updateARN = await mongodbHelper.update(getArn[0], data, StepFunctionArn)
                 resolve(data)
             }
             resolve({ status: false })
@@ -60,7 +60,6 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
         const bidKey = `lot:${lot_id}`
         const existingRecord = await client.hGet('lot', bidKey)
         const get_lot = JSON.parse(existingRecord)
-        console.log('findandup', lot_id, typeof lot_id)
         const updateRequest = {
             ...get_lot,
             lot_end_date: lotInformation.lot_end_time,
@@ -68,15 +67,13 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
             end_date: lotInformation.lot_end_time,
         }
         const updateRedis = await client.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        console.log('updateee', updateRedis)
         const lotData = {
             extended: true,
             extended_time: auctionDetails.extension_time,
             lot_id: lotInformation._id,
             extension_type: auctionDetails.extension_type,
         }
-        const sendEmit = await extensionAlert(socket, lotData, io)
-        console.log('email check', sendEmit)
+        await extensionAlert(socket, lotData, io)
         return true
     } catch (err) {
         console.log(err)
@@ -93,7 +90,6 @@ async function findAndUpdateTime(lotInformation, client, io, socket, currentLotD
 
 module.exports.stopExecution = async (currentLotDetails, auctionDetails, auctionLots, client, io, socket) => {
     try {
-        console.log('auctionDetails', auctionDetails)
         const stepFunctions = new StepFunctions()
         if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascade')) {
         // if ((auctionDetails.extension_type === 'All Lots' || auctionDetails.extension_type === 'Cascaded') && currentLotDetails.lot_extended !== true) {
@@ -103,20 +99,20 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
                 const gg = await findAndUpdateTime(item, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
-                const getArn = await mongodbHelper.getExecutionArn(item)
+                const getArn = await mongodbHelper.getExecutionArn(item, StepFunctionArn)
                 const executionArn = getArn[0].arn
                 const response = await stepFunctions.stopExecution({
                     executionArn,
                     cause: 'User initiated stop', // Optional: Specify a cause for stopping the execution
                 }).promise()
                 const executeStepFunction = await startExecution('arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published', item)
-                const updateLot = await mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time })
+                const updateLot = await mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot)
             }
             socket.emit('joinBidRoom', auctionLots)
             const updatedInformation = {
                 end_date: auctionDetails.end_date + extend_time,
             }
-            const changeAuctionEnddate = await mongodbHelper.updateAuctionData('indyauction-develop', 'dev-auctions', auctionDetails._id, updatedInformation)
+            const changeAuctionEnddate = await mongodbHelper.updateAuctionData(Auction, auctionDetails._id, updatedInformation)
         }
         if (auctionDetails.extension_type === 'Individual Lots') {
             let extend_time = auctionDetails.extension_time.replace('m', '')
@@ -124,7 +120,7 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             extend_time = extend_time * 60 * 1000
             currentLotDetails.lot_end_time = currentLotDetails.end_date + extend_time
             const redisUpdate = await findAndUpdateTime(currentLotDetails, client, io, socket, currentLotDetails, auctionDetails, auctionLots)
-            const getArn = await mongodbHelper.getExecutionArn(currentLotDetails)
+            const getArn = await mongodbHelper.getExecutionArn(currentLotDetails, StepFunctionArn)
             const executionArn = getArn[0].arn
             const response = await stepFunctions.stopExecution({
                 executionArn,
@@ -134,8 +130,8 @@ module.exports.stopExecution = async (currentLotDetails, auctionDetails, auction
             const updatedInformation = {
                 end_date: auctionDetails.end_date + extend_time,
             }
-            const changeAuctionEnddate = await mongodbHelper.updateAuctionData('indyauction-develop', 'dev-auctions', auctionDetails._id, updatedInformation)
-            const updateLot = await mongodbHelper.updateSignleLot({ lot_id: currentLotDetails._id, end_date: currentLotDetails.lot_end_time })
+            const changeAuctionEnddate = await mongodbHelper.updateAuctionData(Auction, auctionDetails._id, updatedInformation)
+            const updateLot = await mongodbHelper.updateSignleLot({ lot_id: currentLotDetails._id, end_date: currentLotDetails.lot_end_time }, Lot)
         }
         return true
     } catch (error) {
