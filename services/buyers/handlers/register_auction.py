@@ -38,12 +38,12 @@ def register_auction(event, context):
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+            # if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+            #     return {
+            #     "statusCode": 403,
+            #     "headers": headers,
+            #     "body": json.dumps({"message": "You do not have access to perform this API action"})
+            # }
         except Exception as e:
             print(e)
             return {
@@ -69,6 +69,13 @@ def register_auction(event, context):
             }
         if 'status' in data and data['status'] == 'True':
             result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
+            if result is None:
+                return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({'message':'not found'})
+            }
+                
             status=result['status']
             return {
                 "statusCode": 200,
