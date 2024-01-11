@@ -15,6 +15,16 @@ async function getLot(rediskey, client, id) {
     })
 }
 
+async function checkCondition(lots, currentTimestamp) {
+    try {
+        return lots.some((lot) => {
+            const lotEndDate = new Date(lot.end_date)
+            return lotEndDate < currentTimestamp
+        })
+    } catch (e) {
+        return e
+    }
+}
 /**
  * Retrieves lot details from Redis based on the provided lot ID.
  * Retrieves auction details from Redis based on the provided lot ID.
@@ -36,7 +46,7 @@ module.exports.handler = async (event) => {
     }
     const getLotInfo = await getLot(rediskey, client, event._id)
     const auctionData = await mongodbHelper.getAuction(event)
-    console.log('auctiondata', auctionData)
+    console.log('auction info', auctionData)
     const saveToCart = await mongodbHelper.lotToCart(JSON.parse(getLotInfo), auctionData)
     console.log(saveToCart)
     const currentTimestamp = new Date().getTime()
