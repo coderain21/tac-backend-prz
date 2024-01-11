@@ -32,6 +32,7 @@ python_lib
 python2.zip
 python_lib2
 python.zip
+.terraform.tfstate.lock.info
 # Compiled Java class files
 *.class
 # Compiled Python bytecode
