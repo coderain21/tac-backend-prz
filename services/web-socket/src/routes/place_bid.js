@@ -384,7 +384,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                 seller_email: data.seller_email,
             }
             const buyerData = await mongodbHelpers.getBuyer(query, Buyer)
-            console.log('buyerdata' , buyerData)
+            console.log('buyerdata', buyerData)
             for (let i = 0; i <= buyerData.length; i++) {
                 const buyerID = buyerData[i]._id.toString()
                 if (currentLotDetails.winning_user !== buyerID) {
