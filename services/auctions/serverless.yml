@@ -71,6 +71,7 @@ provider:
             - s3:*
             - sqs:*
             - states:*
+            - sts:*
             - lambda:*
             - mobiletargeting:*
           Resource: "*"

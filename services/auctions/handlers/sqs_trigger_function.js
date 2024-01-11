@@ -99,21 +99,23 @@ module.exports.sqsTriggerFunction = async (event) => {
             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
             let subjectDescription = 'You Won the Auction'
             get_lot.map((item) => {
-                item.lot_image = `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${item.images[0].url}`
+                item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
-                    console.log('itemm', item)
-                    item.logo_image = auctionData[0].logo_image === ''
-                        ? 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
-                        : `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`
+                    // item.lot_image = item.images[0].url === ''
+                    //     ? 'https://cdn-dev.indyauction.net/public/Logo.png'
+                    //     : `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                    // console.log('logo image', item.lot_image, item.images[0])
+                    console.log('itemss', item.lot_image)
                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
                     winningLot.push(item)
                 } else if (item.winning_user !== user.buyer_id) {
                     console.log('elseeeeeee', item)
-                    item.logo_image = auctionData[0].logo_image === ''
-                        ? 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
-                        : `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`
-                    console.log('itemsss', item)
+                    // item.lot_image = item.images[0].url === ''
+                    //     ? 'https://cdn-dev.indyauction.net/public/Logo.png'
+                    //     : `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                    // console.log('itemsss', item)
                     item.bid_amount = formatCurrency(item.starting_price, auctionData[0].currency)
+                    console.log('itemss', item.lot_image)
                     notWinning.push(item)
                 }
             })
