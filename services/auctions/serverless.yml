@@ -45,8 +45,11 @@ provider:
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
-    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
-    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
+    CARTTABLE: ${opt:stage, self:provider.stage}-carts
+    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-${opt:stage, self:provider.stage}.fifo
+    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-${opt:stage, self:provider.stage}.fifo'
+    BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
+    
     
     
   http:
@@ -367,7 +370,7 @@ resources:
     messageQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: auto-completion-email-dev.fifo
+        QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
  
 

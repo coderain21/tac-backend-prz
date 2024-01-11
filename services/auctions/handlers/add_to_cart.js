@@ -36,7 +36,7 @@ module.exports.handler = async (event) => {
     }
     const getLotInfo = await getLot(rediskey, client, event._id)
     const auctionData = await mongodbHelper.getAuction(event)
-    console.log('auctiondata', auctionData)
+    console.log('auction info', auctionData)
     const saveToCart = await mongodbHelper.lotToCart(JSON.parse(getLotInfo), auctionData)
     console.log(saveToCart)
     const currentTimestamp = new Date().getTime()

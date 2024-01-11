@@ -76,13 +76,10 @@ module.exports.updateSignleLot = async (document, Lot) => {
 
 module.exports.getAuction = async (document, Auction) => {
     try {
-        console.log('auction schema', Auction, document)
         const query = {
             seller_email: document.seller_email, auction_id: document.auction_id, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
-        console.log('getauction222', query)
-        const documents = await Auction.find(query) // Await the query result
-        console.log('!!!!!!', documents)
+        const documents = await Auction.find(query).lean()
         return documents
     } catch (err) {
         console.log('errorrr', err)
@@ -94,7 +91,7 @@ module.exports.getLot = async (lot_id, Lot) => {
         const query = {
             _id: ObjectId(lot_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         } // Corrected 'document.buyer_id'
-        const documents = await Lot.find(query) // Await the query result
+        const documents = await Lot.find(query).lean()
         return documents
     } catch (err) {
         console.log(err, 'getoe')
@@ -104,7 +101,6 @@ module.exports.getLot = async (lot_id, Lot) => {
 
 module.exports.getAllLots = async (document, lotData, Lot) => {
     try {
-        console.log('getall lot payload', document)
         const query = {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
@@ -152,7 +148,7 @@ module.exports.getAllLots = async (document, lotData, Lot) => {
             await Lot.updateMany({ _id: lotId }, updateQuery)
         } else {
             const sortOptions = { lot_number: 1 }
-            documents = await Lot.find(query).sort(sortOptions).toArray()
+            documents = await Lot.find(query).sort(sortOptions)
             const bulkOperations = documents.map((lot) => {
                 const timestamp = lot.end_date
                 const dateObject = new Date(timestamp)
@@ -193,7 +189,7 @@ module.exports.getAuctionLots = async (document, Lot) => {
             seller_email: document.seller_email,
             auction_id: document.auction_id,
         }
-        const documents = await Lot.find(query)
+        const documents = await Lot.find(query).lean()
         return documents
     } catch (error) {
         console.log(error)
@@ -203,9 +199,7 @@ module.exports.getAuctionLots = async (document, Lot) => {
 
 module.exports.getBuyer = async (query, BuyerSchema) => {
     try {
-        console.log('buyer schemaa', query)
-        const documents = await BuyerSchema.find(query) // Await the query result
-        console.log('doccc', documents)
+        const documents = await BuyerSchema.find(query).lean()
         return documents
     } catch (err) {
         console.log(err)
@@ -228,7 +222,7 @@ module.exports.getExecutionArn = async (currentLotDetails, StepFunctionArn) => {
         const query = {
             lot_id: lotID, // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
         }
-        const documents = await StepFunctionArn.find(query)// Await the query result
+        const documents = await StepFunctionArn.find(query).lean()
         return documents
     } catch (err) {
         console.log(err)
@@ -256,13 +250,11 @@ module.exports.update = async (arnData, data, StepFunctionArn) => {
 
 module.exports.updateLotDetails = async (document, Lot) => {
     try {
-        console.log('######', document)
         const query = {
             _id: new ObjectId(document.winning_user),
             seller_email: document.seller_email,
         }
         const getBuyerInfo = await this.getBuyer(query, Buyer)
-        console.log('Getting BUYER IN', getBuyerInfo)
         const updateResult = await Lot.updateOne(
             { _id: new ObjectId(document._id) },
             {
@@ -271,7 +263,6 @@ module.exports.updateLotDetails = async (document, Lot) => {
                 },
             },
         )
-        console.log('update', updateResult)
         return updateResult
         // await connection.disconnect()
     } catch (error) {
