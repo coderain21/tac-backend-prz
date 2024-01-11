@@ -300,6 +300,7 @@ module.exports.placeBid = async (socket, data, io, userData) => {
                     console.log('============1111 5555555555555', all_bidders)
                     currentLotDetails.bid_amount = await calculateNextAmont(data.bid_amount)
                     data.bid_amount = currentLotDetails.bid_amount
+                    data.max_bid = currentLotDetails.bid_amount
                     all_bidders[0].bid_amount = await calculateNextAmont(data.bid_amount)
                     all_bidders[0].max_bid = all_bidders[0].max_bid
                     await client.hSet(`auction:${data.auction_id}#${data.lot_id}`, all_bidders[0].buyer_id, JSON.stringify(all_bidders[0]))
