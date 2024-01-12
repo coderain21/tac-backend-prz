@@ -56,6 +56,14 @@ resource "aws_iam_role" "ecs_task_execution_role" {
      },
      "Effect": "Allow",
      "Sid": ""
+   },
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "states.amazonaws.com"  
+     },
+     "Effect": "Allow",
+     "Sid": ""
    }
  ]
 }
@@ -73,6 +81,14 @@ resource "aws_iam_role" "ecs_task_role" {
      "Action": "sts:AssumeRole",
      "Principal": {
        "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   },
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "states.amazonaws.com"  
      },
      "Effect": "Allow",
      "Sid": ""
@@ -96,7 +112,7 @@ resource "aws_iam_role_policy_attachment" "task_s3" {
 
 # Security Group for loadbalancer
 resource "aws_security_group" "websocket-security-group" {
-  name        = "websocket-security-group"
+  name        = "websocket-security-group-new"
   description = "Security Group for ECS and Load Balancer"
   vpc_id      = data.aws_vpc.default.id
   provider = aws.deployment-eu
@@ -258,21 +274,6 @@ resource "aws_lb_target_group" "target_group" {
 }
 
 # Listener Rule
-resource "aws_lb_listener_rule" "listener_rule" {
-  listener_arn = aws_lb_listener.listener.arn
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/"]
-    }
-  }
-  provider = aws.deployment-eu
-}
 
 # Listener
 resource "aws_lb_listener" "listener" {
@@ -283,12 +284,8 @@ resource "aws_lb_listener" "listener" {
   certificate_arn   = data.aws_acm_certificate.existing_certificate.arn
 
   default_action {
-    type             = "fixed-response"
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "OK"
-      status_code  = "200"
-    }
+    type             = "forward"
+      target_group_arn = aws_lb_target_group.target_group.arn
   }
   provider = aws.deployment-eu
 }
@@ -298,6 +295,7 @@ resource "aws_ecs_service" "ecs_service" {
   name            = "websocket-ecs-service"
   cluster         = resource.aws_ecs_cluster.websocket-cluster.id
   task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
