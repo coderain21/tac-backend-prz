@@ -1,25 +1,9 @@
 """This module is used to list the auctions """
-    """
-    The `list_auction` function retrieves a list of auctions based on various query parameters and
-    returns a JSON response with the list of auctions, total records found, current page, and total
-    pages.
-    
-    :param text: The above code is a Python module that defines a function called `list_auction`. This
-    function is used to retrieve a list of auctions based on various query parameters
-    :return: The function `list_auction` returns a JSON response with the following properties:
-    - "statusCode": The HTTP status code of the response (200 for success, 403 for access denied, 500
-    for error)
-    - "headers": The headers for the response, including the content type, access control, and allowed
-    methods
-    - "body": A JSON string containing the response data, including the message
-    """
 import json
 import os
 import re
 from pymongo import MongoClient
 from lib.common_helper import Encoder
-from datetime import datetime
-import pytz
 
 headers = {
     'Content-Type': 'application/json',
@@ -41,7 +25,6 @@ def list_auction(event, context):
     """
     The `list_auction` function retrieves a list of auctions based on specified filters and pagination
     parameters.
-    
     :param event: The `event` parameter is a dictionary that contains the input data for the function.
     It includes the query string parameters that are passed to the function. These parameters are used
     to filter and paginate the auction list
@@ -54,7 +37,6 @@ def list_auction(event, context):
     - "headers": a dictionary representing the HTTP headers
     - "body": a JSON string representing the response body
     """
-    
     try:
         print(event,123)
         # try:
