@@ -30,12 +30,30 @@ terraform -chdir=devops/seller_web_application init
 terraform -chdir=devops/seller_web_application apply -auto-approve
 terraform -chdir=devops/api_gateway init
 terraform -chdir=devops/api_gateway apply -auto-approve
-terraform -chdir=devops/dependencies/node init
-terraform -chdir=devops/dependencies/node apply -auto-approve
-terraform -chdir=devops/dependencies/nodejs-auth-layer init
-terraform -chdir=devops/dependencies/nodejs-auth-layer apply -auto-approve
-terraform -chdir=devops/dependencies/python init
-terraform -chdir=devops/dependencies/python apply -auto-approve
+git diff --quiet --exit-code HEAD -- devops/dependency/nodejs || {
+  # If changes are found, execute the desired command
+  echo "Changes detected in the devops folder!"
+  # Replace "your_command_here" with the actual command you want to run
+  terraform -chdir=devops/dependency/nodejs init
+  terraform -chdir=devops/dependency/nodejs apply -auto-approve
+}
+
+
+git diff --quiet --exit-code HEAD -- devops/dependency/nodejs-auth-layer || {
+  # If changes are found, execute the desired command
+  echo "Changes detected in the devops folder!"
+  # Replace "your_command_here" with the actual command you want to run
+  terraform -chdir=devops/dependency/nodejs-auth-layer init
+  terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
+}
+
+git diff --quiet --exit-code HEAD -- devops/dependency/python || {
+  # If changes are found, execute the desired command
+  echo "Changes detected in the devops folder!"
+  # Replace "your_command_here" with the actual command you want to run
+  terraform -chdir=devops/dependency/python init
+  terraform -chdir=devops/dependency/python apply -auto-approve
+}
 terraform -chdir=devops/kms init
 terraform -chdir=devops/kms apply -auto-approve
 terraform -chdir=devops/mongodb init
