@@ -111,7 +111,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     body: JSON.stringify({ message: 'Something went wrong' }),
                 }
             }
-
         }
         if (userData.session_token) {
             try {
