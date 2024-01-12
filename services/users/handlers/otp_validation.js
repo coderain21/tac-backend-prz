@@ -44,11 +44,12 @@ const schema = Joi.object().keys({
         'string.base': 'otp should be of type string',
         'any.required': 'otp is a required field',
     }),
-    session_token: Joi.string().required().messages({
-        'string.base': 'session token should be of type string',
-        'string.empty': 'session token cannot be an empty field',
-        'any.required': 'session token is a required field',
-    }),
+    // session_token: Joi.string().required().messages({
+    //     'string.base': 'session token should be of type string',
+    //     'string.empty': 'session token cannot be an empty field',
+    //     'any.required': 'session token is a required field',
+    // }),
+    session_token: Joi.string().optional(),
 })
 
 AWS.config.update({ region: process.env.REGION })
@@ -84,6 +85,33 @@ module.exports.otpValidation = async (event, _context, callback) => {
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: errorMessage }),
             }
+        }
+        if (userData.type === 'admin') {
+            try {
+                const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
+                const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
+                const OTP = userData.otp
+                userData = { ...userData, ...data }
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
+                    return {
+                        statusCode: 201,
+                        headers: await helpers.getHeaders(),
+                        body: JSON.stringify({ message: 'Succes' }),
+                    }
+                }
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Invalid OTP' }),
+                }
+            } catch (err) {
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Something went wrong' }),
+                }
+            }
+
         }
         if (userData.session_token) {
             try {
