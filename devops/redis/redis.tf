@@ -77,14 +77,38 @@ resource "aws_security_group" "security_groups" {
   }
   provider = aws.deployment-us
 }
+# resource "aws_elasticache_replication_group" "websocket" {
+#   automatic_failover_enabled = true
+#   subnet_group_name         = aws_elasticache_subnet_group.subnet_groups.name # Use the default subnet group
+#   replication_group_id      = "websocket-redis-cluster"
+#   description               = "websocket description"
+#   node_type                 = "cache.t4g.micro"  # Fix the syntax error here
+#   parameter_group_name      = "default.redis7.cluster.on"   # Adjust this based on your Redis version
+#   port                      = 6379
+#   num_cache_clusters        = 1
+#   provider                  = aws.deployment-us
+# }
+
+
 resource "aws_elasticache_replication_group" "websocket" {
-  automatic_failover_enabled = true
-  subnet_group_name         = aws_elasticache_subnet_group.subnet_groups.name # Use the default subnet group
-  replication_group_id      = "websocket-redis-cluster"
-  description               = "websocket description"
-  node_type                 = "cache.t4g.micro"  # Fix the syntax error here
-  parameter_group_name      = "default.redis7.cluster.on"   # Adjust this based on your Redis version
-  port                      = 6379
-  num_cache_clusters        = 1
+  automatic_failover_enabled  = true
+  preferred_cache_cluster_azs = ["${data.external.env.result["REGION"]}a"]
+  replication_group_id        = "tf-rep-group-1"
+  description                 = "websocket description"
+  node_type                   = "cache.t4g.micro"
+  num_cache_clusters          = 1
+  parameter_group_name        = "default.redis3.2"
+  port                        = 6379
+  provider                  = aws.deployment-us
+
+  lifecycle {
+    ignore_changes = [num_cache_clusters]
+  }
+}
+
+resource "aws_elasticache_cluster" "replica" {
+  count = 1
+  cluster_id           = "tf-rep-group-1-${count.index}"
+  replication_group_id = aws_elasticache_replication_group.websocket.id
   provider                  = aws.deployment-us
 }
