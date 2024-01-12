@@ -92,23 +92,23 @@ resource "aws_security_group" "security_groups" {
 
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
-  preferred_cache_cluster_azs = ["${data.external.env.result["REGION"]}a"]
-  replication_group_id        = "tf-rep-group-1"
+  preferred_cache_cluster_azs = ["eu-west-2a", "eu-west-2b"]
+  replication_group_id        = "websocket-redis"
   description                 = "websocket description"
   node_type                   = "cache.t4g.micro"
-  num_cache_clusters          = 1
-  parameter_group_name        = "default.redis3.2"
+  num_cache_clusters          = 2
+  parameter_group_name        = "default.redis7"
   port                        = 6379
+  security_group_ids = [resource.aws_security_group.security_groups.id]
   provider                  = aws.deployment-us
 
   lifecycle {
     ignore_changes = [num_cache_clusters]
   }
 }
-
-resource "aws_elasticache_cluster" "replica" {
-  count = 1
-  cluster_id           = "tf-rep-group-1-${count.index}"
-  replication_group_id = aws_elasticache_replication_group.websocket.id
-  provider                  = aws.deployment-us
+resource "aws_ssm_parameter" "distribution_id" {
+  name  = "REDIS_URL"
+  type  = "String"
+  value = aws_elasticache_replication_group.websocket.primary_endpoint_address
+  provider = aws.deployment-us
 }
