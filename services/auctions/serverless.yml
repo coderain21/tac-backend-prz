@@ -47,6 +47,7 @@ provider:
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
     QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
+    SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     
     
   http:
@@ -109,21 +110,21 @@ stepFunctions:
                 Fn::GetAtt: ["process-cart", Arn]
               End: true
 
-    auction-ended:
-     name: ${opt:stage}-auction-ended
-     definition:
-        Comment: "Step function will trigger when auction ended"
-        StartAt: check-auction-ends
-        States:
-          check-auction-ends:
-                Type: Wait
-                TimestampPath: "$.end_date"
-                Next: process-next-steps
-          process-next-steps:
-            Type: Task
-            Resource:
-              Fn::GetAtt: ["send-email_auction", Arn]
-            End: true
+    # auction-ended:
+    #  name: ${opt:stage}-auction-ended
+    #  definition:
+    #     Comment: "Step function will trigger when auction ended"
+    #     StartAt: check-auction-ends
+    #     States:
+    #       check-auction-ends:
+    #             Type: Wait
+    #             TimestampPath: "$.end_date"
+    #             Next: process-next-steps
+    #       process-next-steps:
+    #         Type: Task
+    #         Resource:
+    #           Fn::GetAtt: ["send-email_auction", Arn]
+    #         End: true
         
 
 custom:
@@ -338,10 +339,10 @@ functions:
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
 
-  send-email_auction:
-    handler: handlers/auto_completion_bid.handler
-    layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
+  # send-email_auction:
+  #   handler: handlers/auto_completion_bid.handler
+  #   layers:
+  #     - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
@@ -366,7 +367,7 @@ resources:
     messageQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: ${env:SQS_QUEUE_ARN}
+        QueueName: ${env:SQS_QUEUE_NAME}
         FifoQueue: true
  
 
