@@ -78,7 +78,7 @@ for param_name in "${parameter_names[@]}"; do
 done <<< "$parameter_names"
 
 
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair" --exclude "*/dependencies/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependencies/*" --profile $PROFILE_ENV
 
 
 npm i -g serverless@3.15.2

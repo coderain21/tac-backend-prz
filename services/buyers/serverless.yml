@@ -81,7 +81,7 @@ provider:
           - "mobiletargeting"
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-qa_paddle/EMAIL"
+          - "templates/${self:provider.stage}-paddle/EMAIL"
          
    
     BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
@@ -476,7 +476,7 @@ resources:
       Properties:
         HtmlPart: ${file(./templates/paddle.html)}
         Subject: "{{subject}}"
-        TemplateName: ${opt:stage, 'dev'}_paddle
+        TemplateName: ${opt:stage, 'dev'}-paddle
           
 plugins:
   - serverless-offline
