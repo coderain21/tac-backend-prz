@@ -41,7 +41,7 @@ provider:
     COUNTER_LOT: ${env:COUNTER_LOT}
     CDN_LINK: ${env:CDN_LINK}
     BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
-    STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
+    STATE_MACHINE_LOT_ARN:  ${env:STATE_MACHINE_LOT_ARN}
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
