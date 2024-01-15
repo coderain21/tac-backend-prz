@@ -73,6 +73,15 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
+    TEMPLATE_ARN_PADDLE:  
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-qa_paddle/EMAIL"
          
    
     BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
