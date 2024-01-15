@@ -122,12 +122,15 @@ def lambda_handler(event, context):
             time_between_lots = auction_record.get('time_between_lots', 0)
             latest = collection.find(
                     {"seller_email": seller_email, "auction_id": auction_id},
-                    sort=[("created_at", pymongo.DESCENDING)]
+                    sort=[("lot_number", pymongo.DESCENDING)]
                 )
             latest_lot = list(latest)
-            print('latest', latest_lot)
+            print('latest', latest_lot, auction_record)
             extension_time_str = auction_record.get('extension_time_between_lots', '0')
-            extension_time = int(extension_time_str)  # Convert the string to an integer
+            extension_time = 2  # Convert the string to an integer
+            if extension_time_str != '':
+                print('extension_time_str' )
+                extension_time = int(extension_time_str)  # Convert the string to an integer
             print('times', extension_time)
             if len(latest_lot) > 0:
                 print('iffffffffffffffffff',latest_lot)

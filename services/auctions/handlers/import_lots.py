@@ -158,8 +158,6 @@ def import_lots(event, context):
             "current_bid": 0,
             "Top_bidder": "",
             "images": [],
-            "start_date":start_date,
-            "end_date":end_date
         }
         print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
@@ -176,12 +174,23 @@ def import_lots(event, context):
                 "starting_sequence": last_lot_number
             }
             result = counter_collection.insert_one(counter_record)
+        extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        extension_time = int(extension_time_str)
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
         print("last_lot_number", last_lot_number)
         try:
+            count_import=0
             for row in csv_reader:
                 dict1 = {}
+                if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                    dict1['start_date'] = start_date
+                    dict1['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
+                    count_import= count_import+1
+                elif auction_record['extension_type']== "All Lots":
+                    dict1['start_date'] = start_date
+                    dict1['end_date'] = end_date
+
                 if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "" or row['Tags'] == "":
                     return {
                         "statusCode": 400,
