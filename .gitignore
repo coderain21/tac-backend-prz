@@ -20,6 +20,7 @@ services/**/api-testing.sh
 test-results
 /test_results
 logins.sh
+.serverless
 # Compiled Java class files
 *.class
 # Compiled Python bytecode

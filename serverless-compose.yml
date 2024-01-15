@@ -32,3 +32,6 @@ services:
   order-management:
     path: services/order-management
     config: ${env:config}
+  admin-management:
+    path: services/admin-management
+    config: ${env:config}

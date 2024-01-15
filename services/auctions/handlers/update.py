@@ -3,7 +3,7 @@ import os
 import json
 import pymongo
 from lib.get import get_by_email
-from lib.invoke_step_function import invoke_state_machine, invoke_state_machine_for_auction_end
+from lib.invoke_step_function import invoke_state_machine
 from lib.common_helper import Encoder
 from datetime import datetime, timezone
 
@@ -137,19 +137,16 @@ def update_auction(event, context):
         # auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
         # print('@@', auction_complete_state_machine)
         if published_status == 'true':
-            auction_information = auction_record.copy()
-            # Extract end_date from auction_record
-            end_date_timestamp = auction_record['end_date'] / 1000
-            # Convert timestamp to datetime object
-            date_time = datetime.utcfromtimestamp(end_date_timestamp)
-            iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
-            # Assign the ISO 8601 string to 'end_date' key in auction_information
-            # auction_information['_id'] = str(auction_information['_id'])
-            auction_information['end_date'] = iso_date_with_offset
-            del auction_information['created_at']
-            del auction_information['updated_at']
-            auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
-            print('@@', auction_complete_state_machine)
+            # auction_information = auction_record.copy()
+            # print('auction info', auction_information)
+            # end_date_timestamp = auction_record['end_date'] / 1000
+            # date_time = datetime.utcfromtimestamp(end_date_timestamp)
+            # iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+            # auction_information['end_date'] = iso_date_with_offset
+            # del auction_information['created_at']
+            # del auction_information['updated_at']
+            # auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
+            # print('@@', auction_complete_state_machine)
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             if kyc_kyb_review is not True:
                 return {
@@ -209,7 +206,13 @@ def update_auction(event, context):
                 )
                 for item in listLots:
                     print('inside for', item)
-                    itemData = json.dumps(item, cls= Encoder)
+                    start_date_timestamp = auction_record['start_date'] / 1000
+                    date_time = datetime.utcfromtimestamp(start_date_timestamp)
+                    iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+                    item['start_date'] = iso_date_with_offset
+                    print('item', item)
+                    itemData = json.loads(json.dumps(item, cls= Encoder))
+                    print('itemdata:', itemData)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)
                     collection = db["dev-step-function-arns"]

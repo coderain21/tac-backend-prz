@@ -119,7 +119,9 @@ def view(event, context):
         end_time= result['end_date']
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
-        if end_time != '' and end_time is not None:
+        print(end_time,"tttttttttttttt")
+        print(current_time,"ttttttttttt")
+        if end_time is not None:
             if current_time >= end_time:
                 # Auction has ended
                 updated_status = "Completed"

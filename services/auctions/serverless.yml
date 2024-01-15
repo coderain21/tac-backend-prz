@@ -45,8 +45,10 @@ provider:
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
-    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
-    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-dev.fifo'
+    CARTTABLE: ${opt:stage, self:provider.stage}-carts
+    SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-${opt:stage, self:provider.stage}.fifo
+    QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-${opt:stage, self:provider.stage}.fifo'
+    BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     
     
@@ -69,6 +71,7 @@ provider:
             - s3:*
             - sqs:*
             - states:*
+            - sts:*
             - lambda:*
             - mobiletargeting:*
           Resource: "*"
@@ -337,7 +340,7 @@ functions:
   process-cart:
     handler: handlers/add_to_cart.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:12
 
   # send-email_auction:
   #   handler: handlers/auto_completion_bid.handler
@@ -354,12 +357,13 @@ functions:
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
     events:
-      - sqs: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+      - sqs:
+          arn: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:10
+      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
   
 
 resources:
@@ -367,7 +371,7 @@ resources:
     messageQueue:
       Type: "AWS::SQS::Queue"
       Properties:
-        QueueName: ${env:SQS_QUEUE_NAME}
+        QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
  
 
