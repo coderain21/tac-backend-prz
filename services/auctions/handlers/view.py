@@ -50,7 +50,6 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -105,7 +104,6 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        print(2,result)
         if result['status']=='draft':
             if "paddle" in result and "_id" in result["paddle"]:
                 del result["paddle"]["_id"]
@@ -119,32 +117,29 @@ def view(event, context):
                 "body": json.dumps(body, cls=Encoder)
             }
         end_time= result['end_date']
-        print(3,end_time)
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
-        print(current_time)
-        print(4,current_time)
-        if current_time >= end_time:
-            # Auction has ended
-            updated_status = "Completed"
-            print(6,updated_status)
+        print(end_time,"tttttttttttttt")
+        print(current_time,"ttttttttttt")
+        if end_time is not None:
+            if current_time >= end_time:
+                # Auction has ended
+                updated_status = "Completed"
+            else:
+                updated_status = result["status"]
         else:
             updated_status = result["status"]  # No change in status
-
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {
                               "$set": {"status": updated_status}})
         result = collection.find_one({"seller_email": email_address,
                                       "auction_id": auction_id}, projection)
-        print(7,result)
-
         if result is None:
             return {
                 "headers": headers,
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()

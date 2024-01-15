@@ -6,11 +6,15 @@
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-empty */
 const mongodbHelper = require('../utilities/mongodb_helper')
+const Auction = require('../models/Auction')
+const Lot = require('../models/Lot')
 
 module.exports.checkExtensionType = async (documents) => {
     try {
-        const getAuctionDetails = await mongodbHelper.getAuction(documents)
-        await mongodbHelper.getAllLots(getAuctionDetails[0], documents)
+        console.log('checkExtensionType', documents)
+        const getAuctionDetails = await mongodbHelper.getAuction(documents, Auction)
+        console.log('getAuctionDetails1234', getAuctionDetails)
+        await mongodbHelper.getAllLots(getAuctionDetails[0], documents, Lot)
         return false
     } catch (err) {
         return err
@@ -18,8 +22,9 @@ module.exports.checkExtensionType = async (documents) => {
 }
 
 module.exports.extensionAlert = async (socket, data, io) => {
-    console.log('heyyy new function emitted', typeof (data.lot_id), data)
+    console.log('enteringggg alret')
     const lotID = data.lot_id.toString()
+    console.log('lot id extesnion triggered', lotID, typeof data.lot_id)
     try {
         io.to(lotID).emit('extensionAlert', {
             success: true,
@@ -28,6 +33,7 @@ module.exports.extensionAlert = async (socket, data, io) => {
             },
         })
     } catch (err) {
+        console.log('errrrrrrrrrrrrrrrrrrrrr', err)
         return err
     }
 }
