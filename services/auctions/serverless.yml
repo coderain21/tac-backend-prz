@@ -41,7 +41,7 @@ provider:
     COUNTER_LOT: ${env:COUNTER_LOT}
     CDN_LINK: ${env:CDN_LINK}
     BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
-    STATE_MACHINE_LOT_ARN:  'arn:aws:states:eu-west-2:929441721738:stateMachine:dev-lot-published'
+    STATE_MACHINE_LOT_ARN:  arn:aws:states:eu-west-2:929441721738:stateMachine:${opt:stage, self:provider.stage}-lot-published
     REDIS_URL: ${env:REDIS_URL}
     STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
@@ -49,8 +49,7 @@ provider:
     SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-${opt:stage, self:provider.stage}.fifo
     QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-${opt:stage, self:provider.stage}.fifo'
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
-    STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    
+    SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     
     
   http:
@@ -343,10 +342,6 @@ functions:
     layers:
       - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:12
 
-  # send-email_auction:
-  #   handler: handlers/auto_completion_bid.handler
-  #   layers:
-  #     - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
@@ -356,15 +351,15 @@ functions:
   sqs-trigger-function:
     handler: handlers/sqs_trigger_function.sqsTriggerFunction
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
+      - ${env:COMMON_LIB_ARN}
     events:
       - sqs:
-          arn: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-dev.fifo
+          arn: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-${opt:stage, self:provider.stage}.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
-      - arn:aws:lambda:eu-west-2:929441721738:layer:nodejs-indy-auction:13
+      - ${env:COMMON_LIB_ARN}
   
 
 resources:
