@@ -81,7 +81,7 @@ def list_lots(event, context):
         query = {"seller_email": seller_email, "auction_id": auction_id, **search_criteria}
 
         # Query the MongoDB collection to find lots matching the criteria
-        lots = list(collection.find(query, {"_id": 0}).
+        lots = list(collection.find(query).
                     sort(sort_criteria).skip((page-1)*limit).limit(limit))
         combined_pipeline = [
             {
