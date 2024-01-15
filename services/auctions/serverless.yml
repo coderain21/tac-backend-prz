@@ -49,6 +49,7 @@ provider:
     SQS_QUEUE_ARN: arn:aws:sqs:eu-west-2:929441721738:auto-completion-email-${opt:stage, self:provider.stage}.fifo
     QUEUE_URL: 'https://sqs.eu-west-2.amazonaws.com/929441721738/auto-completion-email-${opt:stage, self:provider.stage}.fifo'
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
+    STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     
     
     

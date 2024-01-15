@@ -215,7 +215,7 @@ def update_auction(event, context):
                     print('itemdata:', itemData)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)
-                    collection = db["dev-step-function-arns"]
+                    collection = db[os.environ['STEP_FUNCTION_ARN_TABLE']]
                     step_request={}
                     step_request['arn'] = invoking['executionArn']
                     id_value = item['_id']
