@@ -156,7 +156,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          path: /auctions
+          path: /buyers
           method: get
           authorizer:
                 arn: ${env:COGNITO_ADMIN_AUTH_ARN}
