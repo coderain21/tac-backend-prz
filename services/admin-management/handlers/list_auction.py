@@ -48,7 +48,6 @@ def list_auction(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         #     print('email', email_address)
-        
         except:
             return {
                 "statusCode": 403,

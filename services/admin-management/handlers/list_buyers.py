@@ -26,7 +26,6 @@ def list_buyers(event, context):
     """
     The `list_buyers` function retrieves a list of buyers from a MongoDB database, with options for
     sorting, pagination, and search.
-    
     :param event: The `event` parameter is the input event data that triggers the function. It contains
     information about the HTTP request that was made to invoke the function
     :param context: The `context` parameter is an object that provides information about the runtime
