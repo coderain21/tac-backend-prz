@@ -24,7 +24,10 @@ def skip_404_test_results(transaction):
         '/request-otp' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
         '/reset_password' in transaction['request']['uri'] or
-        '/forgot_password' in transaction['request']['uri']
+        '/forgot_password' in transaction['request']['uri'] or
+        '/generate' in transaction['request']['uri'] or 
+        '/kyb-generate'  in transaction['request']['uri'] 
+
 
     ):
         transaction['skip'] = True
