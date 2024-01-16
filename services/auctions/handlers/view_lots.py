@@ -116,7 +116,7 @@ def list_lots(event, context):
         total_bids = 0
         max_bid = 0
         percentage_bids_gt_zero = 0
-        if len(result):
+        if len(result) >0:
             total_bids = result[0]['totalBids']
             max_bid = result[0]['maxBid']
             percentage_bids_gt_zero = result[0]['countBidsGreaterThanZero']
