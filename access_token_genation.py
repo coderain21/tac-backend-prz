@@ -35,6 +35,12 @@ def generate_token(user_type):
             username = os.environ['BUYER_API_USERNAME']
             password = os.environ['BUYER_PASSWORD']
             print(user_pool_id,client_id, username, password)
+        if user_type == 'ADMIN':
+            user_pool_id = os.environ['COGNITO_ADMIN_USER_POOL_ID']
+            client_id = os.environ['COGNITO_ADMIN_CLIENT_ID']
+            username = os.environ['ADMIN_USERNAME']
+            password = os.environ['ADMIN_PASSWORD']
+            print(user_pool_id,client_id, username, password)
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
@@ -57,3 +63,4 @@ def generate_token(user_type):
 
 generate_token("USER")
 generate_token("BUYERS")
+generate_token("ADMIN")

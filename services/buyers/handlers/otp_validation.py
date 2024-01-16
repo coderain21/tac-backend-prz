@@ -17,6 +17,8 @@ from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
 from bson import ObjectId
 from lib.helper_python import decrypt_with_time_validation
+import datetime
+import pymongo
 
 headers = {
     'Content-Type': 'application/json',
@@ -168,6 +170,7 @@ def validate(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+        counter_collection = db[os.environ["COUNTER_LOT"]]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         seller_email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
 
@@ -182,6 +185,12 @@ def validate(event, context):
         if response and response["success_status"] == True:
             # Your code to store the decrypted token data in MongoDB
             collection = db[os.environ["BUYER_COLLECTION"]]
+            counter = counter_collection.find_one_and_update({
+                                                      'record_type': 'Buyers'},
+                                                     {'$inc': {
+                                                         'starting_sequence': 1}},
+                                                     return_document=pymongo.ReturnDocument.AFTER,
+                                                     upsert=True)
 
             insert_data = {}
             insert_data["email_address"] = decrypted_data["email_address"]
@@ -192,6 +201,8 @@ def validate(event, context):
             insert_data["user_type"] = decrypted_data["user_type"]
             insert_data["newsletter_notification"] = decrypted_data["newsletter_notification"]
             insert_data["seller_email"] = seller_email
+            insert_data["created_at"] = datetime.datetime.utcnow()
+            insert_data["buyer_id"] = f'B{counter["starting_sequence"]:04d}'
             collection.insert_one(insert_data)
             client.close()
 
