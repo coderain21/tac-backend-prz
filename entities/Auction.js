@@ -42,6 +42,7 @@ const AuctionSchema = new Schema({
     seller_email: {
         type: String, trim: true,
     },
+    seller_name: { type: String, trim: true },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     template_name: {

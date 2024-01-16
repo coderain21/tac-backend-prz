@@ -292,7 +292,7 @@ def export_as_csv(auctions):
                     modified_auction["Auction Name"] = auction["title"]
                     modified_auction["Auction Description"] = re.sub(re.compile(r'<.*?>'), '', auction["description"])
                     modified_auction["Timezone"] = auction["time_zone"]
-                    modified_auction["Auction Start Date"] = start_date.date() #if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
+                    modified_auction["Auction Start Date"] = start_date.date #if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
                     modified_auction["Auction Start Time"] =  start_date.time()#if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%H:%M")
                     modified_auction["Auction End Date"] = end_date.date() #if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%d %B %Y")
                     modified_auction["Auction End Time"] = end_date.time()#if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%H:%M")

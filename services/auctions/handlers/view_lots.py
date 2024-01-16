@@ -61,6 +61,10 @@ def list_lots(event, context):
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        collection_bidders = db['dev-unique-bids']
+        total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
+                                                     "auction_id": auction_id})
+        print('total_bids', total_bidders)
 
         # Define the sort criteria based on user input
         if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'Top_bidder']:
@@ -105,7 +109,11 @@ def list_lots(event, context):
         ]
 
         result = list(collection.aggregate(combined_pipeline))
-        if result:
+        print('result', result)
+        total_bids = 0
+        max_bid = 0
+        percentage_bids_gt_zero = 0
+        if len(result):
             total_bids = result[0]['totalBids']
             max_bid = result[0]['maxBid']
             percentage_bids_gt_zero = result[0]['countBidsGreaterThanZero']
@@ -117,7 +125,7 @@ def list_lots(event, context):
             "total_lots": total_lots,
             "current_page": page,
             "total_pages": (total_documents + limit - 1) // limit,
-            "max_bid": max_bid,
+            "number_of_bids": total_bidders,
             "sum_current_bid": total_bids,
             "total selling":percentage_bids_gt_zero
         }

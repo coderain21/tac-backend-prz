@@ -934,7 +934,7 @@
                   "total_pages": {
                     "type": "integer"
                   },
-                  "max_bid":{
+                  "number_of_bids":{
                     "type": "integer"
                   },
                   "sum_current_bid":{
