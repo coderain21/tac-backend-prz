@@ -67,7 +67,7 @@ def list_lots(event, context):
         print('total_bids', total_bidders)
 
         # Define the sort criteria based on user input
-        if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'Top_bidder']:
+        if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'top_bidder', 'paddle_number']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
         else:
@@ -79,7 +79,10 @@ def list_lots(event, context):
         if search_keyword:
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
-            search_criteria['title1'] = {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}
+            search_criteria['$or'] = [
+                {"title1": {"$regex": escaped_search_keyword, "$options": "i"}},
+                {"top_bidder": {"$regex": escaped_search_keyword, "$options": "i"}},
+            ]
 
         # Combine the search and sort criteria
         query = {"seller_email": seller_email, "auction_id": auction_id, **search_criteria}

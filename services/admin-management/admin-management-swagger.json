@@ -12,8 +12,8 @@
   ],
   "tags": [
     {
-      "name": "Address management",
-      "description": "APIs to manage the address"
+      "name": "Admin management",
+      "description": "APIs to manage the Admin"
     }
   ],
 
@@ -21,7 +21,7 @@
     "/auctions": {
       "get": {
         "tags": [
-          "Auction"
+          "Admin Auction Management"
           
         ],
         "summary": "Listing auction",
@@ -250,54 +250,152 @@
           }
         }
       }
-    }
-  },
-  "components": {
-    "schemas": {
-      "Address": {
-      "type" : "object",
-      "properties": {
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "address_line1": {
-          "type": "string"
-        },
-        "address_line2": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "country": {
-          "type": "string"
-        },
-        "postal_code": {
-          "type": "string"
-        },
-        "city": {
-          "type": "string"
-        },
-        "type": {
-          "type": "string"
-        }
-      }
     },
-      "Error": {
-        "type": "object",
-        "properties": {
-          "message": {
-            "type": "string"
+    "/buyers":{
+      "get": {
+        "tags": [
+          "Admin Buyers Management"
+          
+        ],
+        "summary": "Listing Buyers",
+        "description": "Listing Buyers",
+        "parameters": [
+          {
+            "name": "sort_key",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "full_name"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ascending"
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": " page number",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "search key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "C"
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auctions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { 
+                    "buyers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "email_address": {
+                            "type": "number"
+                          },
+                          "first_name": {
+                            "type": "number"
+                          },
+                          "last_name": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "total_buyers": {
+                      "type": "integer"
+                    },
+                    "page_number": {
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "type": "integer"
+                    }
+                  }
+                },
+                "example": {
+                        "buyers": [
+                          {
+                            "_id": "6543d8bda6b97ebf494c7424",
+                            "email_address": "sthuthi+127@7edge.com",
+                            "full_name": "sthuthi "
+                          }
+                        ],
+                        "total_buyers": 1,
+                        "page_number": 1,
+                        "page_size": 1
+                      }
+                
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
-    },
+
+    }
+  },
+  "components": {
     "securitySchemes": {
       "BearerAuth": {
         "type": "apiKey",

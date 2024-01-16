@@ -39,8 +39,8 @@ def list_auction(event, context):
     """
     try:
         print(event,123)
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['email']
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
         #     if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
         #         return {
         #         "statusCode": 403,
@@ -48,12 +48,12 @@ def list_auction(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         #     print('email', email_address)
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         start_date = event['queryStringParameters'].get('start_date', None)
         end_date = event['queryStringParameters'].get('end_date', None)
         status = event['queryStringParameters'].get('status', None)

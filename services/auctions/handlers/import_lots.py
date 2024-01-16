@@ -175,19 +175,27 @@ def import_lots(event, context):
             }
             result = counter_collection.insert_one(counter_record)
         extension_time_str = auction_record.get('extension_time_between_lots', '0')
-        extension_time = int(extension_time_str)
+        if extension_time_str != '':
+            extension_time = int(extension_time_str[:1])
+        else:
+            extension_time=0
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
         print("last_lot_number", last_lot_number)
         try:
             count_import=0
+            print(csv_reader)
             for row in csv_reader:
                 dict1 = {}
-                if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
-                    dict1['start_date'] = start_date
-                    dict1['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
-                    count_import= count_import+1
-                elif auction_record['extension_type']== "All Lots":
+                if end_date is not None:
+                    if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                        dict1['start_date'] = start_date
+                        dict1['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
+                        count_import= count_import+1
+                    elif auction_record['extension_type']== "All Lots":
+                        dict1['start_date'] = start_date
+                        dict1['end_date'] = end_date
+                else:
                     dict1['start_date'] = start_date
                     dict1['end_date'] = end_date
 
