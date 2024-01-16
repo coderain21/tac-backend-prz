@@ -1,4 +1,4 @@
-"""This module is used to list the auctions """
+"""This module is used to list the buyers """
 import json
 import os
 import re
@@ -23,6 +23,19 @@ def prepend_backslash(text):
 
 
 def list_buyers(event, context):
+    """
+    The `list_buyers` function retrieves a list of buyers from a MongoDB database, with options for
+    sorting, pagination, and search.
+    
+    :param event: The `event` parameter is the input event data that triggers the function. It contains
+    information about the HTTP request that was made to invoke the function
+    :param context: The `context` parameter is an object that provides information about the runtime
+    environment of the function. It includes details such as the AWS request ID, function name, and
+    other contextual information. In this code, the `context` parameter is not used, but it is included
+    as a standard parameter in AWS
+    :return: a response object with a status code, headers, and a body. The body contains a JSON string
+    that includes a list of buyers, the total number of buyers, the page size, and the page number.
+    """
     try:
         # try:
         #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -54,16 +67,13 @@ def list_buyers(event, context):
             "created_at":1,
             "full_name": 1
         }
-        print(2,event)
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
             sort_key = event['queryStringParameters']['sort_by']
 
         # Sorting order (default: ascending)
         sort_order = 1
-        print(3)
         if 'queryStringParameters' in event and 'sort_order' in event['queryStringParameters']:
             sort_order = 1 if event['queryStringParameters']['sort_order'].lower() == 'ascending' else -1
-        print(4)
         # Search options
         search_query = {}
         if 'queryStringParameters' in event and 'search' in event['queryStringParameters']:
@@ -75,27 +85,23 @@ def list_buyers(event, context):
                 {"last_name": {"$regex": search_text, "$options": "i"}},
                 {"email_address": {"$regex": search_text, "$options": "i"}}
             ]
-        print(5)
         # Pagination options
         page_size = 10
         page_number = 1
         if 'queryStringParameters' in event:
             if 'page_number' in event['queryStringParameters']:
                 page_number = int(event['queryStringParameters']['page_number'])
-        print(6)
         # Total buyers count
         total_buyers = buyer_collection.count_documents(search_query)
 
         # Fetching buyers with sorting, pagination, and search options
         buyers = buyer_collection.find(search_query,projection).sort(sort_key, sort_order).skip((page_number - 1) * page_size).limit(page_size)
-        print(7)
         response_body = {
             "buyers": list(buyers),
             "total_buyers": total_buyers,
             "page_size": page_size,
             "page_number": page_number
         }
-        print(8)
 
         return {
             "statusCode": 200,

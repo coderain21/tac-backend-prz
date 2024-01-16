@@ -140,8 +140,6 @@ def list_auction(event, context):
                 "total_lots": 1,
                 "status": 1
             }
-        # Check if both start_date and end_date are provided
-        print(1)
         if start_date and end_date:
             date_range_condition = {
                 "$or": [
@@ -161,12 +159,10 @@ def list_auction(event, context):
             }
 
             query_conditions.append(date_range_condition)
-        print(2)
         # Check if status is provided and not empty
         if status:
             status_condition = {"status": status}
             query_conditions.append(status_condition)
-        print(3)
         # Check if keyword is provided
         if keyword:
             escaped_search_keyword = prepend_backslash(keyword)
@@ -176,22 +172,18 @@ def list_auction(event, context):
         queries = []
         queries.append({"seller_email": email_address})
         queries.append(allowed_status)
-        print(4)
         # Create the final query using $and operator
         if query_conditions:
             query_conditions.append({"seller_email": email_address})
             query_conditions.append(allowed_status)
             results = collection.find({"$and": query_conditions}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
-            print(5)
             if export is not None and export == 1:
                 download_link = export_as_csv(list(collection.find(
                     {"$and": query_conditions}, projection_for_export).sort([(key, 1 if order == "ascending" else -1)])))
             total_records_count = collection.count_documents(
                 {"$and": query_conditions})
-            print(6)
         else:
-            print(7)
             results = collection.find({"$and": queries}, projection).sort(
                 [(key, 1 if order == "ascending" else -1)]).skip((page-1)*limit).limit(limit)
             if export is not None and export == 1:
@@ -201,7 +193,6 @@ def list_auction(event, context):
                 {"$and": queries})
         total_auctions = collection.count_documents(
                 {"$and": queries})
-        print(8)
         paginated_results = list(results)
         client.close()
         body = {
@@ -270,37 +261,27 @@ def export_as_csv(auctions):
             # Format the created_at field as dd-mm-year
             try:
                 for auction in auctions:
-                    print(444,auction)
                     if auction["start_date"] is not None:
                         start_date_epoch = auction["start_date"]/1000
-                        print(12)
                     else:
                         start_date_epoch=""
-                        print(22)
                     if auction["end_date"] is not None:
                         end_date_epoch = auction["end_date"]/1000
-                        print(234)
                     else:
                         end_date_epoch= ""
-                        print(90)
                     if 'time_zone' in auction:
-                        time_zone = auction["time_zone"] 
-                        print(11,time_zone)
+                        time_zone = auction["time_zone"]
                     if time_zone != "" and time_zone is not None:
-                        print(3232)
                         time_zone_str = time_zone[:3]
                         timezone_str = time_zones[time_zone_str]
-                    print(89)
                     if start_date_epoch != "":
                         start_date = datetime.utcfromtimestamp(start_date_epoch)
                         timezone = pytz.timezone(time_zones.get(timezone_str, 'UTC'))
                         start_date = timezone.localize(start_date)
-                        print(122)
                     if end_date_epoch != "":
                         end_date = datetime.utcfromtimestamp(end_date_epoch)
                         timezone = pytz.timezone(time_zones.get(timezone_str, 'UTC'))
                         end_date = timezone.localize(end_date)
-                        print(56)
                     modified_auction = {}
                     modified_auction["Auction ID"] = auction["auction_id"]
                     modified_auction["Auction Name"] = auction["title"]
@@ -331,7 +312,6 @@ def export_as_csv(auctions):
                 return None
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
-        print(89)
 
         # Generate signed URL
         s3_resource = boto3.resource("s3", region_name='eu-west-2')
@@ -343,7 +323,6 @@ def export_as_csv(auctions):
             # URL expiration time in seconds (adjust as needed)
             ExpiresIn=3600,
         )
-        print(888)
         return s3_signed_url
     except Exception as err:
         print(err)
