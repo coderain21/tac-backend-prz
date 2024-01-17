@@ -39,15 +39,8 @@ def buyer_detail(event, context):
     - "body": a JSON string representing the response body
     """
     try:
-        print(event,123)
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
             print('email', email_address)
         except:
             return {
@@ -55,11 +48,11 @@ def buyer_detail(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+        print(11231)
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         user_collection = db[os.environ["SELLERS_TABLE"]]
-        address_collection = db[os.environ["ADDRESS_COLLECTION"]]
         print(1)
         result= user_collection.find_one({"user_type":"admin","email_address":email_address})
         if result is None:
@@ -91,6 +84,7 @@ def buyer_detail(event, context):
             "is_manual": 1,
             "postal_code": 1,
             "town/city": 1,
+            "seller_email":1
         }
         buyer_detail= buyer_collection.find_one({"_id":buyer_id},projection)
         if buyer_detail is None:
