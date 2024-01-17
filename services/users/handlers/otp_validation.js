@@ -50,7 +50,7 @@ const schema = Joi.object().keys({
     //     'any.required': 'session token is a required field',
     // }),
     session_token: Joi.string().optional().allow(''),
-    type:  Joi.string().optional().allow(''),
+    type: Joi.string().optional().allow(''),
 })
 
 AWS.config.update({ region: process.env.REGION })
