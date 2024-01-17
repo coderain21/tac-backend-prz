@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
@@ -81,7 +82,7 @@ module.exports.handler = async (event) => {
         /** Fetch enterprises using the provided criteria */
         const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
 
-        const getLowestBidder = await helper.getLowestBidder(lotId, Bid)
+        const getLowestBidder = await helper.getLowestBidder(lotId, BidInformation)
         console.log('getLowestBidder', getLowestBidder)
 
         /** Handle error when enterprises cannot be fetched */
@@ -110,7 +111,7 @@ module.exports.handler = async (event) => {
                     top_bid: getLot.length > 0 ? getLot[0].current_bid : 0,
                     bidders: getBiddderCount.length > 0 ? getBiddderCount.length : 0,
                     top_bidder: getLot.length > 0 ? getLot[0].top_bidder : '',
-                    under_bidder: getLowestBidder.length > 0 ? getLowestBidder[0].name : '',
+                    under_bidder: { name: getLowestBidder.length > 0 ? getLowestBidder[1].name : '', id: new ObjectId(getLowestBidder[1]._id) },
                 },
             }),
         }
@@ -121,7 +122,7 @@ module.exports.handler = async (event) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'There was an error while listing the enterprises',
+                message: 'There was an error while listing the bids',
             }),
         }
     } finally {
