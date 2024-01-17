@@ -1,0 +1,137 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Seller Lot Bid History APIs",
+      "description": "Seller Lot Bid History APIs to view list of the bidders who has placed the bid",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/lot-bid-history"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Bid History Management",
+          "description": "APIs to view list of the bidders who has placed the bid"
+      }
+    ],
+    "paths": {
+      "/{lot_id}": {
+        "get": {
+          "summary": "List Bids",
+          "description": "Fetch a list of bidders for an lot.",
+          "tags": [
+            "Bid History  Management"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "lot_id",
+              "in": "path",
+              "required": true,
+              "example": "65a6857fdfa272b3f04ec5c5",
+              "description": "The unique identifier of the lot.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort field (e.g., paddle_number, name, bid_amount, time_stamp)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "Sort order (e.g., asc, desc)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with a list of bids.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": [
+                      {
+                        "_id": "65a6bad418d9a00370823dd5",
+                        "paddle_number": "1",
+                        "bid_amount": 100,
+                        "name": "Sthuthi",
+                        "created_at": "2024-01-16T17:20:20.207Z",
+                        "updated_at": "2024-01-16T17:20:20.207Z"
+                      }
+                    ],
+                    "pagination": {
+                      "total_pages": 31,
+                      "limit": 1,
+                      "total_records": 31,
+                      "next_page": 2,
+                      "page": 1
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
