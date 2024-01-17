@@ -35,3 +35,6 @@ services:
   admin-management:
     path: services/admin-management
     config: ${env:config}
+  lot-bid-history:
+    path: services/lot-bid-history
+    config: ${env:config}
