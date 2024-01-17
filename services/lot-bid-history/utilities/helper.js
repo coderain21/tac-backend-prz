@@ -6,12 +6,12 @@ module.exports.getLowestBidder = async (lotId, Bid) => {
 
         const options = {
             sort: {
-                bid_amount: 1, // Sorting in ascending order by bid_amount (lowest first)
+                bid_amount: -1, // Sorting in ascending order by bid_amount (lowest first)
             },
             select: {
-                _id: 0, // Exclude the _id field from the result
                 bid_amount: 1,
                 name: 1,
+                _id: 1,
 
                 // Add other fields you want to include in the result
             },

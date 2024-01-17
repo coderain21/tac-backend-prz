@@ -67,7 +67,7 @@ def list_lots(event, context):
         print('total_bids', total_bidders)
 
         # Define the sort criteria based on user input
-        if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'top_bidder', 'paddle_number']:
+        if sort_by in ['starting_price', 'current_bid', 'title1', 'lot_number', 'top_bidder', 'paddle_number']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
         else:
