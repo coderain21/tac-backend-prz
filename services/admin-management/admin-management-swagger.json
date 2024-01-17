@@ -394,6 +394,158 @@
       }
 
     },
+    "/buyer-auctions":{
+      "get": {
+        "tags": [
+          "Admin Buyers Management"
+          
+        ],
+        "summary": "Buyers list auctions",
+        "description": "Buyers list auctions",
+        "parameters": [
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "created_at"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "ascending"
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": " page number",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "description": "buyer_id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "656cb04247790c35822dfb46"
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auctions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { 
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "_id":{
+                            "type": "string"
+                          },
+                          "email_address":{
+                            "type": "string"
+                          },
+                          "seller_email":{
+                            "type": "string"
+                          },
+                          "created_at":{
+                            "type": "string"
+                          },
+                          "seller_name":{
+                            "type": "string"
+                          },
+                          "auction_id":{
+                            "type": "string"
+                          },
+                          "status":{
+                            "type": "string"
+                          },
+                          "title":{
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "_id": "6571f41aefbc19e0753d3596",
+                      "email_address": "murali.r@7edge.com",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "created_at": "2023-12-07 16:34:34.017000",
+                      "seller_name": "Addison Hintz",
+                      "auction_id": "A0395",
+                      "status": "Published",
+                      "title": "Opportunities for Artists"
+                    },
+                    {
+                      "_id": "6575e03859e65d8e6baf5d4b",
+                      "email_address": "murali.r@7edge.com",
+                      "seller_email": "anusha.k+indyauction@7edge.com",
+                      "created_at": "2023-12-10 15:58:48.659000",
+                      "seller_name": "Addison Hintz",
+                      "auction_id": "A0423",
+                      "status": "Published",
+                      "title": "Opportunities for Artists"
+                    }
+                  ]
+                      }
+                
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+    },
     "/buyer-details":{
       "get": {
         "tags": [
