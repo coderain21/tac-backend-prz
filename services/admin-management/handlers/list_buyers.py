@@ -36,27 +36,27 @@ def list_buyers(event, context):
     that includes a list of buyers, the total number of buyers, the page size, and the page number.
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         user_collection = db[os.environ["SELLERS_TABLE"]]
         print(1)
-        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        # if result is None:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        if result is None:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         # Default sorting by name
         sort_key = 'full_name'
         # Check if sorting key is provided

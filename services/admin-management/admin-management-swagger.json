@@ -393,7 +393,129 @@
         }
       }
 
+    },
+    "/buyer-details":{
+      "get": {
+        "tags": [
+          "Admin Buyers Management"
+          
+        ],
+        "summary": "Buyer Details",
+        "description": "Buyers Details",
+        "parameters": [
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "description": "buyer id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "656cb04247790c35822dfb46"
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved buyer detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string"
+                    },
+                    "email_address":{
+                      "type": "string"
+                    },
+                    "first_name": {
+                      "type": "string"
+                    },
+                    "last_name": {
+                      "type": "string"
+                    },
+                    "country_code": {
+                      "type": "string"
+                    },
+                    "phone_number":  {
+                      "type": "string"
+                    },
+                    "address_line1":  {
+                      "type": "string"
+                    },
+                    "address_line2": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "is_manual": {
+                      "type": "string"
+                    },
+                    "postal_code":  {
+                      "type": "string"
+                    },
+                    "town/city": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  
+                    "_id": "656cb04247790c35822dfb46",
+                    "email_address": "murali.r@7edge.com",
+                    "first_name": "murali",
+                    "last_name": "e",
+                    "country_code": "+91",
+                    "phone_number": "22222226666666666662",
+                    "address_line1": "Kolar Rd",
+                    "address_line2": "",
+                    "country": "India",
+                    "is_manual": "False",
+                    "postal_code": "",
+                    "town/city": "Bhopal"
+                  
+                      }
+                
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
     }
+    
   },
   "components": {
     "securitySchemes": {
