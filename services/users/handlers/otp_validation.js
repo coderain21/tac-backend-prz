@@ -49,7 +49,8 @@ const schema = Joi.object().keys({
     //     'string.empty': 'session token cannot be an empty field',
     //     'any.required': 'session token is a required field',
     // }),
-    session_token: Joi.string().optional(),
+    session_token: Joi.string().optional().allow(''),
+    type:  Joi.string().optional().allow(''),
 })
 
 AWS.config.update({ region: process.env.REGION })
@@ -77,16 +78,18 @@ process. It is an asynchronous function that takes in three parameters: `event`,
 module.exports.otpValidation = async (event, _context, callback) => {
     try {
         let userData = JSON.parse(event.body)
+        console.log('user', userData)
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
+            console.log(errorMessage)
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        if (userData.type === 'admin') {
+        if (userData.type === 'admin' && userData.session_token === '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
@@ -112,7 +115,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                 }
             }
         }
-        if (userData.session_token) {
+        if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
