@@ -439,10 +439,10 @@ functions:
       events:
           - http:
               cors: true
-              path: /stripe_webhook
-              method: post
-              authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              path: /stripe_webhook_trigger
+              method: any
+              # authorizer:
+              #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
 resources:
