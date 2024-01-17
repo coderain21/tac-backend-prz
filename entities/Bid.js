@@ -13,7 +13,7 @@ and is_first_time_login. The schema also includes some options such as trim, def
 required fields. The schema is then used to create a Mongoose model named AdminUser, which can be
 used to interact with the corresponding MongoDB collection. */
 
-const BidSchema = new Schema({
+const UniqueBidSchema = new Schema({
     auction_id: {
         type: String, trim: true,
     },
@@ -26,9 +26,6 @@ const BidSchema = new Schema({
     paddle_number: {
         type: String, trim: true,
     },
-    starting_bid: {
-        type: Number, trim: true,
-    },
     bid_amount: {
         type: Number,
         trim: true,
@@ -37,24 +34,6 @@ const BidSchema = new Schema({
         type: String,
         trim: true,
     },
-    low_estimate: {
-        type: String,
-        trim: true,
-    },
-    high_estimate: {
-        type: String,
-        trim: true,
-    },
-    bid_status: {
-        type: String,
-        trim: true,
-    },
-    start_date: {
-        type: Number,
-    },
-    end_date: {
-        type: Number,
-    },
     timestamp: {
         type: Number,
     },
@@ -62,13 +41,12 @@ const BidSchema = new Schema({
         type: Number,
     },
     email_address: { type: String },
-    lot_image: { type: String },
     name: { type: String },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
 
 })
 
-BidSchema.plugin(mongoosePaginate)
-const bidManagement = mongoose.model(`${stage}-bid-informations`, BidSchema, `${stage}-bid-informations`)
-module.exports = bidManagement
+UniqueBidSchema.plugin(mongoosePaginate)
+const uniqueBidManagement = mongoose.model(`${stage}-unique-bids`, UniqueBidSchema, `${stage}-unique-bids`)
+module.exports = uniqueBidManagement
