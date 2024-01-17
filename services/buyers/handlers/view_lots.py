@@ -1,3 +1,5 @@
+
+"""This module is used for view lots"""
 import json
 import os
 from pymongo import MongoClient
