@@ -38,7 +38,7 @@ def credit_card(event, context):
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db['dev-credit_card']
+        collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
         if 'set' in data:
             if data['set'] == 'True':
                 result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'card_pending','auction_id':auction_id})

@@ -1,4 +1,3 @@
-'''api for viewing the lot details'''
 import json
 import os
 from pymongo import MongoClient
@@ -15,6 +14,7 @@ headers = {
 
 def lot_details(event, context):
     try:
+        print(event,"yyyyyyyyyyyyyyyyyyyyyy")
         # Parse query parameters from the event
         data = event['queryStringParameters']
         if data is None or "lot_id" not in data:
@@ -24,7 +24,7 @@ def lot_details(event, context):
                 "body": json.dumps({"message": "Please provide lot_id"})
             }
         lot_id = ObjectId(data['lot_id'])
-        buyer_id = ObjectId(data.get('buyer_id'))  # Check if buyer_email is provided
+        buyer_id = data.get('buyer_id')  # Check if buyer_email is provided
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -36,7 +36,7 @@ def lot_details(event, context):
         result = collection.find_one({'_id': lot_id})
         # Check if buyer_email is provided in the query parameters
         if buyer_id:
-            wishlist_result = wishlist_collection.find_one({'lot_id': lot_id, 'seller_email': result['seller_email'], 'buyer_id': buyer_id})
+            wishlist_result = wishlist_collection.find_one({'lot_id': lot_id, 'seller_email': result['seller_email'], 'buyer_id': ObjectId(buyer_id)})
             result['is_wishlisted'] = wishlist_result is not None
         else:
             result['is_wishlisted'] = False
@@ -50,14 +50,12 @@ def lot_details(event, context):
 
         client.close()
 
-
         if result is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "Lot not found"})
             }
-
 
         return {
             'headers': headers,
