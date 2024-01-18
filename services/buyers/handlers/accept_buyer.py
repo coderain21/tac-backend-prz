@@ -89,7 +89,7 @@ def accept_buyer(event, context):
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":
-                logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
+                logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
