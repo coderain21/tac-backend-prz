@@ -128,7 +128,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData[0].title,
-                logo_url: auctionData[0].logo_image === '' ? '${process.env.CDN_LINK}Logo.png' : `${process.env.CDN_LINK}${auctionData[0].logo_image}`,
+                logo_url: auctionData[0].logo_image === '' ? `${process.env.CDN_LINK}Logo.png` : `${process.env.CDN_LINK}${auctionData[0].logo_image}`,
                 not_winning_lot: notWinning,
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
