@@ -76,12 +76,16 @@ def view_profile(event, context):
                 update_data['first_name']= body['first_name']
                 # update_data['last_name']= data['last_name']
                 update_data['phone_number']= body['phone_number']
+                update_data['full_name']= body['first_name']
             except Exception:
                 return {
                     "statusCode": 404,
                     "headers": headers,
                     "body": json.dumps({"message": 'please enter the required fileds'})
                 }
+            if 'last_name' in body:
+                update_data['last_name']= body['last_name']
+                update_data['full_name']= update_data['full_name']+" "+ update_data['last_name']
             if 'last_name' in body:
                 update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address,'seller_email':seller_email},
