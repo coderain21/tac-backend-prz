@@ -855,7 +855,7 @@ resources:
           - ClientId: !Ref SellerUsersClient
             ProviderName: !GetAtt SellerUsers.ProviderName
             ServerSideTokenCheck: false
-           - ClientId: !Ref AdminUsersClient
+          - ClientId: !Ref AdminUsersClient
             ProviderName: !GetAtt SellerUsers.ProviderName
             ServerSideTokenCheck: false
         # Define more configuration properties as needed
