@@ -106,11 +106,11 @@ module.exports.sqsTriggerFunction = async (event, context) => {
             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
             let subjectDescription = 'You Won the Auction'
             get_lot.map((item) => {
-                item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                item.lot_image = `${process.env.CDN_LINK}${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
                     // item.lot_image = item.images[0].url === ''
-                    //     ? 'https://cdn-dev.indyauction.net/public/Logo.png'
-                    //     : `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                    //     ? '${process.env.CDN_LINK}Logo.png'
+                    //     : `${process.env.CDN_LINK}${item.images[0].url}`
                     // console.log('logo image', item.lot_image, item.images[0])
                     console.log('itemss', item.lot_image)
                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
@@ -118,8 +118,8 @@ module.exports.sqsTriggerFunction = async (event, context) => {
                 } else if (item.winning_user !== user.buyer_id) {
                     console.log('elseeeeeee', item)
                     // item.lot_image = item.images[0].url === ''
-                    //     ? 'https://cdn-dev.indyauction.net/public/Logo.png'
-                    //     : `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                    //     ? '${process.env.CDN_LINK}Logo.png'
+                    //     : `${process.env.CDN_LINK}${item.images[0].url}`
                     // console.log('itemsss', item)
                     item.bid_amount = formatCurrency(item.starting_price, auctionData[0].currency)
                     console.log('itemss', item.lot_image)
@@ -135,7 +135,7 @@ module.exports.sqsTriggerFunction = async (event, context) => {
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData[0].title,
-                logo_url: auctionData[0].logo_image === '' ? 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png' : `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`,
+                logo_url: auctionData[0].logo_image === '' ? `${process.env.CDN_LINK}Logo.png` : `${process.env.CDN_LINK}${auctionData[0].logo_image}`,
                 not_winning_lot: notWinning,
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
