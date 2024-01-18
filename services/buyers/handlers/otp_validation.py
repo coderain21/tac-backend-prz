@@ -203,6 +203,7 @@ def validate(event, context):
             insert_data["seller_email"] = seller_email
             insert_data["created_at"] = datetime.datetime.utcnow()
             insert_data["buyer_id"] = f'B{counter["starting_sequence"]:04d}'
+            insert_data["full_name"]= decrypted_data["first_name"] + " " + decrypted_data["last_name"]
             collection.insert_one(insert_data)
             client.close()
 
