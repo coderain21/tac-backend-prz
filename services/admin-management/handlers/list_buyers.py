@@ -81,8 +81,7 @@ def list_buyers(event, context):
             search_text = prepend_backslash(search_text)
             search_query['$or'] = [
                 {"buyer_id": {"$regex": search_text, "$options": "i"}},
-                {"first_name": {"$regex": search_text, "$options": "i"}},
-                {"last_name": {"$regex": search_text, "$options": "i"}},
+                {"full_name": {"$regex": search_text, "$options": "i"}},
                 {"email_address": {"$regex": search_text, "$options": "i"}}
             ]
         # Pagination options
