@@ -205,21 +205,6 @@ functions:
           path: /request-otp
           method: post
           cors: true
-  
-  request-otp:
-    handler: handlers/request-otp.generate_otp
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          path: /request-otp
-          method: post
-          cors: true
       
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
