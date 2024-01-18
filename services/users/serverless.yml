@@ -209,12 +209,12 @@ functions:
   request-otp:
     handler: handlers/request-otp.generate_otp
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /request-otp
@@ -935,6 +935,13 @@ resources:
           Type: String
           Value: { Ref: SellerUsersClient }
     
+    AdminCognitoClientIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_CLIENT_ID
+          Type: String
+          Value: { Ref: AdminUsersClient }
+    
     SellerCognitoPoolARNStore:
         Type: AWS::SSM::Parameter
         Properties:
@@ -943,8 +950,7 @@ resources:
           Value:
             Fn::GetAtt:
               - SellerUsers
-              - Arn
-       
+              - Arn     
     SellerDomainStore:
         Type: AWS::SSM::Parameter
         Properties:
