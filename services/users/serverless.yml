@@ -190,6 +190,36 @@ functions:
           path: /otp-validation
           method: post
           cors: true
+  
+  request-otp:
+    handler: handlers/request-otp.generate_otp
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /request-otp
+          method: post
+          cors: true
+  
+  request-otp:
+    handler: handlers/request-otp.generate_otp
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - sg-0882c1da39e729097
+      subnetIds:
+        - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          path: /request-otp
+          method: post
+          cors: true
       
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
@@ -741,6 +771,7 @@ resources:
       Properties:
         Domain: indyauction-seller-${self:provider.stage}
         UserPoolId: { Ref: SellerUsers }
+ 
     SellerUsersClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
@@ -784,8 +815,51 @@ resources:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
-        
-    
+
+
+    AdminUsersClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        AccessTokenValidity: 60
+        AllowedOAuthFlowsUserPoolClient: true
+        AuthSessionValidity: 10
+        ClientName: admin
+        UserPoolId: { Ref: SellerUsers }
+        EnablePropagateAdditionalUserContextData: false
+        EnableTokenRevocation: true
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        SupportedIdentityProviders:
+          - "COGNITO"
+        AllowedOAuthFlows:
+          - implicit
+          - code
+        AllowedOAuthScopes:
+          - openid
+          - profile
+          - email
+          - aws.cognito.signin.user.admin
+        CallbackURLs:
+          - "https://admin-${opt:stage}${env:BASE_URL_BUYER}/"
+          - "https://admin-${opt:stage}${env:BASE_URL_BUYER}/"
+          - "http://localhost:3000/"
+          - "http://localhost:3001/"
+        LogoutURLs:
+          - "https://admin-${opt:stage}${env:BASE_URL_BUYER}/"
+          - "http://localhost:3000/"
+        IdTokenValidity: 60
+        PreventUserExistenceErrors: LEGACY
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+
+ 
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:

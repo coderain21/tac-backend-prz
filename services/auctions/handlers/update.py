@@ -3,7 +3,7 @@ import os
 import json
 import pymongo
 from lib.get import get_by_email
-from lib.invoke_step_function import invoke_state_machine, invoke_state_machine_for_auction_end
+from lib.invoke_step_function import invoke_state_machine
 from lib.common_helper import Encoder
 from datetime import datetime, timezone
 
@@ -211,11 +211,11 @@ def update_auction(event, context):
                     iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
                     item['start_date'] = iso_date_with_offset
                     print('item', item)
-                    itemData = json.loads(json.dumps(item, cls= Encoder)) 
+                    itemData = json.loads(json.dumps(item, cls= Encoder))
                     print('itemdata:', itemData)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
                     print('invoking', invoking)
-                    collection = db["dev-step-function-arns"]
+                    collection = db[os.environ['STEP_FUNCTION_ARN_TABLE']]
                     step_request={}
                     step_request['arn'] = invoking['executionArn']
                     id_value = item['_id']
