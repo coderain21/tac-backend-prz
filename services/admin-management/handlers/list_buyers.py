@@ -64,7 +64,8 @@ def list_buyers(event, context):
             "email_address": 1,
             "_id":1,
             "created_at":1,
-            "full_name": 1
+            "full_name": 1,
+            "buyer_id": 1
         }
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
             sort_key = event['queryStringParameters']['sort_by']
