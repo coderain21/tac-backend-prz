@@ -118,6 +118,21 @@
                   }
                 }
               }
+            },
+            "404": {
+              "description": "Bids History Not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
