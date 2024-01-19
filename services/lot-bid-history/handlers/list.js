@@ -77,25 +77,25 @@ module.exports.handler = async (event) => {
             updated_at: 1,
 
         }
+
         /** Fetch enterprises using the provided criteria */
         const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
+        if (bidsList.docs.length <= 0) {
+            return {
+                statusCode: 404,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Bids not found',
+                }),
+            }
+        }
 
         const getLowestBidder = await helper.getLowestBidder(lotId, BidInformation)
 
         /** Handle error when enterprises cannot be fetched */
-        if (!bidsList) {
-            return {
-                statusCode: 500,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'There was an error while listing the bid information',
-                }),
-            }
-        }
         let underBidder = {}
         if (getLowestBidder.length === 1) {
             underBidder = {
-
             }
         } else {
             underBidder = {
