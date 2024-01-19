@@ -60,7 +60,7 @@ def buyer_list_auction(event, context):
         dev_auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         user_collection = db[os.environ["SELLERS_TABLE"]]
-        print(1)
+        print(1,dev_auction_register)
         result= user_collection.find_one({"user_type":"admin","email_address":seller_email})
         if result is None:
             return {
@@ -107,6 +107,9 @@ def buyer_list_auction(event, context):
             {"$limit": page_size}
         ]
         result = dev_auction_register.aggregate(pipeline)
+        print(email_address)
+        total_count = dev_auction_register.count_documents({"email_address":email_address['email_address']})
+        print(total_count)
         if result is None:
             return {
             "headers": headers,
@@ -119,7 +122,7 @@ def buyer_list_auction(event, context):
         return {
             "headers": headers,
             "statusCode": 200,
-            "body": json.dumps({"data":list(result)},cls=Encoder)
+            "body": json.dumps({"data":list(result),"page_number":page_number,"page_size":page_size,"total_records": total_count},cls=Encoder)
         }
     except Exception as err:
         print(err)
