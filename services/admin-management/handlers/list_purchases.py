@@ -103,7 +103,7 @@ def list_purchases(event, context):
 
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'created_at')
-        sort_order = data.get('sort_order', 'desc')
+        sort_order = data.get('sort_order', 'descending')
         payment_type = data.get("payment_type", '')
         payment_status = data.get("payment_status", '')
         page = int(data.get('page', '1'))
@@ -116,7 +116,7 @@ def list_purchases(event, context):
         sort_criteria = []
 
         if sort_by and sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'payment_status', 'auction_title', 'payment', 'amount']:
-            sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING)]
+            sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
         # Build the query based on parameters
         query = {"email_address": buyer_details['email_address']}
@@ -135,6 +135,7 @@ def list_purchases(event, context):
                 "amount": 1,
                 "created_at": 1,
                 "order_number": 1,
+                "currency": 1,
                 "payment_status": 1,
                 "payment": 1,
                 'auction_title': 1
