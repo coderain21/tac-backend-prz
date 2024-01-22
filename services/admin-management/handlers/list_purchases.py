@@ -51,15 +51,15 @@ def list_purchases(event, context):
         dict: A dictionary containing the response with order information.
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        #     print('email', email_address)
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            print('email', email_address)
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         # Connect to MongoDB
         # print('Event:', json.dumps(event, indent=2))
         client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -68,13 +68,13 @@ def list_purchases(event, context):
         buyer_collection = db[os.environ['BUYER_COLLECTION']]
         user_collection = db[os.environ['SELLERS_TABLE']]
 
-        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        # if result is None:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        if result is None:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
         # Extract buyer ID from path parameters
         id = event['pathParameters'].get('id', '')
@@ -144,8 +144,18 @@ def list_purchases(event, context):
 
         # Use the last document from the previous page as the starting point for the next page
         # Fetch buyer's full name from the buyer details
+        # Fetch buyer's full name from the buyer details
         buyer_full_name = buyer_details['full_name']
         print('Buyer full name:', buyer_full_name)
+
+        # Include buyer's full name in each order result
+        orders_list = [
+            {**order, "buyer_full_name": buyer_full_name}
+            for order in orders_list
+        ]
+
+        # Sort the orders_list based on the buyer's full name
+        orders_list = sorted(orders_list, key=lambda x: x.get('buyer_full_name', '').lower(), reverse=(sort_order == 'desc'))
 
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
