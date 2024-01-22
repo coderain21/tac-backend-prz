@@ -666,6 +666,190 @@
         }
       }
 
+    },
+    "/{id}":{
+      "get": {
+        "tags": [
+          "Admin Buyers Management"
+          
+        ],
+        "summary": "Buyer purchases Details",
+        "description": "Buyers purchases details",
+        "parameters": [
+          {
+            "name": "buyer_id",
+            "in": "path",
+            "description": "buyer id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "659393fff55ff30b3ff4221b"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "sorting by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "created_at"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "sorting by descending or ascending order",
+            "schema": {
+              "type": "string"
+            },
+            "example": "descending"
+          }, 
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "page number",
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "page size",
+            "schema": {
+              "type": "string"
+            },
+            "example": "3"
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved buyer detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "payment_status":{
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "string"
+                        },
+                        "payment": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "order_number":  {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "integer"
+                        },
+                        "auction_title": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  },
+                  "total_records": {
+                    "type": "integer"
+                  },
+                  "current_page": {
+                    "type": "integer"
+                  }
+                },
+                "example": {
+                  "data": [
+                      {
+                          "_id": "6597c5eb39a8d47e3b1864b4",
+                          "payment_status": "Unpaid",
+                          "amount": 5650,
+                          "payment": "Stripe",
+                          "currency": "INR",
+                          "order_number": "OD001",
+                          "created_at": 1704445417,
+                          "auction_title": "The Classic Auction - Sample",
+                          "name": "AnushaK"
+                      },
+                      {
+                          "_id": "658188165dc1e7991cd3de21",
+                          "payment_status": "Paid",
+                          "amount": 22000,
+                          "payment": "Stripe",
+                          "currency": "CAD",
+                          "order_number": "OD005",
+                          "created_at": 1702987796,
+                          "auction_title": "The Ceramics & Craft Auction"
+                      },
+                      {
+                          "_id": "6581838030a8395d8449f1c0",
+                          "payment_status": "Unpaid",
+                          "amount": 22000,
+                          "payment": "Stripe",
+                          "currency": "CAD",
+                          "order_number": "OD004",
+                          "created_at": 1702986621,
+                          "auction_title": "The Ceramics & Craft Auction"
+                      }
+                  ],
+                  "total_pages": 11,
+                  "total_records": 33,
+                  "current_page": 1
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
     }
     
   },
