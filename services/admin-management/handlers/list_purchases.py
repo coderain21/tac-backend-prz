@@ -7,7 +7,6 @@ import pymongo
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 import math
-from lib.get import fetch_seller_data_from_auction
 import csv
 import boto3
 from datetime import datetime
@@ -144,18 +143,8 @@ def list_purchases(event, context):
 
         # Use the last document from the previous page as the starting point for the next page
         # Fetch buyer's full name from the buyer details
-        # Fetch buyer's full name from the buyer details
         buyer_full_name = buyer_details['full_name']
         print('Buyer full name:', buyer_full_name)
-
-        # Include buyer's full name in each order result
-        orders_list = [
-            {**order, "buyer_full_name": buyer_full_name}
-            for order in orders_list
-        ]
-
-        # Sort the orders_list based on the buyer's full name
-        orders_list = sorted(orders_list, key=lambda x: x.get('buyer_full_name', '').lower(), reverse=(sort_order == 'desc'))
 
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
