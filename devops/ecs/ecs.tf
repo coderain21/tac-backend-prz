@@ -40,6 +40,12 @@ data "aws_acm_certificate" "existing_certificate" {
   provider = aws.deployment-eu
 }
 
+variable "assign_public_ip" {
+  description = "Whether to assign a public IP to the ECS task"
+  type        = bool
+  default     = true
+}
+
 
 
 resource "aws_iam_role" "ecs_task_execution_role" {
@@ -97,7 +103,11 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 EOF
 }
-
+resource "aws_iam_role_policy_attachment" "ecs-task-role-admin-attachment" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+  provider   = aws.deployment-eu
+}
 resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
@@ -192,11 +202,19 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   family                   = "websocket-task-definition"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
-  execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   cpu                      = "512"
   memory                   = "1024"
-  depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
+  depends_on               = [aws_ecs_cluster.websocket-cluster, aws_ecr_repository.repo1]
+
+  network_configuration {
+    subnets         = data.aws_subnets.public.ids
+    security_groups = [aws_security_group.websocket-security-group.id]
+
+    assign_public_ip = var.assign_public_ip
+  }
+
   container_definitions = jsonencode([
     {
       name  = "websocket-container" ######change my container name
@@ -293,14 +311,16 @@ resource "aws_lb_listener" "listener" {
 
 resource "aws_ecs_service" "ecs_service" {
   name            = "websocket-ecs-service"
-  cluster         = resource.aws_ecs_cluster.websocket-cluster.id
-  task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
+  cluster         = aws_ecs_cluster.websocket-cluster.id
+  task_definition = aws_ecs_task_definition.websocket-task-definition.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = data.aws_subnets.default.ids  # Fetch default subnets dynamically
-    security_groups = [resource.aws_security_group.websocket-security-group.id]
+    subnets         = data.aws_subnets.public.ids
+    security_groups = [aws_security_group.websocket-security-group.id]
+
+    assign_public_ip = var.assign_public_ip
   }
 
   load_balancer {
