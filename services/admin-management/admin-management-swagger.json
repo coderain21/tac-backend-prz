@@ -850,8 +850,89 @@
         }
       }
 
+    },
+    "/clone-auction": {
+      "post": {
+        "tags": [
+          "Admin Buyers Management"
+        ],
+        "summary": "Auction cloned",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  },
+                  "seller_email":{
+                    "type": "string"
+                  }
+            },
+            "example": {
+                "auction_id":"A2454",
+                "seller_email":"sthuthi+testing@7edge.com"
+              }
+            }
+          }
+        }
+      },
+        "responses": {
+          "201":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example":{
+                  "message": "Auction has been cloned successfully"
+                }
+                }
+              }
+            },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction with given ID not found"
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          }
+        } 
     }
-    
   },
   "components": {
     "securitySchemes": {
