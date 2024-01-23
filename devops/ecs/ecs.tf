@@ -18,15 +18,41 @@ provider "aws" {
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
-resource "aws_default_security_group" "default" {
-  vpc_id = [data.aws_vpc.default.id]
-}
+
 
 data "aws_vpc" "default" {
   default = true
   provider = aws.deployment-eu
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id = data.aws_vpc.default.id
+  provider = aws.deployment-eu
+
+  ingress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # "-1" represents all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    security_group_id = "sg-0470f4b927e0cc7e9"
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # "-1" represents all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -115,7 +141,7 @@ resource "aws_iam_role_policy_attachment" "task_s3" {
 
 # Security Group for loadbalancer
 resource "aws_security_group" "websocket-security-group" {
-  name        = "websocket-security-group-new"
+  name        = "websocket-security-group"
   description = "Security Group for ECS and Load Balancer"
   vpc_id      = data.aws_vpc.default.id
   provider = aws.deployment-eu
@@ -268,7 +294,7 @@ resource "aws_route53_record" "my_cname" {
 
 # Target Group
 resource "aws_lb_target_group" "target_group" {
-  name     = "websocket-target-group"
+  name     = "target-group-websocket"
   port     = 80
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id  # Use VPC ID from default VPC
@@ -303,7 +329,7 @@ resource "aws_ecs_service" "ecs_service" {
 
   network_configuration {
     subnets         = data.aws_subnets.default.ids  # Fetch default subnets dynamically
-    security_groups = [data.aws_default_security_group.default.id]
+    security_groups = [aws_default_security_group.default.id]
     assign_public_ip = true
   }
 

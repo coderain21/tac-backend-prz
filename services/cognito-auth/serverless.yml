@@ -463,7 +463,7 @@ resources:
         Properties:
           Name: BUYER_COGNITO_USERPOOL_DOMAIN
           Type: String
-          Value: buyers-indyauction-${self:provider.stage}
+          Value: buyers-indyauction-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
 
     BuyersCognitoIdentityPoolNameStore:
         Type: AWS::SSM::Parameter
