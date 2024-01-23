@@ -1,6 +1,7 @@
 ''' the function is used to clone auction'''
 import os
 import json
+from bson import ObjectId
 from pymongo import MongoClient
 import datetime
 
@@ -35,8 +36,9 @@ def clone_auction(event, context):
             }
         request_body = json.loads(event['body'])
         print('request_body', request_body)
-        auction_id = request_body.get('auction_id')
-        seller_email = request_body.get('seller_email')
+        # auction_id = request_body.get('auction_id')
+        # seller_email = request_body.get('seller_email')
+        _id = request_body.get('object_id')
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -51,14 +53,14 @@ def clone_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        auction = auction_collection.find_one(
-            {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+        auction = auction_collection.find_one({'_id': ObjectId(_id)},{'_id': 0})
         if not auction:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "Auction with given ID not found"})
             }
+        seller_email = auction['seller_email']
         if auction['status'] not in ['Draft', 'Published', 'Completed']:
             return {
                 "statusCode": 400,

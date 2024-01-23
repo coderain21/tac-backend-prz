@@ -870,8 +870,7 @@
                   }
             },
             "example": {
-                "auction_id":"A2454",
-                "seller_email":"sthuthi+testing@7edge.com"
+               "object_id": "65a7bf0da3ae6e71fccd6252"
               }
             }
           }
