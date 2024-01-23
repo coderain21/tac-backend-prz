@@ -25,14 +25,14 @@ def clone_auction(event, context):
     other metadata
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['email']
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['email']
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         request_body = json.loads(event['body'])
         print('request_body', request_body)
         auction_id = request_body.get('auction_id')
@@ -43,13 +43,13 @@ def clone_auction(event, context):
         counter_collection = db[os.environ["COUNTER_LOT"]]
         user_collection = db[os.environ['SELLERS_TABLE']]
 
-        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        # if result is None:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        if result is None:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
         auction = auction_collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
