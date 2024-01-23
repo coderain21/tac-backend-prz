@@ -1,0 +1,173 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Admin Buyer Bid History APIs",
+      "description": "Admin Buyer Bid History APIs to view list of the bids placed by the buyer",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis.indyauction.net/dev/v1/admin-buyer-bid-history"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Admin | Buyer Bid History Management",
+          "description": "APIs to view list of the bids placed by the buyers"
+      }
+    ],
+    "paths": {
+      "/{buyer_id}": {
+        "get": {
+          "summary": "List Bids",
+          "description": "Fetch a list of bids placed by buyer.",
+          "tags": [
+            "Admin | Buyer Bid History Management"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "buyer_id",
+              "in": "path",
+              "required": true,
+              "example": "65af7b9d7f5d0310fd0e4d6d",
+              "description": "The unique identifier.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort field (e.g., auction_title, lot_number, lot_title, paddle_number, bid_status, bid_amount, time_stamp)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "start_date",
+              "in": "query",
+              "description": "Start date for date range filter (Unix timestamp)",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "end_date",
+              "in": "query",
+              "description": "End date for date range filter (Unix timestamp)",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "Sort order (e.g., asc, desc)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with a list of bids.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": [
+                      {
+                        "_id": "65a6bad418d9a00370823dd5",
+                        "paddle_number": 1,
+                        "name": "Sthuthi",
+                        "bid_amount": 140,
+                        "auction_title": "Title",
+                        "lot_number": 1,
+                        "time_stamp": 1705999346278,
+                        "bid_status": "Winning",
+                        "lot_title": "Title",
+                        "lot_image": "DomainName/Auctions/lots/images/56fc0b9b-0cfc-50a6-6411-55dee8c63251/sbsract2.jpg"
+
+                      }
+                    ],
+                    "pagination": {
+                      "total_pages": 31,
+                      "limit": 1,
+                      "total_records": 31,
+                      "next_page": 2,
+                      "page": 1
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Bids History Not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
