@@ -118,7 +118,7 @@ def register_auction(event, context):
 
             # Extract date and time
             start_date = start_date_time.date()
-            start_time = start_date_time.time()
+            start_time = start_date_time.time().strftime('%H:%M:%S')
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":
