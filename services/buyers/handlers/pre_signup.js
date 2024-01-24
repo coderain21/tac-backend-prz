@@ -64,6 +64,7 @@ exports.handler = async (event, context, callback) => {
                 password: newPassword,
                 terms_and_condition: true,
                 user_type: 'buyer',
+                full_name: '',
                 newsletter_notification: false,
 
             }

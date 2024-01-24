@@ -57,7 +57,7 @@ def credit_card(event, context):
                     'body': json.dumps({'status':result['registration_status']})
                     }
                 return {
-                    'statusCode': 404,
+                    'statusCode': 400,
                     'headers': headers,
                     'body': json.dumps({"message":"buyer is not registered"})
                     }

@@ -85,7 +85,7 @@ def accept_buyer(event, context):
             start_date_time = datetime.utcfromtimestamp(start_date_time_in_seconds)
             # Extract date and time
             start_date = start_date_time.date()
-            start_time = start_date_time.time()
+            start_time = start_date_time.time().strftime('%H:%M:%S')
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":

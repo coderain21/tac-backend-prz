@@ -7,6 +7,7 @@
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const cognitoHelper = require('../lib/cognito_helper')
+const Auction = require('../entities/Auction')
 
 let body
 const headers = {
@@ -54,6 +55,12 @@ module.exports.updateUserInformation = async (event) => {
         }
         if (get_user !== null) {
             const user_id = get_user[0]._id
+            if (request_body.first_name || request_body.last_name) {
+                const filter = { seller_email: email }
+                const update = { $set: { seller_name: `${request_body.first_name} ${request_body.last_name}` } }
+                const updateResult = await Auction.updateMany(filter, update)
+                console.log(updateResult, 'updateResult')
+            }
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
             if (update_user_information.acknowledged) {
                 const cognitoUpdate = await cognitoHelper.cognitoUpdate(request_body, email)

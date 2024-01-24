@@ -27,6 +27,7 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
     CSV_FILE: ${env:CSV_FILE}
@@ -176,6 +177,114 @@ functions:
               - Access-Control-Allow-Headers
           path: /buyers
           method: get
+          authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  buyer-details:
+    handler: handlers/buyer_detail.buyer_detail
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /buyer-details
+          method: get
+          authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  buyer-view-auction:
+    handler: handlers/buyer_list_auction.buyer_list_auction
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /buyer-auctions
+          method: get
+          authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  purchase-list:
+    handler: handlers/list_purchases.list_purchases
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /{id}
+          method: get
+          authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  clone_auction:
+    handler: handlers/clone_auction.clone_auction
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /clone-auction
+          method: post
           authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 

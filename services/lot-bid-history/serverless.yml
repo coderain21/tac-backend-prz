@@ -1,0 +1,97 @@
+service: lot-bid-history
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${env:REGION}
+  versionFunctions: false
+  layers: ${env:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+            - mobiletargeting:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      omainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+                
+
+
+functions: 
+  list-bids:
+          handler: handlers/list.handler
+          layers:
+            - ${env:COMMON_LIB_ARN}
+          vpc:
+            securityGroupIds:
+              - ${ssm:SECURITY_GROUP_ID}
+            subnetIds:
+              - ${ssm:SUBNET_ID}
+          events:
+            - http:
+                cors: true
+                path: /{lot_id}
+                method: GET
+                authorizer:
+                  arn: ${env:COGNITO_AUTH_ARN}
+  
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager

@@ -86,8 +86,6 @@ def view_profile(event, context):
             if 'last_name' in body:
                 update_data['last_name']= body['last_name']
                 update_data['full_name']= update_data['full_name']+" "+ update_data['last_name']
-            if 'last_name' in body:
-                update_data['last_name']= body['last_name']
             result= collection.find_one_and_update({'email_address':email_address,'seller_email':seller_email},
                                                    {"$set": update_data})
         result= collection.find_one({'email_address':email_address,'seller_email':seller_email},

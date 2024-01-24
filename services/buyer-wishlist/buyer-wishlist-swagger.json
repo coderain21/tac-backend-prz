@@ -66,7 +66,8 @@
                 }
               }
             }
-          },
+          }
+        },
           "400": {
             "description": "Existing lot for a user",
             "content": {
@@ -115,8 +116,8 @@
           }
         }
       }
-    }
-  },
+    },
+ 
   "/remove": {
     "delete": {
       "tags": ["Wishlist"],
@@ -148,7 +149,8 @@
               }
             }
           }
-        },
+        }
+      },
         "400": {
           "description": "lot id not found in wishlist",
           "content": {
@@ -198,8 +200,7 @@
       }
     }
   }
-  }
-},
+  },
 "components": {
   "schemas": {
     "LotDetails": {

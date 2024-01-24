@@ -61,9 +61,13 @@ def list_lots(event, context):
         client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        collection_bidders = db['dev-unique-bids']
+        total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
+                                                     "auction_id": auction_id})
+        print('total_bids', total_bidders)
 
         # Define the sort criteria based on user input
-        if sort_by in ['starting_bid', 'current_bid', 'title1', 'lot_number', 'Top_bidder']:
+        if sort_by in ['starting_price', 'current_bid', 'title1', 'lot_number', 'top_bidder', 'paddle_number']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
         else:
@@ -75,7 +79,10 @@ def list_lots(event, context):
         if search_keyword:
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
-            search_criteria['title1'] = {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}
+            search_criteria['$or'] = [
+                {"title1": {"$regex": escaped_search_keyword, "$options": "i"}},
+                {"top_bidder": {"$regex": escaped_search_keyword, "$options": "i"}},
+            ]
 
         # Combine the search and sort criteria
         query = {"seller_email": seller_email, "auction_id": auction_id, **search_criteria}
@@ -106,11 +113,11 @@ def list_lots(event, context):
         print('combined_pipeline', combined_pipeline)
 
         result = list(collection.aggregate(combined_pipeline))
-        print(result, "rrrrrrrrrrrrrrrrr")
-        max_bid = 0
+        print('result', result)
         total_bids = 0
+        max_bid = 0
         percentage_bids_gt_zero = 0
-        if result:
+        if len(result) >0:
             total_bids = result[0]['totalBids']
             max_bid = result[0]['maxBid']
             percentage_bids_gt_zero = result[0]['countBidsGreaterThanZero']
@@ -122,7 +129,7 @@ def list_lots(event, context):
             "total_lots": total_lots,
             "current_page": page,
             "total_pages": (total_documents + limit - 1) // limit,
-            "max_bid": max_bid,
+            "number_of_bids": total_bidders,
             "sum_current_bid": total_bids,
             "total selling":percentage_bids_gt_zero
         }
