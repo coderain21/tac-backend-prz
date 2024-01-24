@@ -65,20 +65,23 @@ resource "aws_route53_record" "record_updater" {
 
 #Creates a variabe store in ssm_parameter store
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
-  name  = "/DOMAIN_NAME"
+  name  = "DOMAIN_NAME"
   type  = "String"
   value = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-us
+  overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_domain_name_frontend" {
-  name  = "/DOMAIN_NAME_FRONT_END"
+  name  = "DOMAIN_NAME_FRONT_END"
   type  = "String"
   value = "https://apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-us
+  overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
-  name  = "/DOMAIN_CERTIFICATE"
+  name  = "DOMAIN_CERTIFICATE"
   type  = "String"
   value = "*.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-us
+  overwrite = true
 }

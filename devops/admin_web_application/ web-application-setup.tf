@@ -136,6 +136,7 @@ resource "aws_ssm_parameter" "s3_bucket" {
   type  = "String"
   value = "${data.external.env.result["ADMIN_APPLICATION"]}-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-eu
+  overwrite = true
 }
 
 resource "aws_ssm_parameter" "distribution_id" {
@@ -143,6 +144,7 @@ resource "aws_ssm_parameter" "distribution_id" {
   type  = "String"
   value = aws_cloudfront_distribution.s3_distribution.id
   provider = aws.deployment-eu
+  overwrite = true
 }
 
 resource "aws_ssm_parameter" "application_url" {
@@ -150,4 +152,5 @@ resource "aws_ssm_parameter" "application_url" {
   type  = "String"
   value = "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-eu
+  overwrite = true
 }
