@@ -49,6 +49,8 @@ const schema = Joi.object().keys({
     }),
 })
 
+let connection
+
 /**
  * The function encrypts data with a secret key and includes a timestamp for time validation.
  * @param data - The `data` parameter is the data that you want to encrypt. It can be any type of data,
@@ -118,7 +120,7 @@ module.exports.verifyReCaptcha = async (event) => {
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        const connection = await mongoConnection.connect()
+        connection = await mongoConnection.connect()
         const userExist = await Users.findOne({ email_address: userData.email_address, user_type: userData.user_type })
         if (userExist) {
             return {
@@ -127,7 +129,6 @@ module.exports.verifyReCaptcha = async (event) => {
                 body: JSON.stringify({ message: 'An account linked to this already exists' }),
             }
         }
-        await connection.disconnect()
         if (userData.password !== userData.confirm_password) {
             return {
                 statusCode: 400,
@@ -181,6 +182,11 @@ module.exports.verifyReCaptcha = async (event) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({ message: error.message }),
+        }
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
         }
     }
 }

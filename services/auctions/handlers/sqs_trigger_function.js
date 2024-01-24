@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable import/no-unresolved */
@@ -20,6 +21,7 @@ const mongodbHelper = require('../lib/mongodb_helper')
 
 const pinpoint = new PinpointEmail()
 
+let connection
 async function getLot(rediskey, client, auctionData) {
     console.log('auction_data', auctionData)
     const allBidders = await client.hGetAll('lot', rediskey)
@@ -30,16 +32,25 @@ async function getLot(rediskey, client, auctionData) {
 }
 
 function formatCurrency(amount, currencyCode) {
-    console.log('amount', amount)
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currencyCode,
-    }).format(amount)
+    try {
+        const parsedAmount = parseFloat(amount)
+
+        if (isNaN(parsedAmount)) {
+            console.error('Invalid amount:', amount)
+            return 'Invalid amount'
+        }
+
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode,
+        }).format(parsedAmount)
+    } catch (err) {
+        console.error(err)
+        return 'Error formatting currency'
+    }
 }
 
 async function sendMail(destinationId, sourceId, templateData, templateArn) {
-    console.log(templateArn)
-    console.log('template', destinationId)
     const params = {
         Content: {
             Template: {
@@ -52,10 +63,8 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
             ToAddresses: [destinationId],
         },
     }
-    console.log(JSON.stringify(params), 'params')
     try {
-        const response = await pinpoint.sendEmail(params).promise()
-        console.log('Email sent successfully:', response)
+        await pinpoint.sendEmail(params).promise()
     } catch (error) {
         console.error('Failed to send email:', error)
     }
@@ -63,16 +72,11 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
 
 module.exports.sqsTriggerFunction = async (event) => {
     try {
-        console.log('parsed', JSON.stringify(event))
-        const connection = await mongodbHelper.connect()
+        connection = await mongodbHelper.connect()
         const getBidders = await mongodbHelper.getBidders(event)
-        console.log('get', getBidders)
-        // const getLots = await mongodbHelper.getAuctionLots(event)
-        // console.log('getting lots', getLots)
         const client = await redis.createClient({
             url: process.env.REDIS_URL,
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        // const client = await redis.createClient()
         if (!client.isOpen) {
             await client.connect()
         }
@@ -81,12 +85,9 @@ module.exports.sqsTriggerFunction = async (event) => {
         for (let i = 0; i < getAllLots.length; i++) {
             get_lot.push(JSON.parse(getAllLots[i]))
         }
-        console.log('lot from redis', get_lot)
-        // const uniqueWinningUsers = [...new Set(get_lot.map((item) => item.winning_user))]
         const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
         const promiseList = []
         for (const user of getBidders) {
-            console.log('inside loop', user)
             const winningLot = []
             const notWinning = []
             const query = {
@@ -101,28 +102,16 @@ module.exports.sqsTriggerFunction = async (event) => {
             get_lot.map((item) => {
                 item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
-                    // item.lot_image = item.images[0].url === ''
-                    //     ? 'https://cdn-dev.indyauction.net/public/Logo.png'
-                    //     : `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
-                    // console.log('logo image', item.lot_image, item.images[0])
-                    console.log('itemss', item.lot_image)
                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
                     winningLot.push(item)
                 } else if (item.winning_user !== user.buyer_id) {
-                    console.log('elseeeeeee', item)
-                    // item.lot_image = item.images[0].url === ''
-                    //     ? 'https://cdn-dev.indyauction.net/public/Logo.png'
-                    //     : `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
-                    // console.log('itemsss', item)
                     item.bid_amount = formatCurrency(item.starting_price, auctionData[0].currency)
-                    console.log('itemss', item.lot_image)
                     notWinning.push(item)
                 }
             })
             if (winningLot.length <= 0) {
                 subjectDescription = 'You lost the Auction'
             }
-            console.log('buyerInformation', notWinning)
             const template_data = {
                 winning_lot: winningLot,
                 winning_lot_count: winningLot.length,
@@ -136,7 +125,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                 subject: subjectDescription,
             }
             promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL'))
-            // await sendMail(user, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL')
         }
         const response = await Promise.all(promiseList)
         console.log('response', response)
@@ -145,8 +133,12 @@ module.exports.sqsTriggerFunction = async (event) => {
         }
         const updateAuction = await mongodbHelper.update(Auction, auctionData[0]._id, request_body)
         console.log('update', updateAuction)
-        await connection.disconnect()
     } catch (err) {
         console.log('err', err)
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
+        }
     }
 }

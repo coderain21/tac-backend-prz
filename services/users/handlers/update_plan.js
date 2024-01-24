@@ -11,7 +11,8 @@ const UserPlanHistory = require('../entities/UserPlanHistory')
 const dataHelper = require('../data/plan_validation_check')
 const helpers = require('../lib/helper')
 
-let body
+let body; let
+    connection
 
 module.exports.updatePlan = async (event) => {
     try {
@@ -19,7 +20,7 @@ module.exports.updatePlan = async (event) => {
         const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)
         let update_value
-        const connection = await mongoConnection.connect()
+        connection = await mongoConnection.connect()
         if (keys.length === 0) {
             body = JSON.stringify({
                 message: 'Please pass atleast one field',
@@ -64,7 +65,6 @@ module.exports.updatePlan = async (event) => {
         body = JSON.stringify({
             message: 'Please choose correct plan upgrade or downgrade.',
         })
-        await connection.disconnect()
         return {
             headers: await helpers.getHeaders(),
             statusCode: 400,
@@ -79,6 +79,11 @@ module.exports.updatePlan = async (event) => {
             headers: await helpers.getHeaders(),
             statusCode: 400,
             body,
+        }
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
         }
     }
 }
