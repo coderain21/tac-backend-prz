@@ -18,6 +18,8 @@ const headers = {
     'Access-Control-Allow-Methods': '*',
 }
 
+let connection
+
 /* This code exports a function called `updateUserInformation` that is used to update a user's
 information in a MongoDB database. The function takes an `event` parameter, which is likely an HTTP
 request object that contains information about the request, such as the request body and path
@@ -27,7 +29,7 @@ module.exports.updateUserInformation = async (event) => {
         const request_body = JSON.parse(event.body)
         const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)
-        const connection = await mongoConnection.connect()
+        connection = await mongoConnection.connect()
         if (keys.length === 0) {
             body = JSON.stringify({
                 message: 'Please pass atleast one field',
@@ -57,14 +59,22 @@ module.exports.updateUserInformation = async (event) => {
             const user_id = get_user[0]._id
             if (request_body.first_name || request_body.last_name) {
                 const filter = { seller_email: email }
+                const user = get_user[0]
+                if (request_body.first_name && request_body.last_name) {
+                    request_body.first_name = request_body.first_name || user.first_name
+                    request_body.last_name = request_body.last_name || user.last_name
+                } else if (request_body.first_name) {
+                    request_body.last_name = user.last_name
+                } else if (request_body.last_name) {
+                    request_body.first_name = user.first_name
+                }
                 const update = { $set: { seller_name: `${request_body.first_name} ${request_body.last_name}` } }
                 const updateResult = await Auction.updateMany(filter, update)
                 console.log(updateResult, 'updateResult')
             }
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
             if (update_user_information.acknowledged) {
-                const cognitoUpdate = await cognitoHelper.cognitoUpdate(request_body, email)
-                console.log('cogni', cognitoUpdate)
+                await cognitoHelper.cognitoUpdate(request_body, email)
                 body = JSON.stringify({
                     success_status: true,
                     message: 'Changes saved successfully',
@@ -78,7 +88,6 @@ module.exports.updateUserInformation = async (event) => {
             body = JSON.stringify({
                 message: 'Failed to update information',
             })
-            await connection.disconnect()
 
             return {
                 headers,
@@ -104,6 +113,11 @@ module.exports.updateUserInformation = async (event) => {
             headers,
             statusCode: 400,
             body,
+        }
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
         }
     }
 }
