@@ -63,13 +63,14 @@ custom:
       
   customDomain:
     rest:
-      omainName: ${ssm:DOMAIN_NAME}
+      domainName: ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
       basePath: v1/${self:service}
       certificateName: ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
+
                 
 
 
