@@ -21,6 +21,8 @@ const mongoConnection = require('../lib/mongodb_helper')
 
 const cognitoHelper = require('../lib/cognito_helper')
 
+let connection
+
 const createGroup = async (username, userPoolId) => {
     try {
         const response = await cognito.createGroup({
@@ -77,17 +79,21 @@ exports.handler = async (event, context, callback) => {
                 client_id: process.env.DEFAULT_CLIENT_ID,
                 group_name: event.request.userAttributes.email.split('@')[0],
             }
-            const connection = await mongoConnection.connect()
+            connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
             const domain = await mongoConnection.save(domainInfo, SubDomain)
             await createGroup(event.request.userAttributes.email.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
             console.log(user)
             const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
             console.log(cognitoResponse)
-            await connection.disconnect()
             await linkUser(event.request.userAttributes.email, event)
         } catch (error) {
             throw error
+        } finally {
+            // Disconnect from the MongoDB database
+            if (connection) {
+                await connection.disconnect()
+            }
         }
     }
 
