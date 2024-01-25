@@ -27,25 +27,35 @@ async function getLot(rediskey, client, id) {
  * @returns {object} The lot details retrieved from Redis or MongoDB.
  */
 module.exports.handler = async (event) => {
-    const rediskey = `lot:${event._id}`
-    const client = await redis.createClient({
-        url: process.env.REDIS_URL,
-    }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-    // Check if the Redis client is not open, then connect
-    if (!client.isOpen) {
-        await client.connect()
+    try {
+        const rediskey = `lot:${event._id}`
+        const client = await redis.createClient({
+            url: process.env.REDIS_URL,
+        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // Check if the Redis client is not open, then connect
+        if (!client.isOpen) {
+            await client.connect()
+        }
+        const getLotInfo = await getLot(rediskey, client, event._id)
+        const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
+        await mongodbHelper.lotToCart(JSON.parse(getLotInfo), auctionData)
+        await mongodbHelper.getLatestRecord(JSON.parse(getLotInfo), BidInformation)
+        const currentTimestamp = new Date(Date.now()).getTime()
+        const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp)
+        if (getLots.length <= 0) {
+            if (auctionData[0].extension_type === 'All Lots' && event.lot_number === 1) {
+                console.log('entryyy')
+                const callSQS = await sqsTriggerFunction(event)
+                console.log('callSQS', callSQS)
+            }
+            if (auctionData[0].extension_type === 'Cascade' || auctionData[0].extension_type === 'Individual') {
+                await sqsTriggerFunction(event)
+            }
+        } else {
+            console.log('no match')
+        }
+        return true
+    } catch (err) {
+        return err
     }
-    const getLotInfo = await getLot(rediskey, client, event._id)
-    const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
-    await mongodbHelper.lotToCart(JSON.parse(getLotInfo), auctionData)
-    await mongodbHelper.getLatestRecord(JSON.parse(getLotInfo), BidInformation)
-    const currentTimestamp = new Date().getTime()
-    const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp)
-    if (getLots.length > 0) {
-        const callSQS = await sqsTriggerFunction(event)
-        console.log('callSQS', callSQS)
-    } else {
-        console.log('no match')
-    }
-    return true
 }
