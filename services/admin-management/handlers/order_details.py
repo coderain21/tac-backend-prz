@@ -21,7 +21,7 @@ collection = db[os.environ['ORDERS_COLLECTION']]
 user_collection = db[os.environ['SELLERS_TABLE']]
 collection = db[os.environ['ORDERS_COLLECTION']]
 buyer_collection = db[os.environ['BUYER_COLLECTION']]
-card_collection = db[os.environ['CREDIT_CARD_COLLECTION']]
+register_collection = db[os.environ['REGISTER_AUCTION_COLLECTION']]
 
 def order_detail(event, context):
     """
@@ -37,35 +37,36 @@ def order_detail(event, context):
     with the data of the order detail.
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['email']
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['email']
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         # buyer_email_address= 'anusha.k+newacc1@7edge.com'
 
         
-        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        # if result is None:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        if result is None:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         projection={
             'order_number':1,
             'created_at':1,
             'auction_title':1,
             'purchases':1,
-            'payment_method_types':1,
+            # 'payment_method_types':1,
             'payment_status':1,
             'payment': 1,
             'amount':1,
             'payment_intent':1,
             'email_address':1,
+            'seller_email': 1,
             'status':1,
             "billing_address":1,
             "shipping_address":1
@@ -84,25 +85,31 @@ def order_detail(event, context):
             }
         
         buyer_email_address = order_data['email_address']
+        print('emails:', buyer_email_address, order_data['seller_email'])
         buyer_details = buyer_collection.find_one({'email_address':buyer_email_address})
         # print('order details:', order_data)
         print('buyer details:', buyer_details)
 
-        credit_projection = {
-            'registration_status': 1,
-            '_id': 0
-        }
+        # credit_projection = {
+        #     'status': 1,
+        #     '_id': 0
+        # }
 
-        credit_data_cursor = card_collection.find({'buyer_id': ObjectId(buyer_details['_id'])}, credit_projection)
+        # register_data_cursor = register_collection.find({'email_address': buyer_email_address, 'seller_email': order_data['seller_email']}, credit_projection)
+        # print('credit data cursor:', list(register_data_cursor))
         # print(credit_data_cursor)
-        credit_data_list = list(credit_data_cursor)
-        print('credit data list:', credit_data_list)
+        # credit_data_list = list(register_data_cursor)
+        # print('credit data list:', credit_data_list)
 
-        if not credit_data_list:
+        # if not credit_data_list:
             # Handle the case when no credit data is found
-            order_data['card_validations_details'] = None
-        else:
-            order_data['card_validations_details'] = credit_data_list[0]
+        #     order_data['approved_status'] = None
+        # else:
+        #     order_data['approved_status'] = credit_data_list[0]
+
+
+        # Passing the value as static for now
+        order_data['approved_status'] = 'Approved'   
         return {
                 "statusCode": 200,
                 "headers": headers,
