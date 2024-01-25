@@ -1071,7 +1071,7 @@
                             "type": "string"
                           }
                         }
-                    },
+                      },
                     "order_number": {
                       "type": "string"
                     },
@@ -1216,6 +1216,7 @@
           }
         }
       }
+    }
     }
   },
   "components": {
