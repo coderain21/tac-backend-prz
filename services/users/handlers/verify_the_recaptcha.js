@@ -169,7 +169,7 @@ module.exports.verifyReCaptcha = async (event) => {
         }
         userData.free_user = true
         const encryptedData = await encryptWithTimeValidation(userData, process.env.CUSTOMER_SESSION_TOKEN_SECRET)
-        await helpers.sendPinpointEmail(userData.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify({ otp: userData.otp }), process.env.TEMPLATE_ARN_EMAIL_OTP)
+        await helpers.sendPinpointEmail(userData.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify({ otp: userData.otp }), process.env.TEMPLATE_ARN_EMAIL_OTP)
         return {
             statusCode: 201,
             headers: await helpers.getHeaders(),

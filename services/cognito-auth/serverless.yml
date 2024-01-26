@@ -310,7 +310,12 @@ resources:
         UserPoolId: { Ref: Buyers }
     
     
-    
+    Group:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: "buyers"
+        UserPoolId: { Ref: Buyers }
+
     BuyersDomain:
       Type: "AWS::Cognito::UserPoolDomain"
       Properties:

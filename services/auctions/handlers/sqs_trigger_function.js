@@ -144,7 +144,7 @@ module.exports.sqsTriggerFunction = async (event, context) => {
             }
             const currentAccountId= context.invokedFunctionArn.split(':')[4]
             console.log(currentAccountId)
-            promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), `arn:aws:mobiletargeting:eu-west-2:${currentAccountId}:templates/send-auction-completion-email/EMAIL`))
+            promiseList.push(sendMail(user.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify(template_data), `arn:aws:mobiletargeting:eu-west-2:${currentAccountId}:templates/send-auction-completion-email/EMAIL`))
         }
         const response = await Promise.all(promiseList)
         console.log('response', response)

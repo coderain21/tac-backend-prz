@@ -100,7 +100,7 @@ def accept_buyer(event, context):
                             "background_color":paddle_background_color,
                             "img":logo_img,
                             "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
+            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
                                 template_data,
                                 os.environ['TEMPLATE_ARN_PADDLE']
                                 )

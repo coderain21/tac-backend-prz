@@ -49,7 +49,6 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
     JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
-    SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL}
     DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
     FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${self:provider.stage}-forgot-password

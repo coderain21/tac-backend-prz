@@ -155,7 +155,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     const template_data = {
                         url: process.env.DASHBOARD_URL,
                     }
-                    await helpers.sendPinpointEmail(userData.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
+                    await helpers.sendPinpointEmail(userData.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
 
                     return {
                         statusCode: 201,

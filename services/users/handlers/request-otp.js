@@ -43,7 +43,7 @@ module.exports.generate_otp = async (event) => {
         userData.otp = generate(6, { upperCaseAlphabets: false, specialChars: false, lowerCaseAlphabets: false })
         const encryptedData = await encryptWithTimeValidation(userData, process.env.CUSTOMER_SESSION_TOKEN_SECRET)
 
-        await helpers.sendPinpointEmail(userData.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify({ otp: userData.otp }), process.env.TEMPLATE_ARN_EMAIL_OTP)
+        await helpers.sendPinpointEmail(userData.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify({ otp: userData.otp }), process.env.TEMPLATE_ARN_EMAIL_OTP)
         return {
             statusCode: 200,
             headers: await helpers.getHeaders(),

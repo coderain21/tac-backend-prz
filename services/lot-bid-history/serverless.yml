@@ -30,7 +30,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
         audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
 

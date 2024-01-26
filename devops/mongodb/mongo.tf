@@ -115,8 +115,8 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   skip_final_snapshot        = true
-  master_username         = "indyauctionmaster"
-  master_password         = "masterindyauction"
+  master_username         = "${data.external.env.result["MONGO_USERNAME"]}"
+  master_password         = "${data.external.env.result["MONGO_PASSWORD"]}"
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-us
 }
@@ -205,7 +205,7 @@ resource "aws_eip" "example" {
 resource "aws_ssm_parameter" "documentdb" {
   name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
-  value = "mongodb://${data.aws_ssm_parameter.mongodb-username.value}:${data.aws_ssm_parameter.mongodb-password.value}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${data.external.env.result["STAGE"]}?authMechanism=DEFAULT&authSource=${data.external.env.result["STAGE"]}&retryWrites=false"
+  value = "mongodb://${data.external.env.result["MONGO_USERNAME"]}:${data.external.env.result["MONGO_PASSWORD"]}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${data.external.env.result["STAGE"]}?authMechanism=DEFAULT&authSource=${data.external.env.result["STAGE"]}&retryWrites=false"
   provider = aws.deployment-us
   overwrite = true
 }
@@ -226,15 +226,22 @@ resource "aws_ssm_parameter" "security_group_id" {
   overwrite = true
 }
 
-data "aws_ssm_parameter" "mongodb-username" {
-  name = "MONGO_USERNAME"
-  provider = aws.deployment-us
-}
-data "aws_ssm_parameter" "mongodb-password" {
-  name = "MONGO_PASSWORD"
-  provider = aws.deployment-us
-}
-
 resource "aws_default_vpc" "def_vpc"{
   provider = aws.deployment-us
 }
+resource "aws_ssm_parameter" "mongodb-username" {
+  name  = "MONGO_USERNAME"
+  type  = "String"
+  value = data.external.env.result["MONGO_USERNAME"]
+  provider = aws.deployment-us
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mongodb-password" {
+  name  = "MONGO_PASSWORD"
+  type  = "String"
+  value = data.external.env.result["MONGO_PASSWORD"]
+  provider = aws.deployment-us
+  overwrite = true
+}
+
