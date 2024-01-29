@@ -29,6 +29,7 @@ provider:
     MONGODB_NAME: ${env:MONGODB_NAME}
     MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     
   http:
     cors: true
@@ -90,6 +91,18 @@ functions:
                 method: GET
                 authorizer:
                   arn: ${env:COGNITO_AUTH_ARN}
+
+  list:
+    handler: handlers/list_of_buyers.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /list/{seller_email}/{auction_id}
+          method: GET
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
   
 plugins:
   - serverless-offline
