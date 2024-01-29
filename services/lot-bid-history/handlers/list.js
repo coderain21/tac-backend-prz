@@ -77,7 +77,6 @@ module.exports.handler = async (event) => {
             updated_at: 1,
 
         }
-
         /** Fetch enterprises using the provided criteria */
         const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
         if (bidsList.docs.length <= 0) {
@@ -90,12 +89,14 @@ module.exports.handler = async (event) => {
             }
         }
 
-        const getLowestBidder = await helper.getLowestBidder(lotId, BidInformation)
+        const getLowestBidder = await helper.getLowestBidder(lotId, Bid)
 
         /** Handle error when enterprises cannot be fetched */
         let underBidder = {}
-        if (getLowestBidder.length === 1) {
+        console.log('getLowestBidder', getLowestBidder.length)
+        if (getLowestBidder.length === 1 || getLowestBidder.length === 0) {
             underBidder = {
+
             }
         } else {
             underBidder = {
