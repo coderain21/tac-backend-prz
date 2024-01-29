@@ -157,6 +157,135 @@
             }
           }
         }
+      },
+      "/list/{seller_email}/{auction_id}": {
+        "get": {
+          "summary": "List Buyers",
+          "description": "Fetch a list of bidders registred for the auction.",
+          "tags": [
+            "Admin | Auction Buyer Management"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "seller_email",
+              "in": "path",
+              "required": true,
+              "example": "sandhyashri+auction@7edge.com",
+              "description": "The unique identifier.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "auction_id",
+              "in": "path",
+              "required": true,
+              "example": "657002ca98c217adad2f0791",
+              "description": "The unique identifier.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort field (e.g., paddle, name,created_at, email_address)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "Sort order (e.g., asc, desc)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with a list of buyers.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": [
+                      {
+                        "_id": "6596c4952c1887c47ce90743",
+                        "first_name": "Sandhyashri",
+                        "last_name": "S",
+                        "name": "Sandhyashri S",
+                        "auction_id": "657002ca98c217adad2f0791",
+                        "email_address": "sthuthi+auctiontest@7edge.com",
+                        "status": "Approved",
+                        "created_at": "2024-01-04T14:45:41.218Z",
+                        "marketing": "false"
+                      }
+                    ],
+                    "pagination": {
+                      "total_pages": 31,
+                      "limit": 1,
+                      "total_records": 31,
+                      "next_page": 2,
+                      "page": 1
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Buyers list Not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
