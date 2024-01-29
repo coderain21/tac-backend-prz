@@ -102,7 +102,7 @@ module.exports.handler = async (event) => {
             underBidder = {
                 name: getLowestBidder[1].name,
                 id: new ObjectId(getLowestBidder[1]._id),
-
+                bid_amount: getLowestBidder[1].bid_amount,
             }
         }
 
