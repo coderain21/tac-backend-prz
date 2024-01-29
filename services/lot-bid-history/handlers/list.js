@@ -132,7 +132,7 @@ module.exports.handler = async (event) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'There was an error while listing the bids',
+                message: 'There was an error while listing bids',
             }),
         }
     } finally {
