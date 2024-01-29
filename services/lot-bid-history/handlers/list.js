@@ -93,7 +93,6 @@ module.exports.handler = async (event) => {
 
         /** Handle error when enterprises cannot be fetched */
         let underBidder = {}
-        console.log('getLowestBidder', getLowestBidder.length)
         if (getLowestBidder.length === 1 || getLowestBidder.length === 0) {
             underBidder = {
 

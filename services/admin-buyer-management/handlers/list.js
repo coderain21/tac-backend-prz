@@ -22,7 +22,7 @@ module.exports.handler = async (event) => {
     try {
         /** Establish database connection */
         connection = await mongodbHelper.connect()
-        const buyerId = decodeURIComponent(event.pathParameters.buyer_id)
+        const emailAddress = decodeURIComponent(event.pathParameters.email_address)
         /** Extract user and query parameters from the event */
         const { queryStringParameters: queryParams } = event
 
@@ -61,7 +61,7 @@ module.exports.handler = async (event) => {
         }
 
         /** Apply additional conditions */
-        mongoose_query.$and.push({ buyer_id: buyerId })
+        mongoose_query.$and.push({ email_address: emailAddress })
         // mongoose_query.$and.push({ deleted: false })
 
         /** Define projection to exclude unnecessary fields */
