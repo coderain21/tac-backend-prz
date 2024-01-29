@@ -86,7 +86,7 @@ functions:
           events:
             - http:
                 cors: true
-                path: /{buyer_id}
+                path: /{email_address}
                 method: GET
                 authorizer:
                   arn: ${env:COGNITO_AUTH_ARN}

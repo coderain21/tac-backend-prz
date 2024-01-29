@@ -21,7 +21,7 @@
       }
     ],
     "paths": {
-      "/{buyer_id}": {
+      "/{email_address}": {
         "get": {
           "summary": "List Bids",
           "description": "Fetch a list of bids placed by buyer.",
@@ -35,10 +35,10 @@
           ],
           "parameters": [
             {
-              "name": "buyer_id",
+              "name": "email_address",
               "in": "path",
               "required": true,
-              "example": "65af7b9d7f5d0310fd0e4d6d",
+              "example": "anusha.k+bidder1@7edge.com",
               "description": "The unique identifier.",
               "schema": {
                 "type": "string"
