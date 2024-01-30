@@ -46,8 +46,6 @@ def order_detail(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # buyer_email_address= 'anusha.k+newacc1@7edge.com'
-
-        
         result= user_collection.find_one({"user_type":"admin","email_address":email_address})
         if result is None:
             return {
@@ -72,9 +70,6 @@ def order_detail(event, context):
             "billing_address":1,
             "shipping_address":1
         }
-        
-        
-        
         data = event['queryStringParameters']
         order_id = data['order_id']
         order_data = collection.find_one({'_id':ObjectId(order_id)},projection)
@@ -84,33 +79,13 @@ def order_detail(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No orders found"})
             }
-        
         buyer_email_address = order_data['email_address']
         print('emails:', buyer_email_address, order_data['seller_email'])
         buyer_details = buyer_collection.find_one({'email_address':buyer_email_address})
         # print('order details:', order_data)
         print('buyer details:', buyer_details)
-
-        # credit_projection = {
-        #     'status': 1,
-        #     '_id': 0
-        # }
-
-        # register_data_cursor = register_collection.find({'email_address': buyer_email_address, 'seller_email': order_data['seller_email']}, credit_projection)
-        # print('credit data cursor:', list(register_data_cursor))
-        # print(credit_data_cursor)
-        # credit_data_list = list(register_data_cursor)
-        # print('credit data list:', credit_data_list)
-
-        # if not credit_data_list:
-            # Handle the case when no credit data is found
-        #     order_data['approved_status'] = None
-        # else:
-        #     order_data['approved_status'] = credit_data_list[0]
-
-
         # Passing the value as static for now
-        order_data['approved_status'] = 'Approved'   
+        order_data['approved_status'] = 'Approved'
         return {
                 "statusCode": 200,
                 "headers": headers,
