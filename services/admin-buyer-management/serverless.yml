@@ -80,17 +80,29 @@ custom:
 
 
 functions: 
+  update:
+    handler: handlers/accept_reject_buyers.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /{buyer_id}
+          method: PATCH
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
   list-bids:
-          handler: handlers/list.handler
-          layers:
-            - ${env:COMMON_LIB_ARN}
-          events:
-            - http:
-                cors: true
-                path: /{email_address}
-                method: GET
-                authorizer:
-                  arn: ${env:COGNITO_AUTH_ARN}
+    handler: handlers/list.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path:  /admin/{email}
+          method: GET
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
 
   list:
     handler: handlers/list_of_buyers.handler
@@ -103,6 +115,7 @@ functions:
           method: GET
           authorizer:
             arn: ${env:COGNITO_AUTH_ARN}
+
   
 plugins:
   - serverless-offline

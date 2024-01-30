@@ -1,8 +1,8 @@
-
 /* eslint-disable no-undef */
 const mongoose = require('mongoose')
 const mongoosePaginate = require('mongoose-paginate-v2')
 require('dotenv').config()
+
 const stage = process.env.STAGE
 
 const { Schema } = mongoose
@@ -36,7 +36,7 @@ const UserSchema = new Schema({
         trim: true,
     },
     paddle: {
-        type: Boolean, trim: true,
+        type: Number, trim: true,
     },
     marketing: {
         type: String, trim: true,
