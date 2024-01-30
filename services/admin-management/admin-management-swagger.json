@@ -931,6 +931,292 @@
             }
           }
         } 
+    },
+    "/order-details": {
+      "get": {
+        "tags": [
+          "Admin Buyers Management"
+        ],
+        "summary": "Complete Order Details",
+        "description": "Order details",
+        "parameters": [
+          {
+            "name": "order_id",
+            "in": "query",
+            "description": "order_id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65a13c3265e68545fe2f9b38"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved complete order details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "_id": {
+                        "type": "string"
+                      },
+                      "email_address": {
+                        "type": "string"
+                      },
+                      "payment_intent": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "payment_status": {
+                        "type": "string"
+                      },
+                      "amount": {
+                        "type": "number"
+                      },
+                      "payment": {
+                        "type": "string"
+                      },
+                      "seller_email": {
+                        "type": "string"
+                      },
+                      "shipping_address": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "first_name": {
+                            "type": "string"
+                          },
+                          "last_name": {
+                            "type": "string"
+                          },
+                          "address_line1": {
+                            "type": "string"
+                          },
+                          "address_line2": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "postal_code": {
+                            "type": "string"
+                          },
+                          "country": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "default": {
+                            "type": "boolean"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "email_address": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "billing_address": {
+                        "type": "object",
+                        "properties": {
+                          "_id": {
+                            "type": "string"
+                          },
+                          "first_name": {
+                            "type": "string"
+                          },
+                          "last_name": {
+                            "type": "string"
+                          },
+                          "address_line1": {
+                            "type": "string"
+                          },
+                          "address_line2": {
+                            "type": "string"
+                          },
+                          "city": {
+                            "type": "string"
+                          },
+                          "state": {
+                            "type": "string"
+                          },
+                          "postal_code": {
+                            "type": "string"
+                          },
+                          "country": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "default": {
+                            "type": "boolean"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "email_address": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                    "order_number": {
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "auction_title": {
+                      "type": "string"
+                    },
+                    "purchases": {
+                      "type": "array",
+                      "items": {
+                        "type":"object",
+                        "properties": {
+                          "bid_amount": {
+                            "type": "number"
+                          },
+                          "fees": {
+                            "type": "string"
+                          },
+                          "percentage": {
+                            "type": "string"
+                          },
+                          "lot_title": {
+                            "type": "string"
+                          },
+                          "lot_number": {
+                            "type": "string"
+                          },
+                          "lot_image": {
+                            "type": "string"
+                          },
+                          "auction_id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "currency": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "approved_status": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example":{
+                  "data": {
+                      "_id": "65a13c3265e68545fe2f9b38",
+                      "email_address": "anusha.k+theauction@7edge.com",
+                      "payment_intent": "pi_3OXkdBFqJJvX3IOZ0QWciNbz",
+                      "status": "succeeded",
+                      "payment_status": "Paid",
+                      "amount": 2665,
+                      "payment": "Stripe",
+                      "seller_email": "anusha.k+sdet@7edge.com",
+                      "shipping_address": {
+                          "_id": "65a12236563aa7ed2c442f7a",
+                          "first_name": "Anusha",
+                          "last_name": "K",
+                          "address_line1": "Israel Aharoni St",
+                          "address_line2": "Israel Aharoni Street",
+                          "city": "Jerusalem",
+                          "state": "Jerusalem District",
+                          "postal_code": "",
+                          "country": "Israel",
+                          "type": "shipping",
+                          "default": true,
+                          "created_at": "2024-01-12 11:27:50.919000",
+                          "email_address": "anusha.k+theauction@7edge.com"
+                      },
+                      "billing_address": {
+                          "_id": "65a12236563aa7ed2c442f7a",
+                          "first_name": "Anusha",
+                          "last_name": "K",
+                          "address_line1": "Israel Aharoni St",
+                          "address_line2": "Israel Aharoni Street",
+                          "city": "Jerusalem",
+                          "state": "Jerusalem District",
+                          "postal_code": "",
+                          "country": "Israel",
+                          "type": "shipping",
+                          "default": true,
+                          "created_at": "2024-01-12 11:27:50.919000",
+                          "email_address": "anusha.k+theauction@7edge.com"
+                      },
+                      "order_number": "OD002",
+                      "created_at": 1705065519,
+                      "auction_title": "Opportunities for Artist",
+                      "purchases": [
+                          {
+                              "bid_amount": 320,
+                              "fees": "2345",
+                              "percentage": "",
+                              "lot_title": "sample3",
+                              "lot_number": 3,
+                              "lot_image": "DomainName/Auctions/lots/images/97168780-af3b-93aa-5d72-b191d32aef83/demo_image5.jpg",
+                              "auction_id": "65a136ec40ddb9865b1df4c5",
+                              "name": "The Auction Collective",
+                              "currency": "GBP"
+                          }
+                      ],
+                      "approved_status": "Approved"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     }
   },
   "components": {

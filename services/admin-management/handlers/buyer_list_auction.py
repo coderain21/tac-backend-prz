@@ -79,7 +79,7 @@ def buyer_list_auction(event, context):
             sort_key = event['queryStringParameters']['sort_by']
         else:
             sort_key= "created_at"
-        sort_order = 1
+        sort_order = -1
         if 'queryStringParameters' in event and 'sort_order' in event['queryStringParameters']:
             sort_order = 1 if event['queryStringParameters']['sort_order'].lower() == 'ascending' else -1
         skip = (page_number - 1) * page_size
