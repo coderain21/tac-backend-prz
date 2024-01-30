@@ -4,39 +4,25 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-console */
 
-const { ObjectId } = require('mongodb')
 const helpers = require('../lib/helper')
 const BidInformation = require('../entities/BidInformation')
-const Lot = require('../entities/Lot')
-const Bid = require('../entities/Bid')
-const helper = require('../utilities/helper')
 const mongodbHelper = require('../lib/mongodb_helper')
 
 let connection
 /**
- * List Bidders | Seller Lot List
- * @description - API to list all bidders
+ * List Bidders | Admin Buyer Bid History
+ * @description - API to list all buyers bids
  * @route - GET /{lot_id}
  * @access - (Private)
- * @user - IndyAuction Seller
- * @returns {Object} (200) - List of bidders
- * @returns {Error} (500) - There was an error while listing bidders
+ * @user - IndyAuction Admin
+ * @returns {Object} (200) - List of bids
+ * @returns {Error} (500) - There was an error while listing bids
  */
 module.exports.handler = async (event) => {
     try {
         /** Establish database connection */
         connection = await mongodbHelper.connect()
-
-        const lotId = decodeURIComponent(event.pathParameters.lot_id)
-        const query = {
-            _id: new ObjectId(lotId),
-        }
-        const getLot = await mongodbHelper.view(Lot, query)
-        const queryCount = {
-            lot_id: lotId,
-        }
-        const getBiddderCount = await mongodbHelper.view(Bid, queryCount)
-
+        const emailAddress = decodeURIComponent(event.pathParameters.email_address)
         /** Extract user and query parameters from the event */
         const { queryStringParameters: queryParams } = event
 
@@ -49,13 +35,23 @@ module.exports.handler = async (event) => {
         let theSort = {
             paddle_number: -1,
         }
-
         /** Customize sorting based on query parameters */
         if (queryParams?.sort_by && queryParams?.sort_order) {
             const sort = {}
             sort[queryParams.sort_by] = queryParams.sort_order
             theSort = sort
         }
+
+        /** Apply date range filter if start_date is provided */
+        if (queryParams?.start_date) {
+            mongoose_query.$and.push({
+                time_stamp: {
+                    $gte: parseInt(queryParams.start_date, 10),
+                    $lte: parseInt(queryParams.end_date, 10),
+                },
+            })
+        }
+        console.log('mongoose_query', JSON.stringify(mongoose_query))
         /** Configure pagination and sorting options */
         const options = {
             page: parseInt(queryParams?.page, 10) || 1,
@@ -64,7 +60,7 @@ module.exports.handler = async (event) => {
         }
 
         /** Apply additional conditions */
-        mongoose_query.$and.push({ lot_id: lotId })
+        mongoose_query.$and.push({ email_address: emailAddress })
         // mongoose_query.$and.push({ deleted: false })
 
         /** Define projection to exclude unnecessary fields */
@@ -72,11 +68,16 @@ module.exports.handler = async (event) => {
             paddle_number: 1,
             name: 1,
             bid_amount: 1,
+            auction_title: 1,
+            lot_number: 1,
             time_stamp: 1,
-            created_at: 1,
-            updated_at: 1,
-
+            bid_status: 1,
+            lot_title: 1,
+            currency: 1,
+            time_zone: 1,
+            lot_image: 1,
         }
+
         /** Fetch enterprises using the provided criteria */
         const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
         if (bidsList.docs.length <= 0) {
@@ -86,22 +87,6 @@ module.exports.handler = async (event) => {
                 body: JSON.stringify({
                     message: 'Bids not found',
                 }),
-            }
-        }
-
-        const getLowestBidder = await helper.getLowestBidder(lotId, Bid)
-
-        /** Handle error when enterprises cannot be fetched */
-        let underBidder = {}
-        if (getLowestBidder.length === 1 || getLowestBidder.length === 0) {
-            underBidder = {
-
-            }
-        } else {
-            underBidder = {
-                name: getLowestBidder[1].name,
-                id: new ObjectId(getLowestBidder[1]._id),
-                bid_amount: getLowestBidder[1].bid_amount,
             }
         }
 
@@ -117,10 +102,6 @@ module.exports.handler = async (event) => {
                     total_records: bidsList.totalDocs,
                     next_page: bidsList.nextPage,
                     page: bidsList.page,
-                    top_bid: getLot.length > 0 ? getLot[0].current_bid : 0,
-                    bidders: getBiddderCount.length > 0 ? getBiddderCount.length : 0,
-                    top_bidder: getLot.length > 0 ? getLot[0].top_bidder : '',
-                    under_bidder: underBidder,
                 },
             }),
         }
@@ -131,7 +112,7 @@ module.exports.handler = async (event) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'There was an error while listing bids',
+                message: 'There was an error while listing the enterprises',
             }),
         }
     } finally {

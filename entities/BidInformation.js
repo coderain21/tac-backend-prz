@@ -17,6 +17,8 @@ const BidSchema = new Schema({
     auction_id: {
         type: String, trim: true,
     },
+    auction_title: { type: String },
+    lot_title: { type: String },
     seller_email: {
         type: String, trim: true,
     },

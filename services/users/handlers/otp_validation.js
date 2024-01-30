@@ -26,6 +26,8 @@ const cognito = new AWS.CognitoIdentityServiceProvider()
 
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 
+let connection
+
 const createGroup = async (username, userPoolId) => {
     try {
         const response = await cognito.createGroup({
@@ -44,11 +46,6 @@ const schema = Joi.object().keys({
         'string.base': 'otp should be of type string',
         'any.required': 'otp is a required field',
     }),
-    // session_token: Joi.string().required().messages({
-    //     'string.base': 'session token should be of type string',
-    //     'string.empty': 'session token cannot be an empty field',
-    //     'any.required': 'session token is a required field',
-    // }),
     session_token: Joi.string().optional().allow(''),
     type: Joi.string().optional().allow(''),
 })
@@ -78,7 +75,6 @@ process. It is an asynchronous function that takes in three parameters: `event`,
 module.exports.otpValidation = async (event, _context, callback) => {
     try {
         let userData = JSON.parse(event.body)
-        console.log('user', userData)
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
@@ -140,7 +136,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const ciphertext = CryptoJS.AES.encrypt(userData.password, process.env.PASSWORD_SECRET_KEY).toString()
                     userData.password = ciphertext
-                    const connection = await mongoConnection.connect()
+                    connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     const domainInfo = {
                         seller_email: userData.email_address,
@@ -151,7 +147,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const domain = await mongoConnection.save(domainInfo, SubDomain)
                     await createGroup(userData.email_address.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
-                    await connection.disconnect()
                     const template_data = {
                         url: process.env.DASHBOARD_URL,
                     }
@@ -187,6 +182,11 @@ module.exports.otpValidation = async (event, _context, callback) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({ message: err.message }),
+        }
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
         }
     }
 }
