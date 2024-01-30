@@ -19,14 +19,9 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '500' or
         transaction['expected']['statusCode'] == '404' or
         transaction['expected']['statusCode'] == '403' or
-        '/password-update/' in transaction['request']['uri'] or
-        '/verify-captcha' in transaction['request']['uri'] or
-        '/request-otp' in transaction['request']['uri'] or
-        '/otp-validation' in transaction['request']['uri'] or
-        '/reset_password' in transaction['request']['uri'] or
-        '/forgot_password' in transaction['request']['uri'] or
-        '/generate' in transaction['request']['uri'] or 
-        '/kyb-generate'  in transaction['request']['uri'] 
+        '/659cf1def0d3374201bac434'  in transaction['request']['uri'] 
+
+
 
 
     ):

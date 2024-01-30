@@ -22,7 +22,7 @@ module.exports.handler = async (event) => {
     try {
         /** Establish database connection */
         connection = await mongodbHelper.connect()
-        const emailAddress = decodeURIComponent(event.pathParameters.email_address)
+        const emailAddress = decodeURIComponent(event.pathParameters.email)
         /** Extract user and query parameters from the event */
         const { queryStringParameters: queryParams } = event
 

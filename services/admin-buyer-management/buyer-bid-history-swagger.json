@@ -21,7 +21,7 @@
       }
     ],
     "paths": {
-      "/{email_address}": {
+      "/admin/{email}": {
         "get": {
           "summary": "List Bids",
           "description": "Fetch a list of bids placed by buyer.",
@@ -284,6 +284,108 @@
                 }
               }
             }
+          }
+        }
+      },
+      "/{buyer_id}": {
+        "patch": {
+          "tags": [
+            "Admin | Update Buyer Registration Status"
+          ],
+          "summary": "Accept or Reject the buyers",
+          "parameters": [
+            {
+              "required": true,
+              "name": "buyer_id",
+              "in": "path",
+              "description": "Accept or Reject the buyers",
+              "schema": {
+                "type": "string"
+              },
+              "example": "659cf1def0d3374201bac434"
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status":{
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "Pending"
+                }
+              }
+            }
+          },
+          "responses": {
+            "204":{
+              "description": "no content"
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Forbidden",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+            "400": {
+                "description": "Invalid Request",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
           }
         }
       }
