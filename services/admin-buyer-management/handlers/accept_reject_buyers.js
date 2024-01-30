@@ -36,7 +36,7 @@ module.exports.handler = async (event) => {
     try {
         /** Establish database connection */
         connection = await mongodbHelper.connect()
-        const buyerId = decodeURIComponent(event.pathParameters.buyerID)
+        const buyerId = decodeURIComponent(event.pathParameters.buyer_id)
         const requestBody = JSON.parse(event.body)
         const validationResult = schema.validate(requestBody)
         if (validationResult.error) {
