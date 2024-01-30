@@ -36,7 +36,7 @@ const UserSchema = new Schema({
         trim: true,
     },
     paddle: {
-        type: Boolean, trim: true,
+        type: Number, trim: true,
     },
     marketing: {
         type: String, trim: true,

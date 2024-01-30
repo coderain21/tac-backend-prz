@@ -167,6 +167,9 @@
                           },
                           "fees": {
                             "type": "string"
+                          },
+                          "seller_email": {
+                            "type": "string"
                           }
                         }
                       }
@@ -206,7 +209,7 @@
                             "make_your_auction_private": "",
                             "passcode": "",
                             "fees": ""
-                          }
+                                                    }
                         ],
                         "total_records_found": 1,
                         "total_auctions": 1,
@@ -317,6 +320,9 @@
                           "email_address": {
                             "type": "number"
                           },
+                          "seller_email": {
+                            "type": "string"
+                          },
                           "first_name": {
                             "type": "number"
                           },
@@ -348,7 +354,8 @@
                           {
                             "_id": "6543d8bda6b97ebf494c7424",
                             "email_address": "sthuthi+127@7edge.com",
-                            "full_name": "sthuthi "
+                            "full_name": "sthuthi ",
+                            "seller_email": "sthuthi+127@7edge.com"
                           }
                         ],
                         "total_buyers": 1,
@@ -1090,6 +1097,9 @@
                             "type": "number"
                           },
                           "fees": {
+                            "type": "string"
+                          },
+                          "seller_email": {
                             "type": "string"
                           },
                           "percentage": {
