@@ -59,7 +59,6 @@ def order_detail(event, context):
             'auction_title':1,
             'purchases':1,
             'name': 1,
-            # 'payment_method_types':1,
             'payment_status':1,
             'payment': 1,
             'amount':1,
