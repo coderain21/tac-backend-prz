@@ -75,7 +75,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({'message':'not found'})
             }
-                
             status=result['status']
             return {
                 "statusCode": 200,

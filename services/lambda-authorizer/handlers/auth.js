@@ -124,7 +124,7 @@ function validateToken(pems_data, event, context) {
     // }
 
     // Verify the signature of the JWT token to ensure it's really coming from your User Pool
-    const currentAccountId= context.invokedFunctionArn.split(':')[4]
+    const currentAccountId = context.invokedFunctionArn.split(':')[4]
     console.log(currentAccountId)
     const policy_data = {
         principalId: decodedJwt.principalId,
