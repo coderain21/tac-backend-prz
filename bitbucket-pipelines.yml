@@ -169,6 +169,7 @@ definitions:
           - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
           - pip install pip==22.3.1 --break-system-packages
           - pip3 install boto3 dredd_hooks
+          - pip3 install python-dotenv
           - pip3 install uuid
           - pip3 install pyjwt
           - pip3 install requests
