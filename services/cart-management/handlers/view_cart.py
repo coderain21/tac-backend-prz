@@ -12,6 +12,12 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+collection = db[os.environ['CART_COLLECTION']]
+
+
 def view(event, context):
     """
     The above function is a Python code that retrieves cart details for a specific auction from a
@@ -41,9 +47,9 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ['CART_COLLECTION']]
+        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ['CART_COLLECTION']]
         data = event['queryStringParameters']
         auction_id = data['auction_id']
         plan_type = "Free"
