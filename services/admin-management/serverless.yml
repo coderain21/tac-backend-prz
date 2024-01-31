@@ -35,6 +35,7 @@ provider:
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    CREDIT_CARD_COLLECTION: ${opt:stage, self:provider.stage}-carts
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     KMS_KEY_ID: ${ssm:KMS_KEY_ID}
@@ -291,7 +292,7 @@ functions:
           path: /clone-auction
           method: post
           authorizer:
-                arn: ${env:COGNITO_ADMIN_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   order-details:
     handler: handlers/order_details.order_detail
     runtime: python3.8
@@ -299,9 +300,9 @@ functions:
     - ${env:COMMON_PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
-      - sg-0882c1da39e729097
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - subnet-0ff05c7c2bd2a3f87
+      - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -318,7 +319,7 @@ functions:
           path: /order-details
           method: get
           authorizer:
-                arn: ${env:COGNITO_ADMIN_AUTH_ARN}
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
 resources:
