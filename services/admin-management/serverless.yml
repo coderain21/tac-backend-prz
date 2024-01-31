@@ -124,6 +124,11 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
+  serverlessIfElse:
+    - If: '"${opt:stage}" == "offline"'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
 functions:   
   list-auction:
     handler: handlers/list_auction.list_auction
@@ -305,3 +310,4 @@ plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
+  - serverless-plugin-ifelse

@@ -244,4 +244,11 @@ resource "aws_ssm_parameter" "mongodb-password" {
   provider = aws.deployment-us
   overwrite = true
 }
-
+output "connection_details" {
+  value = {
+    endpoint = aws_docdb_cluster.my_documentdb_cluster.endpoint
+    port     = "27017"
+    ec2_public_ip = aws_instance.ssh_tunnel.public_ip
+    shh_tunnel = "ssh -i tf-key-pair-${data.external.env.result["STAGE"]}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
+  }
+}

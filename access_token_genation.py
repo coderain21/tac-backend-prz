@@ -25,18 +25,18 @@ client = session.client('cognito-idp',region_name='eu-west-2')
 def generate_token(user_type):
     try:
         if user_type == 'USER':
-            user_pool_id = os.environ['COGNITO_USER_POOL_ID']
-            client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
+            user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
+            client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
             username = os.environ['API_USERNAME']
             password = os.environ['PASSWORD']
         if user_type == 'BUYERS':
             user_pool_id = os.environ['BUYER_COGNITO_USER_POOL_ID']
-            client_id = os.environ['BUYER_COGNITO_SELLER_CLIENT_ID']
-            username = os.environ['BUYER_API_USERNAME']
+            client_id = os.environ['BUYER_COGNITO_CLIENT_ID']
+            username = os.environ['BUYER_API_DOC_USERNAME']
             password = os.environ['BUYER_PASSWORD']
             print(user_pool_id,client_id, username, password)
         if user_type == 'ADMIN':
-            user_pool_id = os.environ['COGNITO_ADMIN_USER_POOL_ID']
+            user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
             client_id = os.environ['ADMIN_COGNITO_CLIENT_ID']
             username = os.environ['ADMIN_USERNAME']
             password = os.environ['ADMIN_PASSWORD']

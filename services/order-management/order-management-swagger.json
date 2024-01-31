@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/order-management"
+      "url": "https://apis-dev.indyauction.net/v1/order-management"
     }
   ],
   "tags": [
@@ -186,7 +186,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "656d66fd3c32ca65775aca29"
+            "example": "65b9f39a626a58087a621ba3"
           }
         ],
         "responses": {
@@ -358,49 +358,51 @@
                 },
                 "example": {
                   "data": {
-                    "_id": "656d66fd3c32ca65775aca29",
-                    "email_address": "aishwarya@7edge.com",
-                    "payment_intent": "pi_3OJUwDCFv4mFjXqT06uc3PS3",
-                    "status": "succeeded",
-                    "payment_status": "Paid",
-                    "amount": 22000,
-                    "shipping_address": {
-                      "_id": "6569734504bebdf5cc4bb24f",
-                      "first_name": "Aishwarya",
-                      "last_name": "K",
-                      "address_line1": "Mangalore Junction Railway Station Rd",
-                      "address_line2": "Mangalore Junction Railway Station Road",
-                      "city": "Mangaluru",
-                      "state": "Karnataka",
-                      "postal_code": "575007",
-                      "country": "India",
-                      "type": "shipping",
-                      "default": true,
-                      "created_at": "2023-12-01 05:46:45.422000",
-                      "email_address": "aishwarya@7edge.com"
-                    },
-                    "billing_address": {
-                      "_id": "6569734504bebdf5cc4bb24f",
-                      "first_name": "Aishwarya",
-                      "last_name": "K",
-                      "address_line1": "Mangalore Junction Railway Station Rd",
-                      "address_line2": "Mangalore Junction Railway Station Road",
-                      "city": "Mangaluru",
-                      "state": "Karnataka",
-                      "postal_code": "575007",
-                      "country": "India",
-                      "type": "shipping",
-                      "default": true,
-                      "created_at": "2023-12-01 05:46:45.422000",
-                      "email_address": "aishwarya@7edge.com"
-                    },
-                    "order_number": "OD001",
-                    "created_at": 1701668603,
-                    "auction_title": "Demo auction (here)+",
-                    "purchases": [],
-                    "payment_method_types": ["card"]
+                          "_id": "65b9f39a626a58087a621ba3",
+                          "email_address": "sthuthi+test1@7edge.com",
+                          "payment_intent": "pi_3OeY1GC5wvaI16p71ZtewVqY",
+                          "status": "requires_payment_method",
+                          "payment_status": "Unpaid",
+                          "amount": 100,
+                          "shipping_address": {
+                              "_id": "6569734504bebdf5cc4bb24f",
+                              "first_name": "Aishwarya",
+                              "last_name": "K",
+                              "address_line1": "Mangalore Junction Railway Station Rd",
+                              "address_line2": "Mangalore Junction Railway Station Road",
+                              "city": "Mangaluru",
+                              "state": "Karnataka",
+                              "postal_code": "575007",
+                              "country": "India",
+                              "type": "shipping",
+                              "default": true,
+                              "created_at": "2023-12-01 05:46:45.422000",
+                              "email_address": "aishwarya@7edge.com"
+                          },
+                          "billing_address": {
+                              "_id": "6569734504bebdf5cc4bb24f",
+                              "first_name": "Aishwarya",
+                              "last_name": "K",
+                              "address_line1": "Mangalore Junction Railway Station Rd",
+                              "address_line2": "Mangalore Junction Railway Station Road",
+                              "city": "Mangaluru",
+                              "state": "Karnataka",
+                              "postal_code": "575007",
+                              "country": "India",
+                              "type": "shipping",
+                              "default": true,
+                              "created_at": "2023-12-01 05:46:45.422000",
+                              "email_address": "aishwarya@7edge.com"
+                          },
+                          "order_number": "OD002",
+                          "created_at": 123456789,
+                          "auction_title": "Retro Relics Auctions",
+                          "purchases": [],
+                          "payment_method_types": [
+                              "card"
+                          ]
+                      }
                   }
-                }
               }
             }
           },

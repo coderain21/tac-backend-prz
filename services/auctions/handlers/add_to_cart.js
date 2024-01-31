@@ -26,7 +26,7 @@ async function getLot(rediskey, client, id) {
  *  @param {object} buyer information - to save the lot to cart.
  * @returns {object} The lot details retrieved from Redis or MongoDB.
  */
-module.exports.handler = async (event) => {
+module.exports.handler = async (event) => { 
     try {
         const rediskey = `lot:${event._id}`
         const client = await redis.createClient({

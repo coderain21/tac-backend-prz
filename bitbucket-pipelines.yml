@@ -155,36 +155,34 @@ definitions:
     
     - step: &APITesting 
         name: API Test Automation
-        trigger: manual
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - echo "API Testing Automation"
+          - source .env
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
-          - pip install pip==22.3.1 --break-system-packages
           - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
           - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - pip install pip==22.3.1 --break-system-packages
           - pip3 install boto3 dredd_hooks
+          - pip3 install uuid
+          - pip3 install pyjwt
           - pip3 install requests
-          - pip3 install python-dotenv
           - npm i -g dredd
           - ./api-testing.sh
           - ./doc.sh
           - pipe: atlassian/aws-s3-deploy:0.2.4
             variables:
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_MAIN
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_MAIN
               AWS_DEFAULT_REGION: $AWS_REGION
-              S3_BUCKET: $BUCKET_NAME
+              S3_BUCKET: $DOCS_BUCKET_NAME
               LOCAL_PATH: "swaggerdocs"
           - pipe: atlassian/aws-cloudfront-invalidate:0.1.1
             variables:
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_MAIN
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_MAIN
               AWS_DEFAULT_REGION: $AWS_REGION
-              DISTRIBUTION_ID: $DISTRIBUTION_ID
-        artifacts:
-          - test-results/**
-        
+              DISTRIBUTION_ID: $DISTRIBUTION_ID  
     - step: &DAST 
         name: Dynamic Application Security Testing (DAST) 
         image: softwaresecurityproject/zap-stable
@@ -222,7 +220,7 @@ pipelines:
    
     DAST:
       - step: *DAST
-  pull-requests:  
+  pull-requests:    
     feature/**:
       - parallel:
           fail-fast: true
@@ -235,8 +233,8 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
             - step: *Danger
-
-      
+      - step: *APITesting
+      - step: *DAST
         
       
     bugfix/**:
@@ -251,12 +249,8 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
             - step: *Danger
-
-
-
-  
-      
-     
+      - step: *APITesting
+      - step: *DAST
 
     hotfix/**:
       - parallel:
@@ -270,8 +264,40 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
             - step: *Danger
+      - step: *APITesting
+      - step: *DAST
+
+  branches:
+    qa:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *SecretChecking
+            
+      - stage:
+            name: Testing and QA Deployment
+            deployment: QA
+            steps:
+              - step: *TerraDeploy
+    
+    Pre-Production:
+      - stage:
+            name: Pre-Production Deployment
+            deployment: Pre-Production
+            steps:
+              - step: *BuildStep
+              - step: *TerraDeploy
 
 
+    master:
+      - stage:
+          name: PRODUCTION Deployment
+          deployment: New-Production
+          steps:
+             - step: *BuildStep
+             - step: *SecretChecking
+             - step: *TerraDeploy
      
 
   branches:

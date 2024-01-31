@@ -1,4 +1,4 @@
-'''this api will update the subdomain for the seller'''
+'''this api will update the subdomain for the seller''' 
 import json
 import os
 from pymongo import MongoClient

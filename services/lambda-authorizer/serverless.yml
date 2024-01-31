@@ -40,6 +40,11 @@ custom:
     external:
       - '../../lib'
       - '../../entities'
+  
+  serverlessIfElse:
+    - If: '"${opt:stage}" == "offline"'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions:
   lambda-authorizer:

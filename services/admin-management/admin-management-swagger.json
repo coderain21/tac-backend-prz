@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/admin-management"
+      "url": "https://apis-dev.indyauction.net/v1/admin-management"
     }
   ],
   "tags": [
