@@ -1840,6 +1840,498 @@
           }
           }
         } 
+    },
+    "/admin/lots":{
+      "post": {
+        "tags": [
+          "Admin| List Lots"
+        ],
+        "summary": "Lots List",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Lots"
+            },
+            "example": {
+
+                "auction_id":"A0012",
+                "seller_email":"anusha.k+indyauction@7edge.com",
+                "lot_number":0,
+                "starting_bid":2000,
+                "current_bid":3000,
+                "Top_bidder":"sandhyashri",
+                "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
+                "title1":"ring",
+                "title2":"ghj",
+                "description":"",
+                "starting_price":1999,
+                "low_estimate":3000,
+                "high_estimate":20000,
+                "shipping_details":"Bombay",
+                "tags":"jewellery"
+              
+            }
+            
+          }
+        }
+      },
+        "responses": {
+          "200":{
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "validation failed",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Free users are limited to 10 lots."
+                    }
+                  },
+                  
+                  "example2":{
+                    "value":{
+                      "message":"Starter users are limited to 500 lots."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "No auction with the id found"
+                    }
+                  }
+                  }
+                }
+              }
+            }
+          }
+        },
+      "get": {
+      "tags": [
+        "Lots"
+      ],
+      "summary": "Listing lots",
+      "description": "Listing lots",
+      "parameters": [
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "to determine the which auction lots to be displayed ",
+          "schema": {
+            "type": "string"
+          },
+          "example": "A0012"
+        },
+        {
+          "name": "sort_by",
+          "in": "query",
+          "description": "Sort by key",
+          "schema": {
+            "type": "string"
+          },
+          "example": "title1"
+        },
+        {
+          "name": "sort_order",
+          "in": "query",
+          "description": "ascending or descending",
+          "schema": {
+            "type": "string"
+          },
+          "example": "descending"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number",
+          "schema": {
+            "type": "integer"
+          },
+          "example": 1
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "description": "per page documents documents",
+          "schema": {
+            "type": "string"
+          },
+          "example": "2"
+        },
+        {
+          "name": "search_keyword",
+          "in": "query",
+          "description": "ascending or descending",
+          "schema": {
+            "type": "string"
+          },
+          "example": "eum"
+        }
+
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully retrieved lots",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { 
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Lots"
+                      }
+                      }
+                    }
+                  },
+                  "total_records_found": {
+                    "type": "integer"
+                  },
+                  "total_lots": {
+                    "type": "integer"
+                  },
+                  "current_page": {
+                    "type": "integer"
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  },
+                  "number_of_bids":{
+                    "type": "integer"
+                  },
+                  "sum_current_bid":{
+                    "type": "integer"
+                  },
+                  "total selling":{
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "data": [
+                  {
+
+                    "auction_id":"A0012",
+                    "seller_email":"anusha.k+indyauction@7edge.com",
+                    "lot_number": 0,
+                    "lot_title":"platinum diamond ring",
+                    "starting_bid":2000,
+                    "current_bid":3000,
+                    "Top_bidder":"sandhyashri",
+                    "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
+                    "title1":"ring",
+                    "title2":"ghj",
+                    "description":"",
+                    "starting_price":1999,
+                    "low_estimate":3000,
+                    "high_estimate":20000,
+                    "shipping_details":"Bombay",
+                    "tags":"jewellery",
+                    "start_date": 1701082800000,
+                    "end_date": 1701088200000
+                  
+                }
+                ],
+                "total_records_found": 1,
+                "total_lots": 1,
+                "current_page": 1,
+                "total_pages": 1
+              }
+              
+            }
+          }
+        },
+        "403": {
+          "description": "forbidden",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                      "example": "You do not have access to perform this API action"
+                    
+                  }
+                }    
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      },
+      "delete": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "Delete Lots",
+        "description": "Delete Lots",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  },
+                  "seller_email":{
+                    "type": "string"
+                  },
+                  "lot_number":{
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+              "auction_id": "A0012",
+              "seller_email": "anusha.k+indyauction@7edge.com",
+              "lot_number": 3
+             }
+             
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auctions",
+            "content": {
+              "application/json": {
+                "example": {
+                        "message": " deleted successfully."
+                      }
+                
+              }
+            }
+          },
+          "404": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example":{
+                          "message":"email not found"
+                        }
+                      }
+                    }
+                  }    
+                }
+              }
+            },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "Update lot",
+        "description": "Update lot",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title1":{
+                    "type": "string"
+                  },
+                  "title2":{
+                    "type": "string"
+                  },
+                  "description":{
+                    "type": "string"
+                  },
+                  "starting_price":{
+                    "type": "integer"
+                  },
+                  "low_estimate":{
+                    "type": "integer"
+                  },
+                  "high_estimate":{
+                    "type": "integer"
+                  },
+                  "shipping_details":{
+                    "type": "string"
+                  },
+                  "tags":{
+                    "type":"array",
+                    "items":{
+                      "type": "object",
+                      "properties": {
+                        "tags_name":{
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "images":{
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "feature": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+
+                }
+              },
+              "example": {              
+                "auction_id":"A0012",
+                "lot_number": 1,
+                "images":[{"url": "abcdef","feature": false }],
+                "title1":"ring",
+                "title2":"ghj",
+                "description":"",
+                "starting_price":22344,
+                "low_estimate":33332,
+                "high_estimate":123144,
+                "shipping_details":"Bandra",
+                "tags":"necklace"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }    
+                }
+              }
+            },
+            "400": {
+              "description": "Missing parameters in request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "auction_id lot_number and seller_email are required for lot update."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "lot not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Lot not found for seller."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
 },
   "components": {
