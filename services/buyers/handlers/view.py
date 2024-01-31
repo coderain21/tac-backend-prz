@@ -16,9 +16,6 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 def view(event, context):
     """
@@ -42,8 +39,9 @@ def view(event, context):
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
         passcode = data.get("passcode")
-        
-        
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
         domain_data = fetch_seller_data_from_subdomain(auction_id)
         if auction_id is not None:
