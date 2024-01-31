@@ -15,12 +15,17 @@ definitions:
   steps:
     - step: &BuildStep
         name: Build
+        image: sleavely/node-awscli:14.x
         caches:
           - node
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - printenv | awk -F= '!/^HOME|^PWD/ {print $1 "=\""$2"\""}' >> .env
+          - ./envs.sh
           - npm install
           - echo "Build"
+        artifacts:
+          - .env
 
     - step: &ESlint
         name: ESLint
