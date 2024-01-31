@@ -23,12 +23,17 @@ def prepend_backslash(text):
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
     return re.sub(special_chars_pattern, r'\\\1', text)
 
+# Create MongoClient instance globally
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
 # Function to get lots based on search criteria and sorting
 def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
-    buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+    
 
     escaped_search_keyword = prepend_backslash(search_keyword)
     search_criteria = {
@@ -101,31 +106,27 @@ def view_list_lots(event, context):
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
 
-        with MongoClient(os.environ['MONGO_CLIENT']) as client:
-            db = client[os.environ['DATABASE']]
-            collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        _id = ObjectId(auction_id)
+        projection = {"_id": 1, "auction_id": 1, "seller_email": 1}
+        result = auction_collection.find_one({"_id": _id}, projection)
+        seller_email = result['seller_email']
+        auction_id = result['auction_id']
 
-            _id = ObjectId(auction_id)
-            projection = {"_id": 1, "auction_id": 1, "seller_email": 1}
-            result = collection.find_one({"_id": _id}, projection)
-            seller_email = result['seller_email']
-            auction_id = result['auction_id']
+        sort_param = data.get("sort_by", "")
+        search_keyword = data.get('search', "")
 
-            sort_param = data.get("sort_by", "")
-            search_keyword = data.get('search', "")
+        lots_list = get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param)
 
-            lots_list = get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param)
-
-            return {
-                "statusCode": 200,
-                "headers": headers,
-                "body": json.dumps({'data': lots_list}, cls=Encoder)
-            }
-
+        return {
+            "statusCode": 200,
+            "headers": headers,
+            "body": json.dumps({'data': lots_list}, cls=Encoder)
+        }
+ 
     except Exception as e:
         print(str(e))
         return {
             "statusCode": 500,
             "headers": headers,
             "body": json.dumps({"message": str(e)})
-            }
+        }
