@@ -28,6 +28,9 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+
 
 def delete_auction(event, context):
     """
@@ -60,8 +63,6 @@ def delete_auction(event, context):
         auction_id = event['pathParameters']['auction_id']
 
         # Set up the MongoDB connection
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
         # Check if the auction with the given ID exists
@@ -78,7 +79,6 @@ def delete_auction(event, context):
                     {'auction_id': auction_id, 'seller_email': seller_email},
                     {'$set': {'status': 'Deleted'}}
                 )
-                client.close()
                 return {
                     "headers": headers,
                     'statusCode': 204,
@@ -86,14 +86,12 @@ def delete_auction(event, context):
                     })
                 }
             else:
-                client.close()
                 return {
                     "headers": headers,
                     'statusCode': 400,
                     'body': json.dumps({"message": 'You cannot delete the auction with the current status'})
                 }
         else:
-            client.close()
             return {
                 "headers": headers,
                 'statusCode': 404,
