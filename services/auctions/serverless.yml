@@ -229,6 +229,30 @@ functions:
   #         authorizer:
   #             arn: ${env:COGNITO_AUTH_ARN}
   
+  admin_list_lots:
+    handler: handlers/admin_list_lots.list_lots
+    runtime: python3.8
+    layers:
+      - ${env:PYTHON_LIB_ARN}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
+          path: /admin/lots
+          method: get
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
   delete_lot:
       handler: handlers/delete_lot.delete_lot
       runtime: python3.8
@@ -384,7 +408,15 @@ resources:
       Properties:
         QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
- 
+    GatewayResponseDefault4XX:
+       Type: 'AWS::ApiGateway::GatewayResponse'
+       Properties:
+         ResponseParameters:
+           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+         ResponseType: DEFAULT_4XX
+         RestApiId:
+           Ref: 'ApiGatewayRestApi'
 
 plugins:
   - serverless-offline
