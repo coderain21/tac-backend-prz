@@ -284,7 +284,7 @@ resource "aws_ssm_parameter" "recpatch_url" {
   provider = aws.deployment-ap
 }
 
-resource "aws_ssm_parameter" "sumsub_secret_key" {
+resource "aws_ssm_parameter" "sumsub_secret_key_webhook" {
   name  = "SUMSUB_SECRET_KEY_WEBHOOK"
   overwrite = true
   type  = "String"
