@@ -39,7 +39,7 @@ const AuctionSchema = new Schema({
         type: String, trim: true,
     },
     seller_email: {
-        type: String, trim: true,
+        type: String, trim: true, default: '',
     },
     seller_name: { type: String, trim: true },
     created_at: { type: Date, default: Date.now },
