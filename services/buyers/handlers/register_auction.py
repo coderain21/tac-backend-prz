@@ -61,7 +61,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
         data = event['queryStringParameters']
         auction_id= data.get('auction_id')
         auction_id= ObjectId(auction_id)
