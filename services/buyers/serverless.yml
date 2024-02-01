@@ -12,17 +12,17 @@ provider:
   endpointType: REGIONAL
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${env:REGION}
+  region: ${ssm:REGION}
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
-    BUYER_RECAPTCHA_URL: ${env:BUYER_RECAPTCHA_URL}
-    BUYER_RECAPTCHA_KEY: ${env:BUYER_RECAPTCHA_KEY}
+    BUYER_RECAPTCHA_URL: ${ssm:BUYER_RECAPTCHA_URL}
+    BUYER_RECAPTCHA_KEY: ${ssm:BUYER_RECAPTCHA_KEY}
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${env:REGION}
+    REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -31,9 +31,9 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
-    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${env:CSV_FILE}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${ssm:CSV_FILE}
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
@@ -51,19 +51,19 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
       
-    ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
+    ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
-    RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
-    RECAPTCHA_URL: ${env:RECAPTCHA_URL}
-    CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
+    RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
+    RECAPTCHA_URL: ${ssm:RECAPTCHA_URL}
+    CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
-    BUYER_AUCTION_REGISTER_TEMPLATE: #${env:BUYER_AUCTION_REGISTER_TEMPLATE}
+    BUYER_AUCTION_REGISTER_TEMPLATE: 
       Fn::GetAtt:
       - "sesTemplate"
       - "Arn"
     
-    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
+    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
         - ":"
@@ -88,10 +88,10 @@ provider:
     CDN_LINK: ${ssm:CDN_URL}
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
-    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
-    CREDIT_CARD_STRIPE_API_KEY: ${env:CREDIT_CARD_STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
-    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
+    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
+    CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
     
   http:
@@ -315,7 +315,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
           path: /update-password
           method: post
   
@@ -346,7 +346,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   view_profile:
     handler: handlers/view_profile.view_profile
@@ -373,7 +373,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /profile
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
   add_address:
     handler: handlers/add_address.add_address
@@ -400,7 +400,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /add-address
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number
@@ -427,7 +427,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /paddle
           method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
   send-reset-link:

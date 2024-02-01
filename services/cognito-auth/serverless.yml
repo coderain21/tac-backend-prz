@@ -36,7 +36,7 @@ provider:
 
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    REGION: ${env:REGION}
+    REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
   
 
@@ -289,8 +289,8 @@ resources:
         ProviderName: Google
         ProviderType: Google
         ProviderDetails:
-          client_id: ${env:GOOGLE_CLIENT_ID}
-          client_secret: ${env:GOOGLE_CLIENT_SECRET}
+          client_id: ${ssm:GOOGLE_CLIENT_ID}
+          client_secret: ${ssm:GOOGLE_CLIENT_SECRET}
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
           
@@ -304,8 +304,8 @@ resources:
         ProviderName: Facebook
         ProviderType: Facebook
         ProviderDetails:
-          client_id: ${env:FACEBOOK_CLIENT_ID}
-          client_secret: ${env:FACEBOOK_CLIENT_SECRET}
+          client_id: ${ssm:FACEBOOK_CLIENT_ID}
+          client_secret: ${ssm:FACEBOOK_CLIENT_SECRET}
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
     
@@ -351,17 +351,17 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/"
-          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/login"
-          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/register"
+          - "https://www-${opt:stage}${ssm:BASE_URL_BUYER}/"
+          - "https://www-${opt:stage}${ssm:BASE_URL_BUYER}/login"
+          - "https://www-${opt:stage}${ssm:BASE_URL_BUYER}/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
         LogoutURLs:
-          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/"
-          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/login"
-          - "https://www-${opt:stage}${env:BASE_URL_BUYER}/register"
+          - "https://www-${opt:stage}${ssm:BASE_URL_BUYER}/"
+          - "https://www-${opt:stage}${ssm:BASE_URL_BUYER}/login"
+          - "https://www-${opt:stage}${ssm:BASE_URL_BUYER}/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"

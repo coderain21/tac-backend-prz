@@ -313,11 +313,27 @@
                   "properties": {
                     "status":{
                       "type": "string"
+                    },
+                    "auction_id": {
+                      "type": "string"
+                    },
+                    "seller_email": {
+                      "type": "string"
+                    },
+                    "email_address": {
+                      "type": "string"
+                    },
+                    "first_name": {
+                      "type": "string"
                     }
                   }
                 },
                 "example": {
-                  "status": "Pending"
+                  "seller_email": "sthuthi@7edge.com",
+                  "auction_id": "659cf15edb87b8d624908f24",
+                  "status": "Pending",
+                  "email_address": "sandhyashri@7edge.com",
+                  "first_name": "Sandy"
                 }
               }
             }

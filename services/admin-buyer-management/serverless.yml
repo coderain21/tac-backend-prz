@@ -17,14 +17,14 @@ provider:
       - ${ssm:SUBNET_ID}
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${env:REGION}
+  region: ${ssm:REGION}
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${env:REGION}
+    REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
@@ -36,7 +36,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        issuerUrl: https://cognito-idp.${ssm:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
         audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
 
@@ -84,14 +84,14 @@ functions:
   update:
     handler: handlers/accept_reject_buyers.handler
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN}
     events:
       - http:
           cors: true
           path: /{buyer_id}
           method: PATCH
           authorizer:
-            arn: ${env:COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   list-bids:
           handler: handlers/list.handler

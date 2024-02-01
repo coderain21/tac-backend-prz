@@ -12,7 +12,7 @@ provider:
   endpointType: REGIONAL
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${env:REGION}
+  region: ${ssm:REGION}
   versionFunctions: false
   vpc:
     securityGroupIds:
@@ -25,7 +25,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${env:REGION}
+    REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -34,9 +34,9 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
-    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${env:CSV_FILE}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${ssm:CSV_FILE}
     S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters

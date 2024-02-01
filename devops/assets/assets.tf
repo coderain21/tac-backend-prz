@@ -375,20 +375,8 @@ resource "aws_ssm_parameter" "credit_card_stripe_api_key" {
   value = data.external.env.result["CREDIT_CARD_STRIPE_API_KEY"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "default_sub_domain" {
-  name  = "DEFAULT_SUB_DOMAIN"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["DEFAULT_SUB_DOMAIN"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "dashboard_url" {
-  name  = "DASHBOARD_URL"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["DASHBOARD_URL"]
-  provider = aws.deployment-ap
-}
+
+
 resource "aws_ssm_parameter" "amplify_id" {
   name  = "AMPLIFY_APP_ID"
   overwrite = true
@@ -411,3 +399,52 @@ resource "aws_ssm_parameter" "stripe_endpoint_secret" {
   provider = aws.deployment-ap
 }
 
+resource "aws_ssm_parameter" "buyer_recaptcha_url" {
+  name  = "BUYER_RECAPTCHA_URL"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["BUYER_RECAPTCHA_URL"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "buyer_recaptcha_key" {
+  name  = "BUYER_RECAPTCHA_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["BUYER_RECAPTCHA_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "facebook_client_id" {
+  name  = "FACEBOOK_CLIENT_ID"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["FACEBOOK_CLIENT_ID"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "facebook_client_secret" {
+  name  = "FACEBOOK_CLIENT_SECRET"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["FACEBOOK_CLIENT_SECRET"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "google_client_id" {
+  name  = "GOOGLE_CLIENT_ID"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["GOOGLE_CLIENT_ID"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "google_client_secret" {
+  name  = "GOOGLE_CLIENT_SECRET"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["GOOGLE_CLIENT_SECRET"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "sales_csv_file" {
+  name  = "SALES_CSV_FILE"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SALES_CSV_FILE"]
+  provider = aws.deployment-ap
+}

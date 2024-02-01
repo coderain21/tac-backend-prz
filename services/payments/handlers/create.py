@@ -335,7 +335,7 @@ def create_intent(event, context):
         if buyer_data is not None:
             f_name = buyer_data.get("first_name","")
             l_name = buyer_data.get("last_name","")
-            name = f_name+l_name
+            name = f_name+' '+l_name
         cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["created_at"] = time_stamp
         insert_data["auction_title"] = auction_title
