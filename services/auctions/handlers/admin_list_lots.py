@@ -168,7 +168,7 @@ def export_lots_as_csv(lots, db):
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
-                 "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
+                 "Lot Number", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder",  "Paddle Number"
             ])
             writer.writeheader()
             for lot in lots:
@@ -200,20 +200,19 @@ def export_lots_as_csv(lots, db):
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url
-
+                print('lot', lot)
                 writer.writerow({
                     "Lot Number": lot.get("lot_number", ""),
-                    "Thumbnail URL": thumbnail_url,
                     "Title": lot.get("title1", ""),
-                    "Starting Bid": lot.get("starting_bid", ""),
+                    "Starting Bid": lot.get("starting_price", ""),
                     "Top(Current) Bid": lot.get("current_bid", ""),
                     "Top Bidder": lot.get("top_bidder", ""),
-                    "Total Current Bid": lot.get("total_current_bid",""),
-                    "Total Bids": lot.get("total_bids", ""),
-                    "Active Bidders": lot.get("active_bidders", ""),
+                    # "Total Current Bid": lot.get("total_current_bid",""),
+                    # "Total Bids": lot.get("total_bids", ""),
+                    # "Active Bidders": lot.get("active_bidders", ""),
                     "Paddle Number": lot.get("paddle_number", ""),
-                    "Status(Selling, No Bids)": status,
-                    "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
+                    # "Status(Selling, No Bids)": status,
+                    # "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
                 })
 
         # Upload the file to S3
