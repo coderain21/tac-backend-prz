@@ -12,7 +12,7 @@ provider:
   endpointType: REGIONAL
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${ssm:REGION}
+  region: eu-west-2
   versionFunctions: false
   vpc:
     securityGroupIds:
