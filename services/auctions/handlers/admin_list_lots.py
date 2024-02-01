@@ -15,6 +15,8 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
 
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
@@ -35,17 +37,11 @@ def list_lots(event, context):
                     environment of the Lambda function.
     """
     try:
-        try:
-            seller_email = event['requestContext']['authorizer']['claims']['email']
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
+        print('query_parameters', query_parameters)
+        seller_email = query_parameters.get('seller_email')
+
         auction_id = query_parameters.get('auction_id')
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
         sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
@@ -57,9 +53,6 @@ def list_lots(event, context):
 
         export = event['queryStringParameters'].get('export', False)
         download_link = None
-
-        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
         collection_bidders = db[os.environ["UNIQUE_BIDDERS_COLLECTIONS"]]
         total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
@@ -136,7 +129,6 @@ def list_lots(event, context):
             download_link = export_lots_as_csv(lots, db)
         if download_link is not None:
             body["csv_url"] = download_link
-        client.close()
         return {
             'headers': headers,
             "statusCode": 200,

@@ -38,3 +38,6 @@ services:
   lot-bid-history:
     path: services/lot-bid-history
     config: ${env:config}
+  admin-buyer-management:
+    path: services/admin-buyer-management
+    config: ${env:config}
