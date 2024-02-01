@@ -13,6 +13,11 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
 def paddle_number(event, context):
     """
     The function `list_lots` retrieves details of a lot from a MongoDB database based on the provided
@@ -54,10 +59,10 @@ def paddle_number(event, context):
             }
         auction_id= data['auction_id']
         auction_id= ObjectId(auction_id)
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # db = client[os.environ['DATABASE']]
+        # buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+        # auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_details= auction.find_one({'_id':auction_id})
         paddle=buyer.find_one({"seller_email":auction_details['seller_email'],
                                'email_address':email_address,'auction_id':auction_id})
@@ -75,7 +80,7 @@ def paddle_number(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "paddle not found "})
             }
-        client.close()
+        # client.close()
         if result is None:
             return {
                 "statusCode": 404,
