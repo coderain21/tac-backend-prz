@@ -33,39 +33,38 @@ async function getLot(rediskey, client, auctionData) {
 
 function formatCurrency(amount, currencyCode) {
     try {
-        console.log('amountttt', amount);
+        console.log('amountttt', amount)
 
         // Convert amount to a string
-        const amountString = String(amount);
+        const amountString = String(amount)
 
         // Check if the amount starts with a currency symbol
-        const hasCurrencySymbol = /^\s*[$€£¥]/.test(amountString);
+        const hasCurrencySymbol = /^\s*[$€£¥]/.test(amountString)
 
         // Remove currency symbol and commas
-        const cleanedAmount = amountString.replace(/[^\d.]/g, '');
+        const cleanedAmount = amountString.replace(/[^\d.]/g, '')
 
-        const parsedAmount = parseFloat(cleanedAmount);
+        const parsedAmount = parseFloat(cleanedAmount)
 
         if (isNaN(parsedAmount)) {
-            console.error('Invalid amount:', amountString);
-            return 'Invalid amount';
+            console.error('Invalid amount:', amountString)
+            return 'Invalid amount'
         }
 
         // If the original amount had a currency symbol, include it in the formatted result
         const formattedAmount = hasCurrencySymbol
             ? new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: currencyCode,
-              }).format(parsedAmount)
-            : parsedAmount.toString();
+                style: 'currency',
+                currency: currencyCode,
+            }).format(parsedAmount)
+            : parsedAmount.toString()
 
-        return formattedAmount;
+        return formattedAmount
     } catch (err) {
-        console.error(err);
-        return 'Error formatting currency';
+        console.error(err)
+        return 'Error formatting currency'
     }
 }
-
 
 async function sendMail(destinationId, sourceId, templateData, templateArn) {
     console.log('templateArn', templateArn)
