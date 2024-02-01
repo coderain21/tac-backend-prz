@@ -77,6 +77,12 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
+  serverlessIfElse:
+    - If: '"${opt:stage}" == "offline"'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
+
                 
 
 
@@ -94,16 +100,16 @@ functions:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   list-bids:
-          handler: handlers/list.handler
-          layers:
-            - ${ssm:COMMON_LIB_ARN}
-          events:
-            - http:
-                cors: true
-                path: /{email_address}
-                method: GET
-                authorizer:
-                  arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+    handler: handlers/list.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /{email_address}
+          method: GET
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   list:
     handler: handlers/list_of_buyers.handler
