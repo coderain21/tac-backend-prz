@@ -35,9 +35,12 @@ services:
   order-management:
     path: services/order-management
     config: ${env:config}
-  # admin-management:
-  #   path: services/admin-management
-  #   config: ${env:config}
-  # lot-bid-history:
-  #   path: services/lot-bid-history
-  #   config: ${env:config}
+  admin-management:
+    path: services/admin-management
+    config: ${env:config}
+  lot-bid-history:
+    path: services/lot-bid-history
+    config: ${env:config}
+  admin-buyer-management:
+    path: services/admin-buyer-management
+    config: ${env:config}
