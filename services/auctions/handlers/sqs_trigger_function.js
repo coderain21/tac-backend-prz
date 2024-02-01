@@ -67,7 +67,6 @@ function formatCurrency(amount, currencyCode) {
 }
 
 async function sendMail(destinationId, sourceId, templateData, templateArn) {
-    console.log('templateArn', templateArn)
     const params = {
         Content: {
             Template: {
@@ -86,79 +85,6 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
         console.error('Failed to send email:', error)
     }
 }
-
-// module.exports.sqsTriggerFunction = async (event) => {
-//     try {
-//         connection = await mongodbHelper.connect()
-//         const getBidders = await mongodbHelper.getBidders(event)
-//         const client = await redis.createClient({
-//             url: process.env.REDIS_URL,
-//         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-//         if (!client.isOpen) {
-//             await client.connect()
-//         }
-//         const getAllLots = await getLot('lot', client, event)
-//         const get_lot = []
-//         for (let i = 0; i < getAllLots.length; i++) {
-//             get_lot.push(JSON.parse(getAllLots[i]))
-//         }
-//         const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
-//         const promiseList = []
-//         for (const user of getBidders) {
-//             const winningLot = []
-//             const notWinning = []
-//             const query = {
-//                 _id: new ObjectId(user.buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
-//             }
-//             const sellerQuery = {
-//                 email_address: event.seller_email,
-//             }
-//             const buyerInformation = await mongodbHelper.getUser(query, process.env.BUYERS_TABLE)
-//             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
-//             let subjectDescription = 'You Won the Auction'
-//             get_lot.map((item) => {
-//                 item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
-//                 if (item.winning_user === user.buyer_id) {
-//                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
-//                     winningLot.push(item)
-//                 } else if (item.winning_user !== user.buyer_id) {
-//                     item.bid_amount = formatCurrency(item.starting_price, auctionData[0].currency)
-//                     notWinning.push(item)
-//                 }
-//             })
-//             if (winningLot.length <= 0) {
-//                 subjectDescription = 'You lost the Auction'
-//             }
-//             const template_data = {
-//                 winning_lot: winningLot,
-//                 winning_lot_count: winningLot.length,
-//                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
-//                 title: auctionData[0].title,
-//                 logo_url: auctionData[0].logo_image === '' ? 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png' : `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`,
-//                 not_winning_lot: notWinning,
-//                 not_winning_lot_count: notWinning.length,
-//                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
-//                 seller_email: auctionData[0].seller_email,
-//                 subject: subjectDescription,
-//             }
-//             promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL'))
-//         }
-//         const response = await Promise.all(promiseList)
-//         console.log('response', response)
-//         const request_body = {
-//             status: 'Completed',
-//         }
-//         const updateAuction = await mongodbHelper.update(Auction, auctionData[0]._id, request_body)
-//         console.log('update', updateAuction)
-//     } catch (err) {
-//         console.log('err', err)
-//     } finally {
-//         // Disconnect from the MongoDB database
-//         if (connection) {
-//             await connection.disconnect()
-//         }
-//     }
-// }
 
 module.exports.sqsTriggerFunction = async (event) => {
     try {
