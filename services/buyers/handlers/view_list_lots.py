@@ -33,8 +33,6 @@ auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 # Function to get lots based on search criteria and sorting
 def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
-    
-
     escaped_search_keyword = prepend_backslash(search_keyword)
     search_criteria = {
         "$or": [
@@ -122,7 +120,6 @@ def view_list_lots(event, context):
             "headers": headers,
             "body": json.dumps({'data': lots_list}, cls=Encoder)
         }
- 
     except Exception as e:
         print(str(e))
         return {
