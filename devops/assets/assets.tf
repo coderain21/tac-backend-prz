@@ -233,3 +233,181 @@ resource "aws_ssm_parameter" "application_url" {
   provider = aws.deployment-ap
   overwrite = true
 }
+
+resource "aws_ssm_parameter" "base_url_admin" {
+  name  = "BASE_URL_ADMIN"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["BASE_URL_ADMIN"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "base_url_seller" {
+  name  = "BASE_URL_SELLER"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["BASE_URL_SELLER"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "base_url_buyer" {
+  name  = "BASE_URL_BUYER"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["BASE_URL_BUYER"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "customer_session_token" {
+  name  = "CUSTOMER_SESSION_TOKEN_SECRET"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["CUSTOMER_SESSION_TOKEN_SECRET"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "recaptch_key" {
+  name  = "RECAPTCHA_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["RECAPTCHA_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "password_secret_key" {
+  name  = "PASSWORD_SECRET_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["PASSWORD_SECRET_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "recpatch_url" {
+  name  = "RECAPTCHA_URL"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["RECAPTCHA_URL"]
+  provider = aws.deployment-ap
+}
+
+resource "aws_ssm_parameter" "sumsub_secret_key" {
+  name  = "SUMSUB_SECRET_KEY_WEBHOOK"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SUMSUB_SECRET_KEY_WEBHOOK"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "jwt_secret_key" {
+  name  = "JWT_SECRET_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["JWT_SECRET_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "sumsub_secret_key" {
+  name  = "SUMSUB_SECRET_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SUMSUB_SECRET_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "sumsub_app_token" {
+  name  = "SUMSUB_APP_TOKEN"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SUMSUB_APP_TOKEN"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "level_name" {
+  name  = "LEVEL_NAME"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["LEVEL_NAME"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "seller_google_password" {
+  name  = "SELLER_GOOGLE_PASSWORD"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SELLER_GOOGLE_PASSWORD"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "stage" {
+  name  = "STAGE"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["STAGE"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "kyb_level_name" {
+  name  = "KYB_LEVEL_NAME"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["KYB_LEVEL_NAME"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "stripe_api_key" {
+  name  = "STRIPE_API_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["STRIPE_API_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "hosted_zone_id" {
+  name  = "YOUR_HOSTED_ZONE_ID"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["YOUR_HOSTED_ZONE_ID"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "csv_file" {
+  name  = "CSV_FILE"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["CSV_FILE"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "encryption_secret_key" {
+  name  = "ENCRYPTION_SECRET_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["ENCRYPTION_SECRET_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "credit_card_stripe_api_key" {
+  name  = "CREDIT_CARD_STRIPE_API_KEY"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["CREDIT_CARD_STRIPE_API_KEY"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "default_sub_domain" {
+  name  = "DEFAULT_SUB_DOMAIN"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["DEFAULT_SUB_DOMAIN"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "dashboard_url" {
+  name  = "DASHBOARD_URL"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["DASHBOARD_URL"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "amplify_id" {
+  name  = "AMPLIFY_APP_ID"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["AMPLIFY_APP_ID"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "amplify_branch" {
+  name  = "AMPLIFY_BRANCH"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["AMPLIFY_BRANCH"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "stripe_endpoint_secret" {
+  name  = "STRIPE_ENDPOINT_SECRET"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["STRIPE_ENDPOINT_SECRET"]
+  provider = aws.deployment-ap
+}
+

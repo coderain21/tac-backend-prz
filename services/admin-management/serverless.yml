@@ -297,7 +297,7 @@ functions:
     handler: handlers/order_details.order_detail
     runtime: python3.8
     layers:
-    - ${env:COMMON_PYTHON_LIB_ARN}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
