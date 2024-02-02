@@ -18,6 +18,29 @@ headers = {
 client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 
+
+def currency_to_symbol(amount, currency_code):
+    currency_symbols = {
+        'GBP': '£',
+        'USD': '$',
+        'EUR': '€',
+        'HKD': 'HK$',
+        'JPY': '¥',
+        'CHF': 'Fr',
+        'SGD': 'S$',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'INR': '₹',
+        # Add more currencies as needed
+    }
+
+    if currency_code in currency_symbols:
+        symbol = currency_symbols[currency_code]
+        return f"{symbol}{amount}"
+    else:
+        return None  # Handle the case where the currency code is not recognized
+
+
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
@@ -157,7 +180,8 @@ def export_lots_as_csv(lots, db):
         auction_status = auction_collection.find_one({
             "seller_email": seller_email,
             "auction_id": auction_id
-        }, {"status": 1})
+        }, {"status": 1, "currency": 1})
+        print('auction_status', auction_status)
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
@@ -168,7 +192,7 @@ def export_lots_as_csv(lots, db):
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
-                 "Lot Number", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder",  "Paddle Number"
+                 "Lot Number", "Title", "Starting Bid","Current Bid", "Top Bidder",  "Paddle Number"
             ])
             writer.writeheader()
             for lot in lots:
@@ -196,16 +220,19 @@ def export_lots_as_csv(lots, db):
                     status = 'Selling'
                 else:
                     status = 'No Bids'
+                    
 
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url
                 print('lot', lot)
+                formatted_currency = currency_to_symbol(lot.get("current_bid", ""), auction_status['currency'])
+                print('formatted_currency', formatted_currency)
                 writer.writerow({
                     "Lot Number": lot.get("lot_number", ""),
                     "Title": lot.get("title1", ""),
-                    "Starting Bid": lot.get("starting_price", ""),
-                    "Top(Current) Bid": lot.get("current_bid", ""),
+                    "Starting Bid": currency_to_symbol(lot.get("starting_price", ""), auction_status['currency']),
+                    "Current Bid": currency_to_symbol(lot.get("current_bid", 0), auction_status['currency']) if lot.get("current_bid") else 0,
                     "Top Bidder": lot.get("top_bidder", ""),
                     # "Total Current Bid": lot.get("total_current_bid",""),
                     # "Total Bids": lot.get("total_bids", ""),
