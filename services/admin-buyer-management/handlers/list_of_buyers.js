@@ -5,24 +5,25 @@
 /* eslint-disable no-console */
 
 const helpers = require('../lib/helper')
-const BidInformation = require('../entities/BidInformation')
+const RegisteredUser = require('../entities/RegisteredUser')
 const mongodbHelper = require('../lib/mongodb_helper')
 
 let connection
 /**
- * List Bidders | Admin Buyer Bid History
- * @description - API to list all buyers bids
- * @route - GET /{lot_id}
+ * List Bidders | Admin Buyers list
+ * @description - API to list all buyers
+ * @route - GET /{auction_id}/{seller_email}
  * @access - (Private)
  * @user - IndyAuction Admin
- * @returns {Object} (200) - List of bids
- * @returns {Error} (500) - There was an error while listing bids
+ * @returns {Object} (200) - List of buyers
+ * @returns {Error} (500) - There was an error while listing buyers
  */
 module.exports.handler = async (event) => {
     try {
         /** Establish database connection */
         connection = await mongodbHelper.connect()
-        const emailAddress = decodeURIComponent(event.pathParameters.email)
+        const emailAddress = decodeURIComponent(event.pathParameters.seller_email)
+        const auctionId = decodeURIComponent(event.pathParameters.auction_id)
         /** Extract user and query parameters from the event */
         const { queryStringParameters: queryParams } = event
 
@@ -33,8 +34,9 @@ module.exports.handler = async (event) => {
 
         /** Define default sorting */
         let theSort = {
-            paddle_number: -1,
+            created_at: -1,
         }
+
         /** Customize sorting based on query parameters */
         if (queryParams?.sort_by && queryParams?.sort_order) {
             const sort = {}
@@ -42,16 +44,16 @@ module.exports.handler = async (event) => {
             theSort = sort
         }
 
-        /** Apply date range filter if start_date is provided */
-        if (queryParams?.start_date) {
+        /** Apply search filter if present in query parameters */
+        if (queryParams?.search) {
+            queryParams.search = queryParams.search.replace(/[.*+?^${}&$#'=(\-)|[\]\\]/g, '\\$&')
             mongoose_query.$and.push({
-                time_stamp: {
-                    $gte: parseInt(queryParams.start_date, 10),
-                    $lte: parseInt(queryParams.end_date, 10),
-                },
+                $or: [
+                    { name: { $regex: queryParams.search, $options: 'i' } },
+                ],
             })
         }
-        console.log('mongoose_query', JSON.stringify(mongoose_query))
+
         /** Configure pagination and sorting options */
         const options = {
             page: parseInt(queryParams?.page, 10) || 1,
@@ -60,32 +62,31 @@ module.exports.handler = async (event) => {
         }
 
         /** Apply additional conditions */
-        mongoose_query.$and.push({ email_address: emailAddress })
+        mongoose_query.$and.push({ seller_email: emailAddress, auction_id: auctionId })
         // mongoose_query.$and.push({ deleted: false })
 
         /** Define projection to exclude unnecessary fields */
         options.projection = {
-            paddle_number: 1,
+            _id: 1,
+            auction_id: 1,
             name: 1,
-            bid_amount: 1,
-            auction_title: 1,
-            lot_number: 1,
-            time_stamp: 1,
-            bid_status: 1,
-            lot_title: 1,
-            currency: 1,
-            time_zone: 1,
-            lot_image: 1,
+            first_name: 1,
+            last_name: 1,
+            created_at: 1,
+            paddle: 1,
+            marketing: 1,
+            status: 1,
+            email_address: 1,
         }
 
         /** Fetch enterprises using the provided criteria */
-        const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
+        const bidsList = await mongodbHelper.list(RegisteredUser, mongoose_query, options)
         if (bidsList.docs.length <= 0) {
             return {
                 statusCode: 404,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({
-                    message: 'Bids not found',
+                    message: 'Buyers not found',
                 }),
             }
         }

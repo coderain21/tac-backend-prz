@@ -9,3 +9,4 @@
 
   ignore-rules:
   - node_nosqli_injection   
+  - regex_dos

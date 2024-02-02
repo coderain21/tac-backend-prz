@@ -29,6 +29,8 @@ provider:
     MONGODB_NAME: ${env:MONGODB_NAME}
     MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
     MONGO_CLIENT: ${env:MONGO_CLIENT}
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SENDER_EMAIL_ADDRESS: no-reply@indy.auction
     
   http:
     cors: true
@@ -79,17 +81,42 @@ custom:
 
 
 functions: 
+  update:
+    handler: handlers/accept_reject_buyers.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /{buyer_id}
+          method: PATCH
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
   list-bids:
-          handler: handlers/list.handler
-          layers:
-            - ${env:COMMON_LIB_ARN}
-          events:
-            - http:
-                cors: true
-                path: /{buyer_id}
-                method: GET
-                authorizer:
-                  arn: ${env:COGNITO_AUTH_ARN}
+    handler: handlers/list.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path:  /admin/{email}
+          method: GET
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
+  list:
+    handler: handlers/list_of_buyers.handler
+    layers:
+      - ${env:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /list/{seller_email}/{auction_id}
+          method: GET
+          authorizer:
+            arn: ${env:COGNITO_AUTH_ARN}
+
   
 plugins:
   - serverless-offline

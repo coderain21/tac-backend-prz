@@ -36,6 +36,9 @@ headers = {
 }
 
 
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+
 def lambda_handler(event, context):
     """
     The lambda_handler function is the entry point for a Lambda function in Python.
@@ -72,8 +75,6 @@ def lambda_handler(event, context):
         user_type = request_body.get('user_type', '')
 
         # Initialize the MongoDB client
-        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
         lot_collection= db[os.environ["COUNTER_LOT"]]
         auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -169,9 +170,6 @@ def lambda_handler(event, context):
                 {"auction_id": auction_id, "seller_email": seller_email},
                 {"$set": {"total_lots": total_lots_count}}
             )
-
-        client.close()
-
         return {
             "statusCode": 200,
             'headers': headers,

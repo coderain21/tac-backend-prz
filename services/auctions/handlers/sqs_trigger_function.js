@@ -33,17 +33,33 @@ async function getLot(rediskey, client, auctionData) {
 
 function formatCurrency(amount, currencyCode) {
     try {
-        const parsedAmount = parseFloat(amount)
+        console.log('amountttt', amount)
+
+        // Convert amount to a string
+        const amountString = String(amount)
+
+        // Check if the amount starts with a currency symbol
+        const hasCurrencySymbol = /^\s*[$€£¥]/.test(amountString)
+
+        // Remove currency symbol and commas
+        const cleanedAmount = amountString.replace(/[^\d.]/g, '')
+
+        const parsedAmount = parseFloat(cleanedAmount)
 
         if (isNaN(parsedAmount)) {
-            console.error('Invalid amount:', amount)
+            console.error('Invalid amount:', amountString)
             return 'Invalid amount'
         }
 
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currencyCode,
-        }).format(parsedAmount)
+        // If the original amount had a currency symbol, include it in the formatted result
+        const formattedAmount = hasCurrencySymbol
+            ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currencyCode,
+            }).format(parsedAmount)
+            : parsedAmount.toString()
+
+        return formattedAmount
     } catch (err) {
         console.error(err)
         return 'Error formatting currency'
@@ -80,18 +96,17 @@ module.exports.sqsTriggerFunction = async (event) => {
         if (!client.isOpen) {
             await client.connect()
         }
+
         const getAllLots = await getLot('lot', client, event)
-        const get_lot = []
-        for (let i = 0; i < getAllLots.length; i++) {
-            get_lot.push(JSON.parse(getAllLots[i]))
-        }
+        const get_lot = getAllLots.map((item) => JSON.parse(item))
+
         const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
-        const promiseList = []
-        for (const user of getBidders) {
+
+        const promiseList = getBidders.map(async (user) => {
             const winningLot = []
             const notWinning = []
             const query = {
-                _id: new ObjectId(user.buyer_id), // Replace 'excluded_buyer_id' with the buyer_id you want to exclude
+                _id: new ObjectId(user.buyer_id),
             }
             const sellerQuery = {
                 email_address: event.seller_email,
@@ -99,7 +114,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             const buyerInformation = await mongodbHelper.getUser(query, process.env.BUYERS_TABLE)
             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
             let subjectDescription = 'You Won the Auction'
-            get_lot.map((item) => {
+            get_lot.forEach((item) => {
                 item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
@@ -109,9 +124,11 @@ module.exports.sqsTriggerFunction = async (event) => {
                     notWinning.push(item)
                 }
             })
+
             if (winningLot.length <= 0) {
                 subjectDescription = 'You lost the Auction'
             }
+
             const template_data = {
                 winning_lot: winningLot,
                 winning_lot_count: winningLot.length,
@@ -124,19 +141,18 @@ module.exports.sqsTriggerFunction = async (event) => {
                 seller_email: auctionData[0].seller_email,
                 subject: subjectDescription,
             }
-            promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL'))
-        }
+
+            return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL')
+        })
+
         const response = await Promise.all(promiseList)
         console.log('response', response)
-        const request_body = {
-            status: 'Completed',
-        }
-        const updateAuction = await mongodbHelper.update(Auction, auctionData[0]._id, request_body)
+
+        const updateAuction = await mongodbHelper.update(Auction, auctionData[0]._id, { status: 'Completed' })
         console.log('update', updateAuction)
     } catch (err) {
         console.log('err', err)
     } finally {
-        // Disconnect from the MongoDB database
         if (connection) {
             await connection.disconnect()
         }

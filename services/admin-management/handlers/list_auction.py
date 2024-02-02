@@ -117,6 +117,7 @@ def list_auction(event, context):
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,
             "total_lots":1,
+            "seller_email": 1,
             "seller_name": 1
         }
         if start_date and end_date:
