@@ -11,7 +11,11 @@ const CounterSchema = new Schema({
     auction_id: {
         type: Schema.Types.ObjectId, trim: true,
     },
+<<<<<<< Updated upstream
     seller_email: { type: String, default: '' },
+=======
+    seller_email: { type: String, default: '', uppercase: true },
+>>>>>>> Stashed changes
     record_type: { type: String, default: '' },
     prefix: { type: String, default: '', uppercase: true },
     suffix: { type: String, default: '', uppercase: true },
