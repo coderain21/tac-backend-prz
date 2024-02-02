@@ -7,6 +7,8 @@ import csv
 import tempfile
 import boto3
 from lib.common_helper import Encoder
+from urllib.parse import unquote
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -69,6 +71,7 @@ def list_lots(event, context):
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
         sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
+        print('search', search_keyword)
         page = int(event['queryStringParameters'].get(
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
@@ -93,6 +96,7 @@ def list_lots(event, context):
         # Query the MongoDB collection to find lots matching the seller email and auction ID
         search_criteria = {}
         if search_keyword:
+            search_keyword = unquote(query_parameters.get('search_keyword'))
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
             search_criteria['$or'] = [
@@ -158,6 +162,7 @@ def list_lots(event, context):
             "body": json.dumps(body,cls= Encoder)
         }
     except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             'headers': headers,
