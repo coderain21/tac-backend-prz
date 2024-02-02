@@ -229,18 +229,18 @@ functions:
   #         authorizer:
   #             arn: ${env:COGNITO_AUTH_ARN}
 
-  admin-list_lots:
-    handler: handlers/view_lots.list_lots
-    runtime: python3.8
-    layers:
-      - ${env:PYTHON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /admin/lots
-          method: get
-          authorizer:
-              arn: ${env:COGNITO_AUTH_ARN}
+  # admin-list_lots:
+  #   handler: handlers/view_lots.list_lots
+  #   runtime: python3.8
+  #   layers:
+  #     - ${env:PYTHON_LIB_ARN}
+  #   events:
+  #     - http:
+  #         cors: true
+  #         path: /admin/lots
+  #         method: get
+  #         authorizer:
+  #             arn: ${env:COGNITO_AUTH_ARN}
  
   admin_list_lots:
     handler: handlers/admin_list_lots.list_lots
