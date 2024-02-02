@@ -54,7 +54,8 @@ def order_detail(event, context):
             'email_address':1,
             'status':1,
             "billing_address":1,
-            "shipping_address":1
+            "shipping_address":1,
+            "name": 1,
         }
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
