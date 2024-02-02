@@ -33,15 +33,10 @@ async function getLot(rediskey, client, auctionData) {
 
 function formatCurrency(amount, currencyCode) {
     try {
-        console.log('amountttt', amount)
-
         // Convert amount to a string
         const amountString = String(amount)
 
-        // Check if the amount starts with a currency symbol
-        const hasCurrencySymbol = /^\s*[$€£¥]/.test(amountString)
-
-        // Remove currency symbol and commas
+        // Remove currency symbol and commas (if any)
         const cleanedAmount = amountString.replace(/[^\d.]/g, '')
 
         const parsedAmount = parseFloat(cleanedAmount)
@@ -51,13 +46,13 @@ function formatCurrency(amount, currencyCode) {
             return 'Invalid amount'
         }
 
-        // If the original amount had a currency symbol, include it in the formatted result
-        const formattedAmount = hasCurrencySymbol
-            ? new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: currencyCode,
-            }).format(parsedAmount)
-            : parsedAmount.toString()
+        // Always format with currency, using Intl.NumberFormat for consistency
+        const formattedAmount = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode,
+        }).format(parsedAmount)
+
+        console.log('format', formattedAmount)
 
         return formattedAmount
     } catch (err) {
@@ -86,6 +81,16 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
     }
 }
 
+/**
+ * Triggered function to process SQS events for auction completion.
+ * Fetches bidder data, Redis client, lot data, and auction data.
+ * Iterates through bidders, categorizing winning and not winning lots.
+ * Sends email notifications to bidders based on auction outcome.
+ * Updates auction status to 'Completed' in MongoDB.
+ *
+ * @param {object} event - SQS event triggering the function.
+ * @returns {Promise} Promise representing the completion of the function.
+ */
 module.exports.sqsTriggerFunction = async (event) => {
     try {
         connection = await mongodbHelper.connect()
