@@ -2,6 +2,8 @@
 import os
 import json
 import pymongo
+from pymongo import MongoClient
+from bson import ObjectId
 from lib.get import get_by_email
 from lib.invoke_step_function import invoke_state_machine
 from lib.common_helper import Encoder
@@ -28,7 +30,7 @@ def has_kyb_or_kyc_completed(email_address):
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
 
-    client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+    client = MongoClient(os.environ['MONGO_CLIENT'])
     db = client[os.environ['DATABASE']]
     collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 
@@ -59,7 +61,6 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     return bool(result)  # True if at least one lot has non-empty images array
 
 def update_auction(event, context):
-    print('event data', event)
     """
     The `update_auction` function updates the specified fields of an auction
     in a MongoDB database based on the request body and the auction ID.
@@ -75,26 +76,24 @@ def update_auction(event, context):
     :return: The function `update_auction` returns a JSON response with the following properties:
     """
     try:
-        try:
-            print('eventtttttttttttttttt', event)
-            seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('email ', seller_email)
-            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "do not have access to perform this API action"})
-                }
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # try:
+        seller_email = 'sandhyashri+auction@7edge.com' #event['requestContext']['authorizer']['claims']['email']
+            # print('email ', seller_email)
+            # if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+            #         'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
+            #     return {
+            #         "statusCode": 403,
+            #         "headers": headers,
+            #         "body": json.dumps({"message": "do not have access to perform this API action"})
+            #     }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         request_body = json.loads(event['body'])
         auction_id = event['pathParameters']['auction_id']
-        print(event)
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
                 'published', 'false')
@@ -121,32 +120,8 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
-        # auction_information = auction_record.copy()
 
-        # # Extract end_date from auction_record
-        # end_date_timestamp = auction_record['end_date'] / 1000
-
-        # # Convert timestamp to datetime object
-        # date_time = datetime.utcfromtimestamp(end_date_timestamp)
-        # iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
-        # print('isoformat', iso_date_with_offset)
-        # auction_information['end_date'] = iso_date_with_offset
-        # print('auction_information', auction_record)
-        # del auction_information['created_at']
-        # del auction_information['updated_at']
-        # auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
-        # print('@@', auction_complete_state_machine)
         if published_status == 'true':
-            # auction_information = auction_record.copy()
-            # print('auction info', auction_information)
-            # end_date_timestamp = auction_record['end_date'] / 1000
-            # date_time = datetime.utcfromtimestamp(end_date_timestamp)
-            # iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
-            # auction_information['end_date'] = iso_date_with_offset
-            # del auction_information['created_at']
-            # del auction_information['updated_at']
-            # auction_complete_state_machine = invoke_state_machine_for_auction_end(auction_information, os.environ['STATE_MACHINE_AUCTION_ARN'])
-            # print('@@', auction_complete_state_machine)
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             if kyc_kyb_review is not True:
                 return {
@@ -268,11 +243,57 @@ def update_auction(event, context):
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
         print(update_data)
-        if len(update_data) > 0:
-            collection.update_one(
-                {"seller_email": seller_email, "auction_id": auction_id},
-                {"$set": update_data}
-            )
+        documents = []
+        if request_body['end_date']:
+            existing_lots_count = collection.count_documents(
+            {"seller_email": seller_email, "auction_id": auction_id})
+            extension_time_str = auction_record.get('extension_time_between_lots', '0')
+            if extension_time_str != '':
+                extension_time = int(extension_time_str[:1])
+            else:
+                extension_time=0
+            start_date = auction_record['start_date']
+            end_date =  request_body['end_date']
+            count_import=0
+            for item in listLots:
+                if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                    item['start_date'] = start_date
+                    item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
+                    count_import= count_import+1
+                elif auction_record['extension_type']== "All Lots":
+                    item['start_date'] = start_date
+                    item['end_date'] = end_date
+                documents.append(item)
+
+            update_operations = []
+            for item in documents:
+                item_id = ObjectId(item['_id'])
+                findvalue = collection_lot.find({"_id": item_id})
+                print("findvalue", list(findvalue))
+                # update_operations.append({
+                #     {"_id": item_id},  # Directly use the ObjectId
+                #     "$set": {
+                #         "start_date": item['start_date'],
+                #         "end_date": item['end_date']
+                #     }
+                # })
+
+                result = collection_lot.update_many(
+                        {"_id": item_id},
+                        {
+                            "$set": {
+                                "start_date": item['start_date'],
+                                "end_date": item['end_date']
+                            }
+                        }
+                )
+                # print('herererere', list(result)) 
+        
+        # if len(update_data) > 0:
+        #     collection.update_one(
+        #         {"seller_email": seller_email, "auction_id": auction_id},
+        #         {"$set": update_data}
+        #     )
         client.close()
         return {
             "headers": headers,
