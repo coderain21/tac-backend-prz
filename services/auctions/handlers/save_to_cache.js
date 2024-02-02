@@ -21,7 +21,7 @@ module.exports.handler = async (event, context, callback) => {
     try {
         const data = typeof event === 'string' ? JSON.parse(event) : event
         const client = await redis.createClient({
-            url: process.env.REDIS_URL,
+            url: process.env.REDIS_CONNECTION_URL,
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         if (!client.isOpen) {
             await client.connect()
