@@ -181,14 +181,12 @@ def export_lots_as_csv(lots, db):
             "seller_email": seller_email,
             "auction_id": auction_id
         }, {"status": 1, "currency": 1})
-        print('auction_status', auction_status)
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
 
         s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
         s3_bucket = os.environ['S3_BUCKET']
-        print('Lots details------------', lots)
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
@@ -220,14 +218,10 @@ def export_lots_as_csv(lots, db):
                     status = 'Selling'
                 else:
                     status = 'No Bids'
-                    
-
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url
-                print('lot', lot)
                 formatted_currency = currency_to_symbol(lot.get("current_bid", ""), auction_status['currency'])
-                print('formatted_currency', formatted_currency)
                 writer.writerow({
                     "Lot Number": lot.get("lot_number", ""),
                     "Title": lot.get("title1", ""),
@@ -257,9 +251,6 @@ def export_lots_as_csv(lots, db):
             Params={"Bucket": s3_bucket, "Key": s3_key},
             ExpiresIn=3600,
         )
-
-        # print("CSV file uploaded successfully.")
-        # print("Presigned URL:", s3_signed_url)
 
         return s3_signed_url
     except Exception as err:
