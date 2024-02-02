@@ -43,6 +43,29 @@ def currency_to_symbol(amount, currency_code):
         return None  # Handle the case where the currency code is not recognized
 
 
+
+def currency_to_symbol(amount, currency_code):
+    currency_symbols = {
+        'GBP': '£',
+        'USD': '$',
+        'EUR': '€',
+        'HKD': 'HK$',
+        'JPY': '¥',
+        'CHF': 'Fr',
+        'SGD': 'S$',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'INR': '₹',
+        # Add more currencies as needed
+    }
+
+    if currency_code in currency_symbols:
+        symbol = currency_symbols[currency_code]
+        return f"{symbol}{amount}"
+    else:
+        return None  # Handle the case where the currency code is not recognized
+
+
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
@@ -193,7 +216,6 @@ def export_lots_as_csv(lots, db):
 
         s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
         s3_bucket = os.environ['S3_BUCKET']
-        print('Lots details------------', lots)
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
@@ -262,9 +284,6 @@ def export_lots_as_csv(lots, db):
             Params={"Bucket": s3_bucket, "Key": s3_key},
             ExpiresIn=3600,
         )
-
-        # print("CSV file uploaded successfully.")
-        # print("Presigned URL:", s3_signed_url)
 
         return s3_signed_url
     except Exception as err:
