@@ -225,8 +225,6 @@ def export_lots_as_csv(lots, db):
                     status = 'Selling'
                 else:
                     status = 'No Bids'
-                    
-
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url
