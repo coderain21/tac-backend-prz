@@ -7,6 +7,8 @@ import csv
 import tempfile
 import boto3
 from lib.common_helper import Encoder
+from urllib.parse import unquote
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -69,6 +71,7 @@ def list_lots(event, context):
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
         sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
+        print('search', search_keyword)
         page = int(event['queryStringParameters'].get(
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
@@ -93,6 +96,7 @@ def list_lots(event, context):
         # Query the MongoDB collection to find lots matching the seller email and auction ID
         search_criteria = {}
         if search_keyword:
+            search_keyword = unquote(query_parameters.get('search_keyword'))
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
             search_criteria['$or'] = [
@@ -158,6 +162,7 @@ def list_lots(event, context):
             "body": json.dumps(body,cls= Encoder)
         }
     except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             'headers': headers,
@@ -181,12 +186,14 @@ def export_lots_as_csv(lots, db):
             "seller_email": seller_email,
             "auction_id": auction_id
         }, {"status": 1, "currency": 1})
+        print('auction_status', auction_status)
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
 
         s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
         s3_bucket = os.environ['S3_BUCKET']
+        print('Lots details------------', lots)
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
@@ -221,7 +228,9 @@ def export_lots_as_csv(lots, db):
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url
+                print('lot', lot)
                 formatted_currency = currency_to_symbol(lot.get("current_bid", ""), auction_status['currency'])
+                print('formatted_currency', formatted_currency)
                 writer.writerow({
                     "Lot Number": lot.get("lot_number", ""),
                     "Title": lot.get("title1", ""),
@@ -251,6 +260,9 @@ def export_lots_as_csv(lots, db):
             Params={"Bucket": s3_bucket, "Key": s3_key},
             ExpiresIn=3600,
         )
+
+        # print("CSV file uploaded successfully.")
+        # print("Presigned URL:", s3_signed_url)
 
         return s3_signed_url
     except Exception as err:
