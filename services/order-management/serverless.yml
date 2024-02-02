@@ -158,6 +158,7 @@ functions:
               - Accept
               - Access-Control-Allow-Headers
           authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  
   sales_details:
     handler: handlers/sales_details.sales_details
     runtime: python3.8

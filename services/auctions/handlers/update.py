@@ -18,6 +18,10 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+
+
 def has_kyb_or_kyc_completed(email_address):
     seller_data = get_by_email(email_address, os.environ["SELLERS_TABLE"])
     if seller_data is not None:
@@ -102,8 +106,6 @@ def update_auction(event, context):
             published_status = 'false'
 
         # Initialize the MongoDB client
-        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
@@ -180,16 +182,12 @@ def update_auction(event, context):
                     {"$set": {"status": "Published"}}
                 )
                 for item in listLots:
-                    print('inside for', item)
                     start_date_timestamp = auction_record['start_date'] / 1000
                     date_time = datetime.utcfromtimestamp(start_date_timestamp)
                     iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
                     item['start_date'] = iso_date_with_offset
-                    print('item', item)
                     itemData = json.loads(json.dumps(item, cls= Encoder))
-                    print('itemdata:', itemData)
                     invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
-                    print('invoking', invoking)
                     collection = db[os.environ['STEP_FUNCTION_ARN_TABLE']]
                     step_request={}
                     step_request['arn'] = invoking['executionArn']
@@ -198,7 +196,6 @@ def update_auction(event, context):
                     step_request['auction_id'] = auction_id
                     step_request['seller_email'] = seller_email
                     inserted = collection.insert_one(step_request)
-                    print('inserted', inserted)
                     # for item in listLots:
                     #     print('inside for', item)
                     #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
@@ -242,7 +239,6 @@ def update_auction(event, context):
         # Filter the request body to keep only updatable fields
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
-        print(update_data)
         documents = []
         if request_body['end_date']:
             existing_lots_count = collection.count_documents(
@@ -269,15 +265,6 @@ def update_auction(event, context):
             for item in documents:
                 item_id = ObjectId(item['_id'])
                 findvalue = collection_lot.find({"_id": item_id})
-                print("findvalue", list(findvalue))
-                # update_operations.append({
-                #     {"_id": item_id},  # Directly use the ObjectId
-                #     "$set": {
-                #         "start_date": item['start_date'],
-                #         "end_date": item['end_date']
-                #     }
-                # })
-
                 result = collection_lot.update_many(
                         {"_id": item_id},
                         {
@@ -286,15 +273,12 @@ def update_auction(event, context):
                                 "end_date": item['end_date']
                             }
                         }
-                )
-                # print('herererere', list(result)) 
-        
-        # if len(update_data) > 0:
-        #     collection.update_one(
-        #         {"seller_email": seller_email, "auction_id": auction_id},
-        #         {"$set": update_data}
-        #     )
-        client.close()
+                )        
+        if len(update_data) > 0:
+            collection.update_one(
+                {"seller_email": seller_email, "auction_id": auction_id},
+                {"$set": update_data}
+            )
         return {
             "headers": headers,
             'statusCode': 204,
