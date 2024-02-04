@@ -30,7 +30,7 @@ module.exports.handler = async (event) => {
     try {
         const rediskey = `lot:${event._id}`
         const client = await redis.createClient({
-            url: process.env.REDIS_CONNECTION_URL,
+            url: process.env.REDIS_URL,
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         // Check if the Redis client is not open, then connect
         if (!client.isOpen) {

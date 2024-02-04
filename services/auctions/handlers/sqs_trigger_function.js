@@ -33,10 +33,15 @@ async function getLot(rediskey, client, auctionData) {
 
 function formatCurrency(amount, currencyCode) {
     try {
+        console.log('amountttt', amount)
+
         // Convert amount to a string
         const amountString = String(amount)
 
-        // Remove currency symbol and commas (if any)
+        // Check if the amount starts with a currency symbol
+        const hasCurrencySymbol = /^\s*[$€£¥]/.test(amountString)
+
+        // Remove currency symbol and commas
         const cleanedAmount = amountString.replace(/[^\d.]/g, '')
 
         const parsedAmount = parseFloat(cleanedAmount)
@@ -46,13 +51,13 @@ function formatCurrency(amount, currencyCode) {
             return 'Invalid amount'
         }
 
-        // Always format with currency, using Intl.NumberFormat for consistency
-        const formattedAmount = new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currencyCode,
-        }).format(parsedAmount)
-
-        console.log('format', formattedAmount)
+        // If the original amount had a currency symbol, include it in the formatted result
+        const formattedAmount = hasCurrencySymbol
+            ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currencyCode,
+            }).format(parsedAmount)
+            : parsedAmount.toString()
 
         return formattedAmount
     } catch (err) {
@@ -81,22 +86,12 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
     }
 }
 
-/**
- * Triggered function to process SQS events for auction completion.
- * Fetches bidder data, Redis client, lot data, and auction data.
- * Iterates through bidders, categorizing winning and not winning lots.
- * Sends email notifications to bidders based on auction outcome.
- * Updates auction status to 'Completed' in MongoDB.
- *
- * @param {object} event - SQS event triggering the function.
- * @returns {Promise} Promise representing the completion of the function.
- */
 module.exports.sqsTriggerFunction = async (event) => {
     try {
         connection = await mongodbHelper.connect()
         const getBidders = await mongodbHelper.getBidders(event)
         const client = await redis.createClient({
-            url: process.env.REDIS_CONNECTION_URL,
+            url: process.env.REDIS_URL,
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         if (!client.isOpen) {
             await client.connect()
@@ -120,7 +115,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
             let subjectDescription = 'You Won the Auction'
             get_lot.forEach((item) => {
-                item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                item.lot_image = `${process.env.CDN_LINK}${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
                     winningLot.push(item)
@@ -139,7 +134,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData[0].title,
-                logo_url: auctionData[0].logo_image === '' ? `${process.env.CDN_LINK}Logo.png` : `${process.env.CDN_LINK}${auctionData[0].logo_image}`,
+                logo_url: auctionData[0].logo_image === '' ? 'https://indyauction-assets-qa.eu-west-2.amazonaws.com/public/Logo.png' : `https://indyauction-assets-qa.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`,
                 not_winning_lot: notWinning,
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,

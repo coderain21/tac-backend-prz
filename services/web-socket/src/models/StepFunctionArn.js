@@ -31,5 +31,5 @@ const ARNSchema = new Schema({
 })
 
 ARNSchema.plugin(mongoosePaginate)
-const ARNSchemaManagement = mongoose.model('dev-step-function-arns', ARNSchema, 'dev-step-function-arns')
+const ARNSchemaManagement = mongoose.model('qa-step-function-arns', ARNSchema, 'qa-step-function-arns')
 module.exports = ARNSchemaManagement

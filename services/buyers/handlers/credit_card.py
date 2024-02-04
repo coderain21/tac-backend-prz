@@ -15,7 +15,7 @@ headers = {
 
 client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
-collection = db['dev-credit_card']
+collection = db['qa-credit_card']
 
 
 def credit_card(event, context):
