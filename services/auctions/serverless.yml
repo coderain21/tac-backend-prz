@@ -34,17 +34,17 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
-    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${env:CSV_FILE}
-    S3_BUCKET: ${env:S3_BUCKET}
-    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
-    COUNTER_LOT: ${env:COUNTER_LOT}
-    CDN_LINK: ${env:CDN_LINK}
-    BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${ssm:CSV_FILE}
+    S3_BUCKET: ${ssm:S3_BUCKET}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    CDN_LINK: ${ssm:CDN_LINK}
+    BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
     STATE_MACHINE_LOT_ARN:  ${ssm:STATE_MACHINE_LOT_ARN}
-    REDIS_URL: ${env:REDIS_URL}
-    STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
+    REDIS_URL: ${ssm:REDIS_URL}
+    STATE_MACHINE_AUCTION_ARN: ${ssm:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
