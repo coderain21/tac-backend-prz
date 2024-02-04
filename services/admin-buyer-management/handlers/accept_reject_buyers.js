@@ -109,7 +109,7 @@ module.exports.handler = async (event) => {
                 img: getAuction[0].logo_image === '' ? 'https://indyauction-assets-qa.s3.eu-west-2.amazonaws.com/public/Logo.png' : `https://indyauction-assets-qa.s3.eu-west-2.amazonaws.com/public/${getAuction[0].logo_image}`,
                 subject: 'Indy.auction-Your Paddle Number Awaits: Registration Successful',
             }
-            await helpers.sendPinpointEmail(requestBody.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+            await helpers.sendPinpointEmail(requestBody.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_PADDLE)
             requestBody.paddle = getPaddle.starting_sequence
         }
         const updateStatus = await mongodbHelper.commonUpdate(RegisteredUser, query, requestBody)

@@ -142,7 +142,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 subject: subjectDescription,
             }
 
-            return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL')
+            return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION)
         })
 
         const response = await Promise.all(promiseList)

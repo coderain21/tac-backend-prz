@@ -10,7 +10,7 @@ disabledDeprecations:
 provider:
   name: aws
   endpointType: REGIONAL
-  runtime: nodejs18.x
+  runtime: nodejs14.x
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
@@ -34,17 +34,17 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
-    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
-    S3_BUCKET: ${ssm:BUCKET_NAME}
-    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
-    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
-    CDN_LINK: ${ssm:CDN_URL}
-    BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
+    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${env:CSV_FILE}
+    S3_BUCKET: ${env:S3_BUCKET}
+    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
+    COUNTER_LOT: ${env:COUNTER_LOT}
+    CDN_LINK: ${env:CDN_LINK}
+    BID_INFORMATION_COLLECTION: ${env:BID_INFORMATION_COLLECTION}
     STATE_MACHINE_LOT_ARN:  ${ssm:STATE_MACHINE_LOT_ARN}
-    REDIS_CONNECTION_URL: ${ssm:REDIS_CONNECTION_URL}
-    STATE_MACHINE_AUCTION_ARN: ${ssm:STATE_MACHINE_AUCTION_ARN}
+    REDIS_URL: ${env:REDIS_URL}
+    STATE_MACHINE_AUCTION_ARN: ${env:STATE_MACHINE_AUCTION_ARN}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
@@ -53,6 +53,15 @@ provider:
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
+    TEMPLATE_ARN_AUCTION_COMPLETION: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     
     
   http:
@@ -68,7 +77,6 @@ provider:
             - cognito-idp:*
             - ses:*
             - s3:*
-            - sts:*
             - sqs:*
             - states:*
             - sts:*
@@ -223,27 +231,27 @@ functions:
   #   handler: handlers/view_lots.list_lots
   #   runtime: python3.8
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
+  #     - ${env:PYTHON_LIB_ARN}
   #   events:
   #     - http:
   #         cors: true
   #         path: /admin/lots
   #         method: get
   #         authorizer:
-  #             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  #             arn: ${env:COGNITO_AUTH_ARN}
 
   # admin-list_lots:
   #   handler: handlers/view_lots.list_lots
   #   runtime: python3.8
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
+  #     - ${env:PYTHON_LIB_ARN}
   #   events:
   #     - http:
   #         cors: true
   #         path: /admin/lots
   #         method: get
   #         authorizer:
-  #             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  #             arn: ${env:COGNITO_AUTH_ARN}
  
   admin_list_lots:
     handler: handlers/admin_list_lots.list_lots
@@ -457,6 +465,13 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+    
+    AuctionCompletion:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/send-auction-completion-email.html)}
+        Subject: Indy.auction - Auction Completion 
+        TemplateName: ${self:provider.stage}-send-auction-completion-email
 
 plugins:
   - serverless-offline
