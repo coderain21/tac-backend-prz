@@ -7,6 +7,8 @@ import csv
 import tempfile
 import boto3
 from lib.common_helper import Encoder
+from urllib.parse import unquote
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -15,6 +17,31 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+
+
+def currency_to_symbol(amount, currency_code):
+    currency_symbols = {
+        'GBP': '£',
+        'USD': '$',
+        'EUR': '€',
+        'HKD': 'HK$',
+        'JPY': '¥',
+        'CHF': 'Fr',
+        'SGD': 'S$',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'INR': '₹',
+        # Add more currencies as needed
+    }
+
+    if currency_code in currency_symbols:
+        symbol = currency_symbols[currency_code]
+        return f"{symbol}{amount}"
+    else:
+        return None  # Handle the case where the currency code is not recognized
+
 
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
@@ -35,21 +62,16 @@ def list_lots(event, context):
                     environment of the Lambda function.
     """
     try:
-        try:
-            seller_email = event['requestContext']['authorizer']['claims']['email']
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
+        print('query_parameters', query_parameters)
+        seller_email = query_parameters.get('seller_email')
+
         auction_id = query_parameters.get('auction_id')
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
         sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
+        print('search', search_keyword)
         page = int(event['queryStringParameters'].get(
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
@@ -57,9 +79,6 @@ def list_lots(event, context):
 
         export = event['queryStringParameters'].get('export', False)
         download_link = None
-
-        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
         collection_bidders = db[os.environ["UNIQUE_BIDDERS_COLLECTIONS"]]
         total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
@@ -77,6 +96,7 @@ def list_lots(event, context):
         # Query the MongoDB collection to find lots matching the seller email and auction ID
         search_criteria = {}
         if search_keyword:
+            search_keyword = unquote(query_parameters.get('search_keyword'))
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
             search_criteria['$or'] = [
@@ -110,7 +130,6 @@ def list_lots(event, context):
                 }
             }
         ]
-        print('combined_pipeline', combined_pipeline)
 
         result = list(collection.aggregate(combined_pipeline))
         print('result', result)
@@ -137,13 +156,13 @@ def list_lots(event, context):
             download_link = export_lots_as_csv(lots, db)
         if download_link is not None:
             body["csv_url"] = download_link
-        client.close()
         return {
             'headers': headers,
             "statusCode": 200,
             "body": json.dumps(body,cls= Encoder)
         }
     except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             'headers': headers,
@@ -166,7 +185,8 @@ def export_lots_as_csv(lots, db):
         auction_status = auction_collection.find_one({
             "seller_email": seller_email,
             "auction_id": auction_id
-        }, {"status": 1})
+        }, {"status": 1, "currency": 1})
+        print('auction_status', auction_status)
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
         csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
@@ -177,7 +197,7 @@ def export_lots_as_csv(lots, db):
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
-                 "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
+                 "Lot Number", "Title", "Starting Bid","Current Bid", "Top Bidder",  "Paddle Number"
             ])
             writer.writeheader()
             for lot in lots:
@@ -205,24 +225,24 @@ def export_lots_as_csv(lots, db):
                     status = 'Selling'
                 else:
                     status = 'No Bids'
-
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url
-
+                print('lot', lot)
+                formatted_currency = currency_to_symbol(lot.get("current_bid", ""), auction_status['currency'])
+                print('formatted_currency', formatted_currency)
                 writer.writerow({
                     "Lot Number": lot.get("lot_number", ""),
-                    "Thumbnail URL": thumbnail_url,
                     "Title": lot.get("title1", ""),
-                    "Starting Bid": lot.get("starting_bid", ""),
-                    "Top(Current) Bid": lot.get("current_bid", ""),
+                    "Starting Bid": currency_to_symbol(lot.get("starting_price", ""), auction_status['currency']),
+                    "Current Bid": currency_to_symbol(lot.get("current_bid", 0), auction_status['currency']) if lot.get("current_bid") else 0,
                     "Top Bidder": lot.get("top_bidder", ""),
-                    "Total Current Bid": lot.get("total_current_bid",""),
-                    "Total Bids": lot.get("total_bids", ""),
-                    "Active Bidders": lot.get("active_bidders", ""),
+                    # "Total Current Bid": lot.get("total_current_bid",""),
+                    # "Total Bids": lot.get("total_bids", ""),
+                    # "Active Bidders": lot.get("active_bidders", ""),
                     "Paddle Number": lot.get("paddle_number", ""),
-                    "Status(Selling, No Bids)": status,
-                    "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
+                    # "Status(Selling, No Bids)": status,
+                    # "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
                 })
 
         # Upload the file to S3

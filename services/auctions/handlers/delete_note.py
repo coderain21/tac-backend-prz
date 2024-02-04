@@ -6,6 +6,9 @@ from pymongo import MongoClient
 
 
 
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -64,8 +67,6 @@ def delete_note(event, context):
             event_body = json.loads(event['body'])
             note = event_body.get('note')
             print('hiiiiiiiiiiiii',note)
-            client = MongoClient(os.environ['MONGO_CLIENT'])
-            db = client[os.environ['DATABASE']]
             collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": note}}
             filters = {"seller_email": email_address, "auction_id": auction_id}

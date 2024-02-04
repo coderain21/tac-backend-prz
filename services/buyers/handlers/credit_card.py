@@ -12,6 +12,12 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+collection = db['dev-credit_card']
+
+
 def credit_card(event, context):
     """
     The `credit_card` function handles the verification and storage of credit card information using the
@@ -85,7 +91,7 @@ def credit_card(event, context):
             'registration_status': "Approved",
             "auction_id": auction_id
         }})
-        client.close()
+        # client.close()
         return{
             'statusCode': 200,
             'headers': headers,

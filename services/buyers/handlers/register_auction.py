@@ -15,6 +15,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+counter_collection= db[os.environ["COUNTER_LOT"]]
+user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
+
 def register_auction(event, context):
     """
     Register an auction for a buyer.
@@ -51,13 +61,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-        auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        counter_collection= db[os.environ["COUNTER_LOT"]]
-        user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
         data = event['queryStringParameters']
         auction_id= data.get('auction_id')
         auction_id= ObjectId(auction_id)

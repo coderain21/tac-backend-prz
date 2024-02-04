@@ -30,6 +30,7 @@ provider:
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SENDER_EMAIL_ADDRESS: no-reply@indy.auction
     
   http:
     cors: true
