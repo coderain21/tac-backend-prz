@@ -37,10 +37,10 @@ provider:
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     CSV_FILE: ${ssm:CSV_FILE}
-    S3_BUCKET: ${ssm:S3_BUCKET}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
-    CDN_LINK: ${ssm:CDN_LINK}
+    CDN_LINK: ${ssm:CDN_URL}
     BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
     STATE_MACHINE_LOT_ARN:  ${ssm:STATE_MACHINE_LOT_ARN}
     REDIS_URL: ${ssm:REDIS_URL}
