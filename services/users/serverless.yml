@@ -116,8 +116,7 @@ custom:
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
-
- `serverlessIfElse:
+  serverlessIfElse:
     - If: '${param:offline, "false"} == true'
       Set:
         provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
