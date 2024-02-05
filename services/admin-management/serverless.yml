@@ -189,6 +189,33 @@ functions:
           method: get
           authorizer:
                 arn: ${env:COGNITO_ADMIN_AUTH_ARN}
+  seller-details:
+    handler: handlers/seller_details.seller_detail
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /seller-details
+          method: get
+          authorizer:
+                arn: ${env:COGNITO_ADMIN_AUTH_ARN}
   buyer-details:
     handler: handlers/buyer_detail.buyer_detail
     runtime: python3.8
