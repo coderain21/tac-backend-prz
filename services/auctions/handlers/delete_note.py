@@ -39,8 +39,6 @@ def delete_note(event, context):
         key= event['queryStringParameters'].get('del','0')
         if key == '1':
             auction_id = event['queryStringParameters'].get('auction_id')
-            client = MongoClient(os.environ['MONGO_CLIENT'])
-            db = client[os.environ['DATABASE']]
             collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": ""}}
             filters = {"seller_email": email_address, "auction_id": auction_id}
@@ -63,10 +61,8 @@ def delete_note(event, context):
                 }
         elif key == '0':
             auction_id = event['queryStringParameters'].get('auction_id')
-            print(event)
             event_body = json.loads(event['body'])
             note = event_body.get('note')
-            print('hiiiiiiiiiiiii',note)
             collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": note}}
             filters = {"seller_email": email_address, "auction_id": auction_id}

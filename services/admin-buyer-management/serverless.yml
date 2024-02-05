@@ -79,9 +79,9 @@ custom:
       endpointType: REGIONAL
 
   serverlessIfElse:
-    - If: '"${opt:stage}" == "offline"'
+    - If: '${param:offline, "false"} == true'
       Set:
-        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+        provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
 
 
                 

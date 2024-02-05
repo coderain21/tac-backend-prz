@@ -71,10 +71,10 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
-  serverlessIfElse:
-    - If: '"${opt:stage}" == "offline"'
+ `serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
       Set:
-        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+        provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
 
                 
 

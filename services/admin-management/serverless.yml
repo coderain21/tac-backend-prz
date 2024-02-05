@@ -126,9 +126,9 @@ custom:
       endpointType: REGIONAL
 
   serverlessIfElse:
-    - If: '"${opt:stage}" == "offline"'
+    - If: '${param:offline, "false"} == true'
       Set:
-        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+        provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
 
 functions:   
   list-auction:
@@ -182,6 +182,33 @@ functions:
               - Accept
               - Access-Control-Allow-Headers
           path: /buyers
+          method: get
+          authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  list-sellers:
+    handler: handlers/list_sellers.list_sellers
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /sellers
           method: get
           authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
