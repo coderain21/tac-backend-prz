@@ -122,7 +122,39 @@ functions:
           path: /list/{seller_email}/{auction_id}
           method: GET
           authorizer:
+<<<<<<< Updated upstream
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+=======
+            arn: ${env:COGNITO_AUTH_ARN}
+  export-bidders:
+    handler: handlers/export_bidders.list_bidders
+    runtime: python3.8
+    layers:
+    - ${env:COMMON_PYTHON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+      - sg-0882c1da39e729097
+      subnetIds:
+      - subnet-0ff05c7c2bd2a3f87
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /export/{seller_email}/{auction_id}
+          method: get
+          authorizer:
+                arn: ${env:COGNITO_AUTH_ARN}
+
+>>>>>>> Stashed changes
   
 plugins:
   - serverless-offline
