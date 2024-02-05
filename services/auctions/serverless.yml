@@ -51,6 +51,7 @@ provider:
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
+    REDIS_ARN: ${env:REDIS_ARN}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     
     
@@ -341,6 +342,7 @@ functions:
       memorySize: 128
       layers:
         - ${env:PYTHON_LIB_ARN}
+        - ${env:REDIS_ARN}
       events:
         - http:
             cors: true

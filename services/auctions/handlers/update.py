@@ -5,7 +5,7 @@ import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.get import get_by_email
-from lib.invoke_step_function import invoke_state_machine
+from lib.invoke_step_function import invoke_state_machine, update_redis_data
 from lib.common_helper import Encoder
 from datetime import datetime, timezone
 
@@ -80,23 +80,26 @@ def update_auction(event, context):
     :return: The function `update_auction` returns a JSON response with the following properties:
     """
     try:
-        # try:
-        seller_email = 'sandhyashri+auction@7edge.com' #event['requestContext']['authorizer']['claims']['email']
-            # print('email ', seller_email)
-            # if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-            #         'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
-            #     return {
-            #         "statusCode": 403,
-            #         "headers": headers,
-            #         "body": json.dumps({"message": "do not have access to perform this API action"})
-            #     }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('email ', seller_email)
+            
+            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
+                return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "do not have access to perform this API action"})
+                }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         request_body = json.loads(event['body'])
+        end_date = request_body.get('end_date', None)
+        print('request', end_date)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
@@ -240,7 +243,8 @@ def update_auction(event, context):
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
         documents = []
-        if request_body['end_date']:
+        if end_date != None:
+            print('12345555')
             existing_lots_count = collection.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
             extension_time_str = auction_record.get('extension_time_between_lots', '0')
@@ -251,7 +255,7 @@ def update_auction(event, context):
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             count_import=0
-            for item in listLots:
+            for item in listLots: 
                 if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
                     item['start_date'] = start_date
                     item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
@@ -259,6 +263,13 @@ def update_auction(event, context):
                 elif auction_record['extension_type']== "All Lots":
                     item['start_date'] = start_date
                     item['end_date'] = end_date
+                if auction_record['status']== 'Accepting bids':
+                    start_date_timestamp = auction_record['start_date'] / 1000
+                    date_time = datetime.utcfromtimestamp(start_date_timestamp)
+                    iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+                    item['start_date'] = iso_date_with_offset
+                    update = update_redis_data(auction_record, item )
+                    print('update', update)
                 documents.append(item)
 
             update_operations = []
@@ -273,7 +284,8 @@ def update_auction(event, context):
                                 "end_date": item['end_date']
                             }
                         }
-                )        
+                )      
+
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
@@ -286,7 +298,7 @@ def update_auction(event, context):
             })
         }
     except Exception as err:
-        print(err)
+        print('err', err)
         return {
             "statusCode": 500,
             "headers": headers,
