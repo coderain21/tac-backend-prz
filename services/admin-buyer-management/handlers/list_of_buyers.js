@@ -32,16 +32,18 @@ async function exportAsCsv(bidders) {
         const auctionId = String(bidders[0]?.auction_id || '')
         // console.log('auctionId', auctionId)
         // const auctionCollection = db.collection(process.env.AUCTION_MONGODB_COLLECTION_NAME)
-        const auctionDetails = await mongodbHelper.getAuction(auctionId, process.env.AUCTION_MONGODB_COLLECTION_NAME)
+        // const auctionDetails = await mongodbHelper.getAuction(auctionId, process.env.AUCTION_MONGODB_COLLECTION_NAME)
         // console.log('auctionDetails', auctionDetails)
-        const filename = auctionDetails.auction_id
+        const filename = 'Bidder history'
+        console.log('filename', filename)
 
         // Use a temporary directory
         const tempDir = '/tmp' // Use the Lambda /tmp directory
         const csvFilePath = `${tempDir}/${filename}.csv`
+        console.log('CSV file path:', csvFilePath)
 
         const s3Key = `admin/exports/bidders/${auctionId}/${filename}.csv`
-        const s3Bucket = process.env.S3_BUCKET
+        const s3Bucket = process.env.BUCKET_NAME
 
         // console.log('Bidders details------------', bidders)
 
@@ -185,11 +187,11 @@ module.exports.handler = async (event) => {
 
         if (queryParams?.export === 'true') {
             // Export to CSV
-            // console.log('here', bidsList)
+            console.log('here', bidsList)
             const download_link = await exportAsCsv(bidsList.docs)
-            // console.log('download_link', download_link)
+            console.log('download_link', download_link)
             bidsList.download_link = download_link
-            // console.log('bidsList', bidsList)
+            console.log('bidsList', bidsList)
         }
 
         /** Return successful response with enterprise data and pagination info */
