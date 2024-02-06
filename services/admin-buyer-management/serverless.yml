@@ -108,7 +108,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /{email_address}
+          path: /admin/{email_address}
           method: GET
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
