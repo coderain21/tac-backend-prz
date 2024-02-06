@@ -15,7 +15,6 @@ const helpers = require('../lib/helper')
 const RegisteredUser = require('../entities/RegisteredUser')
 const mongodbHelper = require('../lib/mongodb_helper')
 
-
 let connection
 /**
  * List Bidders | Admin Buyers list
@@ -26,6 +25,12 @@ let connection
  * @returns {Object} (200) - List of buyers
  * @returns {Error} (500) - There was an error while listing buyers
  */
+
+// Convert date to desired format
+function formatDate(date) {
+    const options = { day: '2-digit', month: 'short', year: 'numeric' }
+    return date.toLocaleDateString('en-US', options)
+}
 
 async function exportAsCsv(bidders) {
     try {
@@ -64,7 +69,10 @@ async function exportAsCsv(bidders) {
         // eslint-disable-next-line no-restricted-syntax
         for (const bidder of bidders) {
             const dateRegistered = bidder.created_at instanceof Date ? bidder.created_at : ''
-            const formattedDate = dateRegistered ? dateRegistered.toISOString().split('T')[0] : ''
+            // const formattedDate = dateRegistered ? dateRegistered.toISOString().split('T')[0] : ''
+            const formattedDate = formatDate(bidder.created_at)
+            console.log('formattedDate', formattedDate)
+            console.log('date registered', dateRegistered)
 
             records.push({
                 'Paddle Number': bidder.paddle || '',
@@ -187,11 +195,11 @@ module.exports.handler = async (event) => {
 
         if (queryParams?.export === 'true') {
             // Export to CSV
-            console.log('here', bidsList)
+            // console.log('here', bidsList)
             const download_link = await exportAsCsv(bidsList.docs)
-            console.log('download_link', download_link)
+            // console.log('download_link', download_link)
             bidsList.download_link = download_link
-            console.log('bidsList', bidsList)
+            // console.log('bidsList', bidsList)
         }
 
         /** Return successful response with enterprise data and pagination info */

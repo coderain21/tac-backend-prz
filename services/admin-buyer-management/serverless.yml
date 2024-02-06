@@ -31,6 +31,7 @@ provider:
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: no-reply@indy.auction
+    BUCKET_NAME: ${ssm:BUCKET_NAME}
     
   http:
     cors: true
