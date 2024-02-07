@@ -10,12 +10,10 @@ from dotenv import load_dotenv  # Import the library
 # Load environment variables from .env file
 load_dotenv()
 
-# aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
-# aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
-# aws_region = os.environ.get('REGION')
-aws_access_key_id = 'AKIA5QZYLFWFE6TXB756' #os.environ.get('AWS_ACCESS_KEY_ID')
-aws_secret_access_key = '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'#os.environ.get('AWS_SECRET_ACCESS_KEY')
-aws_region = 'eu-west-2'
+aws_access_key_id = os.environ.get('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.environ.get('AWS_SECRET_ACCESS_KEY')
+aws_region = os.environ.get('REGION')
+
 # Configure AWS SDK
 session = boto3.Session(
     aws_access_key_id= aws_access_key_id,
