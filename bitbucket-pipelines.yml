@@ -174,7 +174,6 @@ definitions:
           - pip3 install pyjwt
           - pip3 install requests
           - npm i -g dredd
-          - python3 access_token_genation.py
           - ./api-testing.sh
           - ./doc.sh
           - pipe: atlassian/aws-s3-deploy:0.2.4
@@ -234,15 +233,15 @@ pipelines:
           fail-fast: true
           steps:
             - step: *BuildStep
-            # - step: *Pylint
-            # - step: *ESlint
-            # - step: *SAST
-            # - step: *SecretChecking
-            # - step: *LicenseCompliance
-            # - step: *DependencyScanning
-            # - step: *Danger
+            - step: *Pylint
+            - step: *ESlint
+            - step: *SAST
+            - step: *SecretChecking
+            - step: *LicenseCompliance
+            - step: *DependencyScanning
+            - step: *Danger
       - step: *APITesting
-      # - step: *DAST
+      - step: *DAST
         
       
     bugfix/**:
