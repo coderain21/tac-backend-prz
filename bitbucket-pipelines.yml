@@ -189,6 +189,7 @@ definitions:
               AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_MAIN
               AWS_DEFAULT_REGION: $AWS_REGION
               DISTRIBUTION_ID: $DISTRIBUTION_ID  
+
     - step: &DAST 
         name: Dynamic Application Security Testing (DAST) 
         image: softwaresecurityproject/zap-stable

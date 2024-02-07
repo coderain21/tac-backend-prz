@@ -31,6 +31,7 @@ provider:
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: no-reply@indy.auction
+    BUCKET_NAME: ${ssm:BUCKET_NAME}
     
   http:
     cors: true
@@ -84,6 +85,7 @@ custom:
         provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
 
 
+
                 
 
 
@@ -107,13 +109,14 @@ functions:
     events:
       - http:
           cors: true
-          path: /{email_address}
+          path: /admin/{email_address}
           method: GET
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   list:
     handler: handlers/list_of_buyers.handler
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -123,9 +126,11 @@ functions:
           method: GET
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
   
 plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
   - serverless-plugin-ifelse
+
