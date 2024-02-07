@@ -789,12 +789,12 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://seller-${opt:stage}${ssm:BASE_URL_BUYER}/"
-          - "https://seller-${opt:stage}${ssm:BASE_URL_BUYER}/"
+          - "https://${ssm:BASE_URL_SELLER}/"
+          - "https://${ssm:BASE_URL_SELLER}/"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
         LogoutURLs:
-          - "https://seller-${opt:stage}${ssm:BASE_URL_BUYER}/"
+          - "https://${ssm:BASE_URL_SELLER}/"
           - "http://localhost:3000/"
         IdTokenValidity: 60
         PreventUserExistenceErrors: LEGACY
@@ -832,12 +832,12 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "https://admin-${opt:stage}${ssm:BASE_URL_BUYER}/"
-          - "https://admin-${opt:stage}${ssm:BASE_URL_BUYER}/"
+          - "https://${ssm:BASE_URL_ADMIN}/"
+          - "https://${ssm:BASE_URL_ADMIN}/"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
         LogoutURLs:
-          - "https://admin-${opt:stage}${ssm:BASE_URL_BUYER}/"
+          - "https://${ssm:BASE_URL_ADMIN}/"
           - "http://localhost:3000/"
         IdTokenValidity: 60
         PreventUserExistenceErrors: LEGACY
