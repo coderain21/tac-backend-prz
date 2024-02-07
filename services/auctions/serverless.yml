@@ -63,6 +63,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL:  https://indyauction-assets-${opt:stage, self:provider.stage}.eu-west-2.amazonaws.com/public/Logo.png
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL}
 
     
     
