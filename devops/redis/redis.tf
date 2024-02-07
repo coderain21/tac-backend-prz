@@ -77,17 +77,6 @@ resource "aws_security_group" "security_groups" {
   }
   provider = aws.deployment-us
 }
-# resource "aws_elasticache_replication_group" "websocket" {
-#   automatic_failover_enabled = true
-#   subnet_group_name         = aws_elasticache_subnet_group.subnet_groups.name # Use the default subnet group
-#   replication_group_id      = "websocket-redis-cluster"
-#   description               = "websocket description"
-#   node_type                 = "cache.t4g.micro"  # Fix the syntax error here
-#   parameter_group_name      = "default.redis7.cluster.on"   # Adjust this based on your Redis version
-#   port                      = 6379
-#   num_cache_clusters        = 1
-#   provider                  = aws.deployment-us
-# }
 
 
 resource "aws_elasticache_replication_group" "websocket" {
@@ -108,7 +97,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   }
 }
 resource "aws_ssm_parameter" "distribution_id" {
-  name  = "REDIS_URL"
+  name  = "REDIS_ENDPOINT"
   type  = "String"
   value = aws_elasticache_replication_group.websocket.primary_endpoint_address
   provider = aws.deployment-us
