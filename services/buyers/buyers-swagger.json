@@ -1689,7 +1689,7 @@
                   }
                 },
                 "example": {
-                  "logo_image": "https://indyauction-assets-qa.s3.eu-west-2.amazonaws.com/public/Logo.png",
+                  "logo_image": "https://qa-cdn.indyauction.net/public/Logo.png",
                   "auction_id": "6520008e74542648a5819807",
                   "email_address": "aishwarya+vt@7edge.com",
                   "domain": "www-dev"
