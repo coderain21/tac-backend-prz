@@ -15,6 +15,7 @@ const helpers = require('../lib/helper')
 const RegisteredUser = require('../entities/RegisteredUser')
 const mongodbHelper = require('../lib/mongodb_helper')
 
+
 let connection
 /**
  * List Bidders | Admin Buyers list
@@ -39,7 +40,7 @@ async function exportAsCsv(bidders) {
         // const auctionCollection = db.collection(process.env.AUCTION_MONGODB_COLLECTION_NAME)
         // const auctionDetails = await mongodbHelper.getAuction(auctionId, process.env.AUCTION_MONGODB_COLLECTION_NAME)
         // console.log('auctionDetails', auctionDetails)
-        const filename = 'Bidder history'
+        const filename = 'Bidder List'
         console.log('filename', filename)
 
         // Use a temporary directory
@@ -71,15 +72,25 @@ async function exportAsCsv(bidders) {
             const dateRegistered = bidder.created_at instanceof Date ? bidder.created_at : ''
             // const formattedDate = dateRegistered ? dateRegistered.toISOString().split('T')[0] : ''
             const formattedDate = formatDate(bidder.created_at)
-            console.log('formattedDate', formattedDate)
-            console.log('date registered', dateRegistered)
+            let marketing // Declare the variable outside of the if...else block
+            console.log("Value of bidder.marketing:", bidder.marketing, typeof bidder.marketing)
 
+            
+            if (bidder.marketing == "true") {
+                marketing = 'Subscribed' // Assign value inside the if block
+            } else {
+                marketing = 'Unsubscribed' // Assign value inside the else block
+            }
+            
+            console.log("Value of marketing:", marketing)// Log the value of marketing
+
+               
             records.push({
                 'Paddle Number': bidder.paddle || '',
                 Name: `${bidder.first_name || ''} ${bidder.last_name || ''}`.trim(),
                 Email: bidder.email_address,
                 'Date Registered': formattedDate,
-                'Marketing Communication': bidder.marketing ? 'subscribed' : 'unsubscribed',
+                'Marketing Communication': marketing,//bidder.marketing === true ? 'Subscribed' : 'Unsubscribed',
                 'Bidder Status': bidder.status,
             })
         }
@@ -195,11 +206,11 @@ module.exports.handler = async (event) => {
 
         if (queryParams?.export === 'true') {
             // Export to CSV
-            // console.log('here', bidsList)
+            console.log('here', bidsList)
             const download_link = await exportAsCsv(bidsList.docs)
-            // console.log('download_link', download_link)
+            console.log('download_link', download_link)
             bidsList.download_link = download_link
-            // console.log('bidsList', bidsList)
+            console.log('bidsList', bidsList)
         }
 
         /** Return successful response with enterprise data and pagination info */
