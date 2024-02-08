@@ -53,7 +53,7 @@ provider:
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    TEMPLATE_ARN_AUCTION_COMPLETION: 
+    TEMPLATE_ARN_AUCTION_COMPLETION:
       Fn::Join:
         - ":"
         - - "arn"
@@ -62,6 +62,9 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
+    S3_BUCKET_URL:  https://qa-cdn.indyauction.net/public
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL}
+
     
     
   http:
@@ -157,7 +160,7 @@ custom:
   serverlessIfElse:
     - If: '${param:offline, "false"} == true'
       Set:
-        provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions: 
 
@@ -413,7 +416,9 @@ resources:
         Value: !Sub
           - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
           - StateMachineName: ${opt:stage}-lot-published
+
     
+
     AuctionStateMachineSSMParameter:
       Type: 'AWS::SSM::Parameter'
       Properties:
@@ -430,6 +435,24 @@ resources:
       Properties:
         QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
+
+    SQSSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: SQS_QUEUE_ARN
+        Type: String
+        Value: 
+          Fn::GetAtt:
+            - messageQueue
+            - Arn
+    SQSURLSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: QUEUE_URL
+        Type: 'String'
+        Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
+
+    
     GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
        Properties:

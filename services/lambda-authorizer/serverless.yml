@@ -44,7 +44,7 @@ custom:
 serverlessIfElse:
     - If: '${param:offline, "false"} == true'
       Set:
-        provider.environment.MONGODB_CONNECTION_STRING: ${env:MONGODB_CONNECTION_STRING}
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions:
   lambda-authorizer:

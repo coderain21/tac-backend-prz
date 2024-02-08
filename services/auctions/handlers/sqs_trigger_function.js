@@ -74,7 +74,7 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
                 TemplateData: templateData,
             },
         },
-        FromEmailAddress: 'no-reply@indy.auction',
+        FromEmailAddress: process.env.SENDER_EMAIL,
         Destination: {
             ToAddresses: [destinationId],
         },
@@ -134,7 +134,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData[0].title,
-                logo_url: auctionData[0].logo_image === '' ? 'https://indyauction-assets-qa.eu-west-2.amazonaws.com/public/Logo.png' : `https://indyauction-assets-qa.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`,
+                logo_url: auctionData[0].logo_image === '' ? `${process.env.S3_BUCKET_URL}/Logo.png` : `${process.env.S3_BUCKET_URL}/${auctionData[0].logo_image}`,
                 not_winning_lot: notWinning,
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
