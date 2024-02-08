@@ -15,7 +15,7 @@ collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
 
 
 
-redis_client = redis.Redis(host='dev-redis.68b9d9.ng.0001.euw2.cache.amazonaws.com', port=6379)
+redis_client = redis.Redis(host=[os.environ["REDIS_ENDPOINT"]], port=6379)
 
 def invoke_state_machine(invocation_params, step_function_arn=None):
     client = boto3.client('stepfunctions')
