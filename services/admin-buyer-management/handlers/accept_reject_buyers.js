@@ -106,7 +106,7 @@ module.exports.handler = async (event) => {
                 auction_start_time: formattedTime,
                 color: getAuction[0].paddle.text_color === '' ? '#FFFFFF' : getAuction[0].paddle.text_color,
                 background_color: getAuction[0].paddle.background_color === '' ? '#000000' : getAuction[0].paddle.background_color,
-                img: getAuction[0].logo_image === '' ? 'https://indyauction-assets-qa.s3.eu-west-2.amazonaws.com/public/Logo.png' : `https://indyauction-assets-qa.s3.eu-west-2.amazonaws.com/public/${getAuction[0].logo_image}`,
+                img: getAuction[0].logo_image === '' ? 'https://qa-cdn.indyauction.net/public/Logo.png' : `https://qa-cdn.indyauction.net/public/${getAuction[0].logo_image}`,
                 subject: 'Indy.auction-Your Paddle Number Awaits: Registration Successful',
             }
             await helpers.sendPinpointEmail(requestBody.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_PADDLE)
