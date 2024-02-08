@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
@@ -14,7 +15,6 @@ const createCsvWriter = require('csv-writer').createObjectCsvWriter
 const helpers = require('../lib/helper')
 const RegisteredUser = require('../entities/RegisteredUser')
 const mongodbHelper = require('../lib/mongodb_helper')
-
 
 let connection
 /**
@@ -69,28 +69,27 @@ async function exportAsCsv(bidders) {
 
         // eslint-disable-next-line no-restricted-syntax
         for (const bidder of bidders) {
+            // eslint-disable-next-line no-unused-vars
             const dateRegistered = bidder.created_at instanceof Date ? bidder.created_at : ''
             // const formattedDate = dateRegistered ? dateRegistered.toISOString().split('T')[0] : ''
             const formattedDate = formatDate(bidder.created_at)
             let marketing // Declare the variable outside of the if...else block
-            console.log("Value of bidder.marketing:", bidder.marketing, typeof bidder.marketing)
+            console.log('Value of bidder.marketing:', bidder.marketing, typeof bidder.marketing)
 
-            
-            if (bidder.marketing == "true") {
+            if (bidder.marketing == 'true') {
                 marketing = 'Subscribed' // Assign value inside the if block
             } else {
                 marketing = 'Unsubscribed' // Assign value inside the else block
             }
-            
-            console.log("Value of marketing:", marketing)// Log the value of marketing
 
-               
+            console.log('Value of marketing:', marketing)// Log the value of marketing
+
             records.push({
                 'Paddle Number': bidder.paddle || '',
                 Name: `${bidder.first_name || ''} ${bidder.last_name || ''}`.trim(),
                 Email: bidder.email_address,
                 'Date Registered': formattedDate,
-                'Marketing Communication': marketing,//bidder.marketing === true ? 'Subscribed' : 'Unsubscribed',
+                'Marketing Communication': marketing, // bidder.marketing === true ? 'Subscribed' : 'Unsubscribed',
                 'Bidder Status': bidder.status,
             })
         }
