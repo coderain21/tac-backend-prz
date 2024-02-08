@@ -24,7 +24,7 @@
     "request": "^2.88.2",
     "split-array": "^1.0.1",
     "stripe": "^13.2.0",
-    "uuid": "^9.0.0",
-    "csv-writer": "^1.6.0"
+    "csv-writer": "^1.6.0",
+    "uuid": "^9.0.0"
   }
 }
