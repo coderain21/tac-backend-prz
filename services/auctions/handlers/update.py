@@ -7,7 +7,6 @@ from bson import ObjectId
 from lib.get import get_by_email
 from lib.invoke_step_function import invoke_state_machine, update_redis_data
 from lib.common_helper import Encoder
-import requests
 from datetime import datetime, timezone
 
 
@@ -84,7 +83,6 @@ def update_auction(event, context):
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
             print('email ', seller_email)
-            
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
@@ -199,9 +197,6 @@ def update_auction(event, context):
                     step_request['auction_id'] = auction_id
                     step_request['seller_email'] = seller_email
                     inserted = collection.insert_one(step_request)
-                    # for item in listLots:
-                    #     print('inside for', item)
-                    #     invoke_state_machine(json.dumps(item, cls= Encoder), os.environ['STATE_MACHINE_LOT_ARN'])
                 return {
                     "statusCode": 204,
                     'headers': headers,
@@ -255,7 +250,7 @@ def update_auction(event, context):
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             count_import=0
-            for item in listLots: 
+            for item in listLots:
                 if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
                     item['start_date'] = start_date
                     item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000

@@ -42,7 +42,7 @@ def order_detail(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # email_address= 'aishwarya@7edge.com'
-        projection={
+        projection = {
             'order_number':1,
             'created_at':1,
             'auction_title':1,
@@ -52,7 +52,6 @@ def order_detail(event, context):
             'amount':1,
             'payment_intent':1,
             'email_address':1,
-            "name": 1,
             'status':1,
             "billing_address":1,
             "shipping_address":1,
