@@ -445,7 +445,6 @@ resources:
           Fn::GetAtt:
             - messageQueue
             - Arn
-        Overwrite: true
 
 
     SQSURLSSMParameter:
@@ -454,7 +453,6 @@ resources:
         Name: QUEUE_URL
         Type: 'String'
         Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
-        Overwrite: true
 
     
     GatewayResponseDefault4XX:
