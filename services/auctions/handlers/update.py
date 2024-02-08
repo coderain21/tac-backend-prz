@@ -7,6 +7,7 @@ from bson import ObjectId
 from lib.get import get_by_email
 from lib.invoke_step_function import invoke_state_machine, update_redis_data
 from lib.common_helper import Encoder
+import requests
 from datetime import datetime, timezone
 
 
@@ -268,7 +269,6 @@ def update_auction(event, context):
                     iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
                     item['start_date'] = iso_date_with_offset
                     update = update_redis_data(auction_record, item )
-                    print('update', update)
                 documents.append(item)
 
             update_operations = []

@@ -55,6 +55,7 @@ provider:
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    SOCKET_URL: ${ssm:SOCKET_URL}
     TEMPLATE_ARN_AUCTION_COMPLETION:
       Fn::Join:
         - ":"
@@ -448,7 +449,7 @@ resources:
           Fn::GetAtt:
             - messageQueue
             - Arn
-        Overwrite: true
+
 
 
     SQSURLSSMParameter:
@@ -457,7 +458,7 @@ resources:
         Name: QUEUE_URL
         Type: 'String'
         Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
-        Overwrite: true
+
 
     
     GatewayResponseDefault4XX:
