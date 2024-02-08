@@ -55,7 +55,7 @@ def clone_auction(event, context):
                 "body": json.dumps({"message": "Auction with given ID not found"})
             }
         counter = counter_collection.find_one_and_update(
-            {'auction_id': email_address,
+            {'seller_email': email_address,
                 'record_type': 'Auctions', 'status': 'Active'},
             {'$inc': {'starting_sequence': 1}},
             upsert=True,
