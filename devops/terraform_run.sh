@@ -30,12 +30,12 @@ terraform -chdir=devops/seller_web_application init
 terraform -chdir=devops/seller_web_application apply -auto-approve
 terraform -chdir=devops/api_gateway init
 terraform -chdir=devops/api_gateway apply -auto-approve
-git diff --quiet --exit-code HEAD -- devops/dependency/nodejs || {
+git diff --quiet --exit-code HEAD -- devops/dependency/node || {
   # If changes are found, execute the desired command
   echo "Changes detected in the devops folder!"
   # Replace "your_command_here" with the actual command you want to run
-  terraform -chdir=devops/dependency/nodejs init
-  terraform -chdir=devops/dependency/nodejs apply -auto-approve
+  terraform -chdir=devops/dependency/node init
+  terraform -chdir=devops/dependency/node apply -auto-approve
 }
 
 
