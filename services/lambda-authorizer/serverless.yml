@@ -6,14 +6,14 @@ provider:
   name: aws
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${env:REGION}
+  region: eu-west-2
   environment:
     STAGE: ${self:provider.stage}
-    REGION: ${env:REGION}
-    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
-    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
-    MONGO_CLIENT: ${env:MONGO_CLIENT}
-    DATABASE: ${env:DATABASE}
+    REGION: ${ssm:REGION}
+    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    DATABASE: ${opt:stage, self:provider.stage}
     
 
   iam:
@@ -40,17 +40,22 @@ custom:
     external:
       - '../../lib'
       - '../../entities'
+  
+serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions:
   lambda-authorizer:
     handler: handlers/auth.handler
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     layers:
-      - ${env:LAMBDA_LAYER}
+      - ${ssm:LAMBDA_AUTH_LIB_NODE_ARN}
 
 
 resources:
@@ -60,8 +65,8 @@ resources:
       Properties:
         Action: lambda:invokeFunction
         Principal: cognito-idp.amazonaws.com
-        FunctionName: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:buyers-${self:provider.stage}-cognito-pre-auth
-        SourceArn: arn:aws:cognito-idp:${env:REGION}:${env:ACCOUNT_ID}:userpool/${env:DEFAULT_USERPOOL_ID}
+        FunctionName: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:cognito-${self:provider.stage}-pre-auth
+        SourceArn: arn:aws:cognito-idp:${ssm:REGION}:${ssm:ACCOUNT_ID}:userpool/${ssm:BUYER_COGNITO_USERPOOL_ID}
 
 
 plugins:

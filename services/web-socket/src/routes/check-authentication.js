@@ -12,7 +12,7 @@ const buyerConnectionSchema = new mongoose.Schema({
     connected: Boolean,
 })
 
-const BidInformation = mongoose.model('dev-active-connection', buyerConnectionSchema)
+const BidInformation = mongoose.model('qa-active-connection', buyerConnectionSchema)
 
 module.exports.checkAuthentication = async (socket, data) => {
     const checkUser = await checkBuyerAuthentication(data)

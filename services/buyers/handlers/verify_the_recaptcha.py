@@ -146,7 +146,7 @@ def verify(event, context):
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
-        email_status = send_pinpoint_email(data['email_address'], os.environ["SENDER_EMAIL_ADDRESS"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
+        email_status = send_pinpoint_email(data['email_address'], os.environ["SES_SENDER_EMAIL_ID"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
                                         os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
         return {
             'statusCode': 201,

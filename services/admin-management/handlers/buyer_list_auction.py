@@ -60,6 +60,7 @@ def buyer_list_auction(event, context):
         dev_auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         user_collection = db[os.environ["SELLERS_TABLE"]]
+        auction_collection = os.environ['AUCTION_MONGODB_COLLECTION_NAME']
         print(1,dev_auction_register)
         result= user_collection.find_one({"user_type":"admin","email_address":seller_email})
         if result is None:
@@ -73,6 +74,7 @@ def buyer_list_auction(event, context):
         page_number= int(page_number)
         buyer_id=query_parameters.get('buyer_id')
         email_address= buyer_collection.find_one({"_id":ObjectId(buyer_id)},{"email_address":1,"_id":0})
+        print('buyer_email', email_address)
         page_size = 10
         # Calculate the number of documents to skip
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
@@ -87,7 +89,7 @@ def buyer_list_auction(event, context):
         pipeline = [
             {"$match": {"email_address": email_address["email_address"]}},
             {"$lookup": {
-                "from": "dev-auctions",
+                "from": auction_collection,
                 "localField": "auction_id",
                 "foreignField": "_id",
                 "as": "auction"
@@ -116,7 +118,6 @@ def buyer_list_auction(event, context):
             "statusCode": 404,
             "body": json.dumps({"message":  "Not Found"})
         }
-
 
         print(34566)
         return {

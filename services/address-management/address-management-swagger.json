@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/address-management"
+      "url": "https://apis-dev.indyauction.net/v1/address-management"
     }
   ],
   "tags": [
@@ -217,7 +217,7 @@
                 "example": {
                   "result": [
                     {
-                        "_id": "65574b01cfaec8f35e3d7a5a",
+                        "_id": "65b8f5f685a913300386a556",
                         "first_name": "",
                         "last_name": "",
                         "address_line1": "410",
@@ -228,7 +228,7 @@
                         "country": "usa",
                         "type": "billing",
                         "default": false,
-                        "email_address": "sthuthi+test@7edge.com"
+                        "email_address": "sthuthi+test1@7edge.com"
                     }
                   ]
                 }

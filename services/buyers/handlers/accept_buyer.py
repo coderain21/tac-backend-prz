@@ -89,7 +89,7 @@ def accept_buyer(event, context):
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":
-                logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
+                logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
             template_data = json.dumps({"paddle":paddle['starting_sequence'],
@@ -100,9 +100,10 @@ def accept_buyer(event, context):
                             "background_color":paddle_background_color,
                             "img":logo_img,
                             "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
+            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
                                 template_data,
-                                'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/paddle_email/EMAIL')
+                                os.environ['TEMPLATE_ARN_PADDLE']
+                                )
             auction_register.update_one({"auction_id": auction_id,'email_address':email_address, 'seller_email':seller_email },
                                     {"$set":{"status":register_status,'paddle':paddle['starting_sequence']}})
         elif status == 'Rejected':

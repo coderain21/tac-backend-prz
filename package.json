@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "deeplay-backend-apis"
+    "url": "indyauction-backend-apis"
   },
   "author": "sandhyashri",
   "license": "ISC",
@@ -19,7 +19,8 @@
     "eslint-plugin-import": "2.27.5",
     "eslint-plugin-n": "15.7.0",
     "eslint-plugin-promise": "6.1.1",
-    "serverless-offline": "^12.0.4"
+    "serverless-offline": "^12.0.4",
+    "serverless-plugin-ifelse": "^1.0.7"
   },
   "description": "",
   "dependencies": {
@@ -28,8 +29,9 @@
     "bcrypt": "^5.1.0",
     "country-state-picker": "^1.1.5",
     "crypto-js": "^4.1.1",
+    "csv-writer": "^1.6.0",
     "data-uri-to-buffer": "^5.0.1",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.1",
     "ejs": "^3.1.9",
     "eslint-config-airbnb": "19.0.4",
     "express": "^4.18.2",

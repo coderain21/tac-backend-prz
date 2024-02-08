@@ -31,16 +31,17 @@ def skip_404_test_results(transaction):
 
 @before_each
 def set_authorization(transaction):
-    token_buyers = str(os.environ.get('BUYERS'))
-    token_seller = str(os.environ.get('USER'))
+    if '/approval' in transaction['request']['uri']:
+        token = str(os.environ.get('USER'))
+    else:
+        token = str(os.environ.get('BUYERS'))
     print('s', transaction['expected']['statusCode'] == '400')
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])
 
-    if transaction['expected']['statusCode'] != '401' and '/approval' in transaction['request']['uri']:
-        transaction['request']['headers']['Authorization'] = f'Bearer {token_seller}'
-    else:
-        transaction['request']['headers']['Authorization'] = f'Bearer {token_buyers}'
+    if transaction['expected']['statusCode'] != '401':
+        transaction['request']['headers']['Authorization'] = f'Bearer {token}'
+
 
     # if transaction['expected']['statusCode'] == '400':
     #     transaction['request']['body'] = json.dumps({

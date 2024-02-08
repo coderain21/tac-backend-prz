@@ -125,7 +125,6 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
-
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             if kyc_kyb_review is not True:

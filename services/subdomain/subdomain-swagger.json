@@ -1,0 +1,151 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Seller-Subdomain APIs",
+      "description": "APIs to manage Subdomain side of the auction",
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis-dev.indyauction.net/v1/Subdomain"
+      }
+    ],
+    "tags": [
+      {
+        "name": "Subdomain Management",
+        "description": "APIs to manage the auctions"
+      }
+    ],
+    
+    "paths": {
+        "/subdomain":{
+            "patch": {
+                "tags": ["Subdomain Management"],
+                "summary": "updating the subdomain",
+                "parameters": [
+                  {
+                    "required": false,
+                    "name": "view",
+                    "in": "query",
+                    "description": "Get authentication parameters",
+                    "schema": {
+                      "type": "string"
+                    },
+                    "example": "False"
+                  }
+                ],
+                "requestBody": {
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "subdomain": {
+                              "type": "string"
+                            },
+                            "plan":{
+                              "type": "string"
+                          }
+                          }
+                        },
+                        "example":{
+                            "subdomain":"ssssss",
+                            "plan":"Pro"
+                        }
+                      }
+                    }
+                  },
+                "responses": {
+                  "200": {
+                    "description": "Subdomain Updated",
+                    "content": {
+                        "application/json ": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "message": {
+                                "type": "string"
+                              }
+                            },
+                            "example":{
+                                "message":"Subdomain Updated"
+                            }
+                          }
+                  }
+                }
+            },
+                  "403": {
+                    "description": "Forbidden",
+                    "content": {
+                      "application/json ": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "examples": {
+                          "example1": {
+                            "value": {
+                              "message": "You do not have access to perform this API action"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "404": {
+                    "description": "Bad request",
+                    "content": {
+                      "application/json": {
+                        "examples": {
+                          "example1": {
+                            "value": {
+                              "message": "already exist"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "500": {
+                    "description": "Internal Server Error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "message": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "examples": {
+                          "example1": {
+                            "value": {
+                              "message": "There was an error"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        },
+        "components": {
+            "securitySchemes": {
+              "BearerAuth": {
+                "type": "apiKey",
+                "name": "Authorization",
+                "in": "header",
+                "description": "Bearer Token"
+              }
+            }
+          }
+
+
+    }

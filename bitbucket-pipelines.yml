@@ -11,15 +11,21 @@ definitions:
       memory: 7128
       type: docker
 
+
   steps:
     - step: &BuildStep
         name: Build
+        image: sleavely/node-awscli:14.x
         caches:
           - node
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+          - printenv | awk -F= '!/^HOME|^PWD/ {print $1 "=\""$2"\""}' >> .env
+          - ./envs.sh
           - npm install
           - echo "Build"
+        artifacts:
+          - .env
 
     - step: &ESlint
         name: ESLint
@@ -67,6 +73,7 @@ definitions:
               CVSS_FAIL_LEVEL: "1"
         artifacts:
           - test-results/**  
+
 
     - step: &SecretChecking
         name: Secret Detection
@@ -133,41 +140,56 @@ definitions:
           #     # VERSION_LABEL: 'my-app-1.0.0'
           #     IGNORE_APPLICATION_STOP_FAILURES: 'true'
           #     FILE_EXISTS_BEHAVIOR: 'OVERWRITE'
+    
+    - step: &TerraDeploy
+        name: Deployment
+        size: 2x
+        script:
+          - apt-get update && apt-get install -y gnupg software-properties-common
+          - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          - gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+          - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+          - apt update
+          - apt-get install terraform
+          - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          - unzip -u awscliv2.zip
+          - ./aws/install
+          - bash devops/terraform_run.sh
 
 
     
     - step: &APITesting 
         name: API Test Automation
-        trigger: manual
         script:
           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - echo "API Testing Automation"
+          - source .env
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
-          - pip install pip==22.3.1 --break-system-packages
           - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
           - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - pip install pip==22.3.1 --break-system-packages
           - pip3 install boto3 dredd_hooks
-          - pip3 install requests
           - pip3 install python-dotenv
+          - pip3 install uuid
+          - pip3 install pyjwt
+          - pip3 install requests
           - npm i -g dredd
           - ./api-testing.sh
           - ./doc.sh
           - pipe: atlassian/aws-s3-deploy:0.2.4
             variables:
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_MAIN
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_MAIN
               AWS_DEFAULT_REGION: $AWS_REGION
-              S3_BUCKET: $BUCKET_NAME
+              S3_BUCKET: $DOCS_BUCKET_NAME
               LOCAL_PATH: "swaggerdocs"
           - pipe: atlassian/aws-cloudfront-invalidate:0.1.1
             variables:
-              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+              AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID_MAIN
+              AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY_MAIN
               AWS_DEFAULT_REGION: $AWS_REGION
-              DISTRIBUTION_ID: $DISTRIBUTION_ID
-        artifacts:
-          - test-results/**
-        
+              DISTRIBUTION_ID: $DISTRIBUTION_ID  
+
     - step: &DAST 
         name: Dynamic Application Security Testing (DAST) 
         image: softwaresecurityproject/zap-stable
@@ -205,7 +227,7 @@ pipelines:
    
     DAST:
       - step: *DAST
-  pull-requests:  
+  pull-requests:    
     feature/**:
       - parallel:
           fail-fast: true
@@ -218,8 +240,8 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
             - step: *Danger
-
-      
+      - step: *APITesting
+      - step: *DAST
         
       
     bugfix/**:
@@ -234,12 +256,8 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
             - step: *Danger
-
-
-
-  
-      
-     
+      - step: *APITesting
+      - step: *DAST
 
     hotfix/**:
       - parallel:
@@ -253,8 +271,40 @@ pipelines:
             - step: *LicenseCompliance
             - step: *DependencyScanning
             - step: *Danger
+      - step: *APITesting
+      - step: *DAST
+
+  branches:
+    qa:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *SecretChecking
+            
+      - stage:
+            name: Testing and QA Deployment
+            deployment: QA
+            steps:
+              - step: *TerraDeploy
+    
+    Pre-Production:
+      - stage:
+            name: Pre-Production Deployment
+            deployment: Pre-Production
+            steps:
+              - step: *BuildStep
+              - step: *TerraDeploy
 
 
+    master:
+      - stage:
+          name: PRODUCTION Deployment
+          deployment: New-Production
+          steps:
+             - step: *BuildStep
+             - step: *SecretChecking
+             - step: *TerraDeploy
      
 
   branches:
@@ -330,3 +380,10 @@ pipelines:
           deployment: production
           steps:
             - step: *Deploy
+      
+    qa:  
+      - stage:
+            name: Testing and QA Deployment
+            deployment: QA
+            steps:
+              - step: *TerraDeploy

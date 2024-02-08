@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/buyers"
+      "url": "https://apis-dev.indyauction.net/v1/buyers"
     }
   ],
   "tags": [
@@ -947,7 +947,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "655740aa211a354b8d3853b5"
+            "example": "6540c0beca765df3f80d2275"
           },
           {
             "required": true,
@@ -1689,7 +1689,7 @@
                   }
                 },
                 "example": {
-                  "logo_image": "https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png",
+                  "logo_image": "https://qa-cdn.indyauction.net/public/Logo.png",
                   "auction_id": "6520008e74542648a5819807",
                   "email_address": "aishwarya+vt@7edge.com",
                   "domain": "www-dev"
@@ -2166,7 +2166,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "655740aa211a354b8d3853b5"
+            "example": "65363ffe6ecaedfb6ffef6eb"
           }
         ],
         "responses": {
@@ -2189,7 +2189,7 @@
                 },
                 "example": {
                   "data": {
-                    "paddle": "1"
+                    "paddle": "22"
                   }
                 }
               }

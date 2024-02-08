@@ -11,7 +11,7 @@
     },
     "servers": [
       {
-        "url": "https://apis.indyauction.net/dev/v1/admin-buyer-bid-history"
+        "url": "https://apis-dev.indyauction.net/v1/admin-buyer-bid-history"
       }
     ],
     "tags": [
@@ -101,7 +101,7 @@
                   "example": {
                     "data": [
                       {
-                        "_id": "65a6bad418d9a00370823dd5",
+                        "_id": "65b8fc2701c706252f3c02a1",
                         "paddle_number": 1,
                         "name": "Sthuthi",
                         "bid_amount": 140,

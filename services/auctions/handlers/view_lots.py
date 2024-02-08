@@ -110,6 +110,7 @@ def list_lots(event, context):
                 }
             }
         ]
+        print('combined_pipeline', combined_pipeline)
 
         result = list(collection.aggregate(combined_pipeline))
         print('result', result)

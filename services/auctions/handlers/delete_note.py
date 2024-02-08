@@ -1,11 +1,9 @@
-# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
-# allow-wildcard-with-all=yes
-# disable=E0102,W0631,W0105,R1723,W0612,E1305,C0206,W0613,W0640,W0702, E0202,C0411, E0611,W3101, W0603,W0621,W3101,W0622,C0412,R1711, E1101,E1136,C0209,R1733, R1705, C0121, C0103,C0304, C0301, E0401, R0903,R0911,R1710,W0703,R1702,R0912,W1510,W1514,R1732,W1309,R0914,R0915,W0718,R0801'''
+
 '''The `import json` statement is importing the `json` module in Python.'''
 import json
 import os
 from pymongo import MongoClient
-# ignored-modules=data,data.get,utils.helper, lib.common_helper,handlers,entities,lib.email_helper,dredd_hooks
+
 
 
 client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -41,8 +39,6 @@ def delete_note(event, context):
         key= event['queryStringParameters'].get('del','0')
         if key == '1':
             auction_id = event['queryStringParameters'].get('auction_id')
-            client = MongoClient(os.environ['MONGO_CLIENT'])
-            db = client[os.environ['DATABASE']]
             collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": ""}}
             filters = {"seller_email": email_address, "auction_id": auction_id}
@@ -65,10 +61,8 @@ def delete_note(event, context):
                 }
         elif key == '0':
             auction_id = event['queryStringParameters'].get('auction_id')
-            print(event)
             event_body = json.loads(event['body'])
             note = event_body.get('note')
-            print('hiiiiiiiiiiiii',note)
             collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": note}}
             filters = {"seller_email": email_address, "auction_id": auction_id}

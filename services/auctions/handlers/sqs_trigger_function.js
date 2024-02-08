@@ -74,7 +74,7 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
                 TemplateData: templateData,
             },
         },
-        FromEmailAddress: 'no-reply@indy.auction',
+        FromEmailAddress: process.env.SENDER_EMAIL,
         Destination: {
             ToAddresses: [destinationId],
         },
@@ -115,7 +115,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
             let subjectDescription = 'You Won the Auction'
             get_lot.forEach((item) => {
-                item.lot_image = `https://cdn-dev.indyauction.net/public/${item.images[0].url}`
+                item.lot_image = `${process.env.CDN_LINK}${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
                     item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
                     winningLot.push(item)
@@ -134,7 +134,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData[0].title,
-                logo_url: auctionData[0].logo_image === '' ? 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png' : `https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/${auctionData[0].logo_image}`,
+                logo_url: auctionData[0].logo_image === '' ? `${process.env.S3_BUCKET_URL}/Logo.png` : `${process.env.S3_BUCKET_URL}/${auctionData[0].logo_image}`,
                 not_winning_lot: notWinning,
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
@@ -142,7 +142,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 subject: subjectDescription,
             }
 
-            return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), 'arn:aws:mobiletargeting:eu-west-2:929441721738:templates/send-auction-completion-email/EMAIL')
+            return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION)
         })
 
         const response = await Promise.all(promiseList)

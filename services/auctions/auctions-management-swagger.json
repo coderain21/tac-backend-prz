@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/auctions"
+      "url": "https://apis-dev.indyauction.net/v1/auctions"
     }
   ],
   "tags": [
@@ -1365,7 +1365,7 @@
                 ],
                 "additionalProperties": false,
                 "example": {
-                  "csv_url": "https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
+                  "csv_url": "https://indyauction-assets-dev.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
                   "auction_id": "A0172"
                 }
               }

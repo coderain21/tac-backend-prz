@@ -1,0 +1,30 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.1427.0",
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.3",
+    "joi": "^17.9.2",
+    "mongodb": "^5.5.0",
+    "mongoose": "^7.4.1",
+    "mongoose-paginate-v2": "^1.7.1",
+    "node-fetch": "^2.6.7",
+    "otp-generator": "^4.0.1",
+    "password-validator": "^5.3.0",
+    "redis": "^4.6.11",
+    "request": "^2.88.2",
+    "split-array": "^1.0.1",
+    "stripe": "^13.2.0",
+    "csv-writer": "^1.6.0",
+    "uuid": "^9.0.0"
+  }
+}
