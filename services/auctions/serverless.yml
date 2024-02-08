@@ -48,7 +48,7 @@ provider:
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
-    QUEUE_URL: ${ssm:QUEUE_URL}
+    QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
@@ -445,12 +445,13 @@ resources:
           Fn::GetAtt:
             - messageQueue
             - Arn
-    SQSURLSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: QUEUE_URL
-        Type: 'String'
-        Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
+
+    # SQSURLSSMParameter:
+    #   Type: AWS::SSM::Parameter
+    #   Properties:
+    #     Name: QUEUE_URL
+    #     Type: 'String'
+    #     Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
 
     
     GatewayResponseDefault4XX:
