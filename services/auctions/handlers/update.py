@@ -284,7 +284,7 @@ def update_auction(event, context):
                                 "end_date": item['end_date']
                             }
                         }
-                )      
+                )
 
         if len(update_data) > 0:
             collection.update_one(

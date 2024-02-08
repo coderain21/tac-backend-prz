@@ -4,6 +4,8 @@ import boto3
 import redis
 import os
 from lib.common_helper import Encoder
+import requests
+
 
 client_step_function = boto3.client('stepfunctions')
 from pymongo import MongoClient
@@ -96,9 +98,18 @@ def update_redis_data(auction_record, item):
             {"_id": getArn['_id']},
             {"$set": update_data}
         )
-        print('updating', updating)
-        # const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
-        # const updateARN = await mongodbHelper.update(getArn, data, StepFunctionArn)
+        payload = {
+          lot_id: item,
+        }
+        headersList = {
+            "Accept": "*/*",
+            "User-Agent": "API TEST",
+        }
+        req_url = 'https://dev-websocket.indyauction.net/'+ item
+        response = requests.request("GET", req_url, data=payload,  headers=headersList)        
+        response.raise_for_status()  # Raise an error for bad responses (4xx and 5xx)
+        response_data = response.json()
+        # print('resp', response_data)
 
         
         return True
