@@ -449,10 +449,6 @@ resources:
           Fn::GetAtt:
             - messageQueue
             - Arn
-<<<<<<< HEAD
-
-=======
->>>>>>> 922bd5f8a2cf2ef4b655140b58fdb0957530573f
 
 
     SQSURLSSMParameter:

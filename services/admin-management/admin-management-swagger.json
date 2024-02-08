@@ -666,10 +666,6 @@
                 "example": {
                   "sellers": [
                     {
-                      "_id": "65b79dad9c5418096cc1f868",
-                      "email_address": "anusha.k+admin@7edge.com"
-                    },
-                    {
                       "_id": "65b8d12da6bca79a00f3e48f",
                       "email_address": "sthuthi+testing1@7edge.com",
                       "created_at": "2024-01-30 10:36:29.937000"
@@ -713,9 +709,13 @@
                       "_id": "65c0b42f450ef7ab82692287",
                       "email_address": "namratha.shettigar+seller@7edge.com",
                       "created_at": "2024-02-05 10:10:55.075000"
+                    },
+                    {
+                      "_id": "65b79dad9c5418096cc1f868",
+                      "email_address": "anusha.k+admin@7edge.com"
                     }
                   ],
-                  "total_sellers": 14,
+                  "total_sellers": 21,
                   "page_size": 10,
                   "page_number": 1
                 }
