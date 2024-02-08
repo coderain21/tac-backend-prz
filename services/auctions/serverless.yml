@@ -449,7 +449,10 @@ resources:
           Fn::GetAtt:
             - messageQueue
             - Arn
+<<<<<<< HEAD
 
+=======
+>>>>>>> 922bd5f8a2cf2ef4b655140b58fdb0957530573f
 
 
     SQSURLSSMParameter:
@@ -458,7 +461,6 @@ resources:
         Name: QUEUE_URL
         Type: 'String'
         Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
-
 
     
     GatewayResponseDefault4XX:
