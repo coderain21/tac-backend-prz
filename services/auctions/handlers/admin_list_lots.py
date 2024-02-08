@@ -43,6 +43,29 @@ def currency_to_symbol(amount, currency_code):
         return None  # Handle the case where the currency code is not recognized
 
 
+
+def currency_to_symbol(amount, currency_code):
+    currency_symbols = {
+        'GBP': '£',
+        'USD': '$',
+        'EUR': '€',
+        'HKD': 'HK$',
+        'JPY': '¥',
+        'CHF': 'Fr',
+        'SGD': 'S$',
+        'AUD': 'A$',
+        'CAD': 'C$',
+        'INR': '₹',
+        # Add more currencies as needed
+    }
+
+    if currency_code in currency_symbols:
+        symbol = currency_symbols[currency_code]
+        return f"{symbol}{amount}"
+    else:
+        return None  # Handle the case where the currency code is not recognized
+
+
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
@@ -225,8 +248,6 @@ def export_lots_as_csv(lots, db):
                     status = 'Selling'
                 else:
                     status = 'No Bids'
-
-
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
                 thumbnail_url = s3_url_prefix + thumbnail_url

@@ -448,3 +448,11 @@ resource "aws_ssm_parameter" "sales_csv_file" {
   value = data.external.env.result["SALES_CSV_FILE"]
   provider = aws.deployment-ap
 }
+
+resource "aws_ssm_parameter" "socket_url" {
+  name  = "SOCKET_URL"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SOCKET_URL"]
+  provider = aws.deployment-ap
+}

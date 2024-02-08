@@ -52,7 +52,10 @@ provider:
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
+    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    SOCKET_URL: ${ssm:SOCKET_URL}
     TEMPLATE_ARN_AUCTION_COMPLETION:
       Fn::Join:
         - ":"
@@ -342,6 +345,7 @@ functions:
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
+        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
       events:
         - http:
             cors: true
