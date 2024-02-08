@@ -390,17 +390,17 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "{ssm:BASE_URL_BUYER}/"
-          - "{ssm:BASE_URL_BUYER}/login"
-          - "{ssm:BASE_URL_BUYER}/register"
+          - "${ssm:BASE_URL_BUYER}/"
+          - "${ssm:BASE_URL_BUYER}/login"
+          - "${ssm:BASE_URL_BUYER}/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
         LogoutURLs:
-          - "{ssm:BASE_URL_BUYER}/"
-          - "{ssm:BASE_URL_BUYER}/login"
-          - "{ssm:BASE_URL_BUYER}/register"
+          - "${ssm:BASE_URL_BUYER}/"
+          - "${ssm:BASE_URL_BUYER}/login"
+          - "${ssm:BASE_URL_BUYER}/register"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
           - "http://localhost:3000/login"
