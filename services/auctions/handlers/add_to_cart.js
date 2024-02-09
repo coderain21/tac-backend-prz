@@ -47,9 +47,7 @@ module.exports.handler = async (event) => {
 
         // const callSQS = await sqsTriggerFunction(event)
         if (auctionData[0].extension_type === 'All Lots' && event.lot_number === 1) {
-            console.log('entryyy')
-            const callSQS = await sqsTriggerFunction(event)
-            console.log('callSQS', callSQS)
+            await sqsTriggerFunction(event)
         }
         if (getLots.length > 0) {
             if (auctionData[0].extension_type === 'Cascade' || auctionData[0].extension_type === 'Individual Lots') {

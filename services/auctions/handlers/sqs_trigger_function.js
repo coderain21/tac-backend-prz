@@ -145,11 +145,9 @@ module.exports.sqsTriggerFunction = async (event) => {
             return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION)
         })
 
-        const response = await Promise.all(promiseList)
-        console.log('response', response)
+        await Promise.all(promiseList)
 
-        const updateAuction = await mongodbHelper.update(Auction, auctionData[0]._id, { status: 'Completed' })
-        console.log('update', updateAuction)
+        await mongodbHelper.update(Auction, auctionData[0]._id, { status: 'Completed' })
     } catch (err) {
         console.log('err', err)
     } finally {
