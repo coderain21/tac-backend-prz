@@ -42,14 +42,12 @@ module.exports.handler = async (event) => {
         await mongodbHelper.getLatestRecord(JSON.parse(getLotInfo), BidInformation)
         const currentTimestamp = new Date(Date.now()).getTime()
         const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp)
-        console.log('egttt', getLots, currentTimestamp)
-        console.log(auctionData)
 
         // const callSQS = await sqsTriggerFunction(event)
         if (auctionData[0].extension_type === 'All Lots' && event.lot_number === 1) {
             await sqsTriggerFunction(event)
         }
-        if (getLots.length > 0) {
+        if (getLots.length <= 0) {
             if (auctionData[0].extension_type === 'Cascade' || auctionData[0].extension_type === 'Individual Lots') {
                 await sqsTriggerFunction(event)
             }

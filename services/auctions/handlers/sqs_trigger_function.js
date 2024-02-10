@@ -23,7 +23,6 @@ const pinpoint = new PinpointEmail()
 
 let connection
 async function getLot(rediskey, client, auctionData) {
-    console.log('auction_data', auctionData)
     const allBidders = await client.hGetAll('lot', rediskey)
     return Object.values(allBidders || {}).filter((bidder) => {
         const parsedBidder = JSON.parse(bidder)
@@ -38,9 +37,6 @@ function formatCurrency(amount, currencyCode) {
         // Convert amount to a string
         const amountString = String(amount)
 
-        // Check if the amount starts with a currency symbol
-        const hasCurrencySymbol = /^\s*[$€£¥]/.test(amountString)
-
         // Remove currency symbol and commas
         const cleanedAmount = amountString.replace(/[^\d.]/g, '')
 
@@ -51,13 +47,13 @@ function formatCurrency(amount, currencyCode) {
             return 'Invalid amount'
         }
 
-        // If the original amount had a currency symbol, include it in the formatted result
-        const formattedAmount = hasCurrencySymbol
-            ? new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: currencyCode,
-            }).format(parsedAmount)
-            : parsedAmount.toString()
+        // Include commas and currency symbol in the formatted result
+        const formattedAmount = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode,
+            minimumFractionDigits: 2, // Adjust as needed
+            maximumFractionDigits: 2, // Adjust as needed
+        }).format(parsedAmount)
 
         return formattedAmount
     } catch (err) {
