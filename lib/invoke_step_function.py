@@ -87,16 +87,18 @@ def update_redis_data(auction_record, item):
             {"_id": getArn['_id']},
             {"$set": update_data}
         )
+        lots = redis_client.hgetall('lot')
+        updatedLot = [json.loads(bidder) for bidder in lots.values() if json.loads(bidder)['_id'] == lot_id]
         payload = {
-          "lots": item,
-        }
+          "lots": updatedLot[0],
+        }        
         headersList = {
             "Accept": "*/*",
             "User-Agent": "API TEST",
             "Content-Type": "application/json" 
 
         }
-        req_url = os.environ["SOCKET_URL"] + "/notification"
+        req_url = os.environ.get("SOCKET_URL") + "/notification"
         response = requests.request("post", req_url, data=json.dumps(payload, cls= Encoder),  headers=headersList)        
         response.raise_for_status()  # Raise an error for bad responses (4xx and 5xx)
         response_data = response.json()
