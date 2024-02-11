@@ -154,7 +154,7 @@ definitions:
           - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           - unzip -u awscliv2.zip
           - ./aws/install
-          - mkdir -p devops/dependency/node/layers
+          - mkdir -p devops/dependency/node/layers && mkdir -p devops/dependency/python/python_lib2 && mkdir -p devops/dependency/python/python_lib && mkdir -p devops/dependency/bitbucket-layer-node/layer && mkdir -p devops/dependency/nodejs-auth-layer/layer 
           - bash devops/terraform_run.sh
 
 
