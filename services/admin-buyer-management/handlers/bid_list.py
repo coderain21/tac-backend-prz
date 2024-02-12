@@ -46,6 +46,7 @@ def list_bids(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
+            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -82,7 +83,7 @@ def list_bids(event, context):
         print('total_bids', total_bidders)
 
         # Define the sort criteria based on user input
-        if sort_by in ['name', 'status', 'title1', 'lot_number', 'bid_amount', 'paddle_number', 'updated_at']:
+        if sort_by in ['name', 'status', 'lot_title', 'lot_number', 'bid_amount', 'paddle_number', 'updated_at']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
         else:
@@ -95,8 +96,8 @@ def list_bids(event, context):
             escaped_search_keyword = prepend_backslash(search_keyword)
             print(escaped_search_keyword)
             search_criteria['$or'] = [
-                {"title1": {"$regex": escaped_search_keyword, "$options": "i"}},
-                {"top_bidder": {"$regex": escaped_search_keyword, "$options": "i"}},
+                {"lot_title": {"$regex": escaped_search_keyword, "$options": "i"}},
+                {"name": {"$regex": escaped_search_keyword, "$options": "i"}},
             ]
 
         # Combine the search and sort criteria
