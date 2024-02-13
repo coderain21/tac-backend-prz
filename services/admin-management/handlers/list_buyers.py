@@ -101,7 +101,7 @@ def list_buyers(event, context):
             {"$group": {"_id": "$email_address"}},
             {"$count": "total_buyers"}
         ]
-        
+
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
         response_body = {

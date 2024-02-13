@@ -77,7 +77,6 @@ def list_bids(event, context):
         export = event['queryStringParameters'].get('export', False)
         download_link = None
 
-        
         total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
         print('total_bids', total_bidders)
