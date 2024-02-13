@@ -89,7 +89,7 @@ def list_bids(event, context):
             # Check if the sort_by parameter is bid_status
             if sort_by == 'bid_status':
                 # Use a lambda function to map the bid_status values to their corresponding numerical values
-                sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING, 
+                sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING,
                                 lambda x: bid_status_mapping.get(x[sort_by], float('inf')))]
             else:
                 # For other sort_by parameters, use the default sorting criteria
