@@ -16,8 +16,11 @@ const AWS = require('aws-sdk')
 
 const cognito = new AWS.CognitoIdentityServiceProvider()
 const Users = require('../entities/Buyers')
+const Counter = require('../entities/Counter')
 const mongoConnection = require('../lib/mongodb_helper')
 const cognitoHelper = require('../lib/cognito_helper')
+
+mongoConnection.connect()
 
 exports.handler = async (event, context, callback) => {
     console.log('event', JSON.stringify(event))
@@ -52,9 +55,18 @@ exports.handler = async (event, context, callback) => {
             }
             let newPassword = process.env.SELLER_GOOGLE_PASSWORD// Change the length as needed
             console.log('newPassword', newPassword)
+
             console.log('skey', process.env.PASSWORD_SECRET_KEY)
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
             console.log('event - >', event)
+
+            const counter = await Counter.findOneAndUpdate(
+                { record_type: 'Buyers' },
+                { $inc: { starting_sequence: 1 } },
+                { returnDocument: 'after', upsert: true },
+            )
+            const buyerId = `B${String(counter.value.starting_sequence).padStart(4, '0')}`
+
             const userData = {
                 first_name: '',
                 last_name: '',
@@ -64,14 +76,15 @@ exports.handler = async (event, context, callback) => {
                 terms_and_condition: true,
                 user_type: 'buyer',
                 newsletter_notification: false,
-
+                created_at: new Date(),
+                buyer_id: buyerId,
             }
-            const connection = await mongoConnection.connect()
+            // const connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
             console.log(user)
             const cognitoResponse = await cognitoHelper.buyerCognitoCreate(userData, event.userPoolId)
             console.log(cognitoResponse)
-            await connection.disconnect()
+            // await connection.disconnect()
             await linkUser(event.request.userAttributes.email, event)
         } catch (error) {
             throw error
