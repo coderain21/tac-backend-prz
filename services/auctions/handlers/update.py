@@ -259,17 +259,13 @@ def update_auction(event, context):
                     item['start_date'] = start_date
                     item['end_date'] = end_date
                 if auction_record['status']== 'Accepting bids':
-                    start_date_timestamp = auction_record['start_date'] / 1000
-                    date_time = datetime.utcfromtimestamp(start_date_timestamp)
-                    iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
-                    item['start_date'] = iso_date_with_offset
                     update = update_redis_data(auction_record, item )
                 documents.append(item)
 
             update_operations = []
             for item in documents:
                 item_id = ObjectId(item['_id'])
-                findvalue = collection_lot.find({"_id": item_id})
+                # findvalue = collection_lot.find({"_id": item_id})
                 result = collection_lot.update_many(
                         {"_id": item_id},
                         {
