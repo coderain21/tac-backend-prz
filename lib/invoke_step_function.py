@@ -57,7 +57,6 @@ def invoke_state_machine_for_auction_end(invocation_params, step_function_arn=No
 
 def update_redis_data(auction_record, item): 
     try:
-        print('item', item)
         start_date_timestamp = auction_record['start_date'] / 1000
         date_time = datetime.utcfromtimestamp(start_date_timestamp)
         iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
@@ -88,13 +87,10 @@ def update_redis_data(auction_record, item):
         )
         lots = redis_client.hgetall('lot')
         updatedLot = [json.loads(bidder) for bidder in lots.values() if json.loads(bidder)['_id'] == lot_id]
-        print('updatedLot', updatedLot)
         response = client_step_function.start_execution(
             stateMachineArn= os.environ['STATE_MACHINE_LOT_ARN'],
             input= json.dumps(updatedLot[0], cls= Encoder)
         )
-        
-        print('response', response)
         update_data = {
             "arn": response['executionArn']
         }
@@ -112,7 +108,6 @@ def update_redis_data(auction_record, item):
             "Content-Type": "application/json" 
 
         }
-        print('payload', payload)
         req_url = os.environ.get("SOCKET_URL") + "/notification"
         response = requests.request("post", req_url, data=json.dumps(payload, cls= Encoder),  headers=headersList)        
         response.raise_for_status()  # Raise an error for bad responses (4xx and 5xx)
