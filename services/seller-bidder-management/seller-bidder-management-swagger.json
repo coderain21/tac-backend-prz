@@ -1,0 +1,232 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Seller | List Bidders",
+      "description": "Seller list the bidders",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis-dev.indyauction.net/v1/seller-bidder-management"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Seller | List Bidders",
+          "description": "APIs to view list of the bidders"
+      }
+    ],
+    "paths": {
+      "/":{
+        "get": {
+          "tags": [
+            "Seller| Bidder Management"
+            
+          ],
+          "summary": "Listing Bidders",
+          "description": "Listing Bidders",
+          "parameters": [
+            {
+              "name": "sort_key",
+              "in": "query",
+              "description": "Sort by key",
+              "schema": {
+                "type": "string"
+              },
+              "example": "name, email_address"
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "ascending or descending",
+              "schema": {
+                "type": "string"
+              },
+              "example": "ascending"
+            },
+            {
+              "name": "page_number",
+              "in": "query",
+              "description": " page number",
+              "schema": {
+                "type": "integer"
+              },
+              "example": 1
+            },
+            {
+              "name": "search",
+              "in": "query",
+              "description": "search key",
+              "schema": {
+                "type": "string"
+              },
+              "example": "C"
+            }
+  
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved buyers",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": { 
+                      "buyers": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string"
+                            },
+                            "email_address": {
+                              "type": "number"
+                            },
+                            "marketing": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "total_buyers": {
+                        "type": "integer"
+                      },
+                      "page_number": {
+                        "type": "integer"
+                      },
+                      "page_size": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "example": {
+                    "buyers": [
+                      {
+                        "_id": "65c1bbb9296ef7eb552eb218",
+                        "name": "Arya ",
+                        "email_address": "sushiarya@7edge.com",
+                        "created_at": "2024-02-06 04:55:21.660000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c22a8e58d81e0503b38374",
+                        "name": "Anusha K",
+                        "email_address": "anusha.k+bidder1@7edge.com",
+                        "created_at": "2024-02-06 12:48:14.441000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c22bc058d81e0503b38375",
+                        "name": "Angel ",
+                        "email_address": "angel123@7edge.com",
+                        "created_at": "2024-02-06 12:53:20.544000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c22c0c58d81e0503b38376",
+                        "name": "Miranda ",
+                        "email_address": "janemiranda@7edge.com",
+                        "created_at": "2024-02-06 12:54:36.927000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c22c7358d81e0503b38377",
+                        "name": "Kaisy ",
+                        "email_address": "kaisy@7edge.com",
+                        "created_at": "2024-02-06 12:56:19.972000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c3160517f1cca5bcb8675c",
+                        "name": "Anju s",
+                        "email_address": "sandhyashri+buyer2805@7edge.com",
+                        "created_at": "2024-02-07 05:32:53.095000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c3169317f1cca5bcb8675d",
+                        "name": " ",
+                        "email_address": "namratha.shettigar@7edge.com",
+                        "created_at": "2024-02-07 05:35:15.188000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c3563a610897132098470f",
+                        "name": " ",
+                        "email_address": "sandhyashri@7edge.com",
+                        "created_at": "2024-02-07 10:06:50.355000",
+                        "marketing": false
+                      },
+                      {
+                        "_id": "65c35c4ad039ad7a7d034c39",
+                        "name": "Sandhya S",
+                        "email_address": "sandhyashri+12345678@7edge.com",
+                        "created_at": "2024-02-07 10:32:42.828000",
+                        "marketing": false
+                      }
+                    ],
+                    "total_buyers": 27,
+                    "page_size": 10,
+                    "page_number": 1
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                          "example": "You do not have access to perform this API action"
+                        
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  
