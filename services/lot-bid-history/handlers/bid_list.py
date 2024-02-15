@@ -44,25 +44,25 @@ def list_bids(event, context):
                     environment of the Lambda function.
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['email']
-        #     if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-        #         return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['email']
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
         print('here')
-        email_address='sthuthi+testing@7edge.com'
+        # email_address='sthuthi+testing@7edge.com'
         auction_id = query_parameters.get('auction_id')
         print('auction_id', auction_id)
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
