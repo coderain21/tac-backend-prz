@@ -355,6 +355,20 @@
                 "example": {
                   "buyers": [
                     {
+                      "_id": "65cc9e212eb6f2314355c5ec",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX19dE7O6j5jYrrTT2MV8NWiOjD92QMoPRkI=",
+                      "email_address": "sandhyashri@7edge.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "",
+                      "last_name": "",
+                      "registered_through": "federated",
+                      "created_at": "2024-02-14 11:04:01.224000",
+                      "buyer_id": "0143",
+                      "__v": 0
+                    },
+                    {
                       "_id": "65ccb24d32dbbc56c941e74a",
                       "user_type": "buyer",
                       "password": "U2FsdGVkX18BeZP7zO8FTLAav+qG8U6I0MJb/1oPDUU=",
@@ -399,20 +413,6 @@
                           "auth": "B2Z4ziHkBOgcIoUc62Lw_A"
                         }
                       }
-                    },
-                    {
-                      "_id": "65cc9e212eb6f2314355c5ec",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19dE7O6j5jYrrTT2MV8NWiOjD92QMoPRkI=",
-                      "email_address": "sandhyashri@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "federated",
-                      "created_at": "2024-02-14 11:04:01.224000",
-                      "buyer_id": "0143",
-                      "__v": 0
                     },
                     {
                       "_id": "654f761642ec4ad6db303f3e",
