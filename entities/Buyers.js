@@ -25,6 +25,8 @@ const UserSchema = new Schema({
     first_name: { type: String, trim: true, default: '' },
     last_name: { type: String, trim: true, default: '' },
     registered_through: { type: String, trim: true, default: '' },
+    created_at: { type: Date, default: Date.now },
+    buyer_id: { type: String, trim: true, default: '' },
 })
 
 UserSchema.plugin(mongoosePaginate)
