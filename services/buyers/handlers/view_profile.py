@@ -104,7 +104,7 @@ def view_profile(event, context):
                                                    {"$set": update_data})
             register_result = register_collection.find_one_and_update({'email_address':email_address, 'auction_id':auction_id},
                                                    {"$set": register_update})
-            if result is None or register_result is None:
+            if result is None:
                 return {
                     "statusCode": 404,
                     "headers": headers,
