@@ -228,6 +228,15 @@ pipelines:
    
     DAST:
       - step: *DAST
+    
+    CreateDisposableEnvironment:
+      - stage:
+          name: Testing and Pre-Production Deployment
+          deployment: Pre-Production
+          image: python:3.7.2
+          steps:
+            - step: *BuildStep
+            - step: *TerraDeploy
   pull-requests:    
     feature/**:
       - parallel:
@@ -309,82 +318,33 @@ pipelines:
      
 
   branches:
-    develop:
+    qa:
       - parallel:
           fail-fast: true
           steps:
             - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
             - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-            name: Testing and DEV Deployment
-            deployment: develop
-            steps:
-              - step: *DevDeploy
-              - step: *DAST
-      - step: *APITesting
-
-      
-
-    staging:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-            name: STAGING Deployment
-            deployment: staging
-            steps:
-              - step: *Deploy
-              
-
-    beta:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-          name: BETA Deployment
-          deployment: beta
-          steps:
-            - step: *Deploy
-              
-    master:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-          name: PRODUCTION Deployment
-          deployment: production
-          steps:
-            - step: *Deploy
-      
-    qa:  
+            
       - stage:
             name: Testing and QA Deployment
             deployment: QA
             steps:
               - step: *TerraDeploy
+    
+    Pre-Production:
+      - stage:
+            name: Pre-Production Deployment
+            deployment: Pre-Production
+            steps:
+              - step: *BuildStep
+              - step: *TerraDeploy
+
+
+    master:
+      - stage:
+          name: PRODUCTION Deployment
+          deployment: New-Production
+          steps:
+             - step: *BuildStep
+             - step: *SecretChecking
+             - step: *TerraDeploy
