@@ -32,6 +32,10 @@ provider:
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     BUCKET_NAME: ${ssm:BUCKET_NAME}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+
+
   
 
     
@@ -93,11 +97,11 @@ functions:
     timeout: 60
     runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
       - http:
           cors: true
-          path: /list
+          path: /
           method: GET
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
