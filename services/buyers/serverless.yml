@@ -41,16 +41,6 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    BUYER_EMAIL_OTP_TEMPLATE: 
-      Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "mobiletargeting"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
-      
     ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
@@ -58,12 +48,34 @@ provider:
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
-    BUYER_AUCTION_REGISTER_TEMPLATE: 
-      Fn::GetAtt:
-      - "sesTemplate"
-      - "Arn"
-    
     JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
+    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    CDN_LINK: ${ssm:CDN_URL}
+    DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
+    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
+    CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
+    TEMPLATE_ARN_EMAIL_OTP: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-email-otp-template/EMAIL"
+    TEMPLATE_ARN_WELCOME_EMAIL: 
+       Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-welcome_email_template/EMAIL"
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
         - ":"
@@ -82,17 +94,21 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-paddle/EMAIL"
-         
-   
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
-    CDN_LINK: ${ssm:CDN_URL}
-    DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
-    DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
-    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
-    CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
-    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
+    BUYER_AUCTION_REGISTER_TEMPLATE: 
+      Fn::GetAtt:
+      - "sesTemplate"
+      - "Arn"
+
+    BUYER_EMAIL_OTP_TEMPLATE: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
+    
     
   http:
     cors: true
@@ -144,6 +160,16 @@ custom:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions: 
+  pre-auth:
+    handler: handlers/pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      
+      - ${ssm:COMMON_LIB_ARN}
 
   view:
     handler: handlers/view.view

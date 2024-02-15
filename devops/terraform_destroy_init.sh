@@ -70,9 +70,8 @@ sls remove --stage ${STAGE} --max-concurrency 5
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
 terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/kms init && terraform -chdir=devops/kms destroy -auto-approve
-terraform -chdir=devops/dependency/python init && terraform -chdir=devops/dependency/python destroy -auto-approve & terraform -chdir=devops/dependency/nodejs-auth-layer init && terraform -chdir=devops/dependency/nodejs-auth-layer destroy -auto-approve
-terraform -chdir=devops/dependency/node init && terraform -chdir=devops/dependency/node destroy -auto-approve & terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve
+terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve
 terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve & terraform -chdir=devops/admin_web_application init && terraform -chdir=devops/admin_web_application destroy -auto-approve
 terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
 
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependencies/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
