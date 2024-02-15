@@ -105,7 +105,7 @@ functions:
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  bid-list:
+  bid-listing:
     handler: handlers/bid_list.list_bids
     timeout: 60
     runtime: python3.8
@@ -129,7 +129,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          path: /bids
+          path: /seller/bids
           method: get
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}

@@ -62,7 +62,7 @@ def list_bids(event, context):
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
         print('here')
-        email_address='sthuthi@7edge.com'
+        email_address='sthuthi+testing@7edge.com'
         auction_id = query_parameters.get('auction_id')
         print('auction_id', auction_id)
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
