@@ -73,3 +73,4 @@ def generate_token(user_type):
 generate_token("USER")
 generate_token("BUYERS")
 generate_token('ADMIN')
+
