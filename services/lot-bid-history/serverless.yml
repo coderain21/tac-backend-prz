@@ -19,12 +19,21 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     REGION: ${ssm:REGION}
+    DATABASE: ${opt:stage, self:provider.stage}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
-    
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-bid-informations
+    UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SENDER_EMAIL_ADDRESS: no-reply@indy.auction
+    BUCKET_NAME: ${ssm:BUCKET_NAME}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+
   http:
     cors: true
     authorizers:

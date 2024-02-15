@@ -44,25 +44,27 @@ def list_bids(event, context):
                     environment of the Lambda function.
     """
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # try:
+        #     email_address = event['requestContext']['authorizer']['claims']['email']
+        #     if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+        #         return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
 
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
-        seller_email= query_parameters.get('seller_email')
+        print('here')
+        email_address='sthuthi@7edge.com'
         auction_id = query_parameters.get('auction_id')
+        print('auction_id', auction_id)
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
         sort_order = query_parameters.get('sort_order', 'asc')  # Default sort order is ascending
         search_keyword = query_parameters.get('search_keyword')
@@ -70,13 +72,21 @@ def list_bids(event, context):
             'page', '1'))
         limit = int(event['queryStringParameters'].get(
             'per_page', '200'))  # Number of records per page
+        print('hereeeee')
 
         export = event['queryStringParameters'].get('export', False)
         download_link = None
 
         total_bidders = collection_bidders.count_documents({"seller_email": email_address,
                                                      "auction_id": auction_id})
-        print('total_bids', total_bidders)
+        if total_bidders:
+            print('total_bidders', total_bidders)
+        else: 
+            return{
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "No bids found"})
+            }
 
         # Define the sort criteria based on user input
         if sort_by in ['name', 'bid_status', 'lot_title', 'lot_number', 'bid_amount', 'paddle_number', 'updated_at']:
@@ -109,14 +119,14 @@ def list_bids(event, context):
             ]
 
         # Combine the search and sort criteria
-        query = {"seller_email": seller_email, "auction_id": auction_id, **search_criteria}
+        query = {"seller_email": email_address, "auction_id": auction_id, **search_criteria}
 
         # Query the MongoDB collection to find lots matching the criteria
         lots = list(collection.find(query).sort(sort_criteria).skip((page-1)*limit).limit(limit))
         combined_pipeline = [
             {
                 '$match': {
-                    'seller_email': seller_email,
+                    'seller_email': email_address,
                     'auction_id': auction_id
                 }
             },
@@ -143,7 +153,7 @@ def list_bids(event, context):
             max_bid = result[0]['maxBid']
             percentage_bids_gt_zero = result[0]['countBidsGreaterThanZero']
         total_documents = collection.count_documents(query)
-        total_lots = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
+        total_lots = collection.count_documents({"seller_email": email_address, "auction_id": auction_id})
         body = {
             "data": lots,
             "total_records_found": total_documents,
@@ -155,7 +165,7 @@ def list_bids(event, context):
             "total selling": percentage_bids_gt_zero
         }
         if export:
-            download_link = export_lots_as_csv(lots, db)
+            download_link = export_lots_as_csv(lots)
         if download_link is not None:
             body["csv_url"] = download_link
         # client.close()
@@ -172,7 +182,7 @@ def list_bids(event, context):
         }
 
 
-def export_lots_as_csv(lots, db):
+def export_lots_as_csv(lots):
     """
     The function exports lots of data as a CSV file using a database connection.
     :param lots: A list of dictionaries representing lots of data
@@ -183,7 +193,7 @@ def export_lots_as_csv(lots, db):
         auction_id = str(lots[0].get('auction_id', ''))
         filename = auction_id
         auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
-        seller_email = lots[0]["seller_email"]
+        seller_email = lots[0]["email_address"]
         auction_status = auction_collection.find_one({
             "seller_email": seller_email,
             "auction_id": auction_id
