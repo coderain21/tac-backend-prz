@@ -173,7 +173,7 @@ functions:
   #   events:
   #     - http:
   #         cors: true
-  #         path: /admin/{lot_id}
+  #         path: /{lot_id}
   #         method: GET
   #         authorizer:
   #           arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
