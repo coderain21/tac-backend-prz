@@ -97,15 +97,12 @@ def list_bidders(event, context):
                 {"$limit": page_size},
                 {"$project": projection},
             ]
-        
-
         buyers = buyer_collection.aggregate(pipeline)
         total_buyers_pipeline = [
             {"$match": search_query},
             {"$group": {"_id": "$email_address"}},
             {"$count": "total_buyers"}
         ]
-
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
         response_body = {
