@@ -5,23 +5,15 @@
 # set +a
 
 #apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
-# Function to check if an error occurred
-check_error() {
-    if [ $? -ne 0 ]; then
-        echo "Error occurred: $1"
-        return 1
-    fi
-    return 0
-}
-# # Configure AWS CLI profiles
 
+# # Configure AWS CLI profiles
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
 aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
 
 aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 
-log_bucket="s3://easyid-$STAGE-pipeline-logs/"
+log_bucket="s3://indyauction-$STAGE-pipeline-logs/"
 echo "$log_bucket"
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
@@ -77,12 +69,9 @@ export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
-# Destroy Terraform resources with error handling
-terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve || echo "Skipping MongoDB destruction, resource not found"
-terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve || echo "Skipping API Gateway destruction, resource not found"
-terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve || echo "Skipping Seller Web Application destruction, resource not found"
-terraform -chdir=devops/admin_web_application init && terraform -chdir=devops/admin_web_application destroy -auto-approve || echo "Skipping Admin Web Application destruction, resource not found"
-terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve || echo "Skipping Assets destruction, resource not found"
+terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/kms init && terraform -chdir=devops/kms destroy -auto-approve
+terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve
+terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve & terraform -chdir=devops/admin_web_application init && terraform -chdir=devops/admin_web_application destroy -auto-approve
+terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
 
-# Sync Terraform state files
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
