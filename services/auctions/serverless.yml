@@ -469,12 +469,7 @@ resources:
          RestApiId:
            Ref: 'ApiGatewayRestApi'
     
-    AuctionCompletion:
-      Type: AWS::Pinpoint::EmailTemplate
-      Properties: 
-        HtmlPart: ${file(./templates/send-auction-completion-email.html)}
-        Subject: "Indy.auction - {{subject}}"
-        TemplateName: ${self:provider.stage}-send-auction-completion-email
+
 
 plugins:
   - serverless-offline
