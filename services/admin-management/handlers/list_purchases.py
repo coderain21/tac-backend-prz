@@ -19,6 +19,12 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+#database
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+orders_collection = db[os.environ['ORDERS_COLLECTION']]
+buyer_collection = db[os.environ['BUYER_COLLECTION']]
+user_collection = db[os.environ['SELLERS_TABLE']]
 
 def prepend_backslash(text):
     """
@@ -61,12 +67,6 @@ def list_purchases(event, context):
             }
         # Connect to MongoDB
         # print('Event:', json.dumps(event, indent=2))
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        orders_collection = db[os.environ['ORDERS_COLLECTION']]
-        buyer_collection = db[os.environ['BUYER_COLLECTION']]
-        user_collection = db[os.environ['SELLERS_TABLE']]
-
         result= user_collection.find_one({"user_type":"admin","email_address":email_address})
         if result is None:
             return {
@@ -140,11 +140,6 @@ def list_purchases(event, context):
                 'auction_title': 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
-
-        # Use the last document from the previous page as the starting point for the next page
-        # Fetch buyer's full name from the buyer details
-        buyer_full_name = buyer_details['full_name']
-        print('Buyer full name:', buyer_full_name)
 
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
