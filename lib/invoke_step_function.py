@@ -105,4 +105,3 @@ def update_redis_data(auction_record, item):
         return True
     except Exception as e:
         print(e)
-
