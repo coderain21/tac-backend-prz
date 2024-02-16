@@ -50,7 +50,7 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 # cd services/cognito-auth/
 
-sls remove --stage ${STAGE} --max-concurrency 5
+# sls remove --stage ${STAGE} --max-concurrency 5
 
 # Deploy the service located in the services folder
 # cd services/workflow-simulation
