@@ -79,15 +79,25 @@ def list_bidders(event, context):
         total_buyers = buyer_collection.count_documents(search_query)
 
         # Fetching unique buyers based on email address with sorting, pagination, and search options
-        pipeline = [
-            {"$match": search_query},
-            {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
-            {"$replaceRoot": {"newRoot": "$firstRecord"}},
-            {"$sort": {sort_key: sort_order}},
-            {"$skip": (page_number - 1) * page_size },
-            {"$limit": page_size},
-            {"$project": projection},
-        ]
+        if export:
+            pipeline = [
+                {"$match": search_query},
+                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
+                {"$replaceRoot": {"newRoot": "$firstRecord"}},
+                {"$sort": {sort_key: sort_order}},
+                {"$project": projection},
+            ]
+        else:
+            pipeline = [
+                {"$match": search_query},
+                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
+                {"$replaceRoot": {"newRoot": "$firstRecord"}},
+                {"$sort": {sort_key: sort_order}},
+                {"$skip": (page_number - 1) * page_size },
+                {"$limit": page_size},
+                {"$project": projection},
+            ]
+        
 
         buyers = buyer_collection.aggregate(pipeline)
         total_buyers_pipeline = [
@@ -149,13 +159,14 @@ def export_bidders_as_csv(buyers, email_address):
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, ["Name","Email", "Account Created", "Marketing"])
+            timezone_abbreviation = result['time_zone'].split(' ')[0]
             writer.writeheader()
             for buyer in buyers:
                 # Prepend the S3 URL to the thumbnail URL
                 writer.writerow({
                     "Name": buyer.get("name", ""),
                     "Email": buyer.get("email_address", ""),
-                    "Account Created": buyer.get("created_at", "").strftime("%d %b %Y | %H:%M") + ' ' + result['time_zone'],
+                    "Account Created": buyer.get("created_at", "").strftime("%d %b %Y / %H:%M") + ' ' + timezone_abbreviation,
                     "Marketing": buyer.get("marketing", ""),
                 })
 
