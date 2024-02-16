@@ -81,7 +81,7 @@ def list_bids(event, context):
                                                      "auction_id": auction_id})
         if total_bidders:
             print('total_bidders', total_bidders)
-        else: 
+        else:
             return{
                 "statusCode": 404,
                 "headers": headers,
