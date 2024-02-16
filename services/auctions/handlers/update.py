@@ -82,7 +82,6 @@ def update_auction(event, context):
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('email ', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
@@ -98,12 +97,10 @@ def update_auction(event, context):
             }
         request_body = json.loads(event['body'])
         end_date = request_body.get('end_date', None)
-        print('request', end_date)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
                 'published', 'false')
-            print(published_status)
         else:
             published_status = 'false'
 
@@ -115,8 +112,10 @@ def update_auction(event, context):
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                      "auction_id": auction_id}))
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
+
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+
 
         if auction_record is None:
             return {
@@ -136,7 +135,6 @@ def update_auction(event, context):
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
                 if auction_record[field]== "":
-                    print(field,auction_record[field])
                     return {
                         "statusCode": 400,
                         'headers': headers,
@@ -239,7 +237,6 @@ def update_auction(event, context):
                        value in request_body.items() if key in updatable_fields}
         documents = []
         if end_date != None:
-            print('12345555')
             existing_lots_count = collection.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
             extension_time_str = auction_record.get('extension_time_between_lots', '0')
@@ -250,22 +247,29 @@ def update_auction(event, context):
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             count_import=0
+            # Get the current datetime object
+            current_datetime = datetime.utcnow()
+            # Convert datetime to epoch time in seconds
+            epoch_time_seconds = int(current_datetime.timestamp())
+
+            # Convert epoch time to epoch milliseconds
+            epoch_time_milliseconds = epoch_time_seconds * 1000
             for item in listLots:
-                if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
-                    item['start_date'] = start_date
-                    item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
-                    count_import= count_import+1
-                elif auction_record['extension_type']== "All Lots":
-                    item['start_date'] = start_date
-                    item['end_date'] = end_date
-                if auction_record['status']== 'Accepting bids':
-                    update = update_redis_data(auction_record, item )
+                if not item['end_date'] <= epoch_time_milliseconds:
+                    if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                        item['start_date'] = start_date
+                        item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
+                        count_import= count_import+1
+                    elif auction_record['extension_type']== "All Lots":
+                        item['start_date'] = start_date
+                        item['end_date'] = end_date
+                    if auction_record['status']== 'Accepting bids':
+                        update = update_redis_data(auction_record, item )
                 documents.append(item)
 
-            update_operations = []
             for item in documents:
                 item_id = ObjectId(item['_id'])
-                # findvalue = collection_lot.find({"_id": item_id})
+                findvalue = collection_lot.find({"_id": item_id})
                 result = collection_lot.update_many(
                         {"_id": item_id},
                         {
@@ -275,7 +279,6 @@ def update_auction(event, context):
                             }
                         }
                 )
-
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
@@ -288,7 +291,6 @@ def update_auction(event, context):
             })
         }
     except Exception as err:
-        print('err', err)
         return {
             "statusCode": 500,
             "headers": headers,
