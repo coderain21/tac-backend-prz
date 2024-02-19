@@ -4,6 +4,11 @@ import os
 import re
 from pymongo import MongoClient
 from lib.common_helper import Encoder
+import boto3
+import tempfile
+import csv
+
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -19,10 +24,8 @@ db = client[os.environ['DATABASE']]
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
-
     # Use re.sub to replace each match with a backslash followed by the matched character
     modified_text = re.sub(special_chars_pattern, r'\\\1', text)
-
     return modified_text
 
 def list_bidders(event, context):
@@ -45,6 +48,7 @@ def list_bidders(event, context):
             "name": 1,
             "marketing": 1
         }
+        export = event['queryStringParameters'].get('export', False)
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
             sort_key = event['queryStringParameters']['sort_by']
 
@@ -75,24 +79,30 @@ def list_bidders(event, context):
         total_buyers = buyer_collection.count_documents(search_query)
 
         # Fetching unique buyers based on email address with sorting, pagination, and search options
-        pipeline = [
-            {"$match": search_query},
-            {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
-            {"$replaceRoot": {"newRoot": "$firstRecord"}},
-            {"$sort": {sort_key: sort_order}},
-            {"$skip": (page_number - 1) * page_size },
-            {"$limit": page_size},
-            {"$project": projection},
-        ]
-
+        if export:
+            pipeline = [
+                {"$match": search_query},
+                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
+                {"$replaceRoot": {"newRoot": "$firstRecord"}},
+                {"$sort": {sort_key: sort_order}},
+                {"$project": projection},
+            ]
+        else:
+            pipeline = [
+                {"$match": search_query},
+                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
+                {"$replaceRoot": {"newRoot": "$firstRecord"}},
+                {"$sort": {sort_key: sort_order}},
+                {"$skip": (page_number - 1) * page_size },
+                {"$limit": page_size},
+                {"$project": projection},
+            ]
         buyers = buyer_collection.aggregate(pipeline)
-        print('buyerss', buyers)
         total_buyers_pipeline = [
             {"$match": search_query},
             {"$group": {"_id": "$email_address"}},
             {"$count": "total_buyers"}
         ]
-
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
         response_body = {
@@ -101,6 +111,11 @@ def list_bidders(event, context):
             "page_size": page_size,
             "page_number": page_number
         }
+        download_link = ''
+        if export:
+            download_link = export_bidders_as_csv(response_body['buyers'], email_address)
+        if download_link is not None:
+            response_body["csv_url"] = download_link
 
         return {
             "statusCode": 200,
@@ -115,3 +130,59 @@ def list_bidders(event, context):
             "headers": headers,
             "body": json.dumps({"error": str(e)})
         }
+
+
+def export_bidders_as_csv(buyers, email_address):
+    """
+    The function exports lots of data as a CSV file using a database connection.
+    :param lots: A list of dictionaries representing lots of data
+    :param db: The `db` parameter is a database connection object that allows you to interact with a
+    database. It can be used to execute SQL queries, fetch data, and perform other database operations
+    """
+    try:
+        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        projection = {
+            "time_zone": 1
+        }
+        result = collection.find_one({"seller_email": email_address}, projection)
+        auction_id = str(buyers[0].get('seller_email', ''))
+        filename = 'All'
+        # Use a temporary directory
+        temp_dir = tempfile.mkdtemp()
+        csv_file_path = os.path.join(temp_dir, f'{filename}_bidders.csv')
+
+        s3_key = f"exports/lots/{auction_id}/All Bidders.csv"
+        s3_bucket = os.environ['S3_BUCKET']
+
+        with open(csv_file_path, "w") as file:
+            writer = csv.DictWriter(file, ["Name","Email", "Account Created", "Marketing"])
+            timezone_abbreviation = result['time_zone'].split(' ')[0]
+            writer.writeheader()
+            for buyer in buyers:
+                # Prepend the S3 URL to the thumbnail URL
+                writer.writerow({
+                    "Name": buyer.get("name", ""),
+                    "Email": buyer.get("email_address", ""),
+                    "Account Created": buyer.get("created_at", "").strftime("%d %b %Y / %H:%M") + ' ' + timezone_abbreviation,
+                    "Marketing": buyer.get("marketing", ""),
+                })
+
+        # Upload the file to S3
+        s3_client = boto3.client("s3", region_name='eu-west-2')
+        s3_client.upload_file(csv_file_path, s3_bucket, s3_key)
+
+        # Ensure that the file is made public
+        s3_resource = boto3.resource("s3", region_name='eu-west-2')
+        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
+        object_acl.put(ACL="public-read")
+
+        # Generate a presigned URL
+        s3_signed_url = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": s3_bucket, "Key": s3_key},
+            ExpiresIn=3600,
+        )
+        return s3_signed_url
+    except Exception as err:
+        print("Error:", err)
+        return None
