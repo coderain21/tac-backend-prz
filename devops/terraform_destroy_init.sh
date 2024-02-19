@@ -48,24 +48,21 @@ npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-# cd services/cognito-auth/
 
-# sls remove --stage ${STAGE} --max-concurrency 5
+
+sls remove --stage ${STAGE} --max-concurrency 5
 
 # Deploy the service located in the services folder
-# cd services/workflow-simulation
-# sls remove --region $REGION --stage $STAGE
-# cd ../..
-# cd services/patients-active-staff
-# sls remove --region $REGION --stage $STAGE
-# cd ../..
-# cd services/lambda-authorizer
-# sls remove --region $REGION --stage $STAGE
-# cd ../..
+cd services/auctions
+sls remove --region $REGION --stage $STAGE
+cd ../..
+cd services/lambda-authorizer
+sls remove --region $REGION --stage $STAGE
+cd ../..
 
-# cd resources
-# sls remove --region $REGION --config cognito-serverless.yml --stage $STAGE
-# cd ..
+cd resources
+sls remove --region $REGION --config cognito-serverless.yml --stage $STAGE
+cd ..
 
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
