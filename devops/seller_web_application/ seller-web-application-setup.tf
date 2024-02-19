@@ -146,6 +146,7 @@ resource "aws_ssm_parameter" "s3_bucket" {
   type  = "String"
   value = "${data.external.env.result["SELLER_APPLICATION"]}-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-eu
+  overwrite = true
 }
 
 resource "aws_ssm_parameter" "distribution_id" {
@@ -153,34 +154,40 @@ resource "aws_ssm_parameter" "distribution_id" {
   type  = "String"
   value = aws_cloudfront_distribution.s3_distribution.id
   provider = aws.deployment-eu
+  overwrite = true
 }
 resource "aws_ssm_parameter" "application_url" {
   name  = "SELLER_APPLICATION_URL"
   type  = "String"
   value = local.computed_variable
   provider = aws.deployment-eu
+  overwrite = true
 }
 resource "aws_ssm_parameter" "dashboard_application_url" {
   name  = "SELLER_DASHBOARD_APPLICATION_URL"
   type  = "String"
   value = "https://${local.computed_variable}/"
   provider = aws.deployment-eu
+  overwrite = true
 }
 resource "aws_ssm_parameter" "default_subdomain" {
   name  = "DEFAULT_SUB_DOMAIN"
   type  = "String"
   value = "www-${data.external.env.result["STAGE"]}"
   provider = aws.deployment-eu
+  overwrite = true
 }
 resource "aws_ssm_parameter" "static_auction_url" {
   name  = "BUYER_STATIC_AUCTION_URL"
   type  = "String"
   value = "https://www-${local.computed_variable}/"
   provider = aws.deployment-eu
+  overwrite = true
 }
 resource "aws_ssm_parameter" "amplify_domain_name" {
   name  = "AMPLIFY_DOMAIN_NAME"
   type  = "String"
   value = "${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-eu
+  overwrite = true
 }

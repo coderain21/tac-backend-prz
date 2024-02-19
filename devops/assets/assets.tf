@@ -236,10 +236,10 @@ resource "aws_ssm_parameter" "application_url" {
 
 resource "aws_ssm_parameter" "base_url_admin" {
   name  = "BASE_URL_ADMIN"
-  overwrite = true
   type  = "String"
   value = data.external.env.result["BASE_URL_ADMIN"]
   provider = aws.deployment-ap
+  overwrite = true
 }
 resource "aws_ssm_parameter" "base_url_seller" {
   name  = "BASE_URL_SELLER"

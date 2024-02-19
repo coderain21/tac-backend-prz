@@ -64,9 +64,6 @@ resources:
  
     Buyers:
       Type: "AWS::Cognito::UserPool"
-      DependsOn: 
-      - GoogleAuth
-      - FacebookAuth
       Properties:
         UserPoolName: ${self:provider.stage}-indyauction-buyers
         Policies:
@@ -243,7 +240,7 @@ resources:
             - Priority: 1
               Name: admin_only
         
-    GoogleAuth:
+    BuyersGoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
         AttributeMapping:
@@ -259,7 +256,7 @@ resources:
         UserPoolId: { Ref: Buyers }
           
     
-    FacebookAuth:
+    BuyersFacebookAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
         AttributeMapping:
@@ -273,7 +270,7 @@ resources:
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
     
-    Group:
+    BuyersGroup:
       Type: AWS::Cognito::UserPoolGroup
       Properties:
         GroupName: "buyer"
@@ -287,6 +284,9 @@ resources:
 
     BuyersClient:
       Type: AWS::Cognito::UserPoolClient
+      DependsOn: 
+        - BuyersGoogleAuth
+        - BuyersFacebookAuth
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
@@ -337,7 +337,7 @@ resources:
           IdToken: minutes
           RefreshToken: days
         
-    CognitoIdentityPool:
+    BuyersCognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
         IdentityPoolName: indyauction-buyers-${self:provider.stage}
@@ -364,7 +364,7 @@ resources:
               Condition:
                 StringEquals:
                   "cognito-identity.amazonaws.com:aud": 
-                    Ref: CognitoIdentityPool
+                    Ref: BuyersCognitoIdentityPool
                 "ForAnyValue:StringLike":
                   "cognito-identity.amazonaws.com:amr": "authenticated"
 
@@ -379,11 +379,11 @@ resources:
                     
                   Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
-    CognitoIdentityPoolRole:
+    BuyerCognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
         IdentityPoolId:
-          Ref: CognitoIdentityPool
+          Ref: BuyersCognitoIdentityPool
         Roles:
           authenticated:
             Fn::GetAtt: [CognitoImageAccessRole, Arn]
@@ -393,7 +393,7 @@ resources:
         Properties:
           Name: BUYER_COGNITO_IDENTITY_POOL_ID
           Type: String
-          Value: { Ref: CognitoIdentityPool }
+          Value: { Ref: BuyersCognitoIdentityPool }
 
     AdminCognitoPoolIDStore:
         Type: AWS::SSM::Parameter
@@ -441,11 +441,7 @@ resources:
           Value: indyauction-buyers-${self:provider.stage}
 
     SellerUsers:
-      Type: "AWS::Cognito::UserPool"
-      DependsOn: 
-        - SellerGoogleAuth
-        - SellerFacebookAuth
-  
+      Type: "AWS::Cognito::UserPool"  
       Properties:
         UserPoolName: ${self:provider.stage}-indyauction-seller
         Policies:
@@ -715,6 +711,9 @@ resources:
  
     SellerUsersClient:
       Type: AWS::Cognito::UserPoolClient
+      DependsOn: 
+        - SellerGoogleAuth
+        - SellerFacebookAuth
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
@@ -820,7 +819,7 @@ resources:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
         IdentityPoolId:
-          Ref: CognitoIdentityPool
+          Ref: SellerCognitoIdentityPool
         Roles:
           authenticated:
             Fn::GetAtt: [CognitoImageAccessRole, Arn] # Replace with your IAM role
@@ -838,7 +837,7 @@ resources:
               Condition:
                 StringEquals:
                   "cognito-identity.amazonaws.com:aud": 
-                    Ref: CognitoIdentityPool
+                    Ref: BuyersCognitoIdentityPool
                 "ForAnyValue:StringLike":
                   "cognito-identity.amazonaws.com:amr": "authenticated"
 
@@ -857,7 +856,7 @@ resources:
         Properties:
           Name: SELLER_COGNITO_IDENTITY_POOL_ID
           Type: String
-          Value: { Ref: CognitoIdentityPool }
+          Value: { Ref: BuyersCognitoIdentityPool }
 
     SellerCognitoPoolIDStore:
         Type: AWS::SSM::Parameter

@@ -41,8 +41,8 @@ terraform -chdir=devops/kms apply -auto-approve
 terraform -chdir=devops/mongodb init
 terraform -chdir=devops/mongodb apply -auto-approve
 if [ "STAGE" = "qa" ]; then
-    terraform -chdir=devops/dependencies/bitbucket-layer-node init
-    terraform -chdir=devops/dependencies/bitbucket-layer-node apply -auto-approve
+    terraform -chdir=devops/dependency/bitbucket-layer-node init
+    terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
@@ -60,7 +60,7 @@ for param_name in "${parameter_names[@]}"; do
 done <<< "$parameter_names"
 
 
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependencies/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 
 
 npm i -g serverless@3.15.2

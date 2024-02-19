@@ -101,4 +101,6 @@ resource "aws_ssm_parameter" "distribution_id" {
   type  = "String"
   value = aws_elasticache_replication_group.websocket.primary_endpoint_address
   provider = aws.deployment-us
+  overwrite = true
+  
 }
