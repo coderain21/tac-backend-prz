@@ -163,6 +163,7 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   bid-info:
     handler: handlers/bid_info.handler
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
