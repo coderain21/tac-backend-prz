@@ -75,8 +75,15 @@ npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-# sls deploy --stage ${STAGE} --max-concurrency 5
+
 
 cd resources
 sls deploy --region $REGION --config cognito-serverless.yml --stage $STAGE
 cd ..
+cd services/lambda-authorizer
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/auctions
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+sls deploy --stage ${STAGE} --max-concurrency 5
