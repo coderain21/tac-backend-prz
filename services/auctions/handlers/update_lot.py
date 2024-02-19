@@ -2,6 +2,9 @@
 import os
 import json
 import pymongo
+import update_lot
+from lib.helper_python import update_lot_data
+
 
 # CORS headers
 headers = {
@@ -66,6 +69,10 @@ def update_lot(event):
             "auction_id": auction_id},
         {"$set": update_data}
     )
+    auction_record = collection.find_one(
+            {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+    if auction_record['status']== 'Accepting bids':
+        update = update_lot_data(request_body)
     client.close()
     return (204, {})
 

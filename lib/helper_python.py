@@ -6,6 +6,9 @@ import os
 import json
 import time
 import boto3
+import redis
+
+redis_client = redis.Redis(host=os.environ["REDIS_ENDPOINT"], port=6379)
 
 client = boto3.client('pinpoint-email',region_name = os.environ['REGION'])
 def send_pinpoint_email(to_email,from_email,template_data,template_arn):
@@ -70,3 +73,21 @@ def decrypt_with_time_validation(encrypted_data_hex, secret_key):
     data = json.loads(decrypted_data_str)
 
     return data
+
+def update_lot_data(item): 
+    lot_id = str(item['_id'])
+    bid_key = f'lot:{lot_id}'
+    existing_record =  redis_client.hget('lot', bid_key)
+    get_lot = json.loads(existing_record)
+    if existing_record:
+            get_lot = json.loads(existing_record)
+    else:
+            get_lot = {}
+            
+    update_request = {
+            **get_lot,
+            'lot_end_date': item['end_date'],
+            'end_date': item['end_date'],
+    }
+
+    cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
