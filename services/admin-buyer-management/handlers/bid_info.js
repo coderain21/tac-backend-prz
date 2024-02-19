@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 /* eslint-disable consistent-return */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-restricted-syntax */
@@ -40,7 +41,7 @@ const timeZoneMap = {
 
 const formatDate = (timestamp, timeZone) => {
     const date = new Date(timestamp) // Convert timestamp to Date
-
+    console.log('timezone_3', timeZone)
     // Format options for date and time
     const options = {
         day: 'numeric',
@@ -101,7 +102,12 @@ async function exportAsCsv(bidders) {
         const records = []
 
         for (const bidder of bidders) {
-            const formattedDate = formatDate(bidder.updated_at, bidder.time_zone)
+            console.log('bidder', bidder)
+            bidder.updated_at = new Date(bidder.updated_at)
+            const { time_zone } = bidder
+            console.log('timezone_1', time_zone)
+            console.log('timezone----', bidder.time_zone)
+            const formattedDate = formatDate(bidder.updated_at, time_zone)
 
             records.push({
                 'Paddle Number': bidder.paddle_number || '',
