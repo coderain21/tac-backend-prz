@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-undef */
@@ -73,10 +74,10 @@ const formatDate = (timestamp, timeZone) => {
 
 async function exportAsCsv(bidders) {
     try {
-        console.log('bidders', bidders)
-        if (!bidders || bidders.length === 0) {
-            throw new Error('No bidders found.')
-        }
+        // console.log('bidders', bidders)
+        // if (!bidders || bidders.length === 0) {
+        //     throw new Error('No bidders found.')
+        // }
         // const auctionId = String(bidders[0]?.auction_id || '')
         const filename = 'Bidding Information'
 
@@ -193,8 +194,34 @@ module.exports.handler = async (event) => {
         }
 
         let bidsList = null
-        if (queryParams?.export === 'true') {
-            bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
+        if (queryParams.export === 'true') {
+            try {
+                console.log('mongose', mongoose_query)
+                if (options.sort) {
+                    // Fetch all documents with sorting
+                    bidsList = await BidInformation.find(mongoose_query).sort(options.sort)
+                } else {
+                    // Fetch all documents without sorting
+                    bidsList = await BidInformation.find(mongoose_query)
+                }
+                if (bidsList === null) {
+                    console.error('Error: No documents found.')
+                    // Handle the case where no documents are found
+                    return // or throw an error, depending on your requirement
+                }
+                console.log('bidsList', bidsList)
+                return {
+                    statusCode: 200,
+                    headers: helpers.getHeaders(),
+                    body: JSON.stringify({
+                        download_link: await exportAsCsv(bidsList),
+                    }),
+                }
+                // Further processing or returning the result
+            } catch (error) {
+                console.error('Error occurred while fetching documents:', error)
+                // Handle the error accordingly
+            }
         } else {
             const page = parseInt(queryParams?.page, 10) || 1
             const limit = queryParams?.limit ? parseInt(queryParams.limit, 10) : 10
@@ -207,7 +234,7 @@ module.exports.handler = async (event) => {
         if (bidsList.docs.length <= 0) {
             return {
                 statusCode: 404,
-                headers: await helpers.getHeaders(),
+                headers: helpers.getHeaders(),
                 body: JSON.stringify({
                     message: 'Bids not found',
                 }),
@@ -225,11 +252,6 @@ module.exports.handler = async (event) => {
             }
         }
 
-        let download_link = null
-        if (queryParams?.export === 'true') {
-            download_link = await exportAsCsv(bidsList.docs)
-        }
-
         return {
             statusCode: 200,
             headers: await helpers.getHeaders(),
@@ -245,7 +267,6 @@ module.exports.handler = async (event) => {
                     bidders: getBiddderCount.length > 0 ? getBiddderCount.length : 0,
                     top_bidder: getLot.length > 0 ? getLot[0].top_bidder : '',
                     under_bidder: underBidder,
-                    download_link,
                 },
             }),
         }
