@@ -470,13 +470,6 @@ resource "aws_ssm_parameter" "sender_email" {
   value = data.external.env.result["SENDER_EMAIL"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "redis_endpoint" {
-  name  = "REDIS_ENDPOINT"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["REDIS_ENDPOINT"]
-  provider = aws.deployment-ap
-}
 resource "aws_ssm_parameter" "redis_url" {
   name  = "REDIS_URL"
   overwrite = true
