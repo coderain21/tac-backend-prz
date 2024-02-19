@@ -109,6 +109,8 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
     
+
+    
     
   http:
     cors: true
@@ -162,14 +164,18 @@ custom:
 functions: 
   pre-auth:
     handler: handlers/pre_signup.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
         - ${ssm:SUBNET_ID}
-    layers:
-      
-      - ${ssm:COMMON_LIB_ARN}
+    events:
+        - cognitoUserPool:
+            pool: ${opt:stage, self:provider.stage}-indyauction-buyers
+            trigger: PreSignUp
+            existing: true
 
   view:
     handler: handlers/view.view

@@ -64,6 +64,9 @@ resources:
  
     Buyers:
       Type: "AWS::Cognito::UserPool"
+      DependsOn: 
+      - GoogleAuth
+      - FacebookAuth
       Properties:
         UserPoolName: ${self:provider.stage}-indyauction-buyers
         Policies:
@@ -270,7 +273,6 @@ resources:
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
     
-    
     Group:
       Type: AWS::Cognito::UserPoolGroup
       Properties:
@@ -335,8 +337,6 @@ resources:
           IdToken: minutes
           RefreshToken: days
         
-
-    
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
@@ -351,7 +351,7 @@ resources:
 
      # Replace with your IAM role
     
-    MyRoleLogicalName: # Define your IAM role here
+    CognitoImageAccessRole: # Define your IAM role here
       Type: AWS::IAM::Role
       Properties:
         AssumeRolePolicyDocument:
@@ -377,7 +377,7 @@ resources:
                   Action:
                     - "s3:*" # Adjust permissions as needed
                     
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -386,7 +386,8 @@ resources:
           Ref: CognitoIdentityPool
         Roles:
           authenticated:
-            Fn::GetAtt: [MyRoleLogicalName, Arn]
+            Fn::GetAtt: [CognitoImageAccessRole, Arn]
+    
     AdminCognitoIdentityPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
@@ -407,6 +408,7 @@ resources:
           Name: BUYER_COGNITO_USERPOOL_NAME
           Type: String
           Value: indyauction-buyers-${self:provider.stage}
+    
     AdminCognitoClientIDStore:
         Type: AWS::SSM::Parameter
         Properties:
@@ -440,6 +442,10 @@ resources:
 
     SellerUsers:
       Type: "AWS::Cognito::UserPool"
+      DependsOn: 
+        - SellerGoogleAuth
+        - SellerFacebookAuth
+  
       Properties:
         UserPoolName: ${self:provider.stage}-indyauction-seller
         Policies:
@@ -649,15 +655,11 @@ resources:
               MaxLength: "2048"
         AliasAttributes:
           - preferred_username
-        # UsernameAttributes: 
-        #   - email
         VerificationMessageTemplate:
           DefaultEmailOption: CONFIRM_WITH_CODE
         UserAttributeUpdateSettings:
           AttributesRequireVerificationBeforeUpdate: []
         MfaConfiguration: "OFF"
-        # EnabledMfas:
-        #   - SOFTWARE_TOKEN_MFA
         EmailConfiguration:
           EmailSendingAccount: COGNITO_DEFAULT
         UsernameConfiguration:
@@ -666,8 +668,6 @@ resources:
           RecoveryMechanisms:
             - Priority: 1
               Name: admin_only
-    
-    
     
     SellerGoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
@@ -823,9 +823,9 @@ resources:
           Ref: CognitoIdentityPool
         Roles:
           authenticated:
-            Fn::GetAtt: [MyRoleLogicalName, Arn] # Replace with your IAM role
+            Fn::GetAtt: [CognitoImageAccessRole, Arn] # Replace with your IAM role
     
-    SellerMyRoleLogicalName: # Define your IAM role here
+    SellerCognitoImageAccessRole: # Define your IAM role here
       Type: AWS::IAM::Role
       Properties:
         AssumeRolePolicyDocument:
@@ -850,7 +850,7 @@ resources:
                 - Effect: "Allow"
                   Action:
                     - "s3:*" # Adjust permissions as needed
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     SellerCognitoIdentityPoolIDStore:
         Type: AWS::SSM::Parameter
@@ -895,11 +895,61 @@ resources:
             Fn::GetAtt:
               - SellerUsers
               - Arn     
+
     SellerDomainStore:
         Type: AWS::SSM::Parameter
         Properties:
           Name: SELLER_COGNITO_USERPOOL_DOMAIN
           Type: String
           Value: indyauction-seller-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
+
+    LotStateMachineSSMParameter:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: STATE_MACHINE_LOT_ARN
+        Description: 'ARN of the Hello Step Functions state machine'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
+          - StateMachineName: ${opt:stage}-lot-published
+
+    
+
+    AuctionStateMachineSSMParameter:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: STATE_MACHINE_AUCTION_ARN
+        Description: 'ARN of the Hello Step Functions state machine'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
+          - StateMachineName: ${opt:stage}-auction-ended
+
+
+    messageQueue:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
+        FifoQueue: true
+
+    SQSSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: SQS_QUEUE_ARN
+        Type: String
+        Value: 
+          Fn::GetAtt:
+            - messageQueue
+            - Arn
+
+
+    SQSURLSSMParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: QUEUE_URL
+        Type: 'String'
+        Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
+
+    
 
     

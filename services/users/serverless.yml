@@ -137,12 +137,11 @@ functions:
         - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
         - ${ssm:SUBNET_ID}
-  
-    # events:
-    #   - cognitoUserPool:
-    #       pool: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
-    #       trigger: PreSignUp
-    #       existing: true
+    events:
+        - cognitoUserPool:
+            pool: ${opt:stage, self:provider.stage}-indyauction-seller
+            trigger: PreSignUp
+            existing: true
    
 
 
