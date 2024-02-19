@@ -57,24 +57,24 @@ def list_purchases(event, context):
         dict: A dictionary containing the response with order information.
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        #     print('email', email_address)
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        # # Connect to MongoDB
-        # # print('Event:', json.dumps(event, indent=2))
-        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        # if result is None:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            print('email', email_address)
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        # Connect to MongoDB
+        # print('Event:', json.dumps(event, indent=2))
+        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        if result is None:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
         # Extract buyer ID from path parameters
         auction_id = event['queryStringParameters'].get('auction_id', '')
