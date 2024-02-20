@@ -75,6 +75,7 @@ def decrypt_with_time_validation(encrypted_data_hex, secret_key):
     return data
 
 def update_lot_data(item): 
+    print('itemssss', item)
     lot_id = str(item['_id'])
     bid_key = f'lot:{lot_id}'
     existing_record =  redis_client.hget('lot', bid_key)
@@ -85,9 +86,16 @@ def update_lot_data(item):
             get_lot = {}
             
     update_request = {
-            **get_lot,
-            'lot_end_date': item['end_date'],
-            'end_date': item['end_date'],
+        **get_lot,
+        "title1": item.get('title1', ''),
+        "title2": item.get('title2', ''),
+        "description": item.get('description', ''),
+        "starting_price": item.get('starting_price', 0),
+        "low_estimate": item.get('low_estimate', 0),
+        "high_estimate": item.get('high_estimate', 0),
+        "shipping_details": item.get('shipping_details', ''),
+        "tags": item.get('tags', []),
+        "images": item.get('images', []),
+           
     }
-
     cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
