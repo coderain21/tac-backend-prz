@@ -112,18 +112,18 @@ def buyer_list_auction(event, context):
         result = dev_auction_register.aggregate(pipeline)
         result_list = list(result)  # Convert the cursor to a list
         total_count = len(result_list)  # Get the length of the list
-        
+
         print('result', result_list)
         print(email_address)
-        print('total_count', total_count)  
-        
+        print('total_count', total_count)
+
         if total_count == 0:
             return {
                 "headers": headers,
                 "statusCode": 404,
                 "body": json.dumps({"message":  "Not Found"})
             }
-        
+
         print('data', result_list)
 
         print(34566)
