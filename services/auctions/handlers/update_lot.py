@@ -2,7 +2,6 @@
 import os
 import json
 import pymongo
-import update_lot
 from lib.helper_python import update_lot_data
 
 
@@ -112,3 +111,4 @@ def update(event, context):
             "headers": headers,
             "body": json.dumps({"message": "Internal server error"})
         }
+ 
