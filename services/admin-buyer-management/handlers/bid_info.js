@@ -1,9 +1,18 @@
+/* eslint-disable no-self-assign */
+/* eslint-disable consistent-return */
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable no-undef */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-console */
 
+const AWS = require('aws-sdk')
+// const { ObjectId } = require('mongodb')
+const fs = require('fs')
+const createCsvWriter = require('csv-writer').createObjectCsvWriter
 const { ObjectId } = require('mongodb')
 const helpers = require('../lib/helper')
 const BidInformation = require('../entities/BidInformation')
@@ -13,6 +22,131 @@ const helper = require('../utilities/helper')
 const mongodbHelper = require('../lib/mongodb_helper')
 
 mongodbHelper.connect()
+
+const timeZoneMap = {
+    'UTC - Coordinated Universal Time': 'Etc/UTC',
+    'GMT - Greenwich Mean Time': 'Etc/GMT',
+    'BST - British Summer Time': 'Europe/London',
+    'CET - Central European Time': 'Europe/Paris',
+    'IST - India Standard Time': 'Asia/Kolkata',
+    'CST - China Standard Time': 'Asia/Shanghai',
+    'JST - Japan Standard Time': 'Asia/Tokyo',
+    'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
+    'NZST - New Zealand Standard Time': 'Pacific/Auckland',
+    'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
+    'MST - Mountain Standard Time (US)': 'America/Denver',
+    'CST - Central Standard Time (US)': 'America/Chicago',
+    'EST - Eastern Standard Time (US)': 'America/New_York',
+}
+
+const formatDate = (timestamp, timeZone) => {
+    const date = new Date(timestamp) // Convert timestamp to Date
+    console.log('timezone_3', timeZone)
+    // Format options for date and time
+    const options = {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        timeZoneName: 'short',
+        hour12: false, // Force 24-hour format
+        timeZone: timeZoneMap[timeZone],
+    }
+
+    // Format the date using toLocaleString
+    let formatted = date.toLocaleString('en-GB', options)
+    if (formatted.includes('GMT+5:30')) {
+        formatted = formatted.replace('GMT+5:30', 'IST')
+    } else if (formatted.includes('GMT+11')) {
+        formatted = formatted.replace('GMT+11', 'AESR')
+    } else if (formatted.includes('GMT+13')) {
+        formatted = formatted.replace('GMT+13', 'NZST')
+    } else if (formatted.includes('GMT+1')) {
+        formatted = formatted.replace('GMT+1', 'CET')
+    } else if (formatted.includes('GMT+9')) {
+        formatted = formatted.replace('GMT+9', 'JST')
+    } else if (formatted.includes('GMT+8')) {
+        formatted = formatted.replace('GMT+8', 'CST')
+    }
+
+    return formatted.replace(',', ' /')
+}
+
+async function exportAsCsv(bidders) {
+    try {
+        // console.log('bidders', bidders)
+        // if (!bidders || bidders.length === 0) {
+        //     throw new Error('No bidders found.')
+        // }
+        // const auctionId = String(bidders[0]?.auction_id || '')
+        const filename = 'Bidding Information'
+
+        const tempDir = '/tmp'
+        const csvFilePath = `${tempDir}/${filename}.csv`
+
+        const s3Key = `admin/exports/bidders/${filename}.csv`
+        console.log('s3Key', s3Key)
+        const s3Bucket = process.env.BUCKET_NAME
+
+        const csvWriter = createCsvWriter({
+            path: csvFilePath,
+            header: [
+                { id: 'Paddle Number', title: 'Paddle Number' },
+                { id: 'Bidder Name', title: 'Bidder Name' },
+                { id: 'Amount', title: 'Amount' },
+                { id: 'Bid Date', title: 'Bid Date' },
+            ],
+        })
+
+        const records = []
+
+        for (const bidder of bidders) {
+            console.log('bidder', typeof bidder.time_zone)
+            bidder.updated_at = new Date(bidder.updated_at)
+            const { time_zone } = bidder.time_zone
+            console.log('timezone_1', time_zone)
+            console.log('timezone----', bidder.time_zone)
+            const formattedDate = formatDate(bidder.updated_at, bidder.time_zone)
+
+            records.push({
+                'Paddle Number': bidder.paddle_number || '',
+                'Bidder Name': bidder.name, // `${bidder.first_name || ''} ${bidder.last_name || ''}`.trim(),
+                Amount: bidder.bid_amount,
+                'Bid Date': formattedDate,
+            })
+        }
+
+        await csvWriter.writeRecords(records)
+
+        const s3 = new AWS.S3({ region: 'eu-west-2' })
+        const params = {
+            Bucket: s3Bucket,
+            Key: s3Key,
+            Body: fs.createReadStream(csvFilePath),
+        }
+
+        await s3.upload(params).promise()
+
+        await s3.putObjectAcl({
+            Bucket: s3Bucket,
+            Key: s3Key,
+            ACL: 'public-read',
+        }).promise()
+
+        const s3SignedUrl = s3.getSignedUrl('getObject', {
+            Bucket: s3Bucket,
+            Key: s3Key,
+            Expires: 3600,
+        })
+
+        return s3SignedUrl
+    } catch (err) {
+        console.error('Error:', err)
+        return null
+    }
+}
+
 /**
  * List Bidders | Seller Lot List
  * @description - API to list all bidders
@@ -22,11 +156,9 @@ mongodbHelper.connect()
  * @returns {Object} (200) - List of bidders
  * @returns {Error} (500) - There was an error while listing bidders
  */
+
 module.exports.handler = async (event) => {
     try {
-        /** Establish database connection */
-        // connection = await mongodbHelper.connect()
-
         const lotId = decodeURIComponent(event.queryStringParameters.lot_id)
         const query = {
             _id: new ObjectId(lotId),
@@ -37,37 +169,26 @@ module.exports.handler = async (event) => {
         }
         const getBiddderCount = await mongodbHelper.view(Bid, queryCount)
 
-        /** Extract user and query parameters from the event */
         const { queryStringParameters: queryParams } = event
 
-        /** Prepare MongoDB query conditions */
         const mongoose_query = {
-            $and: [],
+            $and: [{ lot_id: lotId }],
         }
 
-        /** Define default sorting */
         let theSort = {
             paddle_number: -1,
         }
 
-        /** Customize sorting based on query parameters */
         if (queryParams?.sort_by && queryParams?.sort_order) {
             const sort = {}
             sort[queryParams.sort_by] = queryParams.sort_order
             theSort = sort
         }
-        /** Configure pagination and sorting options */
+
         const options = {
-            page: parseInt(queryParams?.page, 10) || 1,
-            limit: queryParams?.limit ? parseInt(queryParams.limit, 10) : 10,
             sort: theSort,
         }
 
-        /** Apply additional conditions */
-        mongoose_query.$and.push({ lot_id: lotId })
-        // mongoose_query.$and.push({ deleted: false })
-
-        /** Define projection to exclude unnecessary fields */
         options.projection = {
             paddle_number: 1,
             name: 1,
@@ -75,14 +196,51 @@ module.exports.handler = async (event) => {
             time_stamp: 1,
             created_at: 1,
             updated_at: 1,
-
+            time_zone: 1,
         }
-        /** Fetch enterprises using the provided criteria */
-        const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
+
+        let bidsList = null
+        if (queryParams.export === 'true') {
+            try {
+                console.log('mongose', mongoose_query)
+                if (options.sort) {
+                    // Fetch all documents with sorting
+                    bidsList = await BidInformation.find(mongoose_query).sort(options.sort)
+                } else {
+                    // Fetch all documents without sorting
+                    bidsList = await BidInformation.find(mongoose_query)
+                }
+                if (bidsList === null) {
+                    console.error('Error: No documents found.')
+                    // Handle the case where no documents are found
+                    return // or throw an error, depending on your requirement
+                }
+                console.log('bidsList', bidsList)
+                return {
+                    statusCode: 200,
+                    headers: helpers.getHeaders(),
+                    body: JSON.stringify({
+                        download_link: await exportAsCsv(bidsList),
+                    }),
+                }
+                // Further processing or returning the result
+            } catch (error) {
+                console.error('Error occurred while fetching documents:', error)
+                // Handle the error accordingly
+            }
+        } else {
+            const page = parseInt(queryParams?.page, 10) || 1
+            const limit = queryParams?.limit ? parseInt(queryParams.limit, 10) : 10
+            options.page = page
+            options.limit = limit
+
+            bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
+        }
+
         if (bidsList.docs.length <= 0) {
             return {
                 statusCode: 404,
-                headers: await helpers.getHeaders(),
+                headers: helpers.getHeaders(),
                 body: JSON.stringify({
                     message: 'Bids not found',
                 }),
@@ -91,13 +249,8 @@ module.exports.handler = async (event) => {
 
         const getLowestBidder = await helper.getLowestBidder(lotId, Bid)
 
-        /** Handle error when enterprises cannot be fetched */
         let underBidder = {}
-        if (getLowestBidder.length === 1 || getLowestBidder.length === 0) {
-            underBidder = {
-
-            }
-        } else {
+        if (getLowestBidder.length > 1) {
             underBidder = {
                 name: getLowestBidder[1].name,
                 id: new ObjectId(getLowestBidder[1]._id),
@@ -105,18 +258,17 @@ module.exports.handler = async (event) => {
             }
         }
 
-        /** Return successful response with enterprise data and pagination info */
         return {
             statusCode: 200,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
                 data: bidsList.docs,
                 pagination: {
-                    total_pages: bidsList.totalPages,
-                    limit: bidsList.limit,
+                    total_pages: queryParams?.export === 'true' ? 1 : bidsList.totalPages,
+                    limit: bidsList.docs.length,
                     total_records: bidsList.totalDocs,
-                    next_page: bidsList.nextPage,
-                    page: bidsList.page,
+                    next_page: null,
+                    page: queryParams?.export === 'true' ? 1 : bidsList.page,
                     top_bid: getLot.length > 0 ? getLot[0].current_bid : 0,
                     bidders: getBiddderCount.length > 0 ? getBiddderCount.length : 0,
                     top_bidder: getLot.length > 0 ? getLot[0].top_bidder : '',
@@ -125,7 +277,6 @@ module.exports.handler = async (event) => {
             }),
         }
     } catch (error) {
-        /** Log and handle errors */
         console.error(error)
         return {
             statusCode: 500,
@@ -135,10 +286,4 @@ module.exports.handler = async (event) => {
             }),
         }
     }
-    // finally {
-    //     // Disconnect from the MongoDB database
-    //     if (connection) {
-    //         await connection.disconnect()
-    //     }
-    // }
 }
