@@ -255,7 +255,7 @@ def update_auction(event, context):
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
             for item in listLots:
-                if not item['end_date'] <= epoch_time_milliseconds:
+                if not item['end_date'] < epoch_time_milliseconds:
                     if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
                         item['start_date'] = start_date
                         item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
@@ -269,16 +269,17 @@ def update_auction(event, context):
 
             for item in documents:
                 item_id = ObjectId(item['_id'])
-                findvalue = collection_lot.find({"_id": item_id})
-                result = collection_lot.update_many(
-                        {"_id": item_id},
-                        {
-                            "$set": {
-                                "start_date": item['start_date'],
-                                "end_date": item['end_date']
+                if not item['end_date'] < epoch_time_milliseconds:
+                    findvalue = collection_lot.find({"_id": item_id})
+                    result = collection_lot.update_many(
+                            {"_id": item_id},
+                            {
+                                "$set": {
+                                    "start_date": item['start_date'],
+                                    "end_date": item['end_date']
+                                }
                             }
-                        }
-                )
+                    )
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
@@ -291,6 +292,7 @@ def update_auction(event, context):
             })
         }
     except Exception as err:
+        print('errr', err)
         return {
             "statusCode": 500,
             "headers": headers,
