@@ -102,12 +102,12 @@ async function exportAsCsv(bidders) {
         const records = []
 
         for (const bidder of bidders) {
-            console.log('bidder', bidder)
+            console.log('bidder', typeof bidder.time_zone)
             bidder.updated_at = new Date(bidder.updated_at)
-            const { time_zone } = bidder
+            const { time_zone } = bidder.time_zone
             console.log('timezone_1', time_zone)
             console.log('timezone----', bidder.time_zone)
-            const formattedDate = formatDate(bidder.updated_at, time_zone)
+            const formattedDate = formatDate(bidder.updated_at, bidder.time_zone)
 
             records.push({
                 'Paddle Number': bidder.paddle_number || '',
