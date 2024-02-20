@@ -106,4 +106,10 @@ resource "aws_ssm_parameter" "distribution_id" {
 locals {
   redis_host     = split(":", aws_elasticache_replication_group.websocket.primary_endpoint_address)[0]
 }
+resource "aws_ssm_parameter" "redis_host_parameter" {
+  name  = "REDIS_URL"
+  type  = "String"
+  value = local.redis_host
+  overwrite = true 
+}
 

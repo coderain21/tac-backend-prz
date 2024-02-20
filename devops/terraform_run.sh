@@ -82,6 +82,9 @@ export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 cd resources
 sls deploy --region $REGION --config cognito-serverless.yml --stage $STAGE
 cd ..
+cd cognito-buyer
+sls deploy --region $REGION --stage $STAGE
+cd ..
 cd services/lambda-authorizer
 sls deploy --region $REGION --stage $STAGE
 cd ../..

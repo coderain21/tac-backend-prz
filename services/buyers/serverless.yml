@@ -162,20 +162,7 @@ custom:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions: 
-  pre-auth:
-    handler: handlers/pre_signup.handler
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-        - cognitoUserPool:
-            pool: ${opt:stage, self:provider.stage}-indyauction-buyers
-            trigger: PreSignUp
-            existing: true
+
 
   view:
     handler: handlers/view.view
