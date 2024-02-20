@@ -110,21 +110,27 @@ def buyer_list_auction(event, context):
             {"$limit": page_size}
         ]
         result = dev_auction_register.aggregate(pipeline)
+        result_list = list(result)  # Convert the cursor to a list
+        total_count = len(result_list)  # Get the length of the list
+
+        print('result', result_list)
         print(email_address)
-        total_count = dev_auction_register.count_documents({"email_address":email_address['email_address']})
-        print(total_count)
-        if result is None:
+        print('total_count', total_count)
+
+        if total_count == 0:
             return {
-            "headers": headers,
-            "statusCode": 404,
-            "body": json.dumps({"message":  "Not Found"})
-        }
+                "headers": headers,
+                "statusCode": 404,
+                "body": json.dumps({"message":  "Not Found"})
+            }
+
+        print('data', result_list)
 
         print(34566)
         return {
             "headers": headers,
             "statusCode": 200,
-            "body": json.dumps({"data":list(result),"page_number":page_number,"page_size":page_size,"total_records": total_count},cls=Encoder)
+            "body": json.dumps({"data":result_list,"page_number":page_number,"page_size":page_size,"total_records": total_count},cls=Encoder)
         }
     except Exception as err:
         print(err)
