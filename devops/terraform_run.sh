@@ -84,7 +84,7 @@ sls deploy --region $REGION --config cognito-serverless.yml --stage $STAGE
 cd ..
 cd services/cognito-buyer
 sls deploy --region $REGION --stage $STAGE
-cd ..
+cd ../..
 cd services/lambda-authorizer
 sls deploy --region $REGION --stage $STAGE
 cd ../..
