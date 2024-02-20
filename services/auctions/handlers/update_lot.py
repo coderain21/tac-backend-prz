@@ -3,6 +3,8 @@ import os
 import json
 import pymongo
 from lib.helper_python import update_lot_data
+from lib.common_helper import Encoder
+
 
 
 # CORS headers
@@ -41,12 +43,15 @@ def update_lot(event):
             "body": json.dumps({"message": "You do not have access to perform this API action"})
         }
     request_body = json.loads(event['body'])
+
     # Initialize the MongoDB client
     client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
     db = client[os.environ['DATABASE']]
     collection = db[os.environ["LOT_COLLECTION_NAME"]]
     lot_number = request_body.get('lot_number')
     auction_id = request_body.get('auction_id')
+    collection_auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
 
     if not lot_number or not seller_email:
         return (400, {"message": "auction_id lot_number and seller_email are required for lot update."})
@@ -68,10 +73,16 @@ def update_lot(event):
             "auction_id": auction_id},
         {"$set": update_data}
     )
-    auction_record = collection.find_one(
-            {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+    print('collection_auction', collection_auction)
+    auction_record = collection_auction.find_one(
+            {"auction_id": auction_id, "seller_email": seller_email})
+    lot_information = collection.find_one(
+            {"auction_id": auction_id, "seller_email": seller_email, "lot_number": lot_number})
+    lot_information = json.loads(json.dumps(lot_information, cls= Encoder))
+    print('lot_information', lot_information)
+    lot_id = str(lot_information['_id'])
     if auction_record['status']== 'Accepting bids':
-        update = update_lot_data(request_body)
+        update = update_lot_data(request_body, lot_id)
     client.close()
     return (204, {})
 
@@ -106,9 +117,9 @@ def update(event, context):
             "body": json.dumps(response_body)
         }
     except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             "headers": headers,
             "body": json.dumps({"message": "Internal server error"})
         }
- 

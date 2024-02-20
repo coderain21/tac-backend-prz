@@ -8,6 +8,7 @@ import time
 import boto3
 import redis
 
+
 redis_client = redis.Redis(host=os.environ["REDIS_ENDPOINT"], port=6379)
 
 client = boto3.client('pinpoint-email',region_name = os.environ['REGION'])
@@ -74,14 +75,14 @@ def decrypt_with_time_validation(encrypted_data_hex, secret_key):
 
     return data
 
-def update_lot_data(item): 
-    print('itemssss', item)
-    lot_id = str(item['_id'])
+def update_lot_data(item, lot_id): 
     bid_key = f'lot:{lot_id}'
     existing_record =  redis_client.hget('lot', bid_key)
     get_lot = json.loads(existing_record)
+    print('get_lot', get_lot)
     if existing_record:
             get_lot = json.loads(existing_record)
+            
     else:
             get_lot = {}
             
@@ -99,3 +100,4 @@ def update_lot_data(item):
            
     }
     cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
+    print('cache_update', cache_update)
