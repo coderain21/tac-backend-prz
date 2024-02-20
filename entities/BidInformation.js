@@ -68,6 +68,10 @@ const BidSchema = new Schema({
     name: { type: String },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
+    time_zone: {
+        type: String,
+        trim: true,
+    },
 
 })
 
