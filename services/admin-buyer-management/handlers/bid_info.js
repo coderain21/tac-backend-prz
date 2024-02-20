@@ -39,9 +39,22 @@ const timeZoneMap = {
     'EST - Eastern Standard Time (US)': 'America/New_York',
 }
 
+const currencySymbolMapping = {
+    GBP: '£',
+    USD: '$',
+    EUR: '€',
+    HKD: 'HK$',
+    JPY: '¥',
+    CHF: 'Fr',
+    SGD: 'S$',
+    AUD: 'A$',
+    CAD: 'C$',
+    INR: '₹',
+}
+
 const formatDate = (timestamp, timeZone) => {
     const date = new Date(timestamp) // Convert timestamp to Date
-    console.log('timezone_3', timeZone)
+    // console.log('timezone_3', timeZone)
     // Format options for date and time
     const options = {
         day: 'numeric',
@@ -102,17 +115,21 @@ async function exportAsCsv(bidders) {
         const records = []
 
         for (const bidder of bidders) {
-            console.log('bidder', typeof bidder.time_zone)
+            console.log('bidder', bidder)
             bidder.updated_at = new Date(bidder.updated_at)
-            const { time_zone } = bidder.time_zone
-            console.log('timezone_1', time_zone)
-            console.log('timezone----', bidder.time_zone)
+            // const { time_zone } = bidder.time_zone
+            // console.log('timezone_1', time_zone)
+            // console.log('timezone----', bidder.time_zone)
             const formattedDate = formatDate(bidder.updated_at, bidder.time_zone)
+            console.log('currency', bidder.currency)
+            const currencySymbol = currencySymbolMapping[bidder.currency]
+            // Append currency symbol to the bid amount
+            const amountWithSymbol = `${currencySymbol}${bidder.bid_amount}`
 
             records.push({
                 'Paddle Number': bidder.paddle_number || '',
                 'Bidder Name': bidder.name, // `${bidder.first_name || ''} ${bidder.last_name || ''}`.trim(),
-                Amount: bidder.bid_amount,
+                Amount: amountWithSymbol,
                 'Bid Date': formattedDate,
             })
         }
