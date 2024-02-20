@@ -102,6 +102,7 @@ def buyer_list_auction(event, context):
                 "title": "$auction.title",
                 "email_address":1,
                 "seller_email":1,
+                "buyer_status": "$status",
                 "created_at": 1
             }},
             {"$sort": {sort_key: sort_order}},
