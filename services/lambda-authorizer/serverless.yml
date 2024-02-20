@@ -65,7 +65,7 @@ resources:
       Properties:
         Action: lambda:invokeFunction
         Principal: cognito-idp.amazonaws.com
-        FunctionName: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:cognito-${self:provider.stage}-pre-auth
+        FunctionName: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:cognito-buyer-${self:provider.stage}-pre-auth
         SourceArn: arn:aws:cognito-idp:${ssm:REGION}:${ssm:ACCOUNT_ID}:userpool/${ssm:BUYER_COGNITO_USERPOOL_ID}
 
 

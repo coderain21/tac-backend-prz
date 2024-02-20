@@ -10,7 +10,7 @@ disabledDeprecations:
 provider:
   name: aws
   endpointType: REGIONAL
-  runtime: nodejs14.x
+  runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
