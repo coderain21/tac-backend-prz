@@ -38,6 +38,7 @@ def list_bidders(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+        # email_address = 'anusha.k+subdomain@7edge.com'
         buyer_collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         # Default sorting by name
         sort_key = 'created_at'
@@ -46,7 +47,8 @@ def list_bidders(event, context):
             "email_address": 1,
             "created_at": 1,
             "name": 1,
-            "marketing": 1
+            "marketing": 1,
+            "auction_id": 1
         }
         export = event['queryStringParameters'].get('export', False)
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
@@ -82,34 +84,70 @@ def list_bidders(event, context):
         if export:
             pipeline = [
                 {"$match": search_query},
-                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
-                {"$replaceRoot": {"newRoot": "$firstRecord"}},
-                {"$sort": {sort_key: sort_order}},
-                {"$project": projection},
+                {"$lookup": {
+                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                    "localField": "auction_id",
+                    "foreignField": "_id",
+                    "as": "auction_info"
+                }},
+                {"$unwind": "$auction_info"},
+                {"$lookup": {
+                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                    "localField": "auction_info.auction_id",
+                    "foreignField": "auction_id",
+                    "as": "auction_details"
+                }},
+                {"$unwind": "$auction_details"},
+                {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
+                {"$project": {"email_address": 1, "created_at": 1, "name": 1, "marketing": 1, "auction_id": 1, "time_zone": 1}}
             ]
         else:
             pipeline = [
                 {"$match": search_query},
-                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
-                {"$replaceRoot": {"newRoot": "$firstRecord"}},
+                {"$lookup": {
+                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                    "localField": "auction_id",
+                    "foreignField": "_id",
+                    "as": "auction_info"
+                }},
+                {"$unwind": "$auction_info"},
+                {"$lookup": {
+                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                    "localField": "auction_info.auction_id",
+                    "foreignField": "auction_id",
+                    "as": "auction_details"
+                }},
+                {"$unwind": "$auction_details"},
+                {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
                 {"$sort": {sort_key: sort_order}},
                 {"$skip": (page_number - 1) * page_size },
                 {"$limit": page_size},
-                {"$project": projection},
+                {"$project": {"email_address": 1, "created_at": 1, "name": 1, "marketing": 1, "auction_id": 1, "time_zone": 1}}
             ]
+
+
+        print('pipeline', pipeline)
         buyers = buyer_collection.aggregate(pipeline)
         total_buyers_pipeline = [
-            {"$match": search_query},
-            {"$group": {"_id": "$email_address"}},
-            {"$count": "total_buyers"}
-        ]
+                {"$match": search_query},
+                {"$group": {"_id": None, "total_buyers": {"$sum": 1}}}
+            ]
+
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
+
+        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        projection = {
+            "time_zone": 1
+        }
+        result_time_zone = collection.find_one({"seller_email": email_address}, projection)
+        print('time_zone', result_time_zone)
         response_body = {
             "buyers": list(buyers),
             "total_buyers": total_buyers,
             "page_size": page_size,
-            "page_number": page_number
+            "page_number": page_number,
+            "time_zone": result_time_zone['time_zone']
         }
         download_link = ''
         if export:
@@ -124,7 +162,7 @@ def list_bidders(event, context):
         }
 
     except Exception as e:
-        print('ee', e)
+        print('ee', str(e))
         return {
             "statusCode": 500,
             "headers": headers,
@@ -145,6 +183,7 @@ def export_bidders_as_csv(buyers, email_address):
             "time_zone": 1
         }
         result = collection.find_one({"seller_email": email_address}, projection)
+        print('results', result)
         auction_id = str(buyers[0].get('seller_email', ''))
         filename = 'All'
         # Use a temporary directory
@@ -157,14 +196,17 @@ def export_bidders_as_csv(buyers, email_address):
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, ["Name","Email", "Account Created", "Marketing"])
             timezone_abbreviation = result['time_zone'].split(' ')[0]
+
             writer.writeheader()
             for buyer in buyers:
                 # Prepend the S3 URL to the thumbnail URL
+                print('buyer', buyer)
+                marketing_status = "Subscribed" if buyer.get("marketing", False) else "Unsubscribed"
                 writer.writerow({
                     "Name": buyer.get("name", ""),
                     "Email": buyer.get("email_address", ""),
                     "Account Created": buyer.get("created_at", "").strftime("%d %b %Y / %H:%M") + ' ' + timezone_abbreviation,
-                    "Marketing": buyer.get("marketing", ""),
+                    "Marketing": marketing_status,
                 })
 
         # Upload the file to S3
