@@ -95,6 +95,9 @@
                             },
                             "created_at": {
                               "type": "string"
+                            },
+                            "time_zone": {
+                              "type": "string"
                             }
                           }
                         }
@@ -110,75 +113,104 @@
                       }
                     }
                   },
-                  "example": {
+                  "example": 
+                  {
                     "buyers": [
                       {
-                        "_id": "65c1bbb9296ef7eb552eb218",
-                        "name": "Arya ",
-                        "email_address": "sushiarya@7edge.com",
-                        "created_at": "2024-02-06 04:55:21.660000",
-                        "marketing": false
+                        "_id": "653b41cbd3c3ab4f70f53b80",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+100@7edge.com",
+                        "created_at": "2023-10-27 04:51:23.632000",
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c22a8e58d81e0503b38374",
-                        "name": "Anusha K",
-                        "email_address": "anusha.k+bidder1@7edge.com",
-                        "created_at": "2024-02-06 12:48:14.441000",
-                        "marketing": false
+                        "_id": "653b4bbe77a9163ca253edf7",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+1211113@7edge.com",
+                        "created_at": "2023-10-27 05:33:50.272000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c22bc058d81e0503b38375",
-                        "name": "Angel ",
-                        "email_address": "angel123@7edge.com",
-                        "created_at": "2024-02-06 12:53:20.544000",
-                        "marketing": false
+                        "_id": "653b4d9f4eca834abff1991a",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+99@7edge.com",
+                        "created_at": "2023-10-27 05:41:51.406000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c22c0c58d81e0503b38376",
-                        "name": "Miranda ",
-                        "email_address": "janemiranda@7edge.com",
-                        "created_at": "2024-02-06 12:54:36.927000",
-                        "marketing": false
+                        "_id": "653b4d9f4eca834abff1991c",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+99@7edge.com",
+                        "created_at": "2023-10-27 05:41:51.979000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c22c7358d81e0503b38377",
-                        "name": "Kaisy ",
-                        "email_address": "kaisy@7edge.com",
-                        "created_at": "2024-02-06 12:56:19.972000",
-                        "marketing": false
+                        "_id": "653b4f484d75c9dbce1663da",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+119@7edge.com",
+                        "created_at": "2023-10-27 05:48:56.514000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c3160517f1cca5bcb8675c",
-                        "name": "Anju s",
-                        "email_address": "sandhyashri+buyer2805@7edge.com",
-                        "created_at": "2024-02-07 05:32:53.095000",
-                        "marketing": false
+                        "_id": "653b51a8515c5d963e4a59a9",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+120@7edge.com",
+                        "created_at": "2023-10-27 05:59:04.475000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c3169317f1cca5bcb8675d",
-                        "name": " ",
-                        "email_address": "namratha.shettigar@7edge.com",
-                        "created_at": "2024-02-07 05:35:15.188000",
-                        "marketing": false
+                        "_id": "653b5275515c5d963e4a59b1",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+393@7edge.com",
+                        "created_at": "2023-10-27 06:02:29.478000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c3563a610897132098470f",
-                        "name": " ",
-                        "email_address": "sandhyashri@7edge.com",
-                        "created_at": "2024-02-07 10:06:50.355000",
-                        "marketing": false
+                        "_id": "653b5276515c5d963e4a59b4",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+393@7edge.com",
+                        "created_at": "2023-10-27 06:02:30.059000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       },
                       {
-                        "_id": "65c35c4ad039ad7a7d034c39",
-                        "name": "Sandhya S",
-                        "email_address": "sandhyashri+12345678@7edge.com",
-                        "created_at": "2024-02-07 10:32:42.828000",
-                        "marketing": false
+                        "_id": "653b8170b770beab9d2489ed",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+69@7edge.com",
+                        "created_at": "2023-10-27 09:22:56.925000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b851cec52c6dd8e6fe282",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "sthuthi+test1@7edge.com",
+                        "created_at": "2023-10-27 09:38:36.775000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
                       }
                     ],
-                    "total_buyers": 27,
+                    "total_buyers": 16,
                     "page_size": 10,
-                    "page_number": 1
+                    "page_number": 1,
+                    "time_zone": "CET - Central European Time",
+                    "csv_url": ""
                   }
                 }
               }
