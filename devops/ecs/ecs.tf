@@ -130,7 +130,7 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 EOF
 }
-resource "aws_iam_policy_attachment" "stepfunctions_full_access" {
+resource "aws_iam_policy_attachment" "stepfunctions_full_access_task_role" {
   name       = "stepfunctions-full-access-attachment"
   roles      = [aws_iam_role.ecs_task_role.name]
   policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
