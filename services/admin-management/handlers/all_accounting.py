@@ -25,6 +25,7 @@ db = client[os.environ['DATABASE']]
 orders_collection = db[os.environ['ORDERS_COLLECTION']]
 buyer_collection = db[os.environ['BUYER_COLLECTION']]
 user_collection = db[os.environ['SELLERS_TABLE']]
+auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 def prepend_backslash(text):
     """
@@ -45,19 +46,9 @@ def prepend_backslash(text):
     return modified_text
 
 def list_all_purchases(event, context):
-    """
-    List orders based on various parameters.
-
-    Args:
-        event (dict): The event data passed to the function, typically from an API Gateway.
-        context: The runtime information.
-
-    Returns:
-        dict: A dictionary containing the response with order information.
-    """
     try:
         try:
-            email_address = 'sthuthi@7edge.com' #event['requestContext']['authorizer']['claims']['cognito:username']
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
             return {
@@ -65,9 +56,11 @@ def list_all_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Extract parameters from the request, defaulting to empty dictionary if not present
-        data = event.get('queryStringParameters', {}).copy() if event.get('queryStringParameters') else {}
+        # Initialize the query
+        query = {}
 
+        # Extract parameters from the request
+        data = event.get('queryStringParameters', {})
 
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'created_at')
@@ -77,8 +70,8 @@ def list_all_purchases(event, context):
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
 
-        print('Page:', page)
-        print('Limit:', limit)
+        start_date = event['queryStringParameters'].get('start_date', None)
+        end_date = event['queryStringParameters'].get('end_date', None)
 
         # Initialize sort_criteria with a default value
         sort_criteria = []
@@ -86,24 +79,49 @@ def list_all_purchases(event, context):
         if sort_by and sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'payment_status', 'auction_title', 'payment', 'amount']:
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
-        # Build the query based on parameters
-        query = {}
-        if payment_type:
-            query["payment"] = payment_type
-        if payment_status:
-            query["payment_status"] = payment_status
-
-        # Query the MongoDB collection
-        # Use cursor-based pagination instead of skip
+        # Initialize search query
         search_query = {}
-        if 'queryStringParameters' in event and 'search' in event['queryStringParameters']:
-            search_text = event['queryStringParameters']['search']
-            search_text = prepend_backslash(search_text)
-            search_query['$or'] = [
-                {"name": {"$regex": search_text, "$options": "i"}},
+
+        if 'search' in data:
+            search_text = prepend_backslash(data['search'])
+            search_query["$or"] = [
                 {"order_number": {"$regex": search_text, "$options": "i"}},
+                {"name": {"$regex": search_text, "$options": "i"}},
+                {"order_number": {"$regex": search_text, "$options": "i"}}
             ]
 
+        # Merge search query with the existing query
+        query.update(search_query)
+        if start_date and end_date:
+            date_range_condition = {
+                "$or": [
+                    {
+                        "start_date": {
+                            "$gte": start_date,
+                            "$lte": end_date
+                        }
+                    },
+                    {
+                        "end_date": {
+                            "$gte": start_date,
+                            "$lte": end_date
+                        }
+                    }
+                ]
+            }
+
+            query.update(date_range_condition)
+        # Check if status is provided and not empty
+
+        if payment_type:
+            status_condition = {"payment": payment_type}
+            query.update(status_condition)
+
+        if payment_status:
+            payment_status_condition = {"payment_status": payment_status}
+            query.update(payment_status_condition)
+
+        # Query the MongoDB collection
         orders_list = orders_collection.find(
             query,
             {
@@ -135,7 +153,6 @@ def list_all_purchases(event, context):
             "total_pages": total_pages,
             "total_records": total_records,
             "current_page": page
-            # "total_orders": total_records
         }
 
         return {
@@ -150,7 +167,6 @@ def list_all_purchases(event, context):
             "statusCode": 500,
             "body": json.dumps({"message": "There was an error"})
         }
-
 
 
 
