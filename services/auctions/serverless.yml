@@ -42,7 +42,6 @@ provider:
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     CDN_LINK: ${ssm:CDN_URL}
     BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
-    STATE_MACHINE_LOT_ARN:  ${ssm:STATE_MACHINE_LOT_ARN}
     REDIS_URL: ${ssm:REDIS_URL}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts

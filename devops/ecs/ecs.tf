@@ -61,7 +61,7 @@ data "aws_subnets" "default" {
 
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE"]
+  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-eu
 }

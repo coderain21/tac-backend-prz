@@ -208,7 +208,7 @@ resource "aws_iam_role_policy_attachment" "ssm_full_policy_attachment" {
   role       = aws_iam_role.ssm_role.name
   provider = aws.deployment-us
 }
-resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
+resource "aws_iam_role_policy_attachment" "s3_cognito_full_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonCognitoPowerUser"
   role       = aws_iam_role.ssm_role.name
   provider = aws.deployment-us

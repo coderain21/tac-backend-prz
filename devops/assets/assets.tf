@@ -470,7 +470,7 @@ resource "aws_ssm_parameter" "sender_email" {
   value = data.external.env.result["SENDER_EMAIL"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "sender_email" {
+resource "aws_ssm_parameter" "registered_buyer" {
   name  = "REGISTRED_BUYER"
   overwrite = true
   type  = "String"
