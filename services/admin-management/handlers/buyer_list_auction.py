@@ -22,22 +22,9 @@ def prepend_backslash(text):
 
     return modified_text
 
+
+
 def buyer_list_auction(event, context):
-    """
-    The `list_auction` function retrieves a list of auctions based on specified filters and pagination
-    parameters.
-    :param event: The `event` parameter is a dictionary that contains the input data for the function.
-    It includes the query string parameters that are passed to the function. These parameters are used
-    to filter and paginate the auction list
-    :param context: The `context` parameter is an object that provides information about the runtime
-    environment of the function. It includes properties such as the AWS request ID, the function name,
-    the function version, and more. This parameter is not used in the code you provided, but it is
-    commonly included in AWS Lambda functions
-    :return: a dictionary with the following keys:
-    - "statusCode": an integer representing the HTTP status code
-    - "headers": a dictionary representing the HTTP headers
-    - "body": a JSON string representing the response body
-    """
     try:
         print(event)
         try:
@@ -103,14 +90,32 @@ def buyer_list_auction(event, context):
         ]
         result = dev_auction_register.aggregate(pipeline)
         result_list = list(result)  # Convert the cursor to a list
-        total_count = len(result_list)  # Get the length of the list
+
+        # Count total auctions based on the filter criteria
+        total_auctions_pipeline = [
+            {"$match": {"email_address": email_address["email_address"]}},
+            {"$count": "total_auctions"}
+        ]
+        total_auctions_result = list(dev_auction_register.aggregate(total_auctions_pipeline))
+        total_count = total_auctions_result[0]["total_auctions"] if total_auctions_result else 0
+
+        if not result_list:
+            return {
+                "headers": headers,
+                "statusCode": 404,
+                "body": json.dumps({"message":  "Not Found"})
+            }
+
+        print('data', result_list)
+
+        print(34566)
         return {
             "headers": headers,
             "statusCode": 200,
             "body": json.dumps({"data":result_list,"page_number":page_number,"page_size":page_size,"total_records": total_count},cls=Encoder)
         }
     except Exception as err:
-        print(err)
+        print('error:', str(err))
         return {
             "headers": headers,
             "statusCode": 500,
