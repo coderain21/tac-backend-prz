@@ -46,16 +46,6 @@ def prepend_backslash(text):
     return modified_text
 
 def list_purchases(event, context):
-    """
-    List orders based on various parameters.
-
-    Args:
-        event (dict): The event data passed to the function, typically from an API Gateway.
-        context: The runtime information.
-
-    Returns:
-        dict: A dictionary containing the response with order information.
-    """
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -66,28 +56,20 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Connect to MongoDB
-        # print('Event:', json.dumps(event, indent=2))
-        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        
+        result = user_collection.find_one({"user_type": "admin", "email_address": email_address})
         if result is None:
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+        
+        # Initialize the query
+        query = {"auction_id": event['queryStringParameters'].get('auction_id', '')}
 
-        # Extract buyer ID from path parameters
-        auction_id = event['queryStringParameters'].get('auction_id', '')
-        # seller_email = event['queryStringParameters'].get('seller_email', '')
-
-        if not auction_id:
-            return {
-                "statusCode": 400,
-                "headers": headers,
-                "body": json.dumps({"message": "Invalid request, Auction ID not provided"})
-            }
-
-        # Fetch buyer details from MongoDB
+        # Fetch auction details
+        auction_id = query["auction_id"]
         auction_details = auction_collection.find_one({"_id": ObjectId(auction_id)})
         print('buyer_details', auction_details)
 
@@ -98,9 +80,8 @@ def list_purchases(event, context):
                 "body": json.dumps({"message": "Auction doesn't exist"})
             }
 
-        # Extract parameters from the request, defaulting to empty dictionary if not present
-        data = event.get('queryStringParameters', {}).copy() if event.get('queryStringParameters') else {}
-
+        # Extract parameters from the request
+        data = event.get('queryStringParameters', {})
 
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'created_at')
@@ -110,24 +91,26 @@ def list_purchases(event, context):
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
 
-        print('Page:', page)
-        print('Limit:', limit)
-
         # Initialize sort_criteria with a default value
         sort_criteria = []
 
         if sort_by and sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'payment_status', 'auction_title', 'payment', 'amount']:
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
-        # Build the query based on parameters
-        query = {"auction_id": auction_id}
-        if payment_type:
-            query["payment"] = payment_type
-        if payment_status:
-            query["payment_status"] = payment_status
+        # Initialize search query
+        search_query = {}
+
+        if 'search' in data:
+            search_text = prepend_backslash(data['search'])
+            search_query["$or"] = [
+                {"order_number": {"$regex": search_text, "$options": "i"}},
+                {"name": {"$regex": search_text, "$options": "i"}}
+            ]
+
+        # Merge search query with the existing query
+        query.update(search_query)
 
         # Query the MongoDB collection
-        # Use cursor-based pagination instead of skip
         orders_list = orders_collection.find(
             query,
             {
@@ -159,7 +142,6 @@ def list_purchases(event, context):
             "total_pages": total_pages,
             "total_records": total_records,
             "current_page": page
-            # "total_orders": total_records
         }
 
         return {
@@ -174,7 +156,6 @@ def list_purchases(event, context):
             "statusCode": 500,
             "body": json.dumps({"message": "There was an error"})
         }
-
 
 
 
