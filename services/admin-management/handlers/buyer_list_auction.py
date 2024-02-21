@@ -54,7 +54,6 @@ def buyer_list_auction(event, context):
         page_number= int(page_number)
         buyer_id=query_parameters.get('buyer_id')
         email_address= buyer_collection.find_one({"_id":ObjectId(buyer_id)},{"email_address":1,"_id":0})
-        print('buyer_email', email_address)
         page_size = 10
         # Calculate the number of documents to skip
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
