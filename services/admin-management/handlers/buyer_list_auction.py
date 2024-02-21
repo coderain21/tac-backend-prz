@@ -42,13 +42,6 @@ def buyer_list_auction(event, context):
         print(event)
         try:
             seller_email = event['requestContext']['authorizer']['claims']['cognito:username']
-        #     if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-        #         return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        #     print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -74,7 +67,6 @@ def buyer_list_auction(event, context):
         page_number= int(page_number)
         buyer_id=query_parameters.get('buyer_id')
         email_address= buyer_collection.find_one({"_id":ObjectId(buyer_id)},{"email_address":1,"_id":0})
-        print('buyer_email', email_address)
         page_size = 10
         # Calculate the number of documents to skip
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
@@ -112,21 +104,6 @@ def buyer_list_auction(event, context):
         result = dev_auction_register.aggregate(pipeline)
         result_list = list(result)  # Convert the cursor to a list
         total_count = len(result_list)  # Get the length of the list
-
-        print('result', result_list)
-        print(email_address)
-        print('total_count', total_count)
-
-        if total_count == 0:
-            return {
-                "headers": headers,
-                "statusCode": 404,
-                "body": json.dumps({"message":  "Not Found"})
-            }
-
-        print('data', result_list)
-
-        print(34566)
         return {
             "headers": headers,
             "statusCode": 200,
