@@ -38,6 +38,7 @@ provider:
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
 
     
   http:

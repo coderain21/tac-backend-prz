@@ -14,5 +14,6 @@ crypto
 pycryptodome
 schema
 PyJWT==2.8.0
+redis
 
 
