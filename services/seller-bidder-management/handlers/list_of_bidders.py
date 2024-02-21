@@ -158,8 +158,9 @@ def list_bidders(event, context):
             "total_buyers": total_buyers,
             "page_size": page_size,
             "page_number": page_number,
-            "time_zone": result_time_zone['time_zone']
+            "time_zone": result_time_zone['time_zone'] if result_time_zone else None
         }
+
         download_link = ''
         if export:
             download_link = export_bidders_as_csv(response_body['buyers'], email_address)
