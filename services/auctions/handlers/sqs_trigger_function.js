@@ -124,14 +124,15 @@ module.exports.sqsTriggerFunction = async (event) => {
             if (winningLot.length <= 0) {
                 subjectDescription = 'You lost the Auction'
             }
+            console.log('winningLot', winningLot)
 
             const template_data = {
-                winning_lot: winningLot,
+                winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData[0].title,
                 logo_url: auctionData[0].logo_image === '' ? `${process.env.S3_BUCKET_URL}/Logo.png` : `${process.env.S3_BUCKET_URL}/${auctionData[0].logo_image}`,
-                not_winning_lot: notWinning,
+                not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
                 seller_email: auctionData[0].seller_email,
