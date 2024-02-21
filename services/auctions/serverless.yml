@@ -66,6 +66,7 @@ provider:
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL:  https://qa-cdn.indyauction.net/public
     SENDER_EMAIL: ${ssm:SENDER_EMAIL}
+    STATE_MACHINE_LOT_ARN: arn:aws:states:${ssm:REGION}:${ssm:ACCOUNT_ID}:stateMachine:${self:provider.stage}-lot-published
 
     
     
@@ -420,6 +421,17 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+    
+    LotStateMachineSSMParameter:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: STATE_MACHINE_LOT_ARN
+        Description: 'ARN of the Hello Step Functions state machine'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
+          - StateMachineName: ${opt:stage}-lot-published
+
     
 
 

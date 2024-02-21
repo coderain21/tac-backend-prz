@@ -235,6 +235,17 @@ definitions:
           - unzip -u awscliv2.zip
           - ./aws/install
           - bash devops/terraform_destroy_init.sh
+    
+    - step: &runcommands
+        script:
+          - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          - unzip -u awscliv2.zip
+          - ./aws/install
+          - echo "Runbook Execution Step!"
+          - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - aws s3 sync ${RUNBOOK_PATH} s3://${RUNBOOK_BUCKET}/${RUNBOOK_PATH} --acl public-read
+          - aws ssm send-command --targets "Key=instanceids,Values=$(aws ssm get-parameter --name 'EC_INSTANCE_ID' --query 'Parameter.Value' --output text --region ${REGION})" --document-name 'AWS-RunShellScript' --parameters "commands=['if [ ! -d runbook ]; then mkdir runbook; fi && cd runbook && aws s3 sync s3://${RUNBOOK_BUCKET}/ . && chmod +x ${RUNBOOK_PATH}/* && cd ${RUNBOOK_PATH} && sh main.sh && cd ../../ && rm -r ${RUNBOOK_PATH} && cd .. && rm -r runbook']" --region ${REGION}
 
 
 
@@ -260,6 +271,48 @@ pipelines:
           steps:
             - step: *BuildStep
             - step: *DeletePreProduction
+    
+    RunBookExecutionQA:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: QA
+          steps:
+            - step: *runcommands
+    RunBookExecutionDev:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: Develop
+          steps:
+            - step: *runcommands
+    RunBookExecutionPreProd:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: Pre-Production
+          steps:
+            - step: *runcommands
+    RunBookExecutionProd:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: New-Production
+          steps:
+            - step: *runcommands
+    
   pull-requests:    
     feature/**:
       - parallel:
