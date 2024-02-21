@@ -76,6 +76,7 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-welcome_email_template/EMAIL"
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
   http:
     cors: true
      

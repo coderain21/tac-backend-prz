@@ -93,6 +93,7 @@ provider:
     SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     
   http:
     cors: true
