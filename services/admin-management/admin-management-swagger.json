@@ -939,7 +939,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "656cb04247790c35822dfb46"
+            "example": "65c3135c706202a62aabc364"
           }
 
         ],
@@ -989,9 +989,8 @@
                     }
                   }
                 },
-                "example": {
-                  
-                    "_id": "656cb04247790c35822dfb46",
+                "example": { 
+                    "_id": "65c3135c706202a62aabc364",
                     "email_address": "murali.r@7edge.com",
                     "first_name": "murali",
                     "last_name": "e",

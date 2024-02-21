@@ -56,7 +56,6 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
         result = user_collection.find_one({"user_type": "admin", "email_address": email_address})
         if result is None:
             return {
@@ -64,7 +63,6 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
         # Initialize the query
         query = {"auction_id": event['queryStringParameters'].get('auction_id', '')}
 
