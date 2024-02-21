@@ -470,3 +470,10 @@ resource "aws_ssm_parameter" "sender_email" {
   value = data.external.env.result["SENDER_EMAIL"]
   provider = aws.deployment-ap
 }
+resource "aws_ssm_parameter" "sender_email" {
+  name  = "REGISTRED_BUYER"
+  overwrite = true
+  type  = "String"
+  value = "${data.external.env.result["STAGE"]}-register-auction"
+  provider = aws.deployment-ap
+}

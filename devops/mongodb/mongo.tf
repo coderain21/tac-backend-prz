@@ -179,6 +179,45 @@ resource "aws_security_group" "ssh_sg_1" {
   provider = aws.deployment-us
 }
 
+resource "aws_iam_role" "ssm_role" {
+  name = "ssm-role-ec2"
+  provider = aws.deployment-us
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com",
+        },
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_core_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_full_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonCognitoPowerUser"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
 
 # Create an EC2 instance
 resource "aws_instance" "ssh_tunnel" {
@@ -193,8 +232,15 @@ resource "aws_instance" "ssh_tunnel" {
               wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-archive-keyring.gpg
               echo "deb [signed-by=/usr/share/keyrings/mongodb-archive-keyring.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
               sudo apt-get update -y
-              sudo apt-get install -y mongodb-mongosh 
+              sudo apt-get install -y mongodb-mongosh zip
+              wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.deb
+              sudo dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.9.4.deb
+              apt-get update && apt-get install -y
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip -u awscliv2.zip
+              ./aws/install
               EOF
+  iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 }
 
 resource "aws_eip" "example" {
