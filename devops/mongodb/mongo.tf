@@ -242,7 +242,11 @@ resource "aws_instance" "ssh_tunnel" {
               EOF
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 }
-
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "ssm-role-ec2"
+  provider = aws.deployment-us
+  role = aws_iam_role.ssm_role.name
+}
 resource "aws_eip" "example" {
   instance = aws_instance.ssh_tunnel.id # Replace with your EC2 instance ID
   provider = aws.deployment-us
@@ -287,6 +291,13 @@ resource "aws_ssm_parameter" "mongodb-password" {
   name  = "MONGO_PASSWORD"
   type  = "String"
   value = data.external.env.result["MONGO_PASSWORD"]
+  provider = aws.deployment-us
+  overwrite = true
+}
+resource "aws_ssm_parameter" "ec2_instance_id" {
+  name  = "EC_INSTANCE_ID"
+  type  = "String"
+  value = resource.aws_instance.ssh_tunnel.id
   provider = aws.deployment-us
   overwrite = true
 }
