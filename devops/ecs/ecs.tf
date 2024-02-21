@@ -96,6 +96,13 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 EOF
 }
 
+resource "aws_iam_policy_attachment" "stepfunctions_full_access" {
+  name       = "stepfunctions-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
+}
+
+
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs-task-role"
   provider = aws.deployment-eu
@@ -122,6 +129,11 @@ resource "aws_iam_role" "ecs_task_role" {
  ]
 }
 EOF
+}
+resource "aws_iam_policy_attachment" "stepfunctions_full_access" {
+  name       = "stepfunctions-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
