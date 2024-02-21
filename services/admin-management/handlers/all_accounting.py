@@ -44,7 +44,7 @@ def prepend_backslash(text):
 
     return modified_text
 
-def list_purchases(event, context):
+def list_all_purchases(event, context):
     """
     List orders based on various parameters.
 
@@ -57,7 +57,7 @@ def list_purchases(event, context):
     """
     try:
         try:
-            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            email_address = 'sthuthi@7edge.com' #event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
             return {
@@ -65,17 +65,6 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Fetch buyer details from MongoDB
-        buyer_details = buyer_collection.find_one({"_id": ObjectId(id)})
-        print('buyer_details', buyer_details)
-
-        if buyer_details is None:
-            return {
-                "statusCode": 404,
-                "headers": headers,
-                "body": json.dumps({"message": "User doesn't exist"})
-            }
-
         # Extract parameters from the request, defaulting to empty dictionary if not present
         data = event.get('queryStringParameters', {}).copy() if event.get('queryStringParameters') else {}
 
@@ -98,7 +87,7 @@ def list_purchases(event, context):
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
         # Build the query based on parameters
-        query = {"email_address": buyer_details['email_address']}
+        query = {}
         if payment_type:
             query["payment"] = payment_type
         if payment_status:
@@ -106,6 +95,15 @@ def list_purchases(event, context):
 
         # Query the MongoDB collection
         # Use cursor-based pagination instead of skip
+        search_query = {}
+        if 'queryStringParameters' in event and 'search' in event['queryStringParameters']:
+            search_text = event['queryStringParameters']['search']
+            search_text = prepend_backslash(search_text)
+            search_query['$or'] = [
+                {"name": {"$regex": search_text, "$options": "i"}},
+                {"order_number": {"$regex": search_text, "$options": "i"}},
+            ]
+
         orders_list = orders_collection.find(
             query,
             {
