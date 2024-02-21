@@ -37,7 +37,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "name, email_address"
+              "example": "email_address"
             },
             {
               "name": "sort_order",

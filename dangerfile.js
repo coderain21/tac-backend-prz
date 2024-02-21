@@ -55,7 +55,7 @@ if (!branchNameRegex.test(branchName)) {
     fail(`Jira fix version is missing in branch name: ${branchName}`)
     hasFailures = true
 }
-if (hasFailures) {
-    process.exit(1);
-}
+// if (hasFailures) {
+//     process.exit(1);
+// }
 

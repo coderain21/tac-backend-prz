@@ -82,6 +82,7 @@ def list_bidders(event, context):
 
         # Fetching unique buyers based on email address with sorting, pagination, and search options
         if export:
+            print('11')
             pipeline = [
                 {"$match": search_query},
                 {"$lookup": {
@@ -99,7 +100,11 @@ def list_bidders(event, context):
                 }},
                 {"$unwind": "$auction_details"},
                 {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
-                {"$project": {"email_address": 1, "created_at": 1, "name": 1, "marketing": 1, "auction_id": 1, "time_zone": 1}}
+                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
+                {"$replaceRoot": {"newRoot": "$firstRecord"}},
+                {"$sort": {sort_key: sort_order}},
+                {"$project": {"email_address": 1, "created_at": 1, "name": 1, "marketing": 1, "auction_id": 1, "time_zone": 1}},
+
             ]
         else:
             pipeline = [
@@ -119,20 +124,26 @@ def list_bidders(event, context):
                 }},
                 {"$unwind": "$auction_details"},
                 {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
+                {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
+                {"$replaceRoot": {"newRoot": "$firstRecord"}},
                 {"$sort": {sort_key: sort_order}},
                 {"$skip": (page_number - 1) * page_size },
                 {"$limit": page_size},
-                {"$project": {"email_address": 1, "created_at": 1, "name": 1, "marketing": 1, "auction_id": 1, "time_zone": 1}}
+                {"$project": {"email_address": 1, "created_at": 1, "name": 1, "marketing": 1, "auction_id": 1, "time_zone": 1}},
+
             ]
 
 
         print('pipeline', pipeline)
         buyers = buyer_collection.aggregate(pipeline)
         total_buyers_pipeline = [
-                {"$match": search_query},
-                {"$group": {"_id": None, "total_buyers": {"$sum": 1}}}
-            ]
+            {"$match": search_query},
+            {"$group": {"_id": None, "unique_emails": {"$addToSet": "$email_address"}}},
+            {"$addFields": {"total_buyers": {"$size": "$unique_emails"}}},
+            {"$project": {"_id": 0, "total_buyers": 1}},
+        ]
 
+        print('total_buyers_pipeline', total_buyers_pipeline)
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
 
@@ -147,8 +158,9 @@ def list_bidders(event, context):
             "total_buyers": total_buyers,
             "page_size": page_size,
             "page_number": page_number,
-            "time_zone": result_time_zone['time_zone']
+            "time_zone": result_time_zone['time_zone'] if result_time_zone else None
         }
+
         download_link = ''
         if export:
             download_link = export_bidders_as_csv(response_body['buyers'], email_address)
