@@ -2,7 +2,6 @@
 import json
 import os
 import re
-from bson import ObjectId
 import pymongo
 from pymongo import MongoClient
 from lib.common_helper import Encoder
