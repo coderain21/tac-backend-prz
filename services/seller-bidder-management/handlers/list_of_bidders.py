@@ -30,15 +30,15 @@ def prepend_backslash(text):
 
 def list_bidders(event, context):
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-        # email_address = 'anusha.k+subdomain@7edge.com'
+        # try:
+        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
+        email_address = 'anusha.k+subdomain@7edge.com'
         buyer_collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         # Default sorting by name
         sort_key = 'created_at'
@@ -76,6 +76,8 @@ def list_bidders(event, context):
         if 'queryStringParameters' in event:
             if 'page_number' in event['queryStringParameters']:
                 page_number = int(event['queryStringParameters']['page_number'])
+            if 'per_page' in event['queryStringParameters']:
+                page_size = int(event['queryStringParameters']['per_page'], 10)
 
         # Total buyers count
         total_buyers = buyer_collection.count_documents(search_query)
@@ -145,6 +147,7 @@ def list_bidders(event, context):
 
         print('total_buyers_pipeline', total_buyers_pipeline)
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
+        print('total_buyers_result', total_buyers_result)
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
 
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]

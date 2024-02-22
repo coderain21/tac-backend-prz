@@ -191,9 +191,39 @@ module.exports.handler = async (event) => {
             email_address: 1,
         }
 
-        /** Fetch enterprises using the provided criteria */
-        const bidsList = await mongodbHelper.list(RegisteredUser, mongoose_query, options)
-        if (bidsList.docs.length <= 0) {
+        if (queryParams?.export === 'true') {
+            console.log('Exporting to CSV...')
+            // Fetch all documents without pagination
+            const buyerList = await RegisteredUser.find(mongoose_query).sort(options.sort)
+
+            if (!buyerList || buyerList.length === 0) {
+                console.error('Error: No documents found.')
+                return {
+                    statusCode: 404,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({
+                        message: 'Buyers not found',
+                    }),
+                }
+            }
+
+            // Export to CSV
+            const download_link = await exportAsCsv(buyerList)
+            console.log('Download link:', download_link)
+
+            /** Return successful response with CSV download link */
+            return {
+                statusCode: 200,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    download_link,
+                }),
+            }
+        }
+        // Fetch buyers list with pagination
+        const buyerList = await mongodbHelper.list(RegisteredUser, mongoose_query, options)
+
+        if (buyerList.docs.length <= 0) {
             return {
                 statusCode: 404,
                 headers: await helpers.getHeaders(),
@@ -203,28 +233,18 @@ module.exports.handler = async (event) => {
             }
         }
 
-        if (queryParams?.export === 'true') {
-            // Export to CSV
-            console.log('here', bidsList)
-            const download_link = await exportAsCsv(bidsList.docs)
-            console.log('download_link', download_link)
-            bidsList.download_link = download_link
-            console.log('bidsList', bidsList)
-        }
-
-        /** Return successful response with enterprise data and pagination info */
+        /** Return successful response with buyers data and pagination info */
         return {
             statusCode: 200,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                data: bidsList.docs,
-                download_link: bidsList.download_link,
+                data: buyerList.docs,
                 pagination: {
-                    total_pages: bidsList.totalPages,
-                    limit: bidsList.limit,
-                    total_records: bidsList.totalDocs,
-                    next_page: bidsList.nextPage,
-                    page: bidsList.page,
+                    total_pages: buyerList.totalPages,
+                    limit: buyerList.limit,
+                    total_records: buyerList.totalDocs,
+                    next_page: buyerList.nextPage,
+                    page: buyerList.page,
                 },
             }),
         }
