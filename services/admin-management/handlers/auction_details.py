@@ -57,7 +57,6 @@ def auction_details(event, context):
             "headers": headers,
             "body": json.dumps(result, cls=Encoder)
         }
-      
     except Exception as err:
         print("Error",str(err))
         return {
