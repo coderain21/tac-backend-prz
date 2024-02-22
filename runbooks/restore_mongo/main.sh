@@ -1,3 +1,4 @@
+sudo apt-get install -y awscli
 aws s3 sync s3://indyauction-runbooks/backups/ . --include "*backup.zip"
 unzip backup.zip
 cd dump/qa/
