@@ -140,9 +140,22 @@ def list_bidders(event, context):
         buyers = buyer_collection.aggregate(pipeline)
         total_buyers_pipeline = [
             {"$match": search_query},
-            {"$group": {"_id": None, "unique_emails": {"$addToSet": "$email_address"}}},
-            {"$addFields": {"total_buyers": {"$size": "$unique_emails"}}},
-            {"$project": {"_id": 0, "total_buyers": 1}},
+            {"$lookup": {
+                "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                "localField": "auction_id",
+                "foreignField": "_id",
+                "as": "auction_info"
+            }},
+            {"$unwind": "$auction_info"},
+            {"$lookup": {
+                "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                "localField": "auction_info.auction_id",
+                "foreignField": "auction_id",
+                "as": "auction_details"
+            }},
+            {"$unwind": "$auction_details"},
+            {"$group": {"_id": "$email_address"}},
+            {"$count": "total_buyers"}
         ]
 
         print('total_buyers_pipeline', total_buyers_pipeline)

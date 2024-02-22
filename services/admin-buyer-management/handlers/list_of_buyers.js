@@ -1,3 +1,4 @@
+/* eslint-disable object-shorthand */
 /* eslint-disable eqeqeq */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
@@ -74,7 +75,7 @@ async function exportAsCsv(bidders) {
             // const formattedDate = dateRegistered ? dateRegistered.toISOString().split('T')[0] : ''
             const formattedDate = formatDate(bidder.created_at)
             let marketing // Declare the variable outside of the if...else block
-            console.log('Value of bidder.marketing:', bidder.marketing, typeof bidder.marketing)
+            // console.log('Value of bidder.marketing:', bidder.marketing, typeof bidder.marketing)
 
             if (bidder.marketing == 'true') {
                 marketing = 'Subscribed' // Assign value inside the if block
@@ -82,7 +83,7 @@ async function exportAsCsv(bidders) {
                 marketing = 'Unsubscribed' // Assign value inside the else block
             }
 
-            console.log('Value of marketing:', marketing)// Log the value of marketing
+            // console.log('Value of marketing:', marketing)// Log the value of marketing
 
             records.push({
                 'Paddle Number': bidder.paddle || '',
@@ -209,14 +210,23 @@ module.exports.handler = async (event) => {
 
             // Export to CSV
             const download_link = await exportAsCsv(buyerList)
-            console.log('Download link:', download_link)
+            // console.log('Download link:', download_link)
+            console.log('data', buyerList.docs)
 
             /** Return successful response with CSV download link */
             return {
                 statusCode: 200,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({
-                    download_link,
+                    data: buyerList,
+                    download_link: download_link,
+                    pagination: {
+                        total_pages: buyerList.totalPages,
+                        limit: buyerList.limit,
+                        total_records: buyerList.totalDocs,
+                        next_page: buyerList.nextPage,
+                        page: buyerList.page,
+                    },
                 }),
             }
         }
