@@ -92,18 +92,13 @@ def list_all_purchases(event, context):
         # Merge search query with the existing query
         query.update(search_query)
         if start_date and end_date:
+            print('start date', start_date, 'end date', end_date)
             date_range_condition = {
                 "$or": [
                     {
-                        "start_date": {
-                            "$gte": start_date,
-                            "$lte": end_date
-                        }
-                    },
-                    {
-                        "end_date": {
-                            "$gte": start_date,
-                            "$lte": end_date
+                        "created_at": {
+                            "$gte": int(start_date),
+                            "$lte": int(end_date)
                         }
                     }
                 ]
@@ -120,6 +115,8 @@ def list_all_purchases(event, context):
             payment_status_condition = {"payment_status": payment_status}
             query.update(payment_status_condition)
 
+        print('query', query)
+
         # Query the MongoDB collection
         orders_list = orders_collection.find(
             query,
@@ -135,6 +132,13 @@ def list_all_purchases(event, context):
                 'auction_title': 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
+
+        total_records = orders_collection.count_documents(query)
+        print('Number of documents fetched:', total_records)
+
+        # Check if orders_list is None or empty
+        if not orders_list:
+            print('No orders found matching the criteria')
 
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
