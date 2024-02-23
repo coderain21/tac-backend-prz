@@ -81,6 +81,7 @@ provider:
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
 
 
     

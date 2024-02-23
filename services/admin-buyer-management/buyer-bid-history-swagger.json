@@ -404,6 +404,656 @@
               }
           }
         }
+      },
+      "/bids": {
+        "get": {
+          "summary": "List Bids",
+          "description": "Fetch a list of bids placed on a particular auction.",
+          "tags": [
+            "Admin | Auction Buyer Management"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "seller_email",
+              "in": "query",
+              "required": true,
+              "example": "sthuthi@7edge.com",
+              "description": "The unique identifier.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "auction_id",
+              "in": "query",
+              "required": true,
+              "example": "A0029",
+              "description": "Auction id",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort field",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "Sort order (e.g., asc, desc)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with a list of bids.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": [
+                        {
+                            "_id": "65c7a4d15d3c75d2de0b464c",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 1500,
+                            "bid_amount": 1500,
+                            "lot_id": "65c7a34253467df93e8b24f9",
+                            "low_estimate": "2000",
+                            "high_estimate": "404000",
+                            "name": "Sandhya S",
+                            "lot_title": "Out of the Margins",
+                            "lot_number": 1,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/a7981170-3cec-0982-6031-f757f477498c/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582673627.0,
+                            "max_bid": 1700,
+                            "updated_at": "2024-02-10 16:31:13.627000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:31:13.651000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a5005d3c752aec0b4684",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 1500,
+                            "bid_amount": 1800,
+                            "lot_id": "65c7a34253467df93e8b24f9",
+                            "low_estimate": "2000",
+                            "high_estimate": "404000",
+                            "name": "",
+                            "lot_title": "Out of the Margins",
+                            "lot_number": 1,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/a7981170-3cec-0982-6031-f757f477498c/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582720828.0,
+                            "max_bid": 1800,
+                            "updated_at": "2024-02-10 16:32:00.836000",
+                            "bid_status": "Won",
+                            "created_at": "2024-02-10 16:32:00.853000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a4e15d3c750fa70b466d",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 2000,
+                            "bid_amount": 2000,
+                            "lot_id": "65c7a34253467df93e8b24fa",
+                            "low_estimate": "3000",
+                            "high_estimate": "400005",
+                            "name": "Sandhya S",
+                            "lot_title": "Opportunities for Artists",
+                            "lot_number": 2,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/4fbb1005-123a-2038-8c4f-26446062a2a8/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582689899.0,
+                            "max_bid": 2200,
+                            "updated_at": "2024-02-10 16:31:29.899000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:31:29.921000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a8c75d3c751c240b4721",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 2000,
+                            "bid_amount": 2400,
+                            "lot_id": "65c7a34253467df93e8b24fa",
+                            "low_estimate": "3000",
+                            "high_estimate": "400005",
+                            "name": "",
+                            "lot_title": "Opportunities for Artists",
+                            "lot_number": 2,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/4fbb1005-123a-2038-8c4f-26446062a2a8/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707583686855.0,
+                            "max_bid": 3000,
+                            "updated_at": "2024-02-10 16:48:07.196000",
+                            "bid_status": "Won",
+                            "created_at": "2024-02-10 16:48:07.210000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a5055d3c7561dd0b4692",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 2000,
+                            "bid_amount": 2200,
+                            "lot_id": "65c7a34253467df93e8b24fa",
+                            "low_estimate": "3000",
+                            "high_estimate": "400005",
+                            "name": "",
+                            "lot_title": "Opportunities for Artists",
+                            "lot_number": 2,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/4fbb1005-123a-2038-8c4f-26446062a2a8/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582725851.0,
+                            "max_bid": 2200,
+                            "updated_at": "2024-02-10 16:32:05.871000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:32:05.897000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a5055d3c755c160b468b",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 2000,
+                            "bid_amount": 2200,
+                            "lot_id": "65c7a34253467df93e8b24fa",
+                            "low_estimate": "3000",
+                            "high_estimate": "400005",
+                            "name": "Sandhya S",
+                            "lot_title": "Opportunities for Artists",
+                            "lot_number": 2,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/4fbb1005-123a-2038-8c4f-26446062a2a8/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582689899.0,
+                            "max_bid": 2200,
+                            "updated_at": "2024-02-10 16:31:29.899000",
+                            "bid_status": "Winning",
+                            "created_at": "2024-02-10 16:32:05.851000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a4d75d3c753af30b4657",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 3002,
+                            "bid_amount": 3002,
+                            "lot_id": "65c7a34253467df93e8b24fb",
+                            "low_estimate": "5000",
+                            "high_estimate": "40000",
+                            "name": "Sandhya S",
+                            "lot_title": "Ceramics & Craft |",
+                            "lot_number": 3,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/26741023-c4b3-97c2-ab3c-4e3a9c888503/5.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582679155.0,
+                            "max_bid": 3800,
+                            "updated_at": "2024-02-10 16:31:19.155000",
+                            "bid_status": "Winning",
+                            "created_at": "2024-02-10 16:31:19.243000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a50a5d3c750b090b46a0",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 3002,
+                            "bid_amount": 3800,
+                            "lot_id": "65c7a34253467df93e8b24fb",
+                            "low_estimate": "5000",
+                            "high_estimate": "40000",
+                            "name": "",
+                            "lot_title": "Ceramics & Craft |",
+                            "lot_number": 3,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/26741023-c4b3-97c2-ab3c-4e3a9c888503/5.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582730426.0,
+                            "max_bid": 3800,
+                            "updated_at": "2024-02-10 16:32:10.448000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:32:10.466000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a50a5d3c7585400b469a",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 3002,
+                            "bid_amount": 3800,
+                            "lot_id": "65c7a34253467df93e8b24fb",
+                            "low_estimate": "5000",
+                            "high_estimate": "40000",
+                            "name": "Sandhya S",
+                            "lot_title": "Ceramics & Craft |",
+                            "lot_number": 3,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/26741023-c4b3-97c2-ab3c-4e3a9c888503/5.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582679155.0,
+                            "max_bid": 3800,
+                            "updated_at": "2024-02-10 16:32:10.427000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:32:10.438000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a9c35d3c75bbc20b4777",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 3002,
+                            "bid_amount": 4000,
+                            "lot_id": "65c7a34253467df93e8b24fb",
+                            "low_estimate": "5000",
+                            "high_estimate": "40000",
+                            "name": "",
+                            "lot_title": "Ceramics & Craft |",
+                            "lot_number": 3,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/26741023-c4b3-97c2-ab3c-4e3a9c888503/5.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707583939344.0,
+                            "max_bid": 4200,
+                            "updated_at": "2024-02-10 16:52:19.711000",
+                            "bid_status": "Won",
+                            "created_at": "2024-02-10 16:52:19.728000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a4dc5d3c75f40f0b4662",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 4500,
+                            "bid_amount": 4500,
+                            "lot_id": "65c7a34253467df93e8b24fc",
+                            "low_estimate": "6000",
+                            "high_estimate": "50000",
+                            "name": "Sandhya S",
+                            "lot_title": "Human' Nature",
+                            "lot_number": 4,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/a8a4935a-10f6-5583-a8f9-4a5b608dfe19/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582684941.0,
+                            "max_bid": 4800,
+                            "updated_at": "2024-02-10 16:31:24.941000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:31:24.960000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a5105d3c7552da0b46ac",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 4500,
+                            "bid_amount": 5000,
+                            "lot_id": "65c7a34253467df93e8b24fc",
+                            "low_estimate": "6000",
+                            "high_estimate": "50000",
+                            "name": "",
+                            "lot_title": "Human' Nature",
+                            "lot_number": 4,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/a8a4935a-10f6-5583-a8f9-4a5b608dfe19/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582736346.0,
+                            "max_bid": 5500,
+                            "updated_at": "2024-02-10 16:32:16.353000",
+                            "bid_status": "Won",
+                            "created_at": "2024-02-10 16:32:16.369000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7aa805d3c752bd20b4799",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 1393,
+                            "bid_amount": 2093,
+                            "lot_id": "65c7a34253467df93e8b24fd",
+                            "low_estimate": "2900",
+                            "high_estimate": "46000",
+                            "name": "Sandhya S",
+                            "lot_title": "The Jaka Project",
+                            "lot_number": 5,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/5d664a0e-73e4-7f59-49db-da7e7d0e0bc5/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707584128445.0,
+                            "max_bid": 2093,
+                            "updated_at": "2024-02-10 16:55:28.465000",
+                            "bid_status": "Won",
+                            "created_at": "2024-02-10 16:55:28.485000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7aa805d3c75aa4b0b4792",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 1393,
+                            "bid_amount": 2093,
+                            "lot_id": "65c7a34253467df93e8b24fd",
+                            "low_estimate": "2900",
+                            "high_estimate": "46000",
+                            "name": "",
+                            "lot_title": "The Jaka Project",
+                            "lot_number": 5,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/5d664a0e-73e4-7f59-49db-da7e7d0e0bc5/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707584114922.0,
+                            "max_bid": 2093,
+                            "updated_at": "2024-02-10 16:55:15.699000",
+                            "bid_status": "Winning",
+                            "created_at": "2024-02-10 16:55:28.446000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a51b5d3c7505ba0b46b8",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c355cf55e3883ae4e6eca3",
+                            "paddle_number": "1",
+                            "starting_bid": 1393,
+                            "bid_amount": 1793,
+                            "lot_id": "65c7a34253467df93e8b24fd",
+                            "low_estimate": "2900",
+                            "high_estimate": "46000",
+                            "name": "",
+                            "lot_title": "The Jaka Project",
+                            "lot_number": 5,
+                            "email_address": "sandhyashri@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/5d664a0e-73e4-7f59-49db-da7e7d0e0bc5/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582747853.0,
+                            "max_bid": 1893,
+                            "updated_at": "2024-02-10 16:32:27.865000",
+                            "bid_status": "Winning",
+                            "created_at": "2024-02-10 16:32:27.888000",
+                            "__v": 0
+                        },
+                        {
+                            "_id": "65c7a4ea5d3c7578b20b4678",
+                            "auction_id": "A0029",
+                            "seller_email": "sthuthi@7edge.com",
+                            "buyer_id": "65c35c40248c316938ca7fe2",
+                            "paddle_number": "2",
+                            "starting_bid": 1393,
+                            "bid_amount": 1393,
+                            "lot_id": "65c7a34253467df93e8b24fd",
+                            "low_estimate": "2900",
+                            "high_estimate": "46000",
+                            "name": "Sandhya S",
+                            "lot_title": "The Jaka Project",
+                            "lot_number": 5,
+                            "email_address": "sandhyashri+12345678@7edge.com",
+                            "lot_image": "DomainName/Auctions/lots/images/5d664a0e-73e4-7f59-49db-da7e7d0e0bc5/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                            "auction_title": "7EDGE Auction 77777",
+                            "time_zone": "IST - India Standard Time",
+                            "currency": "USD",
+                            "time_stamp": 1707582698060.0,
+                            "max_bid": 1693,
+                            "updated_at": "2024-02-10 16:31:38.060000",
+                            "bid_status": "UnderBidder",
+                            "created_at": "2024-02-10 16:31:38.080000",
+                            "__v": 0
+                        }
+                    ],
+                    "total_records_found": 16,
+                    "total_lots": 16,
+                    "current_page": 1,
+                    "total_pages": 1,
+                    "number_of_bids": 0,
+                    "sum_current_bid": 43574,
+                    "total selling": 16
+                 }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Buyers list Not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/lots":{
+        "get": {
+          "summary": "List Bids",
+          "description": "Fetch a list of bidders for an lot.",
+          "tags": [
+            "Admin | Buyer Bid History Management"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "lot_id",
+              "in": "query",
+              "required": true,
+              "example": "65a6857fdfa272b3f04ec5c5",
+              "description": "The unique identifier of the lot.",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort field (e.g., paddle_number, name, bid_amount, time_stamp)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "Sort order (e.g., asc, desc)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with a list of bids.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": [
+                      {
+                        "_id": "65a6bad418d9a00370823dd5",
+                        "paddle_number": "1",
+                        "bid_amount": 100,
+                        "name": "Sthuthi",
+                        "created_at": "2024-01-16T17:20:20.207Z",
+                        "updated_at": "2024-01-16T17:20:20.207Z"
+                      }
+                    ],
+                    "pagination": {
+                      "total_pages": 31,
+                      "limit": 1,
+                      "total_records": 31,
+                      "next_page": 2,
+                      "page": 1
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Bids History Not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {

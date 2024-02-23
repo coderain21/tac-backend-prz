@@ -1,0 +1,264 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Seller | List Bidders",
+      "description": "Seller list the bidders",
+      "contact": {
+        "name": "no-reply@indy.auction",
+        "email": "no-reply@indy.auction"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "https://apis-dev.indyauction.net/v1/seller-bidder-management"
+      }
+    ],
+    "tags": [
+      {
+          "name": "Seller | List Bidders",
+          "description": "APIs to view list of the bidders"
+      }
+    ],
+    "paths": {
+      "/":{
+        "get": {
+          "tags": [
+            "Seller| Bidder Management"
+            
+          ],
+          "summary": "Listing Bidders",
+          "description": "Listing Bidders",
+          "parameters": [
+            {
+              "name": "sort_key",
+              "in": "query",
+              "description": "Sort by key",
+              "schema": {
+                "type": "string"
+              },
+              "example": "email_address"
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "ascending or descending",
+              "schema": {
+                "type": "string"
+              },
+              "example": "ascending"
+            },
+            {
+              "name": "page_number",
+              "in": "query",
+              "description": " page number",
+              "schema": {
+                "type": "integer"
+              },
+              "example": 1
+            },
+            {
+              "name": "search",
+              "in": "query",
+              "description": "search key",
+              "schema": {
+                "type": "string"
+              },
+              "example": "C"
+            }
+  
+          ],
+          "responses": {
+            "200": {
+              "description": "Successfully retrieved buyers",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": { 
+                      "buyers": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {
+                              "type": "string"
+                            },
+                            "email_address": {
+                              "type": "number"
+                            },
+                            "marketing": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "created_at": {
+                              "type": "string"
+                            },
+                            "time_zone": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "total_buyers": {
+                        "type": "integer"
+                      },
+                      "page_number": {
+                        "type": "integer"
+                      },
+                      "page_size": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "example": 
+                  {
+                    "buyers": [
+                      {
+                        "_id": "653b41cbd3c3ab4f70f53b80",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+100@7edge.com",
+                        "created_at": "2023-10-27 04:51:23.632000",
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b4bbe77a9163ca253edf7",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+1211113@7edge.com",
+                        "created_at": "2023-10-27 05:33:50.272000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b4d9f4eca834abff1991a",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+99@7edge.com",
+                        "created_at": "2023-10-27 05:41:51.406000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b4d9f4eca834abff1991c",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+99@7edge.com",
+                        "created_at": "2023-10-27 05:41:51.979000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b4f484d75c9dbce1663da",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+119@7edge.com",
+                        "created_at": "2023-10-27 05:48:56.514000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b51a8515c5d963e4a59a9",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+120@7edge.com",
+                        "created_at": "2023-10-27 05:59:04.475000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b5275515c5d963e4a59b1",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+393@7edge.com",
+                        "created_at": "2023-10-27 06:02:29.478000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b5276515c5d963e4a59b4",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+393@7edge.com",
+                        "created_at": "2023-10-27 06:02:30.059000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b8170b770beab9d2489ed",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "shrinit.poojary+69@7edge.com",
+                        "created_at": "2023-10-27 09:22:56.925000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      },
+                      {
+                        "_id": "653b851cec52c6dd8e6fe282",
+                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
+                        "email_address": "sthuthi+test1@7edge.com",
+                        "created_at": "2023-10-27 09:38:36.775000",
+                        "marketing": false,
+                        "name": "Shri ",
+                        "time_zone": "CET - Central European Time"
+                      }
+                    ],
+                    "total_buyers": 16,
+                    "page_size": 10,
+                    "page_number": 1,
+                    "time_zone": "CET - Central European Time",
+                    "csv_url": ""
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
+                          "example": "You do not have access to perform this API action"
+                        
+                      }
+                    }    
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "securitySchemes": {
+        "BearerAuth": {
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
+      }
+    }
+  }
+  

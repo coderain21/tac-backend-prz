@@ -317,6 +317,8 @@ functions:
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
+        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+
       events:
         - http:
             cors: true

@@ -5,6 +5,8 @@ import redis
 import os
 from lib.common_helper import Encoder
 import requests
+from datetime import datetime, timezone
+
 
 
 client_step_function = boto3.client('stepfunctions')
@@ -55,17 +57,26 @@ def invoke_state_machine_for_auction_end(invocation_params, step_function_arn=No
 
 def update_redis_data(auction_record, item): 
     try:
-        print('item', item)
+        start_date_timestamp = auction_record['start_date'] / 1000
+        date_time = datetime.utcfromtimestamp(start_date_timestamp)
+        iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+        item['start_date'] = iso_date_with_offset
         item['initial_end_time'] = item['end_date']
         lot_id = str(item['_id'])
         bid_key = f'lot:{lot_id}'
         existing_record =  redis_client.hget('lot', bid_key)
         get_lot = json.loads(existing_record)
+        if existing_record:
+            get_lot = json.loads(existing_record)
+        else:
+            get_lot = {}
+            
         update_request = {
             **get_lot,
             'lot_end_date': item['end_date'],
             'end_date': item['end_date'],
-        }        
+        }
+
         cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
         getArn = collection.find_one({"lot_id": str(item['_id'])})
         
@@ -74,10 +85,11 @@ def update_redis_data(auction_record, item):
             executionArn = executionArn,
             cause = 'User initiated stop'
         )
-        itemData = json.dumps(item, cls= Encoder)
+        lots = redis_client.hgetall('lot')
+        updatedLot = [json.loads(bidder) for bidder in lots.values() if json.loads(bidder)['_id'] == lot_id]
         response = client_step_function.start_execution(
             stateMachineArn= os.environ['STATE_MACHINE_LOT_ARN'],
-            input=itemData
+            input= json.dumps(updatedLot[0], cls= Encoder)
         )
         update_data = {
             "arn": response['executionArn']
@@ -87,8 +99,6 @@ def update_redis_data(auction_record, item):
             {"_id": getArn['_id']},
             {"$set": update_data}
         )
-        lots = redis_client.hgetall('lot')
-        updatedLot = [json.loads(bidder) for bidder in lots.values() if json.loads(bidder)['_id'] == lot_id]
         payload = {
           "lots": updatedLot[0],
         }        
@@ -105,4 +115,3 @@ def update_redis_data(auction_record, item):
         return True
     except Exception as e:
         print(e)
-

@@ -136,6 +136,113 @@
             }
           }
         }
+      },
+      "/seller/bids": {
+        "get": {
+          "summary": "List Bids",
+          "description": "Fetch a list of bids placed on a particular auction.",
+          "tags": [
+            "Bid History  Management"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "query",
+              "required": true,
+              "example": "A0010",
+              "description": "Auction id",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_by",
+              "in": "query",
+              "description": "Sort field",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "sort_order",
+              "in": "query",
+              "description": "Sort order (e.g., asc, desc)",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with a list of bids.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": [],
+                    "total_records_found": 0,
+                    "total_lots": 0,
+                    "current_page": 1,
+                    "total_pages": 0,
+                    "number_of_bids": 1,
+                    "sum_current_bid": 0,
+                    "total selling": 0
+                }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Buyers list Not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {

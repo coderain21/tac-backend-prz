@@ -75,6 +75,7 @@ provider:
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SALES_CSV_FILE: ${ssm:SALES_CSV_FILE}
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     
   http:
     cors: true
