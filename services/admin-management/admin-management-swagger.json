@@ -2519,7 +2519,7 @@
         }
       }
     }
-  },
+    },
   "components": {
     "securitySchemes": {
       "BearerAuth": {
@@ -2531,4 +2531,5 @@
     }
   }
   }
+
 
