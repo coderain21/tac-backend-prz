@@ -19,7 +19,7 @@ for user in $(echo "$seller_users" | jq -c '.Users[]'); do
     attributes=$(echo "$user" | jq -c '.Attributes | map(select(.Name != "sub"))')  # Exclude sub attribute
 
     # Create user in the destination user pool
-    aws cognito-idp admin-create-user --user-pool-id $DESTINATION_USER_POOL_ID_SELLER --region $AWS_REGION --username $username --user-attributes "$attributes" --temporary-password 'temp-password' --message-action 'SUPPRESS'
+    aws cognito-idp admin-create-user --user-pool-id $DESTINATION_USER_POOL_ID_SELLER --region $AWS_REGION --username $username --user-attributes "$attributes" --temporary-password 'Seller@123' --message-action 'SUPPRESS'
 
     echo "User $username created successfully in the destination user pool."
 done
@@ -42,7 +42,7 @@ for user in $(echo "$buyer_users" | jq -c '.Users[]'); do
     attributes=$(echo "$user" | jq -c '.Attributes | map(select(.Name != "sub"))')  # Exclude sub attribute
 
     # Create user in the destination user pool
-    aws cognito-idp admin-create-user --user-pool-id $DESTINATION_USER_POOL_ID_BUYER --region $AWS_REGION --username $username --user-attributes "$attributes" --temporary-password 'temp-password' --message-action 'SUPPRESS'
+    aws cognito-idp admin-create-user --user-pool-id $DESTINATION_USER_POOL_ID_BUYER --region $AWS_REGION --username $username --user-attributes "$attributes" --temporary-password 'Buyer123' --message-action 'SUPPRESS'
 
     echo "User $username created successfully in the destination user pool."
 done
