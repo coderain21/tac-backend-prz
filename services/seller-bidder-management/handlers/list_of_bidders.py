@@ -30,15 +30,14 @@ def prepend_backslash(text):
 
 def list_bidders(event, context):
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        email_address = 'anusha.k+subdomain@7edge.com'
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         buyer_collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         # Default sorting by name
         sort_key = 'created_at'
