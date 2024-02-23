@@ -376,6 +376,33 @@ functions:
           method: get
           authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  auction-details:
+    handler: handlers/auction_details.auction_details
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /auction-details
+          method: get
+          authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   all-purchases:
     handler: handlers/all_accounting.list_all_purchases
