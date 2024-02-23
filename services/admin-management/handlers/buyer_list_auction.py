@@ -94,6 +94,13 @@ def buyer_list_auction(event, context):
         # Count total auctions based on the filter criteria
         total_auctions_pipeline = [
             {"$match": {"email_address": email_address["email_address"]}},
+            {"$lookup": {
+                "from": auction_collection,
+                "localField": "auction_id",
+                "foreignField": "_id",
+                "as": "auction"
+            }},
+            {"$unwind": "$auction"},
             {"$count": "total_auctions"}
         ]
         total_auctions_result = list(dev_auction_register.aggregate(total_auctions_pipeline))
