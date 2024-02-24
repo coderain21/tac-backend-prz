@@ -368,7 +368,7 @@ pipelines:
             - step: *SecretChecking
             
       - stage:
-            name: Testing and QA Deployment
+            name: QA Deployment
             deployment: QA
             steps:
               - step: *TerraDeploy
@@ -391,35 +391,3 @@ pipelines:
              - step: *SecretChecking
              - step: *TerraDeploy
      
-
-  branches:
-    qa:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *SecretChecking
-            
-      - stage:
-            name: Testing and QA Deployment
-            deployment: QA
-            steps:
-              - step: *TerraDeploy
-    
-    Pre-Production:
-      - stage:
-            name: Pre-Production Deployment
-            deployment: Pre-Production
-            steps:
-              - step: *BuildStep
-              - step: *TerraDeploy
-
-
-    master:
-      - stage:
-          name: PRODUCTION Deployment
-          deployment: New-Production
-          steps:
-             - step: *BuildStep
-             - step: *SecretChecking
-             - step: *TerraDeploy
