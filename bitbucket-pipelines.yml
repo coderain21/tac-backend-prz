@@ -374,6 +374,11 @@ pipelines:
               - step: *TerraDeploy
     
     Pre-Production:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *SecretChecking
       - stage:
             name: Pre-Production Deployment
             deployment: Pre-Production
@@ -383,11 +388,14 @@ pipelines:
 
 
     master:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *SecretChecking
       - stage:
           name: PRODUCTION Deployment
           deployment: Production
           steps:
-             - step: *BuildStep
-             - step: *SecretChecking
              - step: *TerraDeploy
      
