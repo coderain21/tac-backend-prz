@@ -15,6 +15,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+counter_collection= db[os.environ["COUNTER_LOT"]]
+user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
+
 def register_auction(event, context):
     """
     Register an auction for a buyer.
@@ -38,12 +48,12 @@ def register_auction(event, context):
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+            # if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+            #     return {
+            #     "statusCode": 403,
+            #     "headers": headers,
+            #     "body": json.dumps({"message": "You do not have access to perform this API action"})
+            # }
         except Exception as e:
             print(e)
             return {
@@ -51,13 +61,6 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-        auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        counter_collection= db[os.environ["COUNTER_LOT"]]
-        user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
         data = event['queryStringParameters']
         auction_id= data.get('auction_id')
         auction_id= ObjectId(auction_id)
@@ -69,6 +72,12 @@ def register_auction(event, context):
             }
         if 'status' in data and data['status'] == 'True':
             result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
+            if result is None:
+                return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({'message':'not found'})
+            }
             status=result['status']
             return {
                 "statusCode": 200,
@@ -118,11 +127,11 @@ def register_auction(event, context):
 
             # Extract date and time
             start_date = start_date_time.date()
-            start_time = start_date_time.time()
+            start_time = start_date_time.time().strftime('%H:%M:%S')
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":
-                logo_img = 'https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png'
+                logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
             paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
@@ -139,7 +148,7 @@ def register_auction(event, context):
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
                             "img":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address,os.environ['SENDER_EMAIL_ADDRESS'],
+            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
                                 template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
             data_to_insert= {
                         'first_name': first_name,

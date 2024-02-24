@@ -2,15 +2,15 @@ services:
   users:
     path: services/users
     config: ${env:config}
-  auctions:
-    path: services/auctions
-    config: ${env:config}
+  # auctions:
+  #   path: services/auctions
+  #   config: ${env:config}
   buyers:
     path: services/buyers
     config: ${env:config}
-  lambda-authorizer:
-    path: services/lambda-authorizer
-    config: ${env:config}
+  # lambda-authorizer:
+  #   path: services/lambda-authorizer
+  #   config: ${env:config}
   bids:
     path: services/bids
     config: ${env:config}
@@ -23,6 +23,9 @@ services:
   cart-management:
     path: services/cart-management
     config: ${env:config}
+  # cognito-auth:
+  #   path: services/cognito-auth
+  #   config: ${env:config}
   buyer-wishlist:
     path: services/buyer-wishlist
     config: ${env:config}
@@ -31,4 +34,16 @@ services:
     config: ${env:config}
   order-management:
     path: services/order-management
+    config: ${env:config}
+  admin-management:
+    path: services/admin-management
+    config: ${env:config}
+  lot-bid-history:
+    path: services/lot-bid-history
+    config: ${env:config}
+  admin-buyer-management:
+    path: services/admin-buyer-management
+    config: ${env:config}
+  seller-bidder-management:
+    path: services/seller-bidder-management
     config: ${env:config}

@@ -12,6 +12,8 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
 
 def clone_auction(event, context):
     """
@@ -41,8 +43,6 @@ def clone_auction(event, context):
             }
         request_body = json.loads(event['body'])
         auction_id = request_body.get('auction_id')
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         counter_collection = db[os.environ["COUNTER_LOT"]]
 
@@ -55,7 +55,7 @@ def clone_auction(event, context):
                 "body": json.dumps({"message": "Auction with given ID not found"})
             }
         counter = counter_collection.find_one_and_update(
-            {'auction_id': email_address,
+            {'seller_email': email_address,
                 'record_type': 'Auctions', 'status': 'Active'},
             {'$inc': {'starting_sequence': 1}},
             upsert=True,
@@ -73,7 +73,6 @@ def clone_auction(event, context):
         auction['total_lots'] = 0
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
-        client.close()
         return {
             'headers': headers,
             "statusCode": 201,

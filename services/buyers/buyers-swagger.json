@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.indyauction.net/dev/v1/buyers"
+      "url": "https://apis-dev.indyauction.net/v1/buyers"
     }
   ],
   "tags": [
@@ -1167,7 +1167,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "651e8bed56250b9d9bfa495e"
+            "example": "655740aa211a354b8d3853b5"
           },
           {
             "name": "search",
@@ -1176,7 +1176,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "asparagus"
+            "example": "Lot"
           }
         ],
         "responses": {
@@ -1351,7 +1351,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "651eb2ccacc69f23a3de2001"
+            "example": "655740e0269765385d5a8354"
           }
         ],
         "responses": {
@@ -1689,7 +1689,7 @@
                   }
                 },
                 "example": {
-                  "logo_image": "https://indy-auction-dev-assets.s3.eu-west-2.amazonaws.com/public/Logo.png",
+                  "logo_image": "https://qa-cdn.indyauction.net/public/Logo.png",
                   "auction_id": "6520008e74542648a5819807",
                   "email_address": "aishwarya+vt@7edge.com",
                   "domain": "www-dev"
@@ -2037,6 +2037,15 @@
               "type": "string"
             },
             "example": "False"
+          },
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to display and update the profile ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "64facdcb8e305feab49525d3"
           }
         ],
         "requestBody": {

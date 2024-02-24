@@ -3,6 +3,7 @@ import json
 import os
 from pymongo import MongoClient
 from lib.common_helper import Encoder
+from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -21,7 +22,7 @@ def view(event, context):
     triggered the function. It typically includes details such as the HTTP request, headers, and body
     :param context: The `context` parameter is an object that provides information about the runtime
     environment of the function. It includes details such as the AWS request ID, function name,and
-    other contextual information. In this code snippet, the `context` parameter is not used, but it is
+    other contextual information.In this code snippet, the `context` parameter is not used, but it is
     typically included in AWS Lambda function
     :return: a JSON response with a status code, headers, and a body. The specific response depends on
     the conditions and data being processed in the function.
@@ -49,7 +50,6 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -95,19 +95,51 @@ def view(event, context):
             "paddle": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1
-
-
         }
         result = collection.find_one({"seller_email": email_address,
                                       "auction_id": auction_id}, projection)
-
         if result is None:
             return {
                 "headers": headers,
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-
+        if result['status']=='draft':
+            if "paddle" in result and "_id" in result["paddle"]:
+                del result["paddle"]["_id"]
+            client.close()
+            body = {
+                "data": result,
+            }
+            return {
+                "statusCode": 200,
+                "headers": headers,
+                "body": json.dumps(body, cls=Encoder)
+            }
+        end_time= result['end_date']
+        current_time = datetime.timestamp(datetime.now())
+        current_time=current_time*1000
+        print(end_time,"tttttttttttttt")
+        print(current_time,"ttttttttttt")
+        if end_time is not None:
+            if current_time >= end_time:
+                # Auction has ended
+                updated_status = "Completed"
+            else:
+                updated_status = result["status"]
+        else:
+            updated_status = result["status"]  # No change in status
+        # Update the status in the database
+        collection.update_one({"_id": auction_id}, {
+                              "$set": {"status": updated_status}})
+        result = collection.find_one({"seller_email": email_address,
+                                      "auction_id": auction_id}, projection)
+        if result is None:
+            return {
+                "headers": headers,
+                "statusCode": 404,
+                "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
+            }
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         client.close()

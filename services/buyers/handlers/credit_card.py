@@ -12,6 +12,12 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+collection = db['qa-credit_card']
+
+
 def credit_card(event, context):
     """
     The `credit_card` function handles the verification and storage of credit card information using the
@@ -38,7 +44,7 @@ def credit_card(event, context):
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        collection = db['dev-credit_card']
+        collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
         if 'set' in data:
             if data['set'] == 'True':
                 result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'card_pending','auction_id':auction_id})
@@ -57,7 +63,7 @@ def credit_card(event, context):
                     'body': json.dumps({'status':result['registration_status']})
                     }
                 return {
-                    'statusCode': 404,
+                    'statusCode': 400,
                     'headers': headers,
                     'body': json.dumps({"message":"buyer is not registered"})
                     }
@@ -85,7 +91,7 @@ def credit_card(event, context):
             'registration_status': "Approved",
             "auction_id": auction_id
         }})
-        client.close()
+        # client.close()
         return{
             'statusCode': 200,
             'headers': headers,

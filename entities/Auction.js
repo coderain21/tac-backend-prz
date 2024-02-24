@@ -1,7 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-undef */
-const { number } = require('joi')
 const mongoose = require('mongoose')
 const mongoosePaginate = require('mongoose-paginate-v2')
 require('dotenv').config()
@@ -40,8 +39,9 @@ const AuctionSchema = new Schema({
         type: String, trim: true,
     },
     seller_email: {
-        type: String, trim: true,
+        type: String, trim: true, default: '',
     },
+    seller_name: { type: String, trim: true },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     template_name: {

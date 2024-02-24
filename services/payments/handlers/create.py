@@ -11,7 +11,7 @@ import stripe
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-from lib.get import get_by_email, fetch_seller_data_from_auction
+from lib.get import get_by_email, fetch_seller_data_from_auction, fetch_buyer_data
 
 headers = {
     'Content-Type': 'application/json',
@@ -259,7 +259,7 @@ def create_intent(event, context):
                 "amount": amount,
                 "payment": "Stripe",
                 "application_amount": application_fee,
-                "currency": stripe_data["currency"],
+                "currency": seller_data_of_auction["currency"],
                 "seller_email": seller_data_of_auction["seller_email"]
             }
             body_data = {'data': stripe_data["client_secret"], 'account_id': account_id}
@@ -330,7 +330,12 @@ def create_intent(event, context):
             "starting_sequence": last_order_number
         }
         insert_data["order_number"] = generate_order_code(last_order_number)
-
+        buyer_data = fetch_buyer_data(seller_email,email_address)
+        name = ""
+        if buyer_data is not None:
+            f_name = buyer_data.get("first_name","")
+            l_name = buyer_data.get("last_name","")
+            name = f_name+' '+l_name
         cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["created_at"] = time_stamp
         insert_data["auction_title"] = auction_title
@@ -338,9 +343,10 @@ def create_intent(event, context):
         insert_data["purchases"] = cart_data
         insert_data["lots"] = res
         insert_data["auction_id"] = auction_id
+        insert_data["name"] = name
+
         #add the order data in orders collection
         create_order(insert_data)
-
         print("latest lot number", last_order_number)
         counter_collection.update_one({"auction_id": auction_id,
                                        "seller_email": seller_email,

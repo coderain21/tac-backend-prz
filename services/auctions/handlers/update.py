@@ -2,7 +2,13 @@
 import os
 import json
 import pymongo
+from pymongo import MongoClient
+from bson import ObjectId
 from lib.get import get_by_email
+from lib.invoke_step_function import invoke_state_machine, update_redis_data
+from lib.common_helper import Encoder
+from datetime import datetime, timezone
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -11,6 +17,10 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+
 
 def has_kyb_or_kyc_completed(email_address):
     seller_data = get_by_email(email_address, os.environ["SELLERS_TABLE"])
@@ -24,7 +34,7 @@ def has_kyb_or_kyc_completed(email_address):
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
 
-    client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+    client = MongoClient(os.environ['MONGO_CLIENT'])
     db = client[os.environ['DATABASE']]
     collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 
@@ -53,6 +63,7 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     # Execute the aggregation pipeline
     result = list(collection_lot.aggregate(pipeline))
     return bool(result)  # True if at least one lot has non-empty images array
+
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction
@@ -71,7 +82,6 @@ def update_auction(event, context):
     try:
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('email ', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
@@ -86,24 +96,26 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
+        end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
-        print(event)
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
                 'published', 'false')
-            print(published_status)
         else:
             published_status = 'false'
 
         # Initialize the MongoDB client
-        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
+        listLots = list(collection_lot.find({"seller_email": seller_email,
+                                                     "auction_id": auction_id}))
+        listLots = sorted(listLots, key=lambda x:x['lot_number'])
+
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
+
 
         if auction_record is None:
             return {
@@ -123,7 +135,6 @@ def update_auction(event, context):
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
                 if auction_record[field]== "":
-                    print(field,auction_record[field])
                     return {
                         "statusCode": 400,
                         'headers': headers,
@@ -164,10 +175,26 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "No Lots Found"})
                 }
             else:
+                # invoke_state_machine(event)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
+                for item in listLots:
+                    start_date_timestamp = auction_record['start_date'] / 1000
+                    date_time = datetime.utcfromtimestamp(start_date_timestamp)
+                    iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+                    item['start_date'] = iso_date_with_offset
+                    itemData = json.loads(json.dumps(item, cls= Encoder))
+                    invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
+                    collection = db[os.environ['STEP_FUNCTION_ARN_TABLE']]
+                    step_request={}
+                    step_request['arn'] = invoking['executionArn']
+                    id_value = item['_id']
+                    step_request['lot_id'] = str(id_value)
+                    step_request['auction_id'] = auction_id
+                    step_request['seller_email'] = seller_email
+                    inserted = collection.insert_one(step_request)
                 return {
                     "statusCode": 204,
                     'headers': headers,
@@ -208,13 +235,56 @@ def update_auction(event, context):
         # Filter the request body to keep only updatable fields
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
-        print(update_data)
+        documents = []
+        if end_date != None:
+            existing_lots_count = collection.count_documents(
+            {"seller_email": seller_email, "auction_id": auction_id})
+            extension_time_str = auction_record.get('extension_time_between_lots', '0')
+            if extension_time_str != '':
+                extension_time = int(extension_time_str[:1])
+            else:
+                extension_time=0
+            start_date = auction_record['start_date']
+            end_date =  request_body['end_date']
+            count_import=0
+            # Get the current datetime object
+            current_datetime = datetime.utcnow()
+            # Convert datetime to epoch time in seconds
+            epoch_time_seconds = int(current_datetime.timestamp())
+
+            # Convert epoch time to epoch milliseconds
+            epoch_time_milliseconds = epoch_time_seconds * 1000
+            for item in listLots:
+                if not item['end_date'] < epoch_time_milliseconds:
+                    if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                        item['start_date'] = start_date
+                        item['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
+                        count_import= count_import+1
+                    elif auction_record['extension_type']== "All Lots":
+                        item['start_date'] = start_date
+                        item['end_date'] = end_date
+                    if auction_record['status']== 'Accepting bids':
+                        update = update_redis_data(auction_record, item )
+                documents.append(item)
+
+            for item in documents:
+                item_id = ObjectId(item['_id'])
+                if not item['end_date'] < epoch_time_milliseconds:
+                    findvalue = collection_lot.find({"_id": item_id})
+                    result = collection_lot.update_many(
+                            {"_id": item_id},
+                            {
+                                "$set": {
+                                    "start_date": item['start_date'],
+                                    "end_date": item['end_date']
+                                }
+                            }
+                    )
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
-        client.close()
         return {
             "headers": headers,
             'statusCode': 204,
@@ -222,7 +292,7 @@ def update_auction(event, context):
             })
         }
     except Exception as err:
-        print(err)
+        print('errr', err)
         return {
             "statusCode": 500,
             "headers": headers,

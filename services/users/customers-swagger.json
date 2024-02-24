@@ -11,7 +11,7 @@
     },
     "servers": [
       {
-        "url": "https://apis.indyauction.net/dev/v1/users-management"
+        "url": "https://apis-dev.indyauction.net/v1/users-management"
       }
     ],
     "tags": [
@@ -269,6 +269,122 @@
             "Users"
           ],
           "summary": "verify recaptcha",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "session_token":{
+                      "type": "string"
+                    },
+                    "email_address":{
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "confirm_password": {
+                      "type": "string"
+                    },
+                    "terms_and_condition": {
+                      "type": "boolean"
+                    },
+                    "newsletter_notification": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "session_token": "03AAYGu2SKqCFe0RSCNb48NITClDgn3Cw-d-cvmT_BBXgv4sSqRBOQ_a3XGySxT90x-qzYFUX98YPR0PWVcWKdvRDVl3XDfOLkLARsAEQvoR-bzFBFPx1IQ6AKEqaJTL2pZwQKu8bQhT8yyErlFxucTGCy5x4pw3Vq8E0x861lDtroeg3IJnyZx4M38Yn4Y1glpo8rqi1Q76Oaly1jg3QH8gx3rv",
+                  "email_address": "shrinit.poojary@7edge.com",
+                  "password": "12345678",
+                  "confirm_password":"12345678",
+                  "terms_and_condition": true,
+                  "newsletter_notification": true
+                }
+              }
+            }
+          },
+          "responses": {
+            "201":{
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "409": {
+                "description": "User not found",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "400": {
+                "description": "Bad Request",
+                "content": {
+                  "application/json": {
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "message": "Invalid Password"
+                        }
+                      },
+                      "example2":{
+                        "value":{
+                          "message":"Captcha verification failed"
+                        }
+                      },
+                      "example3":{
+                        "value":{
+                          "message":"Password Doesnt match"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+          }
+        }
+      },
+      "/request-otp":{
+        "post": {
+          "tags": [
+            "Users"
+          ],
+          "summary": "request otp for verification",
           "requestBody": {
             "content": {
               "application/json": {

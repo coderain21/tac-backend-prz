@@ -12,56 +12,72 @@ provider:
   endpointType: REGIONAL
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
-  region: ${env:REGION}
+  region: eu-west-2
   versionFunctions: false
-  layers: ${env:COMMON_LIB_ARN}
+  layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    COGNITO_USER_POOL_ID: ${env:COGNITO_USER_POOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${env:COGNITO_SELLER_CLIENT_ID}
-    REGION: ${env:REGION}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${env:DATABASE}
-    MONGODB_NAME: ${env:MONGODB_NAME}
-    MONGODB_COLLECTION_NAME: ${env:MONGODB_COLLECTION_NAME}
-    MONGO_CLIENT: ${env:MONGO_CLIENT}
-    AUCTION_MONGODB_COLLECTION_NAME: ${env:AUCTION_MONGODB_COLLECTION_NAME}
-    COGNITO_USER_POOL: ${env:COGNITO_USER_POOL}
+    DATABASE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SUMSUB_SECRET_KEY: ${env:SUMSUB_SECRET_KEY}
-    SUMSUB_APP_TOKEN: ${env:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${env:CSV_FILE}
-    S3_BUCKET: ${env:S3_BUCKET}
-    LOT_COLLECTION_NAME: ${env:LOT_COLLECTION_NAME}
-    COUNTER_LOT: ${env:COUNTER_LOT}
-    REGISTER_AUCTION_COLLECTION: ${env:REGISTER_AUCTION_COLLECTION}
-    SUB_DOMAIN_TABLE: ${env:SUB_DOMAIN_TABLE}
-    USERPOOLS_MONGO: ${env:USERPOOLS_MONGO}
-    KMS_KEY_ID: ${env:KMS_KEY_ID}
-    BUYER_EMAIL_OTP_TEMPLATE: ${env:BUYER_EMAIL_OTP_TEMPLATE}
-    ENCRYPTION_SECRET_KEY: ${env:ENCRYPTION_SECRET_KEY}
-    BUYER_COLLECTION: ${env:BUYER_COLLECTION}
-    RECAPTCHA_KEY: ${env:RECAPTCHA_KEY}
-    RECAPTCHA_URL: ${env:RECAPTCHA_URL}
-    CUSTOMER_SESSION_TOKEN_SECRET: ${env:CUSTOMER_SESSION_TOKEN_SECRET}
-    SENDER_EMAIL_ADDRESS: ${env:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${env:DEFAULT_SUB_DOMAIN} 
-    JWT_SECRET_KEY: ${env:JWT_SECRET_KEY}
-    TEMPLATE_ARN_EMAIL_RESET_PASSWORD: ${env:TEMPLATE_ARN_EMAIL_RESET_PASSWORD}
-    BASE_URL_BUYER: ${env:BASE_URL_BUYER}
-    CDN_LINK: ${env:CDN_LINK}
-    STRIPE_API_KEY: ${env:STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: ${env:SELLER_GOOGLE_PASSWORD}
-    PASSWORD_SECRET_KEY: ${env:PASSWORD_SECRET_KEY}
-    CART_COLLECTION: ${env:CART_COLLECTION}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    CSV_FILE: ${ssm:CSV_FILE}
+    S3_BUCKET:  ${ssm:BUCKET_NAME}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
+    USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
+    BUYER_EMAIL_OTP_TEMPLATE: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
+          
+    ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
+    RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
+    RECAPTCHA_URL: ${ssm:RECAPTCHA_URL}
+    CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
+    DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN} 
+    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
+    TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
+        
+   
+    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    CDN_LINK: ${ssm:CDN_URL}
+    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
+    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
+    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     
   http:
     cors: true
-    authorizers:
-      cognito-auth:
-        identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${env:COGNITO_USER_POOL_ID}
-        audience: ${env:COGNITO_SELLER_CLIENT_ID}
+     
 
   iam:
     role:
@@ -94,25 +110,30 @@ custom:
       
   customDomain:
     rest:
-      domainName: ${env:DOMAIN_NAME}
+      domainName: ${ssm:DOMAIN_NAME}
       stage: ${opt:stage, self:provider.stage}
-      basePath: ${opt:stage, self:provider.stage}/v1/${self:service}
-      certificateName: ${env:DOMAIN_CERTIFICATE}
+      basePath: v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
+
+  serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 functions:
   view_cart:
     handler: handlers/view_cart.view
     runtime: python3.8
     layers:
-      - ${env:COMMON_PYTHON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - sg-0882c1da39e729097
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - subnet-0ff05c7c2bd2a3f87
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /cart
@@ -128,10 +149,10 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${env:AWS_ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 resources:
    Resources:
-     GatewayResponseDefault4XX:
+    GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
        Properties:
          ResponseParameters:
@@ -140,8 +161,24 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+    
+    # BuyerEmailOtp:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_email_otp.html)}
+    #     Subject: Indy.auction - OTP Verification for Your Account
+    #     TemplateName: ${self:provider.stage}-buyer_email_otp
+    
+    # BuyerResetPassword:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_reset_password.html)}
+    #     Subject: Indy.auction- Reset your password
+    #     TemplateName: ${self:provider.stage}-buyer_reset_password
+    
 
 plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
+  - serverless-plugin-ifelse

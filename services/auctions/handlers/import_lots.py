@@ -115,16 +115,6 @@ def import_lots(event, context):
             'Product Shipping Location',
             'Tags'
         ]
-
-        additional_fields = {
-            "auction_id": auction_id,
-            "seller_email": email_address,
-            "starting_bid": 0,
-            "current_bid": 0,
-            "Top_bidder": "",
-            "images": []
-        }
-
         # Initialize the MongoDB client
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
@@ -157,6 +147,18 @@ def import_lots(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+        start_date=auction_record['start_date']
+        end_date= auction_record['end_date']
+        print(123,auction_record)
+        print(3333, start_date, end_date)
+        additional_fields = {
+            "auction_id": auction_id,
+            "seller_email": email_address,
+            "starting_bid": 0,
+            "current_bid": 0,
+            "Top_bidder": "",
+            "images": [],
+        }
         print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
@@ -172,12 +174,31 @@ def import_lots(event, context):
                 "starting_sequence": last_lot_number
             }
             result = counter_collection.insert_one(counter_record)
+        extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        if extension_time_str != '':
+            extension_time = int(extension_time_str[:1])
+        else:
+            extension_time=0
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
         print("last_lot_number", last_lot_number)
         try:
+            count_import=0
+            print(csv_reader)
             for row in csv_reader:
                 dict1 = {}
+                if end_date is not None:
+                    if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                        dict1['start_date'] = start_date
+                        dict1['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
+                        count_import= count_import+1
+                    elif auction_record['extension_type']== "All Lots":
+                        dict1['start_date'] = start_date
+                        dict1['end_date'] = end_date
+                else:
+                    dict1['start_date'] = start_date
+                    dict1['end_date'] = end_date
+
                 if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "" or row['Tags'] == "":
                     return {
                         "statusCode": 400,
@@ -212,7 +233,6 @@ def import_lots(event, context):
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
                 dict1["tags"] = tags
-
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number

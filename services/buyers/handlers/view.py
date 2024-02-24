@@ -167,7 +167,7 @@ def view(event, context):
                               "$set": {"status": updated_status}})
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
-        client.close()
+        # client.close()
         if result["make_your_auction_private"] is True and passcode is None:
             data = {}
             data["menu_links"] = result.get("menu_links")

@@ -124,6 +124,8 @@ function validateToken(pems_data, event, context) {
     // }
 
     // Verify the signature of the JWT token to ensure it's really coming from your User Pool
+    const currentAccountId = context.invokedFunctionArn.split(':')[4]
+    console.log(currentAccountId)
     const policy_data = {
         principalId: decodedJwt.principalId,
         policyDocument: {
@@ -133,7 +135,7 @@ function validateToken(pems_data, event, context) {
                     Action: 'execute-api:Invoke',
                     Effect: 'Allow',
                     Resource: [
-                        `arn:aws:execute-api:eu-west-2:929441721738:*/${process.env.STAGE}/*/*`,
+                        `arn:aws:execute-api:eu-west-2:${currentAccountId}:*/${process.env.STAGE}/*/*`,
                     ],
                 },
             ],

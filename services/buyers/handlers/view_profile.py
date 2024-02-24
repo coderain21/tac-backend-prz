@@ -14,6 +14,13 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["BUYER_COLLECTION"]]
+auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+register_collection = db[os.environ['REGISTER_AUCTION_COLLECTION']]
+
+
 def view_profile(event, context):
     """
     The `view_profile` function retrieves user profile data from a MongoDB database based on the user's
@@ -43,16 +50,17 @@ def view_profile(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["BUYER_COLLECTION"]]
+        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
         auction_id = data['auction_id']
         auction_id= ObjectId(auction_id)
-        auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        # auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
         auction= auction_collection.find({'_id':auction_id})
         auction= list(auction)
         seller_email=auction[0]['seller_email']
+        # email_address = 'anusha.k+8tu33s1u@7edge.com'
         if 'token' in data:
             if data['token']=='True':
                 body = json.loads(event['body'])
@@ -71,11 +79,14 @@ def view_profile(event, context):
         if data['update'] == 'True':
             body = json.loads(event['body'])
             update_data={}
+            register_update={}
             try:
                 update_data['country_code']=body['country_code']
                 update_data['first_name']= body['first_name']
+                register_update['first_name']= update_data['first_name']
                 # update_data['last_name']= data['last_name']
                 update_data['phone_number']= body['phone_number']
+                update_data['full_name']= body['first_name']
             except Exception:
                 return {
                     "statusCode": 404,
@@ -83,9 +94,22 @@ def view_profile(event, context):
                     "body": json.dumps({"message": 'please enter the required fileds'})
                 }
             if 'last_name' in body:
+                print('here')
                 update_data['last_name']= body['last_name']
+                register_update['last_name']= update_data['last_name']
+                update_data['full_name']= update_data['full_name']+" "+ update_data['last_name']
+                register_update['name']= update_data['full_name']
+                print('register', register_update)
             result= collection.find_one_and_update({'email_address':email_address,'seller_email':seller_email},
                                                    {"$set": update_data})
+            register_result = register_collection.find_one_and_update({'email_address':email_address, 'auction_id':auction_id},
+                                                   {"$set": register_update})
+            if result is None:
+                return {
+                    "statusCode": 404,
+                    "headers": headers,
+                    "body": json.dumps({"message": "user not found"})
+                }
         result= collection.find_one({'email_address':email_address,'seller_email':seller_email},
                       { "password": 0,
                       "terms_and_condition": 0,
@@ -93,7 +117,7 @@ def view_profile(event, context):
                       "newsletter_notification":0,
                         "token":0
                       })
-        client.close()
+        # client.close()
         if result is None:
             return {
                 "statusCode": 404,

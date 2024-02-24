@@ -27,7 +27,6 @@ def get_by_email(email,collection):
         collection_sellers = db[collection]
 
         query_result = collection_sellers.find_one({'email_address': email},{'password':0})
-        
         client.close()
         if query_result:
             return query_result
@@ -60,7 +59,6 @@ def fetch_seller_data_from_auction(auction_id):
         client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
-    
 def fetch_user_pool_data(email):
     """
     Fetch the seller's userpool data from the user pool collection in MongoDB.

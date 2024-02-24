@@ -26,6 +26,8 @@ const cognito = new AWS.CognitoIdentityServiceProvider()
 
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 
+let connection
+
 const createGroup = async (username, userPoolId) => {
     try {
         const response = await cognito.createGroup({
@@ -44,11 +46,8 @@ const schema = Joi.object().keys({
         'string.base': 'otp should be of type string',
         'any.required': 'otp is a required field',
     }),
-    session_token: Joi.string().required().messages({
-        'string.base': 'session token should be of type string',
-        'string.empty': 'session token cannot be an empty field',
-        'any.required': 'session token is a required field',
-    }),
+    session_token: Joi.string().optional().allow(''),
+    type: Joi.string().optional().allow(''),
 })
 
 AWS.config.update({ region: process.env.REGION })
@@ -79,13 +78,40 @@ module.exports.otpValidation = async (event, _context, callback) => {
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
+            console.log(errorMessage)
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        if (userData.session_token) {
+        if (userData.type === 'admin' && userData.session_token === '') {
+            try {
+                const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
+                const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
+                const OTP = userData.otp
+                userData = { ...userData, ...data }
+                if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
+                    return {
+                        statusCode: 201,
+                        headers: await helpers.getHeaders(),
+                        body: JSON.stringify({ message: 'Succes' }),
+                    }
+                }
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Invalid OTP' }),
+                }
+            } catch (err) {
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Something went wrong' }),
+                }
+            }
+        }
+        if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
@@ -110,7 +136,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const ciphertext = CryptoJS.AES.encrypt(userData.password, process.env.PASSWORD_SECRET_KEY).toString()
                     userData.password = ciphertext
-                    const connection = await mongoConnection.connect()
+                    connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     const domainInfo = {
                         seller_email: userData.email_address,
@@ -121,11 +147,10 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const domain = await mongoConnection.save(domainInfo, SubDomain)
                     await createGroup(userData.email_address.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
-                    await connection.disconnect()
                     const template_data = {
                         url: process.env.DASHBOARD_URL,
                     }
-                    await helpers.sendPinpointEmail(userData.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
+                    await helpers.sendPinpointEmail(userData.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
 
                     return {
                         statusCode: 201,
@@ -157,6 +182,11 @@ module.exports.otpValidation = async (event, _context, callback) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({ message: err.message }),
+        }
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
         }
     }
 }
