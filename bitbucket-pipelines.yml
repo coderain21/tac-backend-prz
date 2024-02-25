@@ -271,6 +271,15 @@ pipelines:
             - step: *BuildStep
             - step: *DeletePreProduction
     
+    DeleteDisposableEnvironmentProd:
+      - stage:
+          name: Testing and Production Deployment
+          deployment: Production
+          image: python:3.7.2
+          steps:
+            - step: *BuildStep
+            - step: *DeletePreProduction
+    
     RunBookExecutionQA:
       - variables:
         - name: RUNBOOK_PATH
@@ -366,7 +375,6 @@ pipelines:
           steps:
             - step: *BuildStep
             - step: *SecretChecking
-            
       - stage:
             name: QA Deployment
             deployment: QA
@@ -391,11 +399,11 @@ pipelines:
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
             - step: *SecretChecking
       - stage:
           name: PRODUCTION Deployment
           deployment: Production
           steps:
+             - step: *BuildStep
              - step: *TerraDeploy
      
