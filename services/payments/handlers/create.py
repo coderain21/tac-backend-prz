@@ -119,7 +119,7 @@ def generate_client_secret(account_id, amount, currency, application_fee):
     """
     try:
         session = stripe.PaymentIntent.create(
-            amount=amount*100,
+            amount=int(amount*100),
             currency=currency,
             automatic_payment_methods={"enabled": True},
             application_fee_amount=int(application_fee*100),
