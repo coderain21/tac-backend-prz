@@ -92,16 +92,11 @@ def list_all_purchases(event, context):
         # Merge search query with the existing query
         query.update(search_query)
         if start_date and end_date:
-            print('start date', start_date, 'end date', end_date)
             date_range_condition = {
-                "$or": [
-                    {
-                        "created_at": {
-                            "$gte": int(start_date),
-                            "$lte": int(end_date)
-                        }
-                    }
-                ]
+                "created_at": {
+                    "$gte": int(start_date),
+                    "$lte": int(end_date)
+                }
             }
 
             query.update(date_range_condition)
