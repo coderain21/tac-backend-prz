@@ -355,6 +355,29 @@
                 "example": {
                   "buyers": [
                     {
+                      "_id": "65ddc527cca2efbf6a77a199",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX19T9rOlvYoOIeH95VeoyRoUk02KAahrpM4=",
+                      "email_address": "ranjith.n@7edge.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "",
+                      "last_name": "",
+                      "registered_through": "",
+                      "created_at": "2024-02-27 11:19:03.827000",
+                      "buyer_id": "B0159",
+                      "__v": 0,
+                      "seller_email": "namratha.shettigar+dev@7edge.com",
+                      "token": {
+                        "endpoint": "https://fcm.googleapis.com/fcm/send/ckQIJlnC3sY:APA91bGcRjHH9omDvamn2ovPooaF5D-X3JERvpN1knwqyjAOvDdF2ee_t9egMn9Fdk38xVf514Fu6rDgOoJ1L-lIOeT9eixf5ExdmidhOzeeGqWOEdcaNzxiqIvxNrYkqhHDMQdTkN2Z",
+                        "expirationTime": null,
+                        "keys": {
+                          "p256dh": "BHilXltJxPkyHmHbS7DPZXHlnHIikQBPd-KUNUB85AI0ftGJ7NJCIsoVzJGGd4OxXKkpGs_Giu_l0BQ8pZaZKDI",
+                          "auth": "EVzD5S9wBhawZY6nb7rzAQ"
+                        }
+                      }
+                    },
+                    {
                       "_id": "65ccadc1d4228ae1476b125d",
                       "user_type": "buyer",
                       "password": "U2FsdGVkX1+YMdi39a+tiwDur/UiQ8JSSkuXymOiXqQ=",
@@ -376,21 +399,6 @@
                           "auth": "B2Z4ziHkBOgcIoUc62Lw_A"
                         }
                       }
-                    },
-                    {
-                      "_id": "65dc375df646dea4687b61e4",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+wPyyaXGcE8sfyoJlODekKNW53SR3CV9g=",
-                      "email_address": "sushmitha.j@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "",
-                      "created_at": "2024-02-26 07:01:49.800000",
-                      "buyer_id": "B0157",
-                      "__v": 0,
-                      "seller_email": "sthuthi+stripe@7edge.com"
                     },
                     {
                       "_id": "65cc9e212eb6f2314355c5ec",
@@ -451,7 +459,7 @@
                       "created_at": "2024-02-14 12:30:05.415000",
                       "buyer_id": "B0150",
                       "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com",
+                      "seller_email": "sthuthi@7edge.com",
                       "token": {
                         "endpoint": "https://fcm.googleapis.com/fcm/send/dO2EvlMMxZ4:APA91bE7ymoVUIKVm5umDJhrAB4ZtKq0sBp0csJsqiGfSLw49q7oyeAgMl05JFn1lgr_MQIhethcX-_gOikIM0eXyO-gyPOELxNrDhORCrT3bkr5vVQ0f2jm97-bXY8ZA7aRP1i43Pj6",
                         "expirationTime": null,
@@ -460,6 +468,21 @@
                           "auth": "gNyDnvArpkisxDE5BvxnZw"
                         }
                       }
+                    },
+                    {
+                      "_id": "65dc375df646dea4687b61e4",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX1+wPyyaXGcE8sfyoJlODekKNW53SR3CV9g=",
+                      "email_address": "sushmitha.j@7edge.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "",
+                      "last_name": "",
+                      "registered_through": "",
+                      "created_at": "2024-02-26 07:01:49.800000",
+                      "buyer_id": "B0157",
+                      "__v": 0,
+                      "seller_email": "sthuthi+stripe@7edge.com"
                     },
                     {
                       "_id": "654f761642ec4ad6db303f3e",
@@ -530,31 +553,9 @@
                       "postal_code": "",
                       "town/city": "",
                       "county": ""
-                    },
-                    {
-                      "_id": "65c270c860954ec160dfd208",
-                      "email_address": "anusha.k+qa1@7edge.com",
-                      "first_name": "Anusha",
-                      "last_name": "K",
-                      "password": "$pbkdf2-sha256$29000$aW5keUBhdWN0aW9u$z6v1O9Rm86qh/y3DPKO9QN2bmqJa/.0D5iSAwf7IH7Y",
-                      "terms_and_condition": true,
-                      "user_type": "buyer",
-                      "newsletter_notification": false,
-                      "seller_email": "sthuthi@7edge.com",
-                      "created_at": "2024-02-06 17:47:52.849000",
-                      "buyer_id": "B0012",
-                      "full_name": "Anusha K",
-                      "token": {
-                        "endpoint": "https://fcm.googleapis.com/fcm/send/eLF9UvgsvVQ:APA91bEMnRuDz2Q8ypZPvhGunhSwrrC-pGQ9mFWGn-HKGsif6bCmRG10i5Z0-8KThEHU3NCr4_jhpoPYT8UqXN7fx0FOF7Rq9r-T63nw7xmCNUBAvu6GyssVNaj_kcEz86lgZ0Y451aC",
-                        "expirationTime": null,
-                        "keys": {
-                          "p256dh": "BFd4Q6uHkQIz2eNNo8xLsBzcaxNSEZMmims6t70B46g0WufHVXZ7JXjyEVG2tMKkNvFz11Bj8m8ttElBIiW7hn4",
-                          "auth": "jyl-MgfxSuCXSeneaj16OQ"
-                        }
-                      }
                     }
                   ],
-                  "total_buyers": 43,
+                  "total_buyers": 44,
                   "page_size": 10,
                   "page_number": 1
                 }
