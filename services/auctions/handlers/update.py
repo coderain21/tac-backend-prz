@@ -107,6 +107,7 @@ def update_auction(event, context):
         # Initialize the MongoDB client
         collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+        collection_seller = db[os.environ["SELLERS_TABLE"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
         listLots = list(collection_lot.find({"seller_email": seller_email,
@@ -115,7 +116,7 @@ def update_auction(event, context):
 
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
-
+        seller_data = collection_seller.find_one(  {"seller_email": seller_email}, {"_id": 0})
 
         if auction_record is None:
             return {
