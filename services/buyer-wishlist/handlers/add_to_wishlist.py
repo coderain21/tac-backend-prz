@@ -60,6 +60,7 @@ def create(event, context):
         lot_detail = lot_collection.find_one({'_id': lot_id})
         seller_email = lot_detail['seller_email']
         auction_name = body['auction_name']
+        auction_uid = body['auction_uid']
 
         buyer_details = buyer_collection.find_one({'email_address': email_address})
         buyer_id = buyer_details['_id']
@@ -69,7 +70,8 @@ def create(event, context):
             'buyer_id': buyer_id,
             'email_address': email_address,
             'auction_name': auction_name,
-            'auction_id': lot_detail['auction_id']
+            'auction_id': lot_detail['auction_id'],
+            'auction_uid': ObjectId(auction_uid)
         }
         existing_wishlist_entry = wish_list.find_one(insert_data)
         if existing_wishlist_entry:
