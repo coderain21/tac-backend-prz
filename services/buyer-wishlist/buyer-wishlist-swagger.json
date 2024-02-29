@@ -489,11 +489,78 @@
                         }
                       ],
                       "start_date": 1709097636638,
-                      "end_date": 1709353956638,
+                      "end_date": 1709207382099,
                       "lot_number": 1
                     },
                     "auction_title": "The Ceramics & Craft Auction",
                     "auction_uid": "65c2294ed2c31913959127d6"
+                  },
+                  {
+                    "lot_details": {
+                      "_id": "65ddda51524429fa9d78908f",
+                      "start_date": "2024-02-26T07:00:24.118000+00:00",
+                      "end_date": 1709202027201,
+                      "title1": "Opportunities for Artists",
+                      "title2": "Snowdrops In A Stripey Mug",
+                      "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                      "starting_price": 2000,
+                      "low_estimate": 3000,
+                      "high_estimate": 400005,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0096",
+                      "seller_email": "sthuthi@7edge.com",
+                      "starting_bid": 0,
+                      "current_bid": 0,
+                      "Top_bidder": "",
+                      "images": [
+                        {
+                          "url": "DomainName/Auctions/lots/images/446ff9eb-1b83-1445-0830-8895d73d9edc/mak-6-5rajeKe50-unsplash.jpg",
+                          "featured": true
+                        }
+                      ],
+                      "lot_number": 2
+                    },
+                    "auction_title": "Photography",
+                    "auction_uid": "65ddda272a83b0149eb18bd7"
+                  },
+                  {
+                    "lot_details": {
+                      "_id": "65ddda51524429fa9d78908e",
+                      "start_date": "2024-02-26T07:00:24.118000+00:00",
+                      "end_date": 1709202027201,
+                      "title1": "Out of the Margins",
+                      "title2": "Sonia Barton",
+                      "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                      "starting_price": 1500,
+                      "low_estimate": 2000,
+                      "high_estimate": 404000,
+                      "shipping_details": "Lorem Ipsum",
+                      "tags": [
+                        "Recommended",
+                        "Paintings"
+                      ],
+                      "auction_id": "A0096",
+                      "seller_email": "sthuthi@7edge.com",
+                      "starting_bid": 0,
+                      "current_bid": 1500,
+                      "Top_bidder": "",
+                      "images": [
+                        {
+                          "url": "DomainName/Auctions/lots/images/556c9b1b-e7bb-cd69-a422-8b013447131f/panting2.jpg",
+                          "featured": true
+                        }
+                      ],
+                      "lot_number": 1,
+                      "paddle_number": "1",
+                      "top_bidder": "Sthu",
+                      "under_bidder": null
+                    },
+                    "auction_title": "Photography",
+                    "auction_uid": "65ddda272a83b0149eb18bd7"
                   },
                   {
                     "lot_details": {

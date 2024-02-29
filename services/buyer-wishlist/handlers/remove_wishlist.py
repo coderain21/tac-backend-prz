@@ -15,9 +15,9 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-# client = MongoClient(os.environ['MONGO_CLIENT'])
-# db = client[os.environ['DATABASE']]
-# wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
 
 def remove(event, context):
@@ -49,9 +49,9 @@ def remove(event, context):
             }
 
         lot_id = ObjectId(lot_id)
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
+        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # db = client[os.environ['DATABASE']]
+        # wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
         # Check if the lot exists in the wishlist
         existing_wishlist_entry = wish_list.find_one({
