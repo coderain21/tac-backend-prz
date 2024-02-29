@@ -12,6 +12,7 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
@@ -48,6 +49,7 @@ def list_sellers(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         seller_collection = db[os.environ["SELLERS_TABLE"]]
+
         # result= seller_collection.find_one({"user_type":"seller","email_address":email_address})
         # if result is None:
         #     return {
@@ -55,12 +57,15 @@ def list_sellers(event, context):
         #         "headers": headers,
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
+
         sort_key = 'full_name'
         projection={
             "email_address": 1,
             "_id":1,
             "created_at":1,
-            "full_name": 1
+            "full_name": 1,
+            "first_name": 1,
+            "last_name": 1
         }
         # Check if sorting key is provided
         if 'queryStringParameters' in event and 'sort_by' in event['queryStringParameters']:
@@ -85,6 +90,7 @@ def list_sellers(event, context):
         # Pagination options
         page_size = 10
         page_number = 1
+        print(search_query)
         if 'queryStringParameters' in event:
             if 'page_number' in event['queryStringParameters']:
                 page_number = int(event['queryStringParameters']['page_number'])
@@ -93,6 +99,7 @@ def list_sellers(event, context):
 
         # Fetching sellers with sorting, pagination, and search options
         sellers = seller_collection.find(search_query,projection).sort(sort_key, sort_order).skip((page_number - 1) * page_size).limit(page_size)
+        # print(list(sellers))
         response_body = {
             "sellers": list(sellers),
             "total_sellers": total_sellers,

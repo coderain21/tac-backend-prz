@@ -20,10 +20,7 @@
   "paths": {
     "/auctions": {
       "get": {
-        "tags": [
-          "Admin Auction Management"
-          
-        ],
+        "tags": ["Admin Auction Management"],
         "summary": "Listing auction",
         "description": "Listing auction",
         "parameters": [
@@ -99,7 +96,6 @@
             },
             "example": "C"
           }
-
         ],
         "responses": {
           "200": {
@@ -108,7 +104,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { 
+                  "properties": {
                     "data": {
                       "type": "array",
                       "items": {
@@ -189,34 +185,33 @@
                   }
                 },
                 "example": {
-                        "data": [
-                          {
-                            "auction_id": "A0169",
-                            "title": "Auction Event",
-                            "start_date": 1701082800000,
-                            "end_date": 1701088200000,
-                            "status": "Draft",
-                            "created_at": "2023-08-31 10:27:57.993000",
-                            "auction_image": "",
-                            "description": "",
-                            "currency": "",
-                            "extension_type": "",
-                            "extension_time": "",
-                            "extension_time_between_lots": "",
-                            "registration_type": "",
-                            "add_buyer_fees": "",
-                            "time_zone": "",
-                            "make_your_auction_private": "",
-                            "passcode": "",
-                            "fees": ""
-                                                    }
-                        ],
-                        "total_records_found": 1,
-                        "total_auctions": 1,
-                        "current_page": 1,
-                        "total_pages": 1
-                      }
-                
+                  "data": [
+                    {
+                      "auction_id": "A0169",
+                      "title": "Auction Event",
+                      "start_date": 1701082800000,
+                      "end_date": 1701088200000,
+                      "status": "Draft",
+                      "created_at": "2023-08-31 10:27:57.993000",
+                      "auction_image": "",
+                      "description": "",
+                      "currency": "",
+                      "extension_type": "",
+                      "extension_time": "",
+                      "extension_time_between_lots": "",
+                      "registration_type": "",
+                      "add_buyer_fees": "",
+                      "time_zone": "",
+                      "make_your_auction_private": "",
+                      "passcode": "",
+                      "fees": ""
+                    }
+                  ],
+                  "total_records_found": 1,
+                  "total_auctions": 1,
+                  "current_page": 1,
+                  "total_pages": 1
+                }
               }
             }
           },
@@ -227,10 +222,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -254,12 +248,9 @@
         }
       }
     },
-    "/buyers":{
+    "/buyers": {
       "get": {
-        "tags": [
-          "Admin Buyers Management"
-          
-        ],
+        "tags": ["Admin Buyers Management"],
         "summary": "Listing Buyers",
         "description": "Listing Buyers",
         "parameters": [
@@ -299,7 +290,6 @@
             },
             "example": "C"
           }
-
         ],
         "responses": {
           "200": {
@@ -308,7 +298,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { 
+                  "properties": {
                     "buyers": {
                       "type": "array",
                       "items": {
@@ -569,10 +559,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -596,12 +585,9 @@
         }
       }
     },
-    "/sellers":{
+    "/sellers": {
       "get": {
-        "tags": [
-          "Admin Seller Management"
-          
-        ],
+        "tags": ["Admin Seller Management"],
         "summary": "Listing Sellers",
         "description": "Listing Sellers",
         "parameters": [
@@ -641,7 +627,6 @@
             },
             "example": "C"
           }
-
         ],
         "responses": {
           "200": {
@@ -650,7 +635,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { 
+                  "properties": {
                     "buyers": {
                       "type": "array",
                       "items": {
@@ -754,10 +739,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -781,12 +765,9 @@
         }
       }
     },
-    "/buyer-auctions":{
+    "/buyer-auctions": {
       "get": {
-        "tags": [
-          "Admin Buyers Management"
-          
-        ],
+        "tags": ["Admin Buyers Management"],
         "summary": "Buyers list auctions",
         "description": "Buyers list auctions",
         "parameters": [
@@ -826,7 +807,6 @@
             },
             "example": "656cb04247790c35822dfb46"
           }
-
         ],
         "responses": {
           "200": {
@@ -835,34 +815,34 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": { 
+                  "properties": {
                     "data": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "_id":{
+                          "_id": {
                             "type": "string"
                           },
-                          "email_address":{
+                          "email_address": {
                             "type": "string"
                           },
-                          "seller_email":{
+                          "seller_email": {
                             "type": "string"
                           },
-                          "created_at":{
+                          "created_at": {
                             "type": "string"
                           },
-                          "seller_name":{
+                          "seller_name": {
                             "type": "string"
                           },
-                          "auction_id":{
+                          "auction_id": {
                             "type": "string"
                           },
-                          "status":{
+                          "status": {
                             "type": "string"
                           },
-                          "title":{
+                          "title": {
                             "type": "string"
                           },
                           "buyer_status": {
@@ -898,8 +878,7 @@
                       "buyer_status": ""
                     }
                   ]
-                      }
-                
+                }
               }
             }
           },
@@ -910,10 +889,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -936,14 +914,10 @@
           }
         }
       }
-
     },
-    "/buyer-details":{
+    "/buyer-details": {
       "get": {
-        "tags": [
-          "Admin Buyers Management"
-          
-        ],
+        "tags": ["Admin Buyers Management"],
         "summary": "Buyer Details",
         "description": "Buyers Details",
         "parameters": [
@@ -956,7 +930,6 @@
             },
             "example": "65c3135c706202a62aabc364"
           }
-
         ],
         "responses": {
           "200": {
@@ -969,7 +942,7 @@
                     "_id": {
                       "type": "string"
                     },
-                    "email_address":{
+                    "email_address": {
                       "type": "string"
                     },
                     "first_name": {
@@ -981,10 +954,10 @@
                     "country_code": {
                       "type": "string"
                     },
-                    "phone_number":  {
+                    "phone_number": {
                       "type": "string"
                     },
-                    "address_line1":  {
+                    "address_line1": {
                       "type": "string"
                     },
                     "address_line2": {
@@ -996,7 +969,7 @@
                     "is_manual": {
                       "type": "string"
                     },
-                    "postal_code":  {
+                    "postal_code": {
                       "type": "string"
                     },
                     "town/city": {
@@ -1004,22 +977,20 @@
                     }
                   }
                 },
-                "example": { 
-                    "_id": "65c3135c706202a62aabc364",
-                    "email_address": "murali.r@7edge.com",
-                    "first_name": "murali",
-                    "last_name": "e",
-                    "country_code": "+91",
-                    "phone_number": "22222226666666666662",
-                    "address_line1": "Kolar Rd",
-                    "address_line2": "",
-                    "country": "India",
-                    "is_manual": "False",
-                    "postal_code": "",
-                    "town/city": "Bhopal"
-                  
-                      }
-                
+                "example": {
+                  "_id": "656cb04247790c35822dfb46",
+                  "email_address": "murali.r@7edge.com",
+                  "first_name": "murali",
+                  "last_name": "e",
+                  "country_code": "+91",
+                  "phone_number": "22222226666666666662",
+                  "address_line1": "Kolar Rd",
+                  "address_line2": "",
+                  "country": "India",
+                  "is_manual": "False",
+                  "postal_code": "",
+                  "town/city": "Bhopal"
+                }
               }
             }
           },
@@ -1030,10 +1001,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -1056,14 +1026,10 @@
           }
         }
       }
-
     },
-    "/{id}":{
+    "/{id}": {
       "get": {
-        "tags": [
-          "Admin Buyers Management"
-          
-        ],
+        "tags": ["Admin Buyers Management"],
         "summary": "Buyer purchases Details",
         "description": "Buyers purchases details",
         "parameters": [
@@ -1093,7 +1059,7 @@
               "type": "string"
             },
             "example": "descending"
-          }, 
+          },
           {
             "name": "page_number",
             "in": "query",
@@ -1112,7 +1078,6 @@
             },
             "example": "3"
           }
-
         ],
         "responses": {
           "200": {
@@ -1129,7 +1094,7 @@
                         "_id": {
                           "type": "string"
                         },
-                        "payment_status":{
+                        "payment_status": {
                           "type": "string"
                         },
                         "amount": {
@@ -1141,7 +1106,7 @@
                         "currency": {
                           "type": "string"
                         },
-                        "order_number":  {
+                        "order_number": {
                           "type": "string"
                         },
                         "created_at": {
@@ -1168,37 +1133,37 @@
                 },
                 "example": {
                   "data": [
-                      {
-                          "_id": "6597c5eb39a8d47e3b1864b4",
-                          "payment_status": "Unpaid",
-                          "amount": 5650,
-                          "payment": "Stripe",
-                          "currency": "INR",
-                          "order_number": "OD001",
-                          "created_at": 1704445417,
-                          "auction_title": "The Classic Auction - Sample",
-                          "name": "AnushaK"
-                      },
-                      {
-                          "_id": "658188165dc1e7991cd3de21",
-                          "payment_status": "Paid",
-                          "amount": 22000,
-                          "payment": "Stripe",
-                          "currency": "CAD",
-                          "order_number": "OD005",
-                          "created_at": 1702987796,
-                          "auction_title": "The Ceramics & Craft Auction"
-                      },
-                      {
-                          "_id": "6581838030a8395d8449f1c0",
-                          "payment_status": "Unpaid",
-                          "amount": 22000,
-                          "payment": "Stripe",
-                          "currency": "CAD",
-                          "order_number": "OD004",
-                          "created_at": 1702986621,
-                          "auction_title": "The Ceramics & Craft Auction"
-                      }
+                    {
+                      "_id": "6597c5eb39a8d47e3b1864b4",
+                      "payment_status": "Unpaid",
+                      "amount": 5650,
+                      "payment": "Stripe",
+                      "currency": "INR",
+                      "order_number": "OD001",
+                      "created_at": 1704445417,
+                      "auction_title": "The Classic Auction - Sample",
+                      "name": "AnushaK"
+                    },
+                    {
+                      "_id": "658188165dc1e7991cd3de21",
+                      "payment_status": "Paid",
+                      "amount": 22000,
+                      "payment": "Stripe",
+                      "currency": "CAD",
+                      "order_number": "OD005",
+                      "created_at": 1702987796,
+                      "auction_title": "The Ceramics & Craft Auction"
+                    },
+                    {
+                      "_id": "6581838030a8395d8449f1c0",
+                      "payment_status": "Unpaid",
+                      "amount": 22000,
+                      "payment": "Stripe",
+                      "currency": "CAD",
+                      "order_number": "OD004",
+                      "created_at": 1702986621,
+                      "auction_title": "The Ceramics & Craft Auction"
+                    }
                   ],
                   "total_pages": 11,
                   "total_records": 33,
@@ -1214,10 +1179,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -1240,44 +1204,41 @@
           }
         }
       }
-
     },
     "/clone-auction": {
       "post": {
-        "tags": [
-          "Admin Buyers Management"
-        ],
+        "tags": ["Admin Buyers Management"],
         "summary": "Auction cloned",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "properties": {
-                  "auction_id":{
+                  "auction_id": {
                     "type": "string"
                   },
-                  "seller_email":{
+                  "seller_email": {
                     "type": "string"
                   }
-            },
-            "example": {
-               "object_id": "65a7bf0da3ae6e71fccd6252"
+                },
+                "example": {
+                  "object_id": "65a7bf0da3ae6e71fccd6252"
+                }
               }
             }
           }
-        }
-      },
+        },
         "responses": {
-          "201":{
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
-                "example":{
+                "example": {
                   "message": "Auction has been cloned successfully"
                 }
-                }
               }
-            },
+            }
+          },
           "500": {
             "description": "Internal server error",
             "content": {
@@ -1316,18 +1277,16 @@
                       "message": "Auction with given ID not found"
                     }
                   }
-                  }
                 }
               }
             }
           }
-        } 
+        }
+      }
     },
     "/order-details": {
       "get": {
-        "tags": [
-          "Admin Buyers Management"
-        ],
+        "tags": ["Admin Buyers Management"],
         "summary": "Complete Order Details",
         "description": "Order details",
         "parameters": [
@@ -1463,60 +1422,60 @@
                           }
                         }
                       },
-                    "order_number": {
-                      "type": "string"
-                    },
-                    "created_at": {
-                      "type": "string"
-                    },
-                    "auction_title": {
-                      "type": "string"
-                    },
-                    "purchases": {
-                      "type": "array",
-                      "items": {
-                        "type":"object",
-                        "properties": {
-                          "bid_amount": {
-                            "type": "number"
-                          },
-                          "fees": {
-                            "type": "string"
-                          },
-                          "seller_email": {
-                            "type": "string"
-                          },
-                          "percentage": {
-                            "type": "string"
-                          },
-                          "lot_title": {
-                            "type": "string"
-                          },
-                          "lot_number": {
-                            "type": "string"
-                          },
-                          "lot_image": {
-                            "type": "string"
-                          },
-                          "auction_id": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "currency": {
-                            "type": "string"
+                      "order_number": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "auction_title": {
+                        "type": "string"
+                      },
+                      "purchases": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "bid_amount": {
+                              "type": "number"
+                            },
+                            "fees": {
+                              "type": "string"
+                            },
+                            "seller_email": {
+                              "type": "string"
+                            },
+                            "percentage": {
+                              "type": "string"
+                            },
+                            "lot_title": {
+                              "type": "string"
+                            },
+                            "lot_number": {
+                              "type": "string"
+                            },
+                            "lot_image": {
+                              "type": "string"
+                            },
+                            "auction_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "currency": {
+                              "type": "string"
+                            }
                           }
                         }
+                      },
+                      "approved_status": {
+                        "type": "string"
                       }
-                    },
-                    "approved_status": {
-                      "type": "string"
                     }
-                  }
-                },
-                "example":{
-                  "data": {
+                  },
+                  "example": {
+                    "data": {
                       "_id": "65a13c3265e68545fe2f9b38",
                       "email_address": "anusha.k+theauction@7edge.com",
                       "payment_intent": "pi_3OXkdBFqJJvX3IOZ0QWciNbz",
@@ -1526,82 +1485,82 @@
                       "payment": "Stripe",
                       "seller_email": "anusha.k+sdet@7edge.com",
                       "shipping_address": {
-                          "_id": "65a12236563aa7ed2c442f7a",
-                          "first_name": "Anusha",
-                          "last_name": "K",
-                          "address_line1": "Israel Aharoni St",
-                          "address_line2": "Israel Aharoni Street",
-                          "city": "Jerusalem",
-                          "state": "Jerusalem District",
-                          "postal_code": "",
-                          "country": "Israel",
-                          "type": "shipping",
-                          "default": true,
-                          "created_at": "2024-01-12 11:27:50.919000",
-                          "email_address": "anusha.k+theauction@7edge.com"
+                        "_id": "65a12236563aa7ed2c442f7a",
+                        "first_name": "Anusha",
+                        "last_name": "K",
+                        "address_line1": "Israel Aharoni St",
+                        "address_line2": "Israel Aharoni Street",
+                        "city": "Jerusalem",
+                        "state": "Jerusalem District",
+                        "postal_code": "",
+                        "country": "Israel",
+                        "type": "shipping",
+                        "default": true,
+                        "created_at": "2024-01-12 11:27:50.919000",
+                        "email_address": "anusha.k+theauction@7edge.com"
                       },
                       "billing_address": {
-                          "_id": "65a12236563aa7ed2c442f7a",
-                          "first_name": "Anusha",
-                          "last_name": "K",
-                          "address_line1": "Israel Aharoni St",
-                          "address_line2": "Israel Aharoni Street",
-                          "city": "Jerusalem",
-                          "state": "Jerusalem District",
-                          "postal_code": "",
-                          "country": "Israel",
-                          "type": "shipping",
-                          "default": true,
-                          "created_at": "2024-01-12 11:27:50.919000",
-                          "email_address": "anusha.k+theauction@7edge.com"
+                        "_id": "65a12236563aa7ed2c442f7a",
+                        "first_name": "Anusha",
+                        "last_name": "K",
+                        "address_line1": "Israel Aharoni St",
+                        "address_line2": "Israel Aharoni Street",
+                        "city": "Jerusalem",
+                        "state": "Jerusalem District",
+                        "postal_code": "",
+                        "country": "Israel",
+                        "type": "shipping",
+                        "default": true,
+                        "created_at": "2024-01-12 11:27:50.919000",
+                        "email_address": "anusha.k+theauction@7edge.com"
                       },
                       "order_number": "OD002",
                       "created_at": 1705065519,
                       "auction_title": "Opportunities for Artist",
                       "purchases": [
-                          {
-                              "bid_amount": 320,
-                              "fees": "2345",
-                              "percentage": "",
-                              "lot_title": "sample3",
-                              "lot_number": 3,
-                              "lot_image": "DomainName/Auctions/lots/images/97168780-af3b-93aa-5d72-b191d32aef83/demo_image5.jpg",
-                              "auction_id": "65a136ec40ddb9865b1df4c5",
-                              "name": "The Auction Collective",
-                              "currency": "GBP"
-                          }
+                        {
+                          "bid_amount": 320,
+                          "fees": "2345",
+                          "percentage": "",
+                          "lot_title": "sample3",
+                          "lot_number": 3,
+                          "lot_image": "DomainName/Auctions/lots/images/97168780-af3b-93aa-5d72-b191d32aef83/demo_image5.jpg",
+                          "auction_id": "65a136ec40ddb9865b1df4c5",
+                          "name": "The Auction Collective",
+                          "currency": "GBP"
+                        }
                       ],
                       "approved_status": "Approved"
+                    }
                   }
                 }
               }
-            }
-          },
-          "403": {
-            "description": "forbidden",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
+            },
+            "403": {
+              "description": "forbidden",
+              "content": {
+                "application/json": {
+                  "examples": {
+                    "example1": {
+                      "value": {
                         "example": "You do not have access to perform this API action"
-                      
+                      }
                     }
-                  }    
+                  }
                 }
               }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Internal server error"
+            },
+            "500": {
+              "description": "Internal Server Error",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Internal server error"
+                      }
                     }
                   }
                 }
@@ -1610,14 +1569,10 @@
           }
         }
       }
-    }
     },
     "/auction-purchases": {
       "get": {
-        "tags": [
-          "Admin Auction Management"
-          
-        ],
+        "tags": ["Admin Auction Management"],
         "summary": "Auction purchases listing",
         "description": "Auction purchases listing",
         "parameters": [
@@ -1647,7 +1602,7 @@
               "type": "string"
             },
             "example": "descending"
-          }, 
+          },
           {
             "name": "page_number",
             "in": "query",
@@ -1666,7 +1621,6 @@
             },
             "example": "3"
           }
-
         ],
         "responses": {
           "200": {
@@ -1683,7 +1637,7 @@
                         "_id": {
                           "type": "string"
                         },
-                        "payment_status":{
+                        "payment_status": {
                           "type": "string"
                         },
                         "amount": {
@@ -1695,7 +1649,7 @@
                         "currency": {
                           "type": "string"
                         },
-                        "order_number":  {
+                        "order_number": {
                           "type": "string"
                         },
                         "created_at": {
@@ -1722,121 +1676,121 @@
                 },
                 "example": {
                   "data": [
-                      {
-                          "_id": "65b9f39a626a58087a621ba3",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD002",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39b626a58087a621baa",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD003",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39c626a58087a621bb1",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD004",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39d626a58087a621bb8",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD005",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39d626a58087a621bbf",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD006",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16566dca6bef0d48b868",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD007",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16586dca6bef0d48b876",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD009",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16576dca6bef0d48b86f",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD008",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16596dca6bef0d48b87d",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD010",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f391626a58087a621b9c",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD001",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      }
+                    {
+                      "_id": "65b9f39a626a58087a621ba3",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD002",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39b626a58087a621baa",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD003",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39c626a58087a621bb1",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD004",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39d626a58087a621bb8",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD005",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39d626a58087a621bbf",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD006",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16566dca6bef0d48b868",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD007",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16586dca6bef0d48b876",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD009",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16576dca6bef0d48b86f",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD008",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16596dca6bef0d48b87d",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD010",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f391626a58087a621b9c",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD001",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    }
                   ],
                   "total_pages": 21,
                   "total_records": 201,
                   "current_page": 1
-              }
+                }
               }
             }
           },
@@ -1847,10 +1801,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -1876,9 +1829,7 @@
     },
     "/auction-details": {
       "get": {
-        "tags": [
-          "Admin Auction Management"
-        ],
+        "tags": ["Admin Auction Management"],
         "summary": "Auction details",
         "description": "Auction details",
         "parameters": [
@@ -1922,7 +1873,7 @@
                             "link": {
                               "type": "string"
                             },
-                            "dropdown":{
+                            "dropdown": {
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -1938,7 +1889,6 @@
                             }
                           }
                         }
-                        
                       },
                       "logo_image": {
                         "type": "string"
@@ -1949,282 +1899,283 @@
                       "title": {
                         "type": "string"
                       },
-                    "auction_image": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "currency": {
-                      "type": "string"
-                    },
-                    "start_date":{
-                      "type":"integer"
-                    },
-                    "end_date": {
-                      "type": "integer"
-                    },
-                    "extension_type": {
-                      "type": "string"
-                    },
-                    "extension_time": {
-                      "type": "string"
-                    },
-                    "extension_time_between_lots":{
-                      "type":"string"
-                    },
-                    "registration_type": {
-                      "type": "string"
-                    },
-                    "add_buyer_fees": {
-                      "type": "number"
-                    },
-                    "time_zone": {
-                      "type": "string"
-                    },
-                    "terms_and_condition": {
-                      "type": "string"
-                    },
-                    "publish_auction_results": {
-                      "type": "boolean"
-                    },
-                    "show_bidder_location_in_bidder_history": {
-                      "type": "boolean"
-                    },
-                    "make_your_auction_private": {
-                      "type": "boolean"
-                    },
-                    "passcode": {
-                      "type": "string"
-                  },
-                  "note":{
-                    "type":"string"
-                  },
-                  "status": {
-                    "type": "string"
-                  },
-                  "fees": {
-                    "type":"string"
-                  },
-                  "created_at": {
-                    "type": "string"
-                  },
-                  "updated_at": {
-                    "type": "string"
-                  },
-                  "seller_name": {
-                    "type": "string"
-                  },
-                  "total_lot": {
-                    "type": "number"
-                  },
-                  "faq":{
-                    "type":"array",
-                    "items":{
-                      "type":"object",
-                      "properties":{
-                        "question":{
-                          "type":"string"
-                        },
-                        "answer":{
-                          "type":"string"
-                        }
-                      }
-                    }
-                  },
-                  "font":{
-                    "type":"object",
-                    "properties":{
-                      "header_font":{
-                        "type":"string"
-                      },
-                      "body_font":{
-                        "type":"string"
-                      },
-                      "_id": {
+                      "auction_image": {
                         "type": "string"
-                      }
-                    }
-                  },
-                  "buttons": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "text": {
-                          "type": "string"
-                        },
-                        "link": {
-                          "type": "string"
-                        },
+                      },
+                      "description": {
+                        "type": "string"
+                      },
+                      "currency": {
+                        "type": "string"
+                      },
+                      "start_date": {
+                        "type": "integer"
+                      },
+                      "end_date": {
+                        "type": "integer"
+                      },
+                      "extension_type": {
+                        "type": "string"
+                      },
+                      "extension_time": {
+                        "type": "string"
+                      },
+                      "extension_time_between_lots": {
+                        "type": "string"
+                      },
+                      "registration_type": {
+                        "type": "string"
+                      },
+                      "add_buyer_fees": {
+                        "type": "number"
+                      },
+                      "time_zone": {
+                        "type": "string"
+                      },
+                      "terms_and_condition": {
+                        "type": "string"
+                      },
+                      "publish_auction_results": {
+                        "type": "boolean"
+                      },
+                      "show_bidder_location_in_bidder_history": {
+                        "type": "boolean"
+                      },
+                      "make_your_auction_private": {
+                        "type": "boolean"
+                      },
+                      "passcode": {
+                        "type": "string"
+                      },
+                      "note": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string"
+                      },
+                      "fees": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      },
+                      "seller_name": {
+                        "type": "string"
+                      },
+                      "total_lot": {
+                        "type": "number"
+                      },
+                      "faq": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "question": {
+                              "type": "string"
+                            },
+                            "answer": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "font": {
+                        "type": "object",
+                        "properties": {
+                          "header_font": {
+                            "type": "string"
+                          },
+                          "body_font": {
+                            "type": "string"
+                          },
+                          "_id": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "buttons": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            },
+                            "link": {
+                              "type": "string"
+                            },
+                            "_id": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      },
+                      "header": {
                         "_id": {
                           "type": "string"
+                        },
+                        "background_color": {
+                          "type": "string"
+                        },
+                        "text_color": {
+                          "type": "string"
+                        }
+                      },
+                      "footer": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "background_color": {
+                          "type": "string"
+                        },
+                        "text_color": {
+                          "type": "string"
+                        }
+                      },
+                      "paddle": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "background_color": {
+                          "type": "string"
+                        },
+                        "text_color": {
+                          "type": "string"
+                        }
+                      },
+                      "content_area": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "background_color": {
+                          "type": "string"
+                        },
+                        "text_color": {
+                          "type": "string"
                         }
                       }
-                    }
-                  },
-                  "header": {
-                    "_id": {
-                      "type": "string"
                     },
-                    "background_color": {
-                      "type": "string"
-                    },
-                    "text_color": {
-                      "type": "string"
-                    }
-                  },
-                  "footer": {
-                    "_id": {
-                      "type": "string"
-                    },
-                    "background_color": {
-                      "type": "string"
-                    },
-                    "text_color": {
-                      "type": "string"
-                    }
-                  },
-                  "paddle": {
-                    "_id": {
-                      "type": "string"
-                    },
-                    "background_color": {
-                      "type": "string"
-                    },
-                    "text_color": {
-                      "type": "string"
-                    }
-                  },
-                  "content_area": {
-                    "_id": {
-                      "type": "string"
-                    },
-                    "background_color": {
-                      "type": "string"
-                    },
-                    "text_color": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "example":{
-                  "_id": "65b8ff47db496b8b3943d176",
-                  "auction_id": "A0006",
-                  "seller_email": "sthuthi+testing@7edge.com",
-                  "template_name": "Auction Template 1",
-                  "menu_links": [
-                      {
+                    "example": {
+                      "_id": "65b8ff47db496b8b3943d176",
+                      "auction_id": "A0006",
+                      "seller_email": "sthuthi+testing@7edge.com",
+                      "template_name": "Auction Template 1",
+                      "menu_links": [
+                        {
                           "title": "Home",
                           "link_url": "https://example.com/home",
                           "dropdown": [
-                              {
-                                  "title": "About Us",
-                                  "link_url": "https://example.com/about"
-                              },
-                              {
-                                  "title": "Contact Us",
-                                  "link_url": "https://example.com/contact"
-                              }
+                            {
+                              "title": "About Us",
+                              "link_url": "https://example.com/about"
+                            },
+                            {
+                              "title": "Contact Us",
+                              "link_url": "https://example.com/contact"
+                            }
                           ]
-                      }
-                  ],
-                  "logo_image": "https://example.com/logo.png",
-                  "logo_redirection_url": "https://example.com",
-                  "title": "Auction Event",
-                  "auction_image": "https://example.com/auction-image.png",
-                  "description": "Join our exciting auction event!",
-                  "currency": "USD",
-                  "start_date": 1669966800,
-                  "end_date": 1669966800,
-                  "extension_type": "Automatic",
-                  "extension_time": "5 minutes",
-                  "extension_time_between_lots": "2m",
-                  "registration_type": "Open",
-                  "add_buyer_fees": "10%",
-                  "faq": [
-                      {
+                        }
+                      ],
+                      "logo_image": "https://example.com/logo.png",
+                      "logo_redirection_url": "https://example.com",
+                      "title": "Auction Event",
+                      "auction_image": "https://example.com/auction-image.png",
+                      "description": "Join our exciting auction event!",
+                      "currency": "USD",
+                      "start_date": 1669966800,
+                      "end_date": 1669966800,
+                      "extension_type": "Automatic",
+                      "extension_time": "5 minutes",
+                      "extension_time_between_lots": "2m",
+                      "registration_type": "Open",
+                      "add_buyer_fees": "10%",
+                      "faq": [
+                        {
                           "question": "How do I participate?",
                           "answer": "Register on our website and place bids."
-                      },
-                      {
+                        },
+                        {
                           "question": "What payment methods are accepted?",
                           "answer": "We accept credit cards and PayPal."
-                      }
-                  ],
-                  "time_zone": "UTC+5:30",
-                  "terms_and_condition": "By participating, you agree to our terms.",
-                  "publish_auction_results": true,
-                  "show_bidder_location_in_bidder_history": true,
-                  "make_your_auction_private": true,
-                  "passcode": "1234",
-                  "font": {
-                      "hearder_font": "Arial",
-                      "body_font": "Helvetica",
-                      "_id": "6566f9d9c96a757be5cce510"
-                  },
-                  "buttons": {
-                      "background_color": "#007BFF",
-                      "text_color": "#FFFFFF",
-                      "_id": "6566f9d9c96a757be5cce511"
-                  },
-                  "header": {
-                      "background_color": "#F2F2F2",
-                      "text_color": "#333333",
-                      "_id": "6566f9d9c96a757be5cce512"
-                  },
-                  "content_area": {
-                      "background_color": "#FFFFFF",
-                      "text_color": "#555555",
-                      "_id": "6566f9d9c96a757be5cce513"
-                  },
-                  "footer": {
-                      "background_color": "#333333",
-                      "text_color": "#FFFFFF",
-                      "_id": "6566f9d9c96a757be5cce514"
-                  },
-                  "paddle": {
-                      "background_color": "#FFD700",
-                      "text_color": "#333333",
-                      "_id": "6566f9d9c96a757be5cce515"
-                  },
-                  "note": "asda",
-                  "status": "Draft",
-                  "fees": "",
-                  "created_at": "2024-01-30 13:53:11.854000",
-                  "updated_at": "2023-11-29 08:44:09.391000",
-                  "__v": 0,
-                  "total_lots": 0,
-                  "seller_name": " "
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "forbidden",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                        }
+                      ],
+                      "time_zone": "UTC+5:30",
+                      "terms_and_condition": "By participating, you agree to our terms.",
+                      "publish_auction_results": true,
+                      "show_bidder_location_in_bidder_history": true,
+                      "make_your_auction_private": true,
+                      "passcode": "1234",
+                      "font": {
+                        "hearder_font": "Arial",
+                        "body_font": "Helvetica",
+                        "_id": "6566f9d9c96a757be5cce510"
+                      },
+                      "buttons": {
+                        "background_color": "#007BFF",
+                        "text_color": "#FFFFFF",
+                        "_id": "6566f9d9c96a757be5cce511"
+                      },
+                      "header": {
+                        "background_color": "#F2F2F2",
+                        "text_color": "#333333",
+                        "_id": "6566f9d9c96a757be5cce512"
+                      },
+                      "content_area": {
+                        "background_color": "#FFFFFF",
+                        "text_color": "#555555",
+                        "_id": "6566f9d9c96a757be5cce513"
+                      },
+                      "footer": {
+                        "background_color": "#333333",
+                        "text_color": "#FFFFFF",
+                        "_id": "6566f9d9c96a757be5cce514"
+                      },
+                      "paddle": {
+                        "background_color": "#FFD700",
+                        "text_color": "#333333",
+                        "_id": "6566f9d9c96a757be5cce515"
+                      },
+                      "note": "asda",
+                      "status": "Draft",
+                      "fees": "",
+                      "created_at": "2024-01-30 13:53:11.854000",
+                      "updated_at": "2023-11-29 08:44:09.391000",
+                      "__v": 0,
+                      "total_lots": 0,
+                      "seller_name": " "
                     }
-                  }    
+                  }
                 }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "example": "Internal server error"
+              },
+              "403": {
+                "description": "forbidden",
+                "content": {
+                  "application/json": {
+                    "examples": {
+                      "example1": {
+                        "value": {
+                          "example": "You do not have access to perform this API action"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "500": {
+                "description": "Internal Server Error",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "message": {
+                          "type": "string",
+                          "example": "Internal server error"
+                        }
+                      }
                     }
                   }
                 }
@@ -2233,15 +2184,10 @@
           }
         }
       }
-    }
-    }
     },
     "/accountings": {
       "get": {
-        "tags": [
-          "Admin Accounting Management"
-          
-        ],
+        "tags": ["Admin Accounting Management"],
         "summary": "Order Accounting listing",
         "description": "Accounting purchases listing",
         "parameters": [
@@ -2262,7 +2208,7 @@
               "type": "string"
             },
             "example": "descending"
-          }, 
+          },
           {
             "name": "page_number",
             "in": "query",
@@ -2326,7 +2272,6 @@
             },
             "example": "Unpaid"
           }
-
         ],
         "responses": {
           "200": {
@@ -2343,7 +2288,7 @@
                         "_id": {
                           "type": "string"
                         },
-                        "payment_status":{
+                        "payment_status": {
                           "type": "string"
                         },
                         "amount": {
@@ -2355,7 +2300,7 @@
                         "currency": {
                           "type": "string"
                         },
-                        "order_number":  {
+                        "order_number": {
                           "type": "string"
                         },
                         "created_at": {
@@ -2382,121 +2327,121 @@
                 },
                 "example": {
                   "data": [
-                      {
-                          "_id": "65b9f39a626a58087a621ba3",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD002",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39b626a58087a621baa",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD003",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39c626a58087a621bb1",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD004",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39d626a58087a621bb8",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD005",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f39d626a58087a621bbf",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD006",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16566dca6bef0d48b868",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD007",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16586dca6bef0d48b876",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD009",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16576dca6bef0d48b86f",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD008",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65ba16596dca6bef0d48b87d",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD010",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      },
-                      {
-                          "_id": "65b9f391626a58087a621b9c",
-                          "payment_status": "Unpaid",
-                          "amount": 100,
-                          "payment": "Stripe",
-                          "currency": "GBP",
-                          "order_number": "OD001",
-                          "created_at": 123456789,
-                          "auction_title": "Retro Relics Auctions",
-                          "name": ""
-                      }
+                    {
+                      "_id": "65b9f39a626a58087a621ba3",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD002",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39b626a58087a621baa",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD003",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39c626a58087a621bb1",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD004",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39d626a58087a621bb8",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD005",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39d626a58087a621bbf",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD006",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16566dca6bef0d48b868",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD007",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16586dca6bef0d48b876",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD009",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16576dca6bef0d48b86f",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD008",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16596dca6bef0d48b87d",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD010",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f391626a58087a621b9c",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD001",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    }
                   ],
                   "total_pages": 21,
                   "total_records": 201,
                   "current_page": 1
-              }
+                }
               }
             }
           },
@@ -2507,10 +2452,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      
+                      "example": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2534,7 +2478,7 @@
         }
       }
     }
-    },
+  },
   "components": {
     "securitySchemes": {
       "BearerAuth": {
@@ -2545,6 +2489,4 @@
       }
     }
   }
-  }
-
-
+}
