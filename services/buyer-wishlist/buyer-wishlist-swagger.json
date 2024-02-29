@@ -32,6 +32,15 @@
               "type": "string"
             },
             "example": "654d13dbbbb8401327bc1196"
+          },
+          {
+            "name": "auction_uid",
+            "in": "query",
+            "description": "auction uid",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65c2294ed2c31913959127d6"
           }
         ],
         "requestBody": {
