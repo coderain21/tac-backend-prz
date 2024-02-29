@@ -24,11 +24,11 @@ class MongoEncoder(json.JSONEncoder):
         return super().default(o)
     
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
-buyer_collection = db[os.environ['BUYER_COLLECTION']]
-wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
+# client = MongoClient(os.environ['MONGO_CLIENT'])
+# db = client[os.environ['DATABASE']]
+# lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
+# buyer_collection = db[os.environ['BUYER_COLLECTION']]
+# wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
 
 def create(event, context):
@@ -60,11 +60,11 @@ def create(event, context):
                 'body': json.dumps({'message': 'Please provide a lot id'})
             }
         lot_id = ObjectId(lot)
-        # client = MongoClient(os.environ['MONGO_CLIENT'])
-        # db = client[os.environ['DATABASE']]
-        # lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
-        # wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
         lot_detail = lot_collection.find_one({'_id': lot_id})
         seller_email = lot_detail['seller_email']
         auction_name = body['auction_name']

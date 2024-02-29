@@ -19,30 +19,36 @@ class MongoEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
-lot_collection = db[os.environ['LOTS_TABLE_NAME']]
-auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+# client = MongoClient(os.environ['MONGO_CLIENT'])
+# db = client[os.environ['DATABASE']]
+# wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
+# lot_collection = db[os.environ['LOTS_TABLE_NAME']]
+# auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 def wishlist_list(event, context):
     try:
-        # try:
-        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-  
+        try:
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            email_address = cognito_data['email']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+        
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
+        lot_collection = db[os.environ['LOTS_TABLE_NAME']]
+        auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+
         data = event['queryStringParameters']
         buyer_id = ObjectId(data.get('buyer_id'))
         print('buyer id', buyer_id)
