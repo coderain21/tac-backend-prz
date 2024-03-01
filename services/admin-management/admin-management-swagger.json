@@ -676,56 +676,65 @@
                 "example": {
                   "sellers": [
                     {
-                      "_id": "65b8d12da6bca79a00f3e48f",
-                      "email_address": "sthuthi+testing1@7edge.com",
-                      "created_at": "2024-01-30 10:36:29.937000"
-                    },
-                    {
-                      "_id": "6554a13beafdea2a0a471da5",
-                      "email_address": "aishwarya@7edge.com",
-                      "created_at": "2023-11-15 10:45:15.291000"
-                    },
-                    {
-                      "_id": "65b8f37337baf0db6af489df",
-                      "email_address": "aishwarya@7edge.com",
-                      "created_at": "2024-01-30 13:02:43.958000"
+                      "_id": "65b79dad9c5418096cc1f868",
+                      "email_address": "anusha.k+admin@7edge.com"
                     },
                     {
                       "_id": "654f664042b81a4af17a0fd8",
                       "email_address": "aishwarya+seller2@7edge.com",
-                      "created_at": "2023-11-11 11:32:16.818000"
-                    },
-                    {
-                      "_id": "64eed436721b55a9e6941c1c",
-                      "email_address": "aishwarya+30@7edge.com",
-                      "created_at": "2023-08-30 05:31:34.125000"
-                    },
-                    {
-                      "_id": "65ba23f552b2af5ffae31e81",
-                      "email_address": "anusha.k+7azenmhz@7edge.com",
-                      "created_at": "2024-01-31 10:41:57.694000"
-                    },
-                    {
-                      "_id": "65ba23604b7bcbcaf824eed5",
-                      "email_address": "anusha.k+7z9ivqr7@7edge.com",
-                      "created_at": "2024-01-31 10:39:28.308000"
+                      "created_at": "2023-11-11 11:32:16.818000",
+                      "full_name": " "
                     },
                     {
                       "_id": "65ba25a197d810c14774c5f5",
                       "email_address": "anusha.k+7bgns16z@7edge.com",
-                      "created_at": "2024-01-31 10:49:05.029000"
+                      "created_at": "2024-01-31 10:49:05.029000",
+                      "full_name": " "
+                    },
+                    {
+                      "_id": "64eed436721b55a9e6941c1c",
+                      "email_address": "aishwarya+30@7edge.com",
+                      "created_at": "2023-08-30 05:31:34.125000",
+                      "full_name": " "
+                    },
+                    {
+                      "_id": "65ba23f552b2af5ffae31e81",
+                      "email_address": "anusha.k+7azenmhz@7edge.com",
+                      "created_at": "2024-01-31 10:41:57.694000",
+                      "full_name": " "
+                    },
+                    {
+                      "_id": "65ba23604b7bcbcaf824eed5",
+                      "email_address": "anusha.k+7z9ivqr7@7edge.com",
+                      "created_at": "2024-01-31 10:39:28.308000",
+                      "full_name": " "
+                    },
+                    {
+                      "_id": "65c0d085be93f335bb2a4414",
+                      "email_address": "anusha.k+subdomain@7edge.com",
+                      "created_at": "2024-02-05 12:11:49.327000",
+                      "full_name": " "
                     },
                     {
                       "_id": "65c0b42f450ef7ab82692287",
                       "email_address": "namratha.shettigar+seller@7edge.com",
-                      "created_at": "2024-02-05 10:10:55.075000"
+                      "created_at": "2024-02-05 10:10:55.075000",
+                      "full_name": " "
                     },
                     {
-                      "_id": "65b79dad9c5418096cc1f868",
-                      "email_address": "anusha.k+admin@7edge.com"
+                      "_id": "65c0b5af03ed5973bf5456c6",
+                      "email_address": "sushiachrya@7edge.com",
+                      "created_at": "2024-02-05 10:17:19.473000",
+                      "full_name": " "
+                    },
+                    {
+                      "_id": "65c4a79894658a6c2d61c5cd",
+                      "email_address": "namratha.shettigar@7edge.com",
+                      "created_at": "2024-02-08 10:06:16.662000",
+                      "full_name": " "
                     }
                   ],
-                  "total_sellers": 21,
+                  "total_sellers": 32,
                   "page_size": 10,
                   "page_number": 1
                 }
