@@ -47,28 +47,31 @@ def update_seller_status(event, context):
         seller_collection = db[os.environ["SELLERS_TABLE"]]
 
         # Extracting params from the request
-        query_params = event.get("queryStringParameters")
-        seller_id = query_params.get("seller_id", None)
-        seller_status = query_params.get("status", None)
-  
-        if seller_id is None:
+        request_body = json.loads(event['body'])
+        seller_id = request_body.get("seller_id", None)
+        seller_status = request_body.get("status")
+        print(seller_id)
+
+        if seller_id is None or seller_id == "" or seller_id == " ":
             return {
-                "statusCode": 404,
+                "statusCode": 422,
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, Seller ID is not provided"})
             }
         
         # Searching seller existance by id
-        seller_detail = seller_collection.find_one({"_id", ObjectId(seller_id)}, { "_id": 1 })
+        seller_detail = seller_collection.find_one({"_id": ObjectId(seller_id)}, {
+            "_id": 1
+        })
         if seller_detail is None:
             return {
-                "statusCode": 404,
+                "statusCode": 422,
                 "headers": headers,
                 "body": json.dumps({"message":"Seller does not exist."}),
             }
         
         # updating the seller status
-        query = {"_id", ObjectId(seller_id)}
+        query = {"_id": ObjectId(seller_id)}
         new_values = {"$set":{"status": seller_status, "updated_at": datetime.datetime.utcnow()}}
         try:
             seller_collection.update_one(query, new_values)
@@ -82,9 +85,10 @@ def update_seller_status(event, context):
             return {
                 "statusCode": 500,
                 "headers": headers,
-                "body": json.dumps({"Update failed, there was an error during update"})
+                "body": json.dumps({"message":"Update failed, there was an error during update"})
             }
-    except:
+    except Exception as e:
+        print(e)
         return {
             "statusCode": 500,
             "headers": headers,

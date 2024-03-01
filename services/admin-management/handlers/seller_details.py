@@ -15,7 +15,7 @@ headers = {
 }
 
 """
-    The `seller_detail` function retrieves a details of a particular seller
+    The `seller_details` function retrieves a details of a particular seller
     :param event: The `event` parameter is a dictionary that contains the input data for the function.
     It includes the query string parameters that are passed to the function. These parameters are used
     to filter and paginate the auction list
@@ -28,11 +28,10 @@ headers = {
     - "headers": a dictionary representing the HTTP headers
     - "body": a JSON string representing the response body
 """
-def seller_detail(event, context): 
+def seller_details(event, context): 
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-            print('email', email_address)
         except:
             return {
                     "statusCode": 403,
@@ -48,6 +47,7 @@ def seller_detail(event, context):
         # Extracting params from the request
         query_parameters = event.get('queryStringParameters')
         seller_id = query_parameters.get('seller_id',None)
+        print(type(seller_id))
         if seller_id is None:
             return {
                 "statusCode": 404,
@@ -59,6 +59,7 @@ def seller_detail(event, context):
         seller_id = ObjectId(seller_id)
         out_fields = {
             "_id": 1,
+            "full_name": 1,
             "first_name": 1,
             "last_name": 1,
             "email_address":1,
@@ -70,18 +71,18 @@ def seller_detail(event, context):
             "website":1,
             "created_at":1,
             "kyc_status": 1,
-            "bvs": 1, #*****
+            "kyb_status": 1, 
             "plan_type": 1,
-            "address_line1": 1,
-            "address_line2": 1,
+            "address_line_1": 1,
+            "address_line_2": 1,
             "city": 1,
             "postal_code": 1,
             "country": 1,
             "country_code":1,
             "about":1
         }
-        seller_detail = seller_collection.find_one({"_id": seller_id}, out_fields)
-        if seller_detail is None:
+        seller_details = seller_collection.find_one({"_id": seller_id}, out_fields)
+        if seller_details is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
@@ -91,7 +92,7 @@ def seller_detail(event, context):
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps(seller_detail, cls=Encoder)
+            "body": json.dumps(seller_details, cls=Encoder)
         }
     except:
         return {
