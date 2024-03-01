@@ -27,7 +27,7 @@ client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 buyer_collection = db[os.environ['BUYER_COLLECTION']]
-wish_list = db[os.environ['TEST']]
+wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
 
 def create(event, context):
