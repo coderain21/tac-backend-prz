@@ -43,9 +43,6 @@ def generate_order_code(number):
 def get_data_from_cart(auction_id,seller_email,buyer_email):
     try:
         # MongoDB configuration
-        print(auction_id)
-        print(seller_email)
-        print(buyer_email)
         results = []
         lot_numbers = []
         client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -56,7 +53,6 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         if cart_data is None:
             return [],[]
         cart_list = list(cart_data)
-        print("cart_data",list(cart_data))
         for lot in cart_list:
             record = {}
             record["bid_amount"] = lot.get("bid_amount")
@@ -69,7 +65,6 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
             record["auction_id"] = lot.get("auction_id")
             record["name"] = lot.get("name")
             record["currency"] = lot.get("currency")
-            print(record)
             results.append(record)
 
         cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
@@ -93,16 +88,18 @@ def calculate_application_fee(amount, plan_type):
     Returns:
         float: The calculated application fee.
     """
-    if plan_type == "Starter":
-        application_fee = amount * 0.06
-    elif plan_type == "Free":
-        application_fee = amount * 0
-    elif plan_type == "Pro":
-        application_fee = amount * 0.09
-    else:
-        application_fee = amount * 0
-    return application_fee
-
+    try:
+        if plan_type == "Starter":
+            application_fee = amount * 0.06
+        elif plan_type == "Free":
+            application_fee = amount * 0
+        elif plan_type == "Pro":
+            application_fee = amount * 0.09
+        else:
+            application_fee = amount * 0
+        return application_fee
+    except BaseException as err:
+        print('err', err)
 
 def generate_client_secret(account_id, amount, currency, application_fee):
     """
@@ -119,17 +116,15 @@ def generate_client_secret(account_id, amount, currency, application_fee):
     """
     try:
         session = stripe.PaymentIntent.create(
-            amount=int(amount*100),
+            amount=amount*100,
             currency=currency,
             automatic_payment_methods={"enabled": True},
             application_fee_amount=int(application_fee*100),
             stripe_account=account_id
         )
-        # print(session)
         return session
     except Exception as err:
-        print(f"Unexpected {err=}, {type(err)=}")
-        raise
+        print('errr', err)
 
 def create_order(insert_data):
     """
@@ -152,9 +147,7 @@ def create_order(insert_data):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         payments_collection = db[os.environ['ORDERS_COLLECTION']]
-        # print(insert_data)
         insert_result = payments_collection.insert_one(insert_data)
-        # print(insert_result)
         client.close()
         if insert_result:
             return insert_result
@@ -206,7 +199,7 @@ def create_intent(event, context):
         body_data = {}
         sub_domain = data.get("domain")
         auction_id = data.get("id")
-        amount = int(data.get("amount"))
+        amount = int(float(data.get("amount")))
         billing = data.get("billing")
         shipping = data.get("shipping")
         time_stamp = int(data.get("timestamp"))
@@ -223,7 +216,6 @@ def create_intent(event, context):
         seller_email = seller_data_of_auction["seller_email"]
         seller_data = get_by_email(
             seller_data_of_auction["seller_email"], os.environ['SELLERS_TABLE'])
-        # print(seller_data)
         if seller_data is None:
             return {
                 "statusCode": 404,
@@ -307,7 +299,6 @@ def create_intent(event, context):
 
         existing_orders_count = orders_collection.count_documents(
             {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
-        print("existing orders",existing_orders_count)
         counter_record = counter_collection.find_one({"auction_id": auction_id,
                                                       "email_address": email_address,
                                                       "seller_email": seller_email,
@@ -323,9 +314,7 @@ def create_intent(event, context):
                 "starting_sequence": last_order_number
             }
             result = counter_collection.insert_one(counter_record)
-        # print(counter_record)
         last_order_number = counter_record["starting_sequence"]+1
-        print("last_order_number", last_order_number)
         update_data = {
             "starting_sequence": last_order_number
         }
@@ -346,8 +335,7 @@ def create_intent(event, context):
         insert_data["name"] = name
 
         #add the order data in orders collection
-        create_order(insert_data)
-        print("latest lot number", last_order_number)
+        orderCreate = create_order(insert_data)
         counter_collection.update_one({"auction_id": auction_id,
                                        "seller_email": seller_email,
                                        "email_address": email_address,
@@ -360,7 +348,6 @@ def create_intent(event, context):
             "body": json.dumps(body_data, cls=Encoder)
         }
     except Exception as err:
-        print(err)
         return {
             "statusCode": 500,
             "headers": headers,
