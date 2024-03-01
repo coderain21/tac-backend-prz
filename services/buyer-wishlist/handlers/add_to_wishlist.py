@@ -22,7 +22,6 @@ class MongoEncoder(json.JSONEncoder):
         if isinstance(o, ObjectId):
             return str(o)
         return super().default(o)
-    
 
 client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]

@@ -1,3 +1,8 @@
+"""
+Module: wishlist_listing
+
+This module provides functionality to list lots from a buyer's wishlist.
+"""
 import json
 import os
 from pymongo import MongoClient
@@ -42,7 +47,7 @@ def wishlist_list(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         # client = MongoClient(os.environ['MONGO_CLIENT'])
         # db = client[os.environ['DATABASE']]
         # wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
