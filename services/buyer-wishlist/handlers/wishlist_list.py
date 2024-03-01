@@ -49,7 +49,7 @@ def wishlist_list(event, context):
         # lot_collection = db[os.environ['LOTS_TABLE_NAME']]
         # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
-        data = event['queryStringParameters']
+        # data = event['queryStringParameters']
         # buyer_id = ObjectId(data.get('buyer_id'))
         # print('buyer id', buyer_id)
 
