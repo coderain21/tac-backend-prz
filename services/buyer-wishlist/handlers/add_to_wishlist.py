@@ -88,7 +88,7 @@ def create(event, context):
                 'body': json.dumps({'message': 'Lot already exist in wishlist'})
             }
         wish_list.insert_one(insert_data)
-        client.close()
+        # client.close()
         return {
             "statusCode": 200,
             "headers": headers,
