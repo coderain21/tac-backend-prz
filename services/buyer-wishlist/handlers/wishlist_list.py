@@ -95,12 +95,12 @@ def wishlist_list(event, context):
         # Execute the aggregation pipeline
         wishlist_with_lot_details = list(wishlist_collection.aggregate(pipeline))
 
-        if not wishlist_with_lot_details:
-            return {
-                'statusCode': 404,
-                'headers': headers,
-                'body': json.dumps({'message': 'Wishlist not found'})
-            }
+        # if not wishlist_with_lot_details:
+        #     return {
+        #         'statusCode': 404,
+        #         'headers': headers,
+        #         'body': json.dumps({'message': 'Wishlist not found'})
+        #     }
 
         response_body = json.dumps({"data": wishlist_with_lot_details}, cls=MongoEncoder)
         return {
