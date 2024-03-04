@@ -32,21 +32,21 @@ auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 def wishlist_list(event, context):
     try:
-        # try:
-        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+            email_address = cognito_data['email']
+            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+                return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
         # client = MongoClient(os.environ['MONGO_CLIENT'])
         # db = client[os.environ['DATABASE']]
@@ -64,7 +64,6 @@ def wishlist_list(event, context):
         #         'headers': headers,
         #         'body': json.dumps({'message': 'Please provide a valid buyer_email'})
         #     }
-        email_address = 'sthuthi+auction@7edge.com'
         pipeline = [
             {"$match": {"email_address": email_address}},
             {"$lookup": {
