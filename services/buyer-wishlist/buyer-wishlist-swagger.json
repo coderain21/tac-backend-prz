@@ -32,6 +32,15 @@
               "type": "string"
             },
             "example": "654d13dbbbb8401327bc1196"
+          },
+          {
+            "name": "auction_uid",
+            "in": "query",
+            "description": "auction uid",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65c2294ed2c31913959127d6"
           }
         ],
         "requestBody": {
@@ -42,11 +51,15 @@
                 "properties": {
                   "auction_name": {
                     "type": "string"
+                  },
+                  "auction_uid": {
+                    "type": "string"
                   }
                 }
               },
               "example":{
-                "auction_name": "test"
+                "auction_name": "test",
+                "auction_uid": "65c2294ed2c31913959127d6"
               }
             }
           }
@@ -121,8 +134,8 @@
   "/remove": {
     "delete": {
       "tags": ["Wishlist"],
-      "summary": "Add to wishlist",
-      "description": "Add to wishlist",
+      "summary": "remove from wishlist",
+      "description": "remove from wishlist",
       "parameters": [
         {
           "name": "lot_id",
@@ -191,6 +204,639 @@
                   "message": {
                     "type": "string",
                     "example": "There was an error "
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/wishlist": {
+    "get": {
+      "tags": ["Wishlist"],
+      "summary": "View the wishlist",
+      "description": "Viewing the wishlist of a buyer",
+      "parameters": [
+        {
+          "name": "buyer_id",
+          "in": "query",
+          "description": "Buyer id of a buyer",
+          "schema": {
+            "type": "string"
+          },
+          "example": "65c9f5123226f499622c5cd4"
+        }
+      ],
+      
+      "responses": {
+        "200": {
+          "description": "Successfully retrieved wishlist",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "lot_details": {
+                          "type": "object",
+                          "properties": {
+                            "_id": {"type": "string"},
+                            "auction_id": {"type": "string"},
+                            "seller_email": {"type": "string"},
+                            "title1": {"type": "string"},
+                            "title2": {"type": "string"},
+                            "description": {"type": "string"},
+                            "starting_price": {"type": "number"},
+                            "low_estimate": {"type": "number"},
+                            "high_estimate": {"type": "number"},
+                            "shipping_details": {"type": "string"},
+                            "current_bid": {"type": "number"},
+                            "tags": {"type": "array", "items": {"type": "string"}},
+                            "images": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {"type": "string"},
+                                  "featured": {"type": "boolean"}
+                                }
+                              }
+                            },
+                            "start_date": {"type": "string", "format": "date-time"},
+                            "end_date": {"type": "number"},
+                            "lot_number": {"type": "number"},
+                            "paddle_number": {"type": "string"},
+                            "top_bidder": {"type": "string"},
+                            "under_bidder": {"type": ["string", "null"]}
+                          }
+                        },
+                        "auction_title": {"type": "string"},
+                        "auction_uid": {"type": "string"},
+                        "currency": {"type": "string"},
+                        "auction_end_date": {"type": "number"}
+                      }
+                    }
+                  }
+                }
+              },
+              "example":{
+                "data": [
+                    {
+                        "lot_details": {
+                            "_id": "65c5c5d9478756350ef5129d",
+                            "auction_id": "A0020",
+                            "seller_email": "sthuthi@7edge.com",
+                            "title1": "Food",
+                            "title2": "",
+                            "description": "<p>gdehged egwef</p>",
+                            "starting_price": 100,
+                            "low_estimate": 0,
+                            "high_estimate": 0,
+                            "shipping_details": "",
+                            "current_bid": 140,
+                            "tags": [
+                                "dddd"
+                            ],
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/ee3e1326-e296-753d-6d12-ecb9d41344c8/food.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "start_date": "2024-02-07T18:30:09.647000+00:00",
+                            "end_date": 1711694244487,
+                            "lot_number": 1,
+                            "paddle_number": "2",
+                            "top_bidder": "Sushi",
+                            "under_bidder": null
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65d32ac2522fa545355dfd55",
+                            "auction_id": "A0074",
+                            "seller_email": "sthuthi@7edge.com",
+                            "title1": "jhdas hjh sandhya ss jkkjk",
+                            "title2": " dsanfbwejeghjkl hj",
+                            "description": "<p>asbbnsadb</p>",
+                            "starting_price": 100,
+                            "low_estimate": 1000,
+                            "high_estimate": 2000,
+                            "shipping_details": "",
+                            "current_bid": 0,
+                            "tags": [
+                                "s"
+                            ],
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/44c07068-0aca-fcee-39dc-02847fb92d8c/alexander-kovacs-NHqLJrlHvDY-uns.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "start_date": "2024-02-19T10:17:49.337000+00:00",
+                            "end_date": 1709795779347,
+                            "lot_number": 1
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65d3144ac7714ff8d6dc26b6",
+                            "auction_id": "A0073",
+                            "seller_email": "sthuthi@7edge.com",
+                            "title1": "sashgdghadg",
+                            "title2": "hadjjdh",
+                            "description": "<p>ahdsjadj</p>",
+                            "starting_price": 100,
+                            "low_estimate": 1000,
+                            "high_estimate": 2000,
+                            "shipping_details": "sahdh",
+                            "current_bid": 110,
+                            "tags": [
+                                "sahd"
+                            ],
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/b68d32ff-7954-6ef3-11f8-32955807d7e3/mohamadreza-khashay-ziubUDopHmc-.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "start_date": 1708332152458,
+                            "end_date": 1708418586235,
+                            "lot_number": 1,
+                            "paddle_number": "1",
+                            "top_bidder": "Sandhyashri s",
+                            "under_bidder": null
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65c2297f494acd6a6fa16d98",
+                            "start_date": 1707222941245.0,
+                            "end_date": 1744263041245.0,
+                            "title1": "Opportunities for Artists",
+                            "title2": "Snowdrops In A Stripey Mug",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 2000,
+                            "low_estimate": 3000,
+                            "high_estimate": 400005,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0005",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 70000,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/f058c729-76e9-a04b-011c-0488c7983eb6/hill.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 2,
+                            "paddle_number": "4",
+                            "top_bidder": "Sthu",
+                            "under_bidder": "65c1bac63a6e5a84e443e565"
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65c2297f494acd6a6fa16d97",
+                            "start_date": 1707222941245.0,
+                            "end_date": 1744263041245.0,
+                            "title1": "Out of the Margins",
+                            "title2": "Sonia Barton",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 100,
+                            "low_estimate": 2000,
+                            "high_estimate": 404000,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0005",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 300000,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/bf0a34e0-4002-9452-69b6-514b62533af9/shop.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 1,
+                            "paddle_number": "4",
+                            "top_bidder": "Sthu",
+                            "under_bidder": "65c1bac63a6e5a84e443e565"
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65dec26a770eed8a2127a544",
+                            "auction_id": "A0012",
+                            "seller_email": "sthuthi+stripe@7edge.com",
+                            "title1": "Royal Oak",
+                            "title2": "Royal Oak",
+                            "description": "<p>Royal Oak Royal Oak Royal Oak</p>",
+                            "starting_price": 100,
+                            "low_estimate": 0,
+                            "high_estimate": 0,
+                            "shipping_details": "",
+                            "current_bid": 110,
+                            "tags": [
+                                "www",
+                                "www",
+                                "www"
+                            ],
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/20536159-0a72-0a90-8b69-35c020af5887/ssa2.jpg",
+                                    "featured": true
+                                },
+                                {
+                                    "url": "DomainName/Auctions/lots/images/4619610a-b030-b815-20a6-49d75e506f2e/w4.jpeg",
+                                    "featured": false
+                                },
+                                {
+                                    "url": "DomainName/Auctions/lots/images/cababc39-2ecb-c8c5-b808-ce8fdb8190e8/w2.jpeg",
+                                    "featured": false
+                                },
+                                {
+                                    "url": "DomainName/Auctions/lots/images/bdf845fb-e1a0-efce-0082-1ff7a4fb6a8a/w3.jpeg",
+                                    "featured": false
+                                },
+                                {
+                                    "url": "DomainName/Auctions/lots/images/972d8367-e322-19fc-81a4-d3ad28c1f93a/w5.jpeg",
+                                    "featured": false
+                                }
+                            ],
+                            "start_date": 1709097636638.0,
+                            "end_date": 1709207382099,
+                            "lot_number": 1,
+                            "paddle_number": "1",
+                            "top_bidder": "",
+                            "under_bidder": null
+                        },
+                        "auction_title": "Royal Oak",
+                        "auction_uid": "65dec2177441cf1f78dd6450",
+                        "currency": "USD",
+                        "auction_end_date": 1709207382099
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65ddda51524429fa9d78908f",
+                            "start_date": "2024-02-26T07:00:24.118000+00:00",
+                            "end_date": 1709202027201,
+                            "title1": "Opportunities for Artists",
+                            "title2": "Snowdrops In A Stripey Mug",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 2000,
+                            "low_estimate": 3000,
+                            "high_estimate": 400005,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0096",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 0,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/446ff9eb-1b83-1445-0830-8895d73d9edc/mak-6-5rajeKe50-unsplash.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 2
+                        },
+                        "auction_title": "Photography",
+                        "auction_uid": "65ddda272a83b0149eb18bd7",
+                        "currency": "INR",
+                        "auction_end_date": 1709202027201
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65ddda51524429fa9d78908e",
+                            "start_date": "2024-02-26T07:00:24.118000+00:00",
+                            "end_date": 1709202027201,
+                            "title1": "Out of the Margins",
+                            "title2": "Sonia Barton",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 1500,
+                            "low_estimate": 2000,
+                            "high_estimate": 404000,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0096",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 1500,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/556c9b1b-e7bb-cd69-a422-8b013447131f/panting2.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 1,
+                            "paddle_number": "1",
+                            "top_bidder": "Sthu",
+                            "under_bidder": null
+                        },
+                        "auction_title": "Photography",
+                        "auction_uid": "65ddda272a83b0149eb18bd7",
+                        "currency": "INR",
+                        "auction_end_date": 1709202027201
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65c2297f494acd6a6fa16d99",
+                            "start_date": 1707222941245.0,
+                            "end_date": 1744263041245.0,
+                            "title1": "Ceramics & Craft",
+                            "title2": "Down Stairs",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 3002,
+                            "low_estimate": 5000,
+                            "high_estimate": 40000,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0005",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 190000,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/0cb42d52-fab2-b683-f4bc-ec4e51a901c0/homeproducts.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 3,
+                            "paddle_number": "2",
+                            "top_bidder": "Sushi",
+                            "under_bidder": "65c9f5123226f499622c5cd4"
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65dddf1522151fd4a0fa82b6",
+                            "start_date": 1708972246815,
+                            "end_date": 1712341846816,
+                            "title1": "Out of the Margins",
+                            "title2": "Sonia Barton",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 1500,
+                            "low_estimate": 2000,
+                            "high_estimate": 404000,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0097",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 0,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/961a0948-0eee-6abc-4d7d-3d9bf15b8384/painting.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 1
+                        },
+                        "auction_title": "Art auction",
+                        "auction_uid": "65ddde65bd45c5431bc44063",
+                        "currency": "USD",
+                        "auction_end_date": 1712341846816
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65c2297f494acd6a6fa16d9a",
+                            "start_date": 1707222941245.0,
+                            "end_date": 1744263041245.0,
+                            "title1": "Human' Nature",
+                            "title2": "New To The Scene",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 4500,
+                            "low_estimate": 6000,
+                            "high_estimate": 50000,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0005",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 8000,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/0f5616a5-eee0-146d-32e9-8645f637c366/hero.jpeg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 4,
+                            "paddle_number": "2",
+                            "top_bidder": "Sushi",
+                            "under_bidder": "65c9f5123226f499622c5cd4"
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65c2297f494acd6a6fa16d9b",
+                            "start_date": 1707222941245.0,
+                            "end_date": 1744263041245.0,
+                            "title1": "The Jaka Project",
+                            "title2": "Father and Child",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 1393,
+                            "low_estimate": 2900,
+                            "high_estimate": 46000,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0005",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 2093,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/b107f4de-ee6f-ec5b-669b-7a3cf6bac7a6/hill.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 5,
+                            "paddle_number": "2",
+                            "top_bidder": "Sushi",
+                            "under_bidder": "65c9f5123226f499622c5cd4"
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65d32aeb522fa545355dfd56",
+                            "auction_id": "A0074",
+                            "seller_email": "sthuthi@7edge.com",
+                            "title1": "asjdhjsajh",
+                            "title2": "",
+                            "description": "<p>sadjhjds</p>",
+                            "starting_price": 200,
+                            "low_estimate": 1000,
+                            "high_estimate": 3000,
+                            "shipping_details": "shdhhj",
+                            "current_bid": 200,
+                            "tags": [
+                                "ds"
+                            ],
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/8344a66c-5dd9-3192-4656-526c71f5e984/mohamadreza-khashay-ziubUDopHmc-.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "start_date": "2024-02-19T10:17:49.337000+00:00",
+                            "end_date": 1709795839347,
+                            "lot_number": 2,
+                            "paddle_number": "1",
+                            "top_bidder": "Sandhyashri s",
+                            "under_bidder": null
+                        },
+                        "auction_title": "The Ceramics & Craft Auction",
+                        "auction_uid": "65c2294ed2c31913959127d6",
+                        "currency": "INR",
+                        "auction_end_date": 1744263041245.0
+                    },
+                    {
+                        "lot_details": {
+                            "_id": "65dddf1522151fd4a0fa82b7",
+                            "start_date": 1708972246815,
+                            "end_date": 1712341846816,
+                            "title1": "Opportunities for Artists",
+                            "title2": "Snowdrops In A Stripey Mug",
+                            "description": "<p>Lorem Ipsum Lorem Ipsum Lorem Ipsum Lorem Ipsum</p>",
+                            "starting_price": 2000,
+                            "low_estimate": 3000,
+                            "high_estimate": 400005,
+                            "shipping_details": "Lorem Ipsum",
+                            "tags": [
+                                "Recommended",
+                                "Paintings"
+                            ],
+                            "auction_id": "A0097",
+                            "seller_email": "sthuthi@7edge.com",
+                            "starting_bid": 0,
+                            "current_bid": 0,
+                            "Top_bidder": "",
+                            "images": [
+                                {
+                                    "url": "DomainName/Auctions/lots/images/be1874fe-8ef4-844e-d3ef-0d668608ac53/art2.jpg",
+                                    "featured": true
+                                }
+                            ],
+                            "lot_number": 2
+                        },
+                        "auction_title": "Art auction",
+                        "auction_uid": "65ddde65bd45c5431bc44063",
+                        "currency": "USD",
+                        "auction_end_date": 1712341846816
+                    }
+                ]
+            }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request",
+          "content": {
+            "application/json": {
+              "example": {
+                "value": {
+                  "message": "Please provide a valid buyer_email"
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Not found",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                    "message": "Wishlist not found"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Internal server Error"
                   }
                 }
               }
