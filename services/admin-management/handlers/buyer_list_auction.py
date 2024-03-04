@@ -24,6 +24,8 @@ def prepend_backslash(text):
 
 
 
+
+
 def buyer_list_auction(event, context):
     try:
         print(event)
@@ -106,12 +108,12 @@ def buyer_list_auction(event, context):
         total_auctions_result = list(dev_auction_register.aggregate(total_auctions_pipeline))
         total_count = total_auctions_result[0]["total_auctions"] if total_auctions_result else 0
 
-        if not result_list:
-            return {
-                "headers": headers,
-                "statusCode": 404,
-                "body": json.dumps({"message":  "Not Found"})
-            }
+        # if not result_list:
+        #     return {
+        #         "headers": headers,
+        #         "statusCode": 404,
+        #         "body": json.dumps({"message":  "Not Found"})
+        #     }
 
         print('data', result_list)
 
@@ -122,6 +124,7 @@ def buyer_list_auction(event, context):
             "body": json.dumps({"data":result_list,"page_number":page_number,"page_size":page_size,"total_records": total_count},cls=Encoder)
         }
     except Exception as err:
+        print('error:', str(err))
         print('error:', str(err))
         return {
             "headers": headers,

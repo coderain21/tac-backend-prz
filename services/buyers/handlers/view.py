@@ -137,34 +137,18 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Timezone is missing for this auction."})
             }
-
-        # Convert time_zone_str to a time zone object using the dictionary
-        # if time_zone_str in time_zones:
-        #     start_time = datetime.fromtimestamp(start_date,
-        #                                          tz=pytz.timezone(time_zone))
-        #     end_time = datetime.fromtimestamp(end_date,
-        #                                       tz=pytz.timezone(time_zone))
+        # if start_time <= current_time < end_time:
+        #     # Auction is currently accepting bids
+        #     updated_status = "Accepting bids"
+        # elif current_time >= end_time:
+        #     # Auction has ended
+        #     updated_status = "Completed"
         # else:
-        #     raise ValueError("Invalid time zone")
-        # Convert start_time and end_time to the auction's timezone
-        # start_time = result.get("start_date")
-        # start_time = auction_timezone.localize(
-        #     start_time)  # Make it offset-aware
-        # end_time = result.get("end_date")
-        # end_time = auction_timezone.localize(end_time)  # Make it offset-aware
+        #     updated_status = result["status"]  # No change in status
 
-        if start_time <= current_time < end_time:
-            # Auction is currently accepting bids
-            updated_status = "Accepting bids"
-        elif current_time >= end_time:
-            # Auction has ended
-            updated_status = "Completed"
-        else:
-            updated_status = result["status"]  # No change in status
-
-        # Update the status in the database
-        collection.update_one({"_id": auction_id}, {
-                              "$set": {"status": updated_status}})
+        # # Update the status in the database
+        # collection.update_one({"_id": auction_id}, {
+        #                       "$set": {"status": updated_status}})
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         # client.close()
@@ -194,7 +178,7 @@ def view(event, context):
                     "body": json.dumps({"message": "Invalid passcode.",
                                         "data": data})
                 }
-        result["status"] = updated_status
+        # result["status"] = updated_status
         del result["passcode"]
         if domain_data is not None:
             result["sub_domain"] = domain_data["subdomain"]
