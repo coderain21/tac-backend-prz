@@ -84,7 +84,9 @@ def wishlist_list(event, context):
                 "_id": 0,
                 "lot_details":1,
                 "auction_title": "$auction_details.title",
-                "auction_uid": "$auction_details._id"
+                "auction_uid": "$auction_details._id",
+                "currency": "$auction_details.currency",
+                "auction_end_date": "$auction_details.end_date",
             }}
         ]
 
