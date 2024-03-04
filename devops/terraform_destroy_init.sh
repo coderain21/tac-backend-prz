@@ -66,7 +66,7 @@ cd ..
 
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
-terraform -chdir=devops/redis init && terraform -chdir=devops/redis destroy -auto-approve & terraform -chdir=devops/redis init && terraform -chdir=devops/redis destroy -auto-approve
+terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve & terraform -chdir=devops/redis init && terraform -chdir=devops/redis destroy -auto-approve
 terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/kms init && terraform -chdir=devops/kms destroy -auto-approve 
 terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve & terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve 
 terraform -chdir=devops/admin_web_application init && terraform -chdir=devops/admin_web_application destroy -auto-approve & terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
