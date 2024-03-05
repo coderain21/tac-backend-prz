@@ -75,7 +75,11 @@ const BidSchema = new Schema({
     currency: {
         type: String,
         trim: true,
-    }
+    },
+    location: {
+        type: String,
+        trim: true,
+    },
 
 })
 

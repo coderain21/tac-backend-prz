@@ -28,7 +28,7 @@ headers = {
     - "headers": a dictionary representing the HTTP headers
     - "body": a JSON string representing the response body
 """
-def seller_details(event, context): 
+def seller_details(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -54,7 +54,6 @@ def seller_details(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, Seller ID is not provided"})
             }
-        
         # Fetching seller details
         seller_id = ObjectId(seller_id)
         out_fields = {
@@ -88,7 +87,6 @@ def seller_details(event, context):
                 "headers": headers,
                 "body": json.dumps({"message":"Seller is not found"})
             }
-        
         return {
             "statusCode": 200,
             "headers": headers,
