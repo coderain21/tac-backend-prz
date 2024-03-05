@@ -30,7 +30,7 @@ headers = {
     - "headers": a dictionary representing the HTTP headers
     - "body": a JSON string representing the response body
 """
-def update_seller_status(event, context): 
+def update_seller_status(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -40,7 +40,6 @@ def update_seller_status(event, context):
                     "headers": headers,
                     "body": json.dumps({"message": "You do not have access to perform this API action"})
                 }
-        
         #  Connecting to MongoDB using PyMongo
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
@@ -58,7 +57,6 @@ def update_seller_status(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, Seller ID is not provided"})
             }
-        
         # Searching seller existance by id
         seller_detail = seller_collection.find_one({"_id": ObjectId(seller_id)}, {
             "_id": 1
@@ -69,7 +67,6 @@ def update_seller_status(event, context):
                 "headers": headers,
                 "body": json.dumps({"message":"Seller does not exist."}),
             }
-        
         # updating the seller status
         query = {"_id": ObjectId(seller_id)}
         new_values = {"$set":{"status": seller_status, "updated_at": datetime.datetime.utcnow()}}

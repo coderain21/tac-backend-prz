@@ -89,7 +89,6 @@ def list_sellers(event, context):
         if 'queryStringParameters' in event:
             if 'page_number' in event['queryStringParameters']:
                 page_number = int(event['queryStringParameters']['page_number'])
-                
         # Total seller count
         total_sellers= seller_collection.count_documents(search_query)
 
