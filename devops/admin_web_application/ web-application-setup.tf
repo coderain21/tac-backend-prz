@@ -61,6 +61,9 @@ locals {
 locals {
   s3_origin_id = "myS3Origin"
 }
+locals {
+  computed_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "admin.${data.external.env.result["DOMAIN"]}" : "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"
+}
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
@@ -73,7 +76,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "Some comment"
   default_root_object = "index.html"
 
-  aliases = ["${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"]
+  aliases = [local.computed_variable]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -123,7 +126,7 @@ data "aws_route53_zone" "domain_zone" {
 }
 
 resource "aws_route53_record" "my_cname" {
-  name    = "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
+  name    = local.computed_variable # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -150,7 +153,7 @@ resource "aws_ssm_parameter" "distribution_id" {
 resource "aws_ssm_parameter" "application_url" {
   name  = "ADMIN_APPLICATION_URL"
   type  = "String"
-  value = "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"
+  value = local.computed_variable
   provider = aws.deployment-eu
   overwrite = true
 }

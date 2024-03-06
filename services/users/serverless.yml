@@ -17,8 +17,8 @@ provider:
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    COGNITO_USER_POOL_ID: { Ref: SellerUsers }
+    COGNITO_SELLER_CLIENT_ID: { Ref: SellerUsersClient } 
     REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -52,15 +52,6 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
     FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${self:provider.stage}-forgot-password
-      # Fn::Join:
-      #   - ":"
-      #   - - "arn"
-      #     - "aws"SendTemplatedEmail
-      #     - "mobiletargeting"
-      #     - !Ref "AWS::Region"
-      #     - !Ref "AWS::AccountId"
-      #     - "templates/${self:provider.stage}-forgot-password"
-      #     - EMAIL
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     LEVEL_NAME: ${ssm:LEVEL_NAME}
@@ -138,14 +129,12 @@ functions:
         - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
         - ${ssm:SUBNET_ID}
+    events:
+        - cognitoUserPool:
+            pool: ${opt:stage, self:provider.stage}-indyauction-seller
+            trigger: PreSignUp
+            existing: true
   
-    # events:
-    #   - cognitoUserPool:
-    #       pool: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
-    #       trigger: PreSignUp
-    #       existing: true
-   
-
 
   # # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
   # cognito-post-signup-confirmation-trigger:
@@ -715,8 +704,6 @@ resources:
             - Priority: 1
               Name: admin_only
     
-    
-    
     GoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -738,7 +725,6 @@ resources:
         GroupName: "seller"
         UserPoolId: { Ref: SellerUsers }
                 
-    
     FacebookAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -753,8 +739,6 @@ resources:
           authorize_scopes: "email"
         UserPoolId: { Ref: SellerUsers }
     
-    
-    
     SellerUsersDomain:
       Type: "AWS::Cognito::UserPoolDomain"
       Properties:
@@ -763,6 +747,9 @@ resources:
  
     SellerUsersClient:
       Type: AWS::Cognito::UserPoolClient
+      DependsOn: 
+        - SellerGoogleAuth
+        - SellerFacebookAuth
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
@@ -804,7 +791,6 @@ resources:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
-
 
     AdminUsersClient:
       Type: AWS::Cognito::UserPoolClient
@@ -848,7 +834,6 @@ resources:
           IdToken: minutes
           RefreshToken: days
 
- 
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:

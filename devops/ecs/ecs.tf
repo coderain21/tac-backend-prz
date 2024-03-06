@@ -61,7 +61,7 @@ data "aws_subnets" "default" {
 
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE"]
+  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-eu
 }
@@ -96,6 +96,13 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 EOF
 }
 
+resource "aws_iam_policy_attachment" "stepfunctions_full_access" {
+  name       = "stepfunctions-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
+}
+
+
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs-task-role"
   provider = aws.deployment-eu
@@ -123,6 +130,11 @@ resource "aws_iam_role" "ecs_task_role" {
 }
 EOF
 }
+resource "aws_iam_policy_attachment" "stepfunctions_full_access_task_role" {
+  name       = "stepfunctions-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
+}
 
 resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
   role       = aws_iam_role.ecs_task_execution_role.name
@@ -134,7 +146,32 @@ resource "aws_iam_role_policy_attachment" "task_s3" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   provider = aws.deployment-eu
 }
+# Attach CloudWatch Logs full access policy
+resource "aws_iam_policy_attachment" "cloudwatch_logs_full_access_task_role" {
+  name       = "cloudwatch-logs-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
 
+# Attach CloudWatch full access policy
+resource "aws_iam_policy_attachment" "cloudwatch_full_access_task_role" {
+  name       = "cloudwatch-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+}
+# Attach CloudWatch Logs full access policy
+resource "aws_iam_policy_attachment" "cloudwatch_logs_full_access_task_execution_role" {
+  name       = "cloudwatch-logs-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
+
+# Attach CloudWatch full access policy
+resource "aws_iam_policy_attachment" "cloudwatch_full_access_task_execution_role" {
+  name       = "cloudwatch-full-access-attachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+}
 
 # Security Group for loadbalancer
 resource "aws_security_group" "websocket-security-group" {

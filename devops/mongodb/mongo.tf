@@ -15,7 +15,7 @@ provider "aws" {
 #AWS Provider with profile Stage account
 provider "aws" {
   region = data.external.env.result["REGION"]
-  alias = "deployment-us"   # Specify a default AWS region here
+  alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${data.external.env.result["STAGE"]}"
 }
 
@@ -23,7 +23,7 @@ provider "aws" {
 resource "aws_subnet" "mongodb_subnet" {
   vpc_id     = aws_default_vpc.def_vpc.id
   cidr_block = "172.31.96.0/20"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 #######################
@@ -31,7 +31,7 @@ resource "aws_subnet" "mongodb_subnet" {
 resource "aws_key_pair" "my_key"{
     key_name = "tf-key-pair"
     public_key = tls_private_key.rsa.public_key_openssh
-    provider = aws.deployment-us
+    provider = aws.deployment-eu
 }
 resource "tls_private_key" "rsa"{
     algorithm = "RSA"
@@ -53,13 +53,13 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
     name  = "tls"
     value = "disabled"
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
 resource "aws_eip" "nat_gateway" {
   vpc = true
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_nat_gateway" "nat_gateway" {
@@ -68,7 +68,7 @@ resource "aws_nat_gateway" "nat_gateway" {
   tags = {
     "Name" = "NatGateway"
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 output "nat_gateway_ip" {
@@ -81,29 +81,29 @@ resource "aws_route_table" "instance" {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_route_table_association" "instance" {
   subnet_id = aws_subnet.mongodb_subnet.id
   route_table_id = aws_route_table.instance.id
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 data "aws_availability_zones" "available" {
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   }
 
 resource "aws_default_subnet" "default_az1" {
   availability_zone = data.aws_availability_zones.available.names[0]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
   instance_class     = "db.t3.medium"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
@@ -118,7 +118,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   master_username         = "${data.external.env.result["MONGO_USERNAME"]}"
   master_password         = "${data.external.env.result["MONGO_PASSWORD"]}"
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
@@ -148,7 +148,7 @@ resource "aws_security_group" "ssh_sg" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
@@ -176,12 +176,12 @@ resource "aws_security_group" "ssh_sg_1" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_iam_role" "ssm_role" {
   name = "ssm-role-ec2"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -200,23 +200,23 @@ resource "aws_iam_role" "ssm_role" {
 resource "aws_iam_role_policy_attachment" "ssm_core_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   role       = aws_iam_role.ssm_role.name
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_iam_role_policy_attachment" "ssm_full_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
   role       = aws_iam_role.ssm_role.name
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 resource "aws_iam_role_policy_attachment" "s3_cognito_full_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonCognitoPowerUser"
   role       = aws_iam_role.ssm_role.name
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   role       = aws_iam_role.ssm_role.name
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 # Create an EC2 instance
@@ -225,7 +225,7 @@ resource "aws_instance" "ssh_tunnel" {
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   # User data to create the SSH tunnel
   user_data = <<-EOF
               #!/bin/bash
@@ -244,19 +244,19 @@ resource "aws_instance" "ssh_tunnel" {
 }
 resource "aws_iam_instance_profile" "ssm_profile" {
   name = "ssm-role-ec2"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   role = aws_iam_role.ssm_role.name
 }
 resource "aws_eip" "example" {
   instance = aws_instance.ssh_tunnel.id # Replace with your EC2 instance ID
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_ssm_parameter" "documentdb" {
   name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
   value = "mongodb://${data.external.env.result["MONGO_USERNAME"]}:${data.external.env.result["MONGO_PASSWORD"]}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${data.external.env.result["STAGE"]}?authMechanism=SCRAM-SHA-1&authSource=${data.external.env.result["STAGE"]}&retryWrites=false"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true
 }
 
@@ -264,7 +264,7 @@ resource "aws_ssm_parameter" "subnet_id" {
   name  = "SUBNET_ID"
   type  = "String"
   value = aws_subnet.mongodb_subnet.id
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true
 }
 
@@ -272,18 +272,18 @@ resource "aws_ssm_parameter" "security_group_id" {
   name  = "SECURITY_GROUP_ID"
   type  = "String"
   value = aws_security_group.ssh_sg_1.id
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true
 }
 
 resource "aws_default_vpc" "def_vpc"{
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "mongodb-username" {
   name  = "MONGO_USERNAME"
   type  = "String"
   value = data.external.env.result["MONGO_USERNAME"]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true
 }
 
@@ -291,14 +291,14 @@ resource "aws_ssm_parameter" "mongodb-password" {
   name  = "MONGO_PASSWORD"
   type  = "String"
   value = data.external.env.result["MONGO_PASSWORD"]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true
 }
 resource "aws_ssm_parameter" "ec2_instance_id" {
   name  = "EC_INSTANCE_ID"
   type  = "String"
   value = resource.aws_instance.ssh_tunnel.id
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true
 }
 output "connection_details" {
