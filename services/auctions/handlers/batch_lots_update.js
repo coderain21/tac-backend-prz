@@ -1,10 +1,15 @@
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
 /* eslint-disable camelcase */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-undef */
-const { StepFunctions, config } = require('aws-sdk')
 const redis = require('redis')
+const request = require('request')
+const { StepFunctions, config } = require('aws-sdk')
+
 const mongodbHelper = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
 
@@ -87,7 +92,39 @@ async function findAndUpdateTime(lotInformation, client) {
             // recent_extended_time: recentExtendedTime,
         }
         const updateRedis = await multi.hSet('lot', bidKey, JSON.stringify(updateRequest))
+        let afterUpdateLots = await client.hGet('lot', bidKey)
+        afterUpdateLots = JSON.parse(existingRecord)
+
         const responses = await multi.exec()
+        const payload = {
+            lots: afterUpdateLots,
+        }
+        const headersList = {
+            Accept: '*/*',
+            'User-Agent': 'API TEST',
+            'Content-Type': 'application/json',
+        }
+
+        const reqUrl = `${process.env.SOCKET_URL}/notification`
+        request.post({
+            url: reqUrl,
+            body: JSON.stringify(payload),
+            headers: headersList,
+        }, (error, response, body) => {
+            if (error) {
+                console.error('Error:', error)
+            } else {
+                try {
+                    const responseData = JSON.parse(body)
+                    console.log('responseData', responseData)
+                    // Handle the successful response
+                    // Your logic here
+                } catch (parseError) {
+                    console.error('Error parsing response:', parseError)
+                }
+            }
+        })
+
         console.log('#######', JSON.stringify(responses))
     } catch (err) {
         console.log(err)
