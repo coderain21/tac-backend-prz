@@ -208,7 +208,7 @@ def update_auction(event, context):
                     QueueUrl='https://sqs.eu-west-2.amazonaws.com/259943215050/dev-bulk-lots-update',
                     Entries=[
                         {'Id': str(uuid.uuid4()), 'MessageBody': 'update status', 'MessageAttributes':
-                        {'item': {'DataType': 'String', 'StringValue': json.dumps(item)},
+                        {'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                         'auction': {'DataType': 'String', 'StringValue': auction_record_str,
                         },
                         'type': {'DataType': 'String', 'StringValue':'published'},

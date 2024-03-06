@@ -1,17 +1,14 @@
-/* eslint-disable import/no-unresolved */
-/* eslint-disable import/extensions */
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
 /* eslint-disable camelcase */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-undef */
-const redis = require('redis')
-const request = require('request')
 const { StepFunctions, config } = require('aws-sdk')
-
+const redis = require('redis')
 const mongodbHelper = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
+
+mongodbHelper.connect()
+const request = require('request')
 
 config.update({ region: 'eu-west-2' })
 
@@ -24,6 +21,7 @@ async function startExecution(executionARN, lots) {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),
     }
+
     return new Promise((resolve, reject) => {
         stepfunctions.startExecution(params, async (error, data) => {
             if (error) {
@@ -41,24 +39,30 @@ async function startExecution(executionARN, lots) {
 }
 
 async function stopExecutions(executionArn) {
-    console.log('INSIDE STOP: ', executionArn)
-    const stepFunctions = new StepFunctions()
-    const params = {
-        executionArn,
-        cause: 'User initiated stop',
-    }
-    return new Promise((resolve, reject) => {
-        stepFunctions.stopExecution(params, async (error, data) => {
-            console.log('errr', error, data)
-            if (error) {
-                reject(error)
-            }
-            if (data) {
-                resolve(data)
-            }
-            resolve({ status: false })
+    try {
+        console.log('INSIDE STOP: ')
+        const stepFunctions = new StepFunctions()
+        const params = {
+            executionArn,
+            cause: 'User initiated stop',
+        }
+        console.log('params', params)
+        return new Promise((resolve, reject) => {
+            stepFunctions.stopExecution(params, async (error, data) => {
+                console.log('errr', error, data)
+                if (error) {
+                    reject(error)
+                }
+                if (data) {
+                    console.log('asdf')
+                    resolve(data)
+                }
+                resolve({ status: false })
+            })
         })
-    })
+    } catch (err) {
+        console.log('errrireds', err)
+    }
 }
 
 /*
@@ -75,7 +79,6 @@ A socket event is emitted to join a bid room, and the function returns true on s
 async function findAndUpdateTime(lotInformation, client) {
     try {
         lotInformation.initial_end_time = lotInformation.end_date
-        console.log('client', client)
         if (!client.isOpen) {
             await client.connect()
         }
@@ -86,18 +89,20 @@ async function findAndUpdateTime(lotInformation, client) {
         const get_lot = JSON.parse(existingRecord)
         const updateRequest = {
             ...get_lot,
-            // lot_end_date: lotInformation.lot_end_time,
+            lot_end_date: lotInformation.lot_end_time,
             lot_extended: true,
             end_date: lotInformation.lot_end_time,
-            // recent_extended_time: recentExtendedTime,
         }
+        console.log('updateRequest', updateRequest)
         const updateRedis = await multi.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        let afterUpdateLots = await client.hGet('lot', bidKey)
-        afterUpdateLots = JSON.parse(existingRecord)
-
+        console.log('updateRedis', updateRedis)
+        //  let afterUpdateLots = await multi.hGet('lot', bidKey)
+        //  console.log('afterUpdateLots', afterUpdateLots)
+        // afterUpdateLots = JSON.parse(existingRecord)
         const responses = await multi.exec()
+
         const payload = {
-            lots: afterUpdateLots,
+            lots: updateRequest,
         }
         const headersList = {
             Accept: '*/*',
@@ -106,26 +111,40 @@ async function findAndUpdateTime(lotInformation, client) {
         }
 
         const reqUrl = `${process.env.SOCKET_URL}/notification`
-        request.post({
-            url: reqUrl,
-            body: JSON.stringify(payload),
-            headers: headersList,
-        }, (error, response, body) => {
-            if (error) {
-                console.error('Error:', error)
-            } else {
-                try {
-                    const responseData = JSON.parse(body)
-                    console.log('responseData', responseData)
-                    // Handle the successful response
-                    // Your logic here
-                } catch (parseError) {
-                    console.error('Error parsing response:', parseError)
+        console.log('request payload', payload)
+        // request.post({
+        //     url: reqUrl,
+        //     body: JSON.stringify(payload),
+        //     headers: headersList,
+        // }, (error, response, body) => {
+        //     console.log('errresss', error, response)
+        //     if (error) {
+        //         console.error('Error:', error)
+        //     } else {
+        //         try {
+        //             const responseData = JSON.parse(body)
+        //             console.log('responseData', responseData)
+        //             // Handle the successful response
+        //             // Your logic here
+        //         } catch (parseError) {
+        //             console.error('Error parsing response:', parseError)
+        //         }
+        //     }
+        // })
+        return new Promise((resolve, reject) => {
+            request({
+                method: 'POST',
+                url: reqUrl,
+                headers: headersList,
+                body: JSON.stringify(payload),
+            }, (error, response, body) => {
+                console.log('errrres', error, response)
+                if (error) reject(error)
+                else {
+                    resolve(response)
                 }
-            }
+            })
         })
-
-        console.log('#######', JSON.stringify(responses))
     } catch (err) {
         console.log(err)
     }
@@ -139,20 +158,22 @@ module.exports.handler = async (event) => {
         const lotsString = firstRecord.messageAttributes.lots.stringValue
         const auctionString = firstRecord.messageAttributes.auction.stringValue
         const type = firstRecord.messageAttributes.type.stringValue
-        console.log('fsas', firstRecord, lotsString, auctionString, type)
         // Parsing the JSON strings to JavaScript objects
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
         const client = await redis.createClient({
-            url: process.env.REDIS_CONNECTION_URL,
+            url: 'redis://websocket-redis.z4q2as.ng.0001.euw2.cache.amazonaws.com:6379',
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const currentTimeEpoch = Date.now()
 
         if (!client.isOpen) {
             await client.connect()
         }
         if (type === 'update') {
+            console.log('entering')
             const stepFunctionEnd = []
             const getAllArns = await mongodbHelper.getAllExecutionArn(auctionDetails, StepFunctionArn)
+            console.log('getAllArns', getAllArns)
             for (const item of getAllArns) {
                 const executionArn = item.arn
                 stepFunctionEnd.push(stopExecutions(executionArn))
@@ -164,11 +185,11 @@ module.exports.handler = async (event) => {
             // Start the new execution
             const startNewExecution = []
             for (const item of auctionLots) {
-                // item.lot_end_time = item.end_date + extend_time
+                item.lot_end_time = item.end_date + extend_time
                 if (item.end_date > currentTimeEpoch) {
                     const currentTimeEpoch = Date.now()
                     if (item.end_date > currentTimeEpoch) {
-                        startNewExecution.push(startExecution(process.env.LOT_PUBLISHED_ARN, item))
+                        startNewExecution.push(startExecution('arn:aws:states:eu-west-2:259943215050:stateMachine:dev-lot-published', item))
                     }
                 }
             }
@@ -176,27 +197,12 @@ module.exports.handler = async (event) => {
             // Code extends in Redis cache and send extension alerts
             const promiseList = []
             for (const item of auctionLots) {
-                // item.lot_end_time = item.end_date + extend_time
-                item.recent_extended_time = currentTimeEpoch
+                item.lot_end_time = item.end_date + extend_time
                 if (item.end_date > currentTimeEpoch) {
                     promiseList.push(findAndUpdateTime(item, client))
                 }
             }
             await Promise.all(promiseList)
-        }
-        if (type === 'published') {
-            // Start the new execution
-            const startNewExecution = []
-            for (const item of auctionLots) {
-                // item.lot_end_time = item.end_date + extend_time
-                if (item.end_date > currentTimeEpoch) {
-                    const currentTimeEpoch = Date.now()
-                    if (item.end_date > currentTimeEpoch) {
-                        startNewExecution.push(startExecution(process.env.LOT_PUBLISHED_ARN, item))
-                    }
-                }
-            }
-            await Promise.all(startNewExecution)
         }
     } catch (error) {
         console.log('err', error)
