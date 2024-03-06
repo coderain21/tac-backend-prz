@@ -361,6 +361,9 @@ resources:
 
     BuyersClient:
       Type: AWS::Cognito::UserPoolClient
+      DependsOn: 
+        - GoogleAuth
+        - FacebookAuth
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
