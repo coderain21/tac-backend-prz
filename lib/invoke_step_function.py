@@ -57,6 +57,7 @@ def invoke_state_machine_for_auction_end(invocation_params, step_function_arn=No
 
 def update_redis_data(auction_record, item): 
     try:
+        pipeline = redis_client.pipeline()
         start_date_timestamp = auction_record['start_date'] / 1000
         date_time = datetime.utcfromtimestamp(start_date_timestamp)
         iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
@@ -77,22 +78,23 @@ def update_redis_data(auction_record, item):
             'end_date': item['end_date'],
         }
 
-        cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
+        cache_update = pipeline.hset('lot', bid_key, json.dumps(update_request))
+        pipeline.execute()
         getArn = collection.find_one({"lot_id": str(item['_id'])})
-        
         executionArn = getArn['arn']
-        response = client_step_function.stop_execution(
+
+        response1 = client_step_function.stop_execution(
             executionArn = executionArn,
             cause = 'User initiated stop'
         )
         lots = redis_client.hgetall('lot')
         updatedLot = [json.loads(bidder) for bidder in lots.values() if json.loads(bidder)['_id'] == lot_id]
-        response = client_step_function.start_execution(
+        response2 = client_step_function.start_execution(
             stateMachineArn= os.environ['STATE_MACHINE_LOT_ARN'],
             input= json.dumps(updatedLot[0], cls= Encoder)
         )
         update_data = {
-            "arn": response['executionArn']
+            "arn": response2['executionArn']
         }
 
         collection.update_one(
@@ -112,6 +114,7 @@ def update_redis_data(auction_record, item):
         response = requests.request("post", req_url, data=json.dumps(payload, cls= Encoder),  headers=headersList)        
         response.raise_for_status()  # Raise an error for bad responses (4xx and 5xx)
         response_data = response.json()
+        
         return True
     except Exception as e:
         print(e)
