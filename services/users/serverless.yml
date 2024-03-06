@@ -65,6 +65,10 @@ provider:
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     DEFAULT_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    SELLER_COGNITO_AUTH_ARN:
+      Fn::GetAtt:
+        - SellerUsers
+        - Arn  
     
     
   http:
