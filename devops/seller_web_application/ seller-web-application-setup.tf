@@ -70,6 +70,9 @@ locals {
 locals {
   computed_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "seller.${data.external.env.result["DOMAIN"]}" : "${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
 }
+locals {
+  computed_domain_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "www" : "www-${data.external.env.result["STAGE"]}"
+}
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
@@ -173,7 +176,7 @@ resource "aws_ssm_parameter" "dashboard_application_url" {
 resource "aws_ssm_parameter" "default_subdomain" {
   name  = "DEFAULT_SUB_DOMAIN"
   type  = "String"
-  value = "www-${data.external.env.result["STAGE"]}"
+  value = local.computed_domain_variable
   provider = aws.deployment-eu
   overwrite = true
 }
