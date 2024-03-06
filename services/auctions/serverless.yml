@@ -388,10 +388,18 @@ functions:
     layers:
       - ${ssm:COMMON_LIB_ARN}
 
-  send-email_auction:
-    handler: handlers/auto_completion_bid.handler
+  # send-email_auction:
+  #   handler: handlers/auto_completion_bid.handler
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+
+  sqs-lot-update:
+    handler: handlers/batch_lots_update.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: arn:aws:sqs:eu-west-2:259943215050:dev-bulk-lots-update
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
@@ -441,6 +449,12 @@ resources:
       Properties:
         QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
+
+        
+    updateLotsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter
