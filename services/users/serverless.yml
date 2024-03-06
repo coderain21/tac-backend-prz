@@ -67,7 +67,7 @@ provider:
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     SELLER_COGNITO_AUTH_ARN:
       Fn::GetAtt:
-        - SellerUsers
+        - { Ref: SellerUsers }
         - Arn  
     
     
@@ -254,7 +254,10 @@ functions:
             path: /{email}
             method: GET
             authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn  
 
 
   update-profile:
@@ -272,7 +275,10 @@ functions:
               path: /{email}
               method: PATCH
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                arn: 
+                  Fn::GetAtt:
+                    - { Ref: SellerUsers }
+                    - Arn 
 
   generate_token:
     handler: handlers/generate.generate_token
@@ -291,7 +297,10 @@ functions:
           path: /generate
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
 
   kyc_webhook:
     handler: handlers/kyc_webhook.kyc_webhook
@@ -326,7 +335,10 @@ functions:
               path: /password-update/{email}
               method: PATCH
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                arn: 
+                 Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
 
   update-plans:
         handler: handlers/update_plan.updatePlan
@@ -343,7 +355,10 @@ functions:
               path: /update-plan/{email}
               method: PATCH
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                arn: 
+                  Fn::GetAtt:
+                    - { Ref: SellerUsers }
+                    - Arn 
   
   kyb_generate_token:
     handler: handlers/kyb_generate.generate_token
@@ -362,7 +377,10 @@ functions:
           path: /kyb-generate
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
 
   split_payment:
     handler: handlers/split_payment.splitPayment
@@ -380,7 +398,10 @@ functions:
           path: /payment-intent
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
     
   seller_sub_domain:
     handler: handlers/seller_domain.create_subdomain
@@ -399,7 +420,10 @@ functions:
           path: /seller-sub-domain
           method: post
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
 
   disconnect_account:
     handler: handlers/stripe_disconnect.disconnect_account
@@ -417,7 +441,10 @@ functions:
           path: /stripe
           method: patch
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
 
   stripe-connect:
     handler: handlers/create.create
@@ -435,7 +462,10 @@ functions:
             path: /stripe
             method: GET
             authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: 
+                Fn::GetAtt:
+                  - { Ref: SellerUsers }
+                  - Arn 
 
   stripe-webhook:
       handler: handlers/stripe_webhook.create
@@ -454,7 +484,10 @@ functions:
               path: /stripe_webhook_trigger
               method: any
               # authorizer:
-              #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              #   arn: 
+                # Fn::GetAtt:
+                #     - SellerUsers
+                #     - Arn 
 
 
 resources:
