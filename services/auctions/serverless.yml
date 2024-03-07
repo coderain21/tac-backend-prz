@@ -42,12 +42,12 @@ provider:
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     CDN_LINK: ${ssm:CDN_URL}
     BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
-    STATE_MACHINE_LOT_ARN:  ${ssm:STATE_MACHINE_LOT_ARN}
+    STATE_MACHINE_LOT_ARN:  arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${opt:stage}-lot-published
     REDIS_URL: ${ssm:REDIS_URL}
-    STATE_MACHINE_AUCTION_ARN: ${ssm:STATE_MACHINE_AUCTION_ARN}
+    STATE_MACHINE_AUCTION_ARN: arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${opt:stage}-auction-ended
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
-    SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
+    SQS_QUEUE_ARN: arn:aws:states:${AWS::Region}:${AWS::AccountId}:auto-completion-email-${opt:stage}.fifo
     QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
