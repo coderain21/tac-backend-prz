@@ -67,8 +67,8 @@ provider:
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     SELLER_COGNITO_AUTH_ARN:
       Fn::GetAtt:
-        - { Ref: SellerUsers }
-        - Arn  
+        - SellerUsers
+        - Arn 
     
     
   http:
@@ -254,7 +254,8 @@ functions:
             path: /{email}
             method: GET
             authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}" 
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
 
   update-profile:
@@ -272,7 +273,8 @@ functions:
               path: /{email}
               method: PATCH
               authorizer:
-                arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   generate_token:
     handler: handlers/generate.generate_token
@@ -291,7 +293,8 @@ functions:
           path: /generate
           method: get
           authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+            type: COGNITO_USER_POOLS
+            authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   kyc_webhook:
     handler: handlers/kyc_webhook.kyc_webhook
@@ -326,7 +329,8 @@ functions:
               path: /password-update/{email}
               method: PATCH
               authorizer:
-                arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   update-plans:
         handler: handlers/update_plan.updatePlan
@@ -343,7 +347,8 @@ functions:
               path: /update-plan/{email}
               method: PATCH
               authorizer:
-                arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
   
   kyb_generate_token:
     handler: handlers/kyb_generate.generate_token
@@ -362,7 +367,8 @@ functions:
           path: /kyb-generate
           method: get
           authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+            type: COGNITO_USER_POOLS
+            authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   split_payment:
     handler: handlers/split_payment.splitPayment
@@ -380,7 +386,8 @@ functions:
           path: /payment-intent
           method: get
           authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+            type: COGNITO_USER_POOLS
+            authorizerId: { Ref: MyApiGatewayAuthorizer }
     
   seller_sub_domain:
     handler: handlers/seller_domain.create_subdomain
@@ -399,7 +406,8 @@ functions:
           path: /seller-sub-domain
           method: post
           authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+            type: COGNITO_USER_POOLS
+            authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   disconnect_account:
     handler: handlers/stripe_disconnect.disconnect_account
@@ -417,7 +425,8 @@ functions:
           path: /stripe
           method: patch
           authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+            type: COGNITO_USER_POOLS
+            authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   stripe-connect:
     handler: handlers/create.create
@@ -435,7 +444,8 @@ functions:
             path: /stripe
             method: GET
             authorizer:
-              arn: !Sub "arn:aws:cognito-idp:eu-west-2:${AWS::AccountId}:userpool/${COGNITO_USER_POOL_ID}"
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   stripe-webhook:
       handler: handlers/stripe_webhook.create
@@ -710,7 +720,18 @@ resources:
           RecoveryMechanisms:
             - Priority: 1
               Name: admin_only
-    
+    MyApiGatewayAuthorizer: 
+      Type: AWS::ApiGateway::Authorizer
+      Properties: 
+        Name: CognitoUserPool
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        RestApiId: 
+          Ref: ApiGatewayRestApi
+        ProviderARNs: 
+          - Fn::GetAtt:
+              - SellerUsers
+              - Arn
     GoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
