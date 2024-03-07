@@ -1,43 +1,86 @@
+/* eslint-disable no-console */
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable consistent-return */
+/* eslint-disable import/no-extraneous-dependencies */
+/* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
 /* eslint-disable no-param-reassign */
 /* eslint-disable camelcase */
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-undef */
-const { StepFunctions, config } = require('aws-sdk')
+const request = require('request')
 const redis = require('redis')
+
+const { StepFunctions, config } = require('aws-sdk')
 const mongodbHelper = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
 
 mongodbHelper.connect()
-const request = require('request')
+const Lot = require('../entities/Lot')
 
 config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
-    console.log('executionarn', executionARN, lots)
-    const stepfunctions = new StepFunctions()
-    const newStartDate = new Date(lots.start_date).toISOString()
-    lots.start_date = newStartDate
-    const params = {
-        stateMachineArn: executionARN,
-        input: JSON.stringify(lots),
-    }
+    try {
+        const stepfunctions = new StepFunctions()
+        const newStartDate = new Date(lots.start_date).toISOString()
+        lots.start_date = newStartDate
+        const params = {
+            stateMachineArn: executionARN,
+            input: JSON.stringify(lots),
+        }
 
-    return new Promise((resolve, reject) => {
-        stepfunctions.startExecution(params, async (error, data) => {
-            if (error) {
-                reject(error)
-            }
-            if (data) {
-                const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
-                console.log('getaran', getArn)
-                const updateARN = await mongodbHelper.updateArn(getArn, data, StepFunctionArn)
-                resolve(data)
-            }
-            resolve({ status: false })
+        return new Promise((resolve, reject) => {
+            stepfunctions.startExecution(params, async (error, data) => {
+                if (error) {
+                    reject(error)
+                }
+                if (data) {
+                    const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
+                    console.log('getaran', getArn)
+                    await mongodbHelper.updateArn(getArn, data, StepFunctionArn)
+                    resolve(data)
+                }
+                resolve({ status: false })
+            })
         })
-    })
+    } catch (err) {
+        console.log('start err')
+    }
 }
 
+async function startExecutionAfterPublish(executionARN, lots) {
+    try {
+        const stepfunctions = new StepFunctions()
+        const newStartDate = new Date(lots.start_date).toISOString()
+        lots.start_date = newStartDate
+        const params = {
+            stateMachineArn: executionARN,
+            input: JSON.stringify(lots),
+        }
+        return new Promise((resolve, reject) => {
+            stepfunctions.startExecution(params, async (error, data) => {
+                if (error) {
+                    reject(error)
+                }
+                if (data) {
+                    const requestPayload = {
+                        arn: data.executionArn,
+                        lot_id: lots._id.toString(),
+                        auction_id: lots.auction_id,
+                        seller_email: lots.seller_email,
+                    }
+                    console.log('requestpayload', requestPayload)
+                    await mongodbHelper.save(requestPayload, StepFunctionArn)
+                    resolve(data)
+                }
+                resolve({ status: false })
+            })
+        })
+    } catch (err) {
+        console.log('errr', err)
+    }
+}
 async function stopExecutions(executionArn) {
     try {
         console.log('INSIDE STOP: ')
@@ -46,15 +89,12 @@ async function stopExecutions(executionArn) {
             executionArn,
             cause: 'User initiated stop',
         }
-        console.log('params', params)
         return new Promise((resolve, reject) => {
             stepFunctions.stopExecution(params, async (error, data) => {
-                console.log('errr', error, data)
                 if (error) {
                     reject(error)
                 }
                 if (data) {
-                    console.log('asdf')
                     resolve(data)
                 }
                 resolve({ status: false })
@@ -90,16 +130,10 @@ async function findAndUpdateTime(lotInformation, client) {
         const updateRequest = {
             ...get_lot,
             lot_end_date: lotInformation.lot_end_time,
-            lot_extended: true,
             end_date: lotInformation.lot_end_time,
         }
-        console.log('updateRequest', updateRequest)
-        const updateRedis = await multi.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        console.log('updateRedis', updateRedis)
-        //  let afterUpdateLots = await multi.hGet('lot', bidKey)
-        //  console.log('afterUpdateLots', afterUpdateLots)
-        // afterUpdateLots = JSON.parse(existingRecord)
-        const responses = await multi.exec()
+        await multi.hSet('lot', bidKey, JSON.stringify(updateRequest))
+        await multi.exec()
 
         const payload = {
             lots: updateRequest,
@@ -111,26 +145,6 @@ async function findAndUpdateTime(lotInformation, client) {
         }
 
         const reqUrl = `${process.env.SOCKET_URL}/notification`
-        console.log('request payload', payload)
-        // request.post({
-        //     url: reqUrl,
-        //     body: JSON.stringify(payload),
-        //     headers: headersList,
-        // }, (error, response, body) => {
-        //     console.log('errresss', error, response)
-        //     if (error) {
-        //         console.error('Error:', error)
-        //     } else {
-        //         try {
-        //             const responseData = JSON.parse(body)
-        //             console.log('responseData', responseData)
-        //             // Handle the successful response
-        //             // Your logic here
-        //         } catch (parseError) {
-        //             console.error('Error parsing response:', parseError)
-        //         }
-        //     }
-        // })
         return new Promise((resolve, reject) => {
             request({
                 method: 'POST',
@@ -152,12 +166,11 @@ async function findAndUpdateTime(lotInformation, client) {
 
 module.exports.handler = async (event) => {
     try {
-        console.log('event', JSON.stringify(event))
-
         const firstRecord = event.Records[0]
         const lotsString = firstRecord.messageAttributes.lots.stringValue
         const auctionString = firstRecord.messageAttributes.auction.stringValue
         const type = firstRecord.messageAttributes.type.stringValue
+        console.log('type', type)
         // Parsing the JSON strings to JavaScript objects
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
@@ -169,28 +182,28 @@ module.exports.handler = async (event) => {
         if (!client.isOpen) {
             await client.connect()
         }
+        let extend_time = auctionDetails.extension_time.replace('m', '')
+        extend_time = parseInt(extend_time, 10)
+        extend_time = extend_time * 60 * 1000
+        console.log('extend_time', extend_time)
         if (type === 'update') {
             console.log('entering')
             const stepFunctionEnd = []
             const getAllArns = await mongodbHelper.getAllExecutionArn(auctionDetails, StepFunctionArn)
-            console.log('getAllArns', getAllArns)
-            for (const item of getAllArns) {
-                const executionArn = item.arn
-                stepFunctionEnd.push(stopExecutions(executionArn))
+            if (getAllArns.length > 0) {
+                for (const item of getAllArns) {
+                    const executionArn = item.arn
+                    stepFunctionEnd.push(stopExecutions(executionArn))
+                }
+                await Promise.all(stepFunctionEnd)
             }
-            await Promise.all(stepFunctionEnd)
-            let extend_time = auctionDetails.extension_time.replace('m', '')
-            extend_time = parseInt(extend_time, 10)
-            extend_time = extend_time * 60 * 1000
+
             // Start the new execution
             const startNewExecution = []
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
                 if (item.end_date > currentTimeEpoch) {
-                    const currentTimeEpoch = Date.now()
-                    if (item.end_date > currentTimeEpoch) {
-                        startNewExecution.push(startExecution('arn:aws:states:eu-west-2:259943215050:stateMachine:dev-lot-published', item))
-                    }
+                    startNewExecution.push(startExecution('arn:aws:states:eu-west-2:259943215050:stateMachine:dev-lot-published', item))
                 }
             }
             await Promise.all(startNewExecution)
@@ -198,11 +211,31 @@ module.exports.handler = async (event) => {
             const promiseList = []
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
-                if (item.end_date > currentTimeEpoch) {
-                    promiseList.push(findAndUpdateTime(item, client))
-                }
+                // if (item.end_date > currentTimeEpoch) {
+                promiseList.push(findAndUpdateTime(item, client))
+                // }
             }
             await Promise.all(promiseList)
+        }
+
+        // updating auctions lot in documentDB
+        const updateLots = []
+        for (const item of auctionLots) {
+            item.lot_end_time = item.end_date + extend_time
+            if (item.end_date > currentTimeEpoch) {
+                updateLots.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
+            }
+        }
+        await Promise.all(updateLots)
+
+        if (type === 'published') {
+            console.log('came here publish')
+            // Start the new execution
+            const startNewExecution = []
+            for (const item of auctionLots) {
+                startNewExecution.push(startExecutionAfterPublish('arn:aws:states:eu-west-2:259943215050:stateMachine:dev-lot-published', item))
+            }
+            await Promise.all(startNewExecution)
         }
     } catch (error) {
         console.log('err', error)

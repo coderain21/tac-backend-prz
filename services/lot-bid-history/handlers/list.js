@@ -77,6 +77,7 @@ module.exports.handler = async (event) => {
             updated_at: 1,
             is_greyed_out: 1,
             location: 1,
+            buyer_id: 1,
 
         }
         /** Fetch enterprises using the provided criteria */
