@@ -108,6 +108,7 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
+    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     
 
     
