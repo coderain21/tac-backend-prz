@@ -403,7 +403,7 @@ functions:
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
-      - sqs: ${ssm:SQS_QUEUE_ARN}
+      - sqs: arn:aws:states:${AWS::Region}:${AWS::AccountId}:auto-completion-email-${opt:stage}.fifo
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
