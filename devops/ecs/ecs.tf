@@ -97,8 +97,7 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "stepfunctions_full_access" {
-  name       = "stepfunctions-full-access-attachment"
-  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  role      = [aws_iam_role.ecs_task_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
 }
 
@@ -131,9 +130,9 @@ resource "aws_iam_role" "ecs_task_role" {
 EOF
 }
 resource "aws_iam_role_policy_attachment" "stepfunctions_full_access_task_role" {
-  name       = "stepfunctions-full-access-attachment"
-  roles      = [aws_iam_role.ecs_task_role.name]
+  role      = [aws_iam_role.ecs_task_role.name]
   policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
+  provider = aws.deployment-eu
 }
 
 resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
@@ -148,29 +147,29 @@ resource "aws_iam_role_policy_attachment" "task_s3" {
 }
 # Attach CloudWatch Logs full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_full_access_task_role" {
-  name       = "cloudwatch-logs-full-access-attachment"
-  roles      = [aws_iam_role.ecs_task_role.name]
+  role      = [aws_iam_role.ecs_task_role.name]
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  provider = aws.deployment-eu
 }
 
 # Attach CloudWatch full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_full_access_task_role" {
-  name       = "cloudwatch-full-access-attachment"
-  roles      = [aws_iam_role.ecs_task_role.name]
+  role     = [aws_iam_role.ecs_task_role.name]
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+  provider = aws.deployment-eu
 }
 # Attach CloudWatch Logs full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_full_access_task_execution_role" {
-  name       = "cloudwatch-logs-full-access-attachment"
-  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  role      = [aws_iam_role.ecs_task_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  provider = aws.deployment-eu
 }
 
 # Attach CloudWatch full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_full_access_task_execution_role" {
-  name       = "cloudwatch-full-access-attachment"
-  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  role      = [aws_iam_role.ecs_task_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+  provider = aws.deployment-eu
 }
 
 # Security Group for loadbalancer
