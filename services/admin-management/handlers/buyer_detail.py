@@ -67,7 +67,7 @@ def buyer_detail(event, context):
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "Buyer id not fpund"})
+                "body": json.dumps({"message": "Buyer id not found"})
             }
 
         buyer_id= ObjectId(buyer_id)

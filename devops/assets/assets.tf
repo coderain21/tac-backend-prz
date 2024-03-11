@@ -477,3 +477,11 @@ resource "aws_ssm_parameter" "registered_buyer" {
   value = "${data.external.env.result["STAGE"]}-register-auction"
   provider = aws.deployment-ap
 }
+
+resource "aws_ssm_parameter" "domain_url_reset" {
+  name  = "DOMAIN_URL"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["DOMAIN_URL"]
+  provider = aws.deployment-ap
+}

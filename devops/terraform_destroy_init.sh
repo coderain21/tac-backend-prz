@@ -60,9 +60,12 @@ cd services/lambda-authorizer
 sls remove --region $REGION --stage $STAGE
 cd ../..
 
-cd resources
-sls remove --region $REGION --config cognito-serverless.yml --stage $STAGE
-cd ..
+cd services/users
+sls remove --region $REGION --stage $STAGE
+cd ../..
+cd services/cognito-auth
+sls remove --region $REGION --stage $STAGE
+cd ../..
 
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 

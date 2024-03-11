@@ -112,4 +112,3 @@ resource "aws_ssm_parameter" "redis_host_parameter" {
   value = "redis://${local.redis_host}:6379"
   overwrite = true 
 }
-

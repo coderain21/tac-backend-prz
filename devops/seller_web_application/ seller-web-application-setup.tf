@@ -73,6 +73,7 @@ locals {
 locals {
   computed_domain_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "www" : "www-${data.external.env.result["STAGE"]}"
 }
+
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = aws_s3_bucket.b.bucket_regional_domain_name

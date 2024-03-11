@@ -1,8 +1,7 @@
 image: node:latest
 clone:
   depth: full
-options:
- max-time: 60 #max time in minutes
+ #max time in minutes
 definitions:
   caches:
     sonar: ~/.sonar/cache
@@ -244,7 +243,7 @@ definitions:
           - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
           - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
           - aws s3 sync ${RUNBOOK_PATH} s3://${RUNBOOK_BUCKET}/${RUNBOOK_PATH} --acl public-read
-          - aws ssm send-command --targets "Key=instanceids,Values=$(aws ssm get-parameter --name 'EC_INSTANCE_ID' --query 'Parameter.Value' --output text --region ${REGION})" --document-name 'AWS-RunShellScript' --parameters "commands=['if [ ! -d runbook ]; then mkdir runbook; fi && cd runbook && aws s3 sync s3://${RUNBOOK_BUCKET}/ . && chmod +x ${RUNBOOK_PATH}/* && cd ${RUNBOOK_PATH} && sh main.sh && cd ../../ && rm -r ${RUNBOOK_PATH} && cd .. && rm -r runbook']" --region ${REGION}
+          - aws ssm send-command --targets "Key=instanceids,Values=$(aws ssm get-parameter --name 'EC2_INSTANCE_ID' --query 'Parameter.Value' --output text --region ${REGION})" --document-name 'AWS-RunShellScript' --parameters "commands=['if [ ! -d runbook ]; then mkdir runbook; fi && cd runbook && aws s3 sync s3://${RUNBOOK_BUCKET}/ . && chmod +x ${RUNBOOK_PATH}/* && cd ${RUNBOOK_PATH} && sh main.sh && cd ../../ && rm -r ${RUNBOOK_PATH} && cd .. && rm -r runbook']" --region ${REGION} --cloud-watch-output-config CloudWatchLogGroupName="mongo-restore",CloudWatchOutputEnabled=true
 
 
 
@@ -266,15 +265,6 @@ pipelines:
       - stage:
           name: Testing and Pre-Production Deployment
           deployment: Pre-Production
-          image: python:3.7.2
-          steps:
-            - step: *BuildStep
-            - step: *DeletePreProduction
-    
-    DeleteDisposableEnvironmentProd:
-      - stage:
-          name: Testing and Production Deployment
-          deployment: Production
           image: python:3.7.2
           steps:
             - step: *BuildStep
@@ -396,14 +386,12 @@ pipelines:
 
 
     master:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *SecretChecking
       - stage:
           name: PRODUCTION Deployment
-          deployment: Production
+          deployment: New-Production
           steps:
              - step: *BuildStep
+             - step: *SecretChecking
              - step: *TerraDeploy
-     
+
+            

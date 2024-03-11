@@ -1,12 +1,12 @@
 service: admin-management
-frameworkVersion: '3'
+frameworkVersion: "3"
 useDotenv: true
 deprecationNotificationMode: error
 disabledDeprecations:
   - UNSUPPORTED_CLI_OPTIONS
   - CLI_OPTIONS_SCHEMA_V3
   - CONFIG_VALIDATION_MODE_DEFAULT_V3
-  - 
+  -
 provider:
   name: aws
   endpointType: REGIONAL
@@ -31,7 +31,7 @@ provider:
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     CSV_FILE: ${ssm:CSV_FILE}
-    S3_BUCKET:  ${ssm:BUCKET_NAME}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
@@ -39,7 +39,7 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    BUYER_EMAIL_OTP_TEMPLATE: 
+    BUYER_EMAIL_OTP_TEMPLATE:
       Fn::Join:
         - ":"
         - - "arn"
@@ -48,7 +48,7 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
-       
+
     ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
@@ -57,7 +57,7 @@ provider:
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
-    TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
+    TEMPLATE_ARN_EMAIL_RESET_PASSWORD:
       Fn::Join:
         - ":"
         - - "arn"
@@ -66,8 +66,7 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
-     
-   
+
     BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
@@ -78,7 +77,7 @@ provider:
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
-    
+
   http:
     cors: true
     authorizers:
@@ -100,10 +99,10 @@ provider:
             - dynamodb:*
             - execute-api:*
           Resource: "*"
- 
+
 package:
   patterns:
-    - '!./node_modules/**'
+    - "!./node_modules/**"
     - ./handlers/**
     - ./data/**
     - ./entities/**
@@ -113,9 +112,9 @@ package:
 custom:
   packageExternal:
     external:
-      - '../../lib'
-      - '../../entities'
-      
+      - "../../lib"
+      - "../../entities"
+
   customDomain:
     rest:
       domainName: ${ssm:DOMAIN_NAME}
@@ -131,21 +130,21 @@ custom:
       Set:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
-functions:   
+functions:
   list-auction:
     handler: handlers/list_auction.list_auction
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -158,21 +157,21 @@ functions:
           path: /auctions
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   list-buyers:
     handler: handlers/list_buyers.list_buyers
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -185,48 +184,21 @@ functions:
           path: /buyers
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-  list-sellers:
-    handler: handlers/list_sellers.list_sellers
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /sellers
-          method: get
-          authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   buyer-details:
     handler: handlers/buyer_detail.buyer_detail
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -239,21 +211,21 @@ functions:
           path: /buyer-details
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   buyer-view-auction:
     handler: handlers/buyer_list_auction.buyer_list_auction
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -266,21 +238,21 @@ functions:
           path: /buyer-auctions
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   purchase-list:
     handler: handlers/list_purchases.list_purchases
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -293,21 +265,21 @@ functions:
           path: /{id}
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   clone_auction:
     handler: handlers/clone_auction.clone_auction
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -320,21 +292,21 @@ functions:
           path: /clone-auction
           method: post
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   order-details:
     handler: handlers/order_details.order_detail
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -347,22 +319,22 @@ functions:
           path: /order-details
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   auction-purchases:
     handler: handlers/auction_purchases.list_purchases
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -375,21 +347,21 @@ functions:
           path: /auction-purchases
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   auction-details:
     handler: handlers/auction_details.auction_details
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -402,22 +374,22 @@ functions:
           path: /auction-details
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   all-purchases:
     handler: handlers/all_accounting.list_all_purchases
     runtime: python3.8
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
-            origin: '*'
+            origin: "*"
             headers:
               - Content-Type
               - X-Amz-Date
@@ -430,21 +402,100 @@ functions:
           path: /accountings
           method: get
           authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
-
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  list-sellers:
+    handler: handlers/list_sellers.list_sellers
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /sellers
+          method: get
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  seller-details:
+    handler: handlers/seller_details.seller_details
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /seller-details
+          method: get
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  update-seller-status:
+    handler: handlers/update_seller_status.update_seller_status
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /update-seller-status
+          method: post
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
-   Resources:
-     GatewayResponseDefault4XX:
-       Type: 'AWS::ApiGateway::GatewayResponse'
-       Properties:
-         ResponseParameters:
-           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-         ResponseType: DEFAULT_4XX
-         RestApiId:
-           Ref: 'ApiGatewayRestApi'
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
 
 plugins:
   - serverless-offline

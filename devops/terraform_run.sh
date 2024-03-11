@@ -44,6 +44,10 @@ terraform -chdir=devops/redis init
 terraform -chdir=devops/redis apply -auto-approve
 terraform -chdir=devops/ecs init
 terraform -chdir=devops/ecs apply -auto-approve
+terraform -chdir=devops/redis init
+terraform -chdir=devops/redis apply -auto-approve
+terraform -chdir=devops/ecs init
+terraform -chdir=devops/ecs apply -auto-approve
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 if [ "STAGE" = "qa" ]; then
@@ -67,6 +71,7 @@ done <<< "$parameter_names"
 
 
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 
 
 npm i -g serverless@3.15.2
@@ -83,10 +88,10 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 
-cd resources
-sls deploy --region $REGION --config cognito-serverless.yml --stage $STAGE
-cd ..
-cd services/cognito-buyer
+cd services/cognito-auth
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/users
 sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/lambda-authorizer
