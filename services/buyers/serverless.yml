@@ -95,17 +95,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-paddle/EMAIL"
          
-   
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
     DOMAIN_URL: ${ssm:DOMAIN_URL}
-    CDN_LINK: ${ssm:CDN_URL}
-    DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
-    DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
-    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
-    CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
-    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     
 
