@@ -375,7 +375,6 @@ pipelines:
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
             - step: *SecretChecking
       - stage:
             name: Pre-Production Deployment
@@ -389,10 +388,9 @@ pipelines:
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
             - step: *SecretChecking
       - stage:
-            name: Pre-Production Deployment
+            name: Production Deployment
             deployment: Pre-Production
             steps:
               - step: *BuildStep
