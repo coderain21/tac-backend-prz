@@ -1,0 +1,261 @@
+data "external" "env" {
+  program = ["../envs.sh"]
+}
+
+  
+#AWS Provider with profile main account
+provider "aws" {
+  region = data.external.env.result["REGION"]
+  alias = "main"   # Specify a default AWS region here
+  profile = "indyauction-main"
+}
+
+#AWS Provider with profile Stage account
+provider "aws" {
+  region = data.external.env.result["REGION"]
+  alias = "deployment-us"   # Specify a default AWS region here
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
+}
+
+resource "aws_key_pair" "my_key"{
+    key_name = "new-tf-key-pair"
+    public_key = tls_private_key.rsa.public_key_openssh
+    provider = aws.deployment-us
+}
+resource "tls_private_key" "rsa"{
+    algorithm = "RSA"
+    rsa_bits  = 4096
+}
+resource "local_file" "tf-key"{
+    content  = tls_private_key.rsa.private_key_pem
+    filename = "tf-key-pair-${data.external.env.result["STAGE"]}.pem"
+}
+
+########################
+
+resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
+  name        = "${data.external.env.result["STAGE"]}-new-parameter-group"
+  family      = "docdb5.0" # Adjust the family to match your DocumentDB version
+  description = "My DocumentDB Parameter Group"
+  parameter {
+    name  = "tls"
+    value = "disabled"
+  }
+  provider = aws.deployment-us
+}
+resource "aws_eip" "example" {
+  instance = aws_instance.ssh_tunnel.id
+  provider = aws.deployment-us
+}
+
+resource "aws_docdb_cluster_instance" "cluster_instances" {
+  identifier         = "docdb-mongodb-instance-new"
+  cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
+  instance_class = "db.t3.medium"
+  provider = aws.deployment-us
+}
+
+resource "aws_db_subnet_group" "default" {
+  name        = "subnet-group"
+  subnet_ids  = ["${data.external.env.result["SHARED_SUBNET_ID"]}", "${data.external.env.result["SHARED_SUBNET_ID_2"]}"]
+  tags = {
+    Name = "subnet group"
+  }
+}
+
+
+# Create the DocumentDB instance
+resource "aws_docdb_cluster" "my_documentdb_cluster" {
+  cluster_identifier        = "${data.external.env.result["STAGE"]}-new"
+  engine                    = "docdb"
+  engine_version            = "5.0.0" # Adjust the version as needed
+  db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
+  skip_final_snapshot        = true
+  master_username         = "${data.external.env.result["MONGO_USERNAME"]}"
+  master_password         = "${data.external.env.result["MONGO_PASSWORD"]}"
+  db_subnet_group_name = aws_db_subnet_group.default.name
+  vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
+  provider = aws.deployment-us
+
+}
+
+# Create a security group to allow SSH access
+resource "aws_security_group" "ssh_sg" {
+  name        = "ssh-security-group-new"
+  description = "SSH Security Group"
+  vpc_id = data.external.env.result["VPC_ID"]
+  # Allow SSH traffic
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+  }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  provider = aws.deployment-us
+}
+
+resource "aws_security_group" "ssh_sg_1" {
+  name        = "ssh-security-group1-new"
+  description = "SSH Security Group"
+  vpc_id = data.external.env.result["VPC_ID"]
+  # Allow SSH traffic
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+  }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  provider = aws.deployment-us
+}
+
+resource "aws_iam_role" "ssm_role" {
+  name = "ssm-role-ec2-new"
+  provider = aws.deployment-us
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com",
+        },
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_core_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+
+resource "aws_iam_role_policy_attachment" "ssm_full_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+resource "aws_iam_role_policy_attachment" "s3_cognito_full_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonCognitoPowerUser"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+  role       = aws_iam_role.ssm_role.name
+  provider = aws.deployment-us
+}
+
+# Create an EC2 instance
+resource "aws_instance" "ssh_tunnel" {
+  ami = "ami-0e5f882be1900e43b"
+  instance_type = "t2.micro"
+  key_name = aws_key_pair.my_key.key_name
+  subnet_id = data.external.env.result["SHARED_SUBNET_ID"]
+  vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
+  provider = aws.deployment-us
+  # User data to create the SSH tunnel
+  user_data = <<-EOF
+              #!/bin/bash
+              wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo gpg --dearmor -o /usr/share/keyrings/mongodb-archive-keyring.gpg
+              echo "deb [signed-by=/usr/share/keyrings/mongodb-archive-keyring.gpg] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+              sudo apt-get update -y
+              sudo apt-get install -y mongodb-mongosh zip
+              wget https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2204-x86_64-100.9.4.deb
+              sudo dpkg -i mongodb-database-tools-ubuntu2204-x86_64-100.9.4.deb
+              apt-get update && apt-get install -y
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip -u awscliv2.zip
+              ./aws/install
+              EOF
+  iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
+}
+resource "aws_iam_instance_profile" "ssm_profile" {
+  name = "ssm-role-ec2-new"
+  provider = aws.deployment-us
+  role = aws_iam_role.ssm_role.name
+}
+
+
+resource "aws_ssm_parameter" "documentdb" {
+  name  = "MONGODB_CONNECTION_URL"
+  type  = "String"
+  value = "mongodb://${data.external.env.result["MONGO_USERNAME"]}:${data.external.env.result["MONGO_PASSWORD"]}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${data.external.env.result["STAGE"]}?authMechanism=SCRAM-SHA-1&authSource=${data.external.env.result["STAGE"]}&retryWrites=false"
+  provider = aws.deployment-us
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "subnet_id" {
+  name  = "SHARED_SUBNET_ID"
+   type = "String"
+  value = data.external.env.result["SHARED_SUBNET_ID_PRIVATE"]
+  provider = aws.deployment-us
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "security_group_id" {
+  name  = "SECURITY_GROUP"
+  type  = "String"
+  value = aws_security_group.ssh_sg_1.id
+  provider = aws.deployment-us
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mongodb-username" {
+  name  = "MONGO_USERNAME"
+  type  = "String"
+  value = data.external.env.result["MONGO_USERNAME"]
+  provider = aws.deployment-us
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mongodb-password" {
+  name  = "MONGO_PASSWORD"
+  type  = "String"
+  value = data.external.env.result["MONGO_PASSWORD"]
+  provider = aws.deployment-us
+  overwrite = true
+}
+resource "aws_ssm_parameter" "ec2_instance_id" {
+  name  = "EC2_INSTANCE_ID"
+  type  = "String"
+  value = resource.aws_instance.ssh_tunnel.id
+  provider = aws.deployment-us
+  overwrite = true
+}
+output "connection_details" {
+  value = {
+    endpoint = aws_docdb_cluster.my_documentdb_cluster.endpoint
+    port     = "27017"
+    ec2_public_ip = aws_instance.ssh_tunnel.public_ip
+    shh_tunnel = "ssh -i tf-key-pair-${data.external.env.result["STAGE"]}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
+  }
+}
