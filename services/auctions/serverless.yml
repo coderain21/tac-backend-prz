@@ -396,6 +396,7 @@ functions:
 
   sqs-lot-update:
     handler: handlers/batch_lots_update.handler
+    MemorySize: 2048
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -459,6 +460,7 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
+        VisibilityTimeout: 60
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter
