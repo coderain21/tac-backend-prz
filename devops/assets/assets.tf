@@ -456,3 +456,11 @@ resource "aws_ssm_parameter" "socket_url" {
   value = data.external.env.result["SOCKET_URL"]
   provider = aws.deployment-ap
 }
+
+resource "aws_ssm_parameter" "domain_url" {
+  name = "DOMAIN_URL"
+  overwrite = true
+  type = "String"
+  value = data.external.env.result["DOMAIN_URL"]
+  provider = aws.development-ap
+}
