@@ -73,7 +73,7 @@ def send_reset_link(event, context):
         print(token)
         # token = str(token)[2:-1]
         token = str(token)
-        baseurl = "https://"+domain+os.environ.get('BASE_URL_BUYER')
+        baseurl = "https://"+domain+os.environ.get('DOMAIN_URL')
         router = os.environ.get('VERIFY_TOKEN_ROUTER_URL', "/verify_token")
         link = str(baseurl) + str(router) + '?token=' + \
             str(token) + '&_id=' + auction_id
