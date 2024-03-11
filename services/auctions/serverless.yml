@@ -10,7 +10,7 @@ disabledDeprecations:
 provider:
   name: aws
   endpointType: REGIONAL
-  runtime: nodejs14.x
+  runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
@@ -48,7 +48,8 @@ provider:
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
-    QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo
+    QUEUE_URL: ${ssm:QUEUE_URL}
+    LOT_UPDATE_QUEUE_URL: ${ssm:LOT_UPDATE_QUEUE_URL}
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
@@ -388,10 +389,22 @@ functions:
     layers:
       - ${ssm:COMMON_LIB_ARN}
 
-  send-email_auction:
-    handler: handlers/auto_completion_bid.handler
+  # send-email_auction:
+  #   handler: handlers/auto_completion_bid.handler
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+
+  sqs-lot-update:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 2048
     layers:
       - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
@@ -442,6 +455,13 @@ resources:
         QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
 
+        
+    updateLotsQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
+        VisibilityTimeout: 60
+
     SQSSSMParameter:
       Type: AWS::SSM::Parameter
       Properties:
@@ -459,6 +479,14 @@ resources:
         Name: QUEUE_URL
         Type: 'String'
         Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
+
+
+    # SQSLOTUPDATESSMParameter:
+    #   Type: AWS::SSM::Parameter
+    #   Properties:
+    #     Name: LOT_UPDATE_QUEUE_URL
+    #     Type: 'String'
+    #     Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/${opt:stage}-bulk-lots-update"
 
     
     GatewayResponseDefault4XX:

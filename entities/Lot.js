@@ -79,6 +79,9 @@ const LotSchema = new Schema({
     paddle_number: {
         type: String,
     },
+    winning_user: {
+        type: String, trim: true,
+    }
 })
 
 LotSchema.plugin(mongoosePaginate)
