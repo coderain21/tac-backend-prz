@@ -211,7 +211,7 @@ def update_auction(event, context):
                 # user_batches = [json_serializable_list[i:i + 10] for i in range(0, len(json_serializable_list), 10)]
 
                 sqs.send_message_batch(
-                    QueueUrl='https://sqs.eu-west-2.amazonaws.com/259943215050/dev-bulk-lots-update',
+                    QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
                     Entries=[
                         {'Id': str(uuid.uuid4()), 'MessageBody': 'update status', 'MessageAttributes':
                         {'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
@@ -307,7 +307,7 @@ def update_auction(event, context):
 
                 # update = update_redis_data(auction_record, item )
                 sqs.send_message_batch(
-                    QueueUrl='https://sqs.eu-west-2.amazonaws.com/259943215050/dev-bulk-lots-update',
+                    QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
                     Entries=[
                         {'Id': str(uuid.uuid4()), 'MessageBody': 'update status', 'MessageAttributes':
                         {'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},

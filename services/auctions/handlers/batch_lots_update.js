@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
@@ -37,7 +38,6 @@ async function startExecution(executionARN, lots) {
                 }
                 if (data) {
                     const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
-                    console.log('getaran', getArn)
                     await mongodbHelper.updateArn(getArn, data, StepFunctionArn)
                     resolve(data)
                 }
@@ -70,7 +70,6 @@ async function startExecutionAfterPublish(executionARN, lots) {
                         auction_id: lots.auction_id,
                         seller_email: lots.seller_email,
                     }
-                    console.log('requestpayload', requestPayload)
                     await mongodbHelper.save(requestPayload, StepFunctionArn)
                     resolve(data)
                 }
@@ -152,7 +151,6 @@ async function findAndUpdateTime(lotInformation, client) {
                 headers: headersList,
                 body: JSON.stringify(payload),
             }, (error, response, body) => {
-                console.log('errrres', error, response)
                 if (error) reject(error)
                 else {
                     resolve(response)
@@ -170,12 +168,11 @@ module.exports.handler = async (event) => {
         const lotsString = firstRecord.messageAttributes.lots.stringValue
         const auctionString = firstRecord.messageAttributes.auction.stringValue
         const type = firstRecord.messageAttributes.type.stringValue
-        console.log('type', type)
         // Parsing the JSON strings to JavaScript objects
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
         const client = await redis.createClient({
-            url: 'redis://websocket-redis.z4q2as.ng.0001.euw2.cache.amazonaws.com:6379',
+            url: process.env.REDIS_URL,
         }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         const currentTimeEpoch = Date.now()
 
@@ -185,9 +182,7 @@ module.exports.handler = async (event) => {
         let extend_time = auctionDetails.extension_time.replace('m', '')
         extend_time = parseInt(extend_time, 10)
         extend_time = extend_time * 60 * 1000
-        console.log('extend_time', extend_time)
         if (type === 'update') {
-            console.log('entering')
             const stepFunctionEnd = []
             const getAllArns = await mongodbHelper.getAllExecutionArn(auctionDetails, StepFunctionArn)
             if (getAllArns.length > 0) {
@@ -203,7 +198,7 @@ module.exports.handler = async (event) => {
             for (const item of auctionLots) {
                 item.lot_end_time = item.end_date + extend_time
                 if (item.end_date > currentTimeEpoch) {
-                    startNewExecution.push(startExecution('arn:aws:states:eu-west-2:259943215050:stateMachine:dev-lot-published', item))
+                    startNewExecution.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
                 }
             }
             await Promise.all(startNewExecution)
@@ -229,11 +224,10 @@ module.exports.handler = async (event) => {
         await Promise.all(updateLots)
 
         if (type === 'published') {
-            console.log('came here publish')
             // Start the new execution
             const startNewExecution = []
             for (const item of auctionLots) {
-                startNewExecution.push(startExecutionAfterPublish('arn:aws:states:eu-west-2:259943215050:stateMachine:dev-lot-published', item))
+                startNewExecution.push(startExecutionAfterPublish(process.env.STATE_MACHINE_LOT_ARN, item))
             }
             await Promise.all(startNewExecution)
         }
