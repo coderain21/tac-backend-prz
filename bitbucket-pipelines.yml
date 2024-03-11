@@ -386,12 +386,16 @@ pipelines:
 
 
     master:
-      - stage:
-          name: PRODUCTION Deployment
-          deployment: Production
+      - parallel:
+          fail-fast: true
           steps:
-             - step: *BuildStep
-             - step: *SecretChecking
-             - step: *TerraDeploy
+            - step: *BuildStep
+            - step: *SecretChecking
+      - stage:
+            name: Pre-Production Deployment
+            deployment: Pre-Production
+            steps:
+              - step: *BuildStep
+              - step: *TerraDeploy
 
             
