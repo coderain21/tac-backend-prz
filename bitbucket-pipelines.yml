@@ -307,7 +307,7 @@ pipelines:
       - stage:
           name: RUNBOOK EXECUTION
           image: python:3.7.2
-          deployment: New-Production
+          deployment: Production
           steps:
             - step: *runcommands
     
