@@ -1,8 +1,7 @@
 image: node:latest
 clone:
   depth: full
-options:
- max-time: 60 #max time in minutes
+ #max time in minutes
 definitions:
   caches:
     sonar: ~/.sonar/cache
@@ -10,7 +9,6 @@ definitions:
     docker-high-memory:
       memory: 7128
       type: docker
-
 
   steps:
     - step: &BuildStep
@@ -220,6 +218,33 @@ definitions:
           - npm install --f
           - npm install -g danger
           - npx danger ci
+    
+    - step: &DeletePreProduction
+        name: Deployment
+        size: 2x
+        script:
+          - apt-get update && apt-get install -y gnupg software-properties-common
+          - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+          - gpg --no-default-keyring --keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg --fingerprint
+          - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+          - apt update
+          - apt-get install terraform
+          - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          - unzip -u awscliv2.zip
+          - ./aws/install
+          - bash devops/terraform_destroy_init.sh
+    
+    - step: &runcommands
+        script:
+          - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          - unzip -u awscliv2.zip
+          - ./aws/install
+          - echo "Runbook Execution Step!"
+          - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+          - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+          - aws s3 sync ${RUNBOOK_PATH} s3://${RUNBOOK_BUCKET}/${RUNBOOK_PATH} --acl public-read
+          - aws ssm send-command --targets "Key=instanceids,Values=$(aws ssm get-parameter --name 'EC2_INSTANCE_ID' --query 'Parameter.Value' --output text --region ${REGION})" --document-name 'AWS-RunShellScript' --parameters "commands=['if [ ! -d runbook ]; then mkdir runbook; fi && cd runbook && aws s3 sync s3://${RUNBOOK_BUCKET}/ . && chmod +x ${RUNBOOK_PATH}/* && cd ${RUNBOOK_PATH} && sh main.sh && cd ../../ && rm -r ${RUNBOOK_PATH} && cd .. && rm -r runbook']" --region ${REGION} --cloud-watch-output-config CloudWatchLogGroupName="mongo-restore",CloudWatchOutputEnabled=true
+
 
 
 pipelines:
@@ -227,6 +252,65 @@ pipelines:
    
     DAST:
       - step: *DAST
+    
+    CreateDisposableEnvironment:
+      - stage:
+          name: Testing and Pre-Production Deployment
+          deployment: Pre-Production
+          image: python:3.7.2
+          steps:
+            - step: *BuildStep
+            - step: *TerraDeploy
+    DeleteDisposableEnvironment:
+      - stage:
+          name: Testing and Pre-Production Deployment
+          deployment: Pre-Production
+          image: python:3.7.2
+          steps:
+            - step: *BuildStep
+            - step: *DeletePreProduction
+    
+    RunBookExecutionQA:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: QA
+          steps:
+            - step: *runcommands
+    RunBookExecutionDev:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: Develop
+          steps:
+            - step: *runcommands
+    RunBookExecutionPreProd:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: Pre-Production
+          steps:
+            - step: *runcommands
+    RunBookExecutionProd:
+      - variables:
+        - name: RUNBOOK_PATH
+          default: 'runbooks/'
+      - stage:
+          name: RUNBOOK EXECUTION
+          image: python:3.7.2
+          deployment: New-Production
+          steps:
+            - step: *runcommands
+    
   pull-requests:    
     feature/**:
       - parallel:
@@ -281,14 +365,18 @@ pipelines:
           steps:
             - step: *BuildStep
             - step: *SecretChecking
-            
       - stage:
-            name: Testing and QA Deployment
+            name: QA Deployment
             deployment: QA
             steps:
               - step: *TerraDeploy
     
     Pre-Production:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *SecretChecking
       - stage:
             name: Pre-Production Deployment
             deployment: Pre-Production
@@ -305,85 +393,5 @@ pipelines:
              - step: *BuildStep
              - step: *SecretChecking
              - step: *TerraDeploy
-     
 
-  branches:
-    develop:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-            name: Testing and DEV Deployment
-            deployment: develop
-            steps:
-              - step: *DevDeploy
-              - step: *DAST
-      - step: *APITesting
-
-      
-
-    staging:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-            name: STAGING Deployment
-            deployment: staging
-            steps:
-              - step: *Deploy
-              
-
-    beta:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-          name: BETA Deployment
-          deployment: beta
-          steps:
-            - step: *Deploy
-              
-    master:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
-            - step: *SAST
-            - step: *SecretChecking
-            - step: *LicenseCompliance
-            - step: *DependencyScanning
-      - stage:
-          name: PRODUCTION Deployment
-          deployment: production
-          steps:
-            - step: *Deploy
-      
-    qa:  
-      - stage:
-            name: Testing and QA Deployment
-            deployment: QA
-            steps:
-              - step: *TerraDeploy
+            

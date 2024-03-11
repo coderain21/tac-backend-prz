@@ -40,11 +40,19 @@ terraform -chdir=devops/kms init
 terraform -chdir=devops/kms apply -auto-approve
 terraform -chdir=devops/mongodb init
 terraform -chdir=devops/mongodb apply -auto-approve
+terraform -chdir=devops/redis init
+terraform -chdir=devops/redis apply -auto-approve
+terraform -chdir=devops/ecs init
+terraform -chdir=devops/ecs apply -auto-approve
+terraform -chdir=devops/redis init
+terraform -chdir=devops/redis apply -auto-approve
+terraform -chdir=devops/ecs init
+terraform -chdir=devops/ecs apply -auto-approve
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 if [ "STAGE" = "qa" ]; then
-    terraform -chdir=devops/dependencies/bitbucket-layer-node init
-    terraform -chdir=devops/dependencies/bitbucket-layer-node apply -auto-approve
+    terraform -chdir=devops/dependency/bitbucket-layer-node init
+    terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
@@ -63,6 +71,7 @@ done <<< "$parameter_names"
 
 
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 
 
 npm i -g serverless@3.15.2
@@ -77,4 +86,18 @@ npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+
+
+cd services/cognito-auth
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/users
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/lambda-authorizer
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/auctions
+sls deploy --region $REGION --stage $STAGE
+cd ../..
 sls deploy --stage ${STAGE} --max-concurrency 5

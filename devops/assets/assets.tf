@@ -236,10 +236,10 @@ resource "aws_ssm_parameter" "application_url" {
 
 resource "aws_ssm_parameter" "base_url_admin" {
   name  = "BASE_URL_ADMIN"
-  overwrite = true
   type  = "String"
   value = data.external.env.result["BASE_URL_ADMIN"]
   provider = aws.deployment-ap
+  overwrite = true
 }
 resource "aws_ssm_parameter" "base_url_seller" {
   name  = "BASE_URL_SELLER"
@@ -456,6 +456,28 @@ resource "aws_ssm_parameter" "socket_url" {
   value = data.external.env.result["SOCKET_URL"]
   provider = aws.deployment-ap
 }
+resource "aws_ssm_parameter" "region" {
+  name  = "REGION"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["REGION"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "sender_email" {
+  name  = "SENDER_EMAIL"
+  overwrite = true
+  type  = "String"
+  value = data.external.env.result["SENDER_EMAIL"]
+  provider = aws.deployment-ap
+}
+resource "aws_ssm_parameter" "registered_buyer" {
+  name  = "REGISTRED_BUYER"
+  overwrite = true
+  type  = "String"
+  value = "${data.external.env.result["STAGE"]}-register-auction"
+  provider = aws.deployment-ap
+}
+
 resource "aws_ssm_parameter" "domain_url_reset" {
   name  = "DOMAIN_URL"
   overwrite = true

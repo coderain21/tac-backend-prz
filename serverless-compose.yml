@@ -1,15 +1,6 @@
 services:
-  users:
-    path: services/users
-    config: ${env:config}
-  auctions:
-    path: services/auctions
-    config: ${env:config}
   buyers:
     path: services/buyers
-    config: ${env:config}
-  lambda-authorizer:
-    path: services/lambda-authorizer
     config: ${env:config}
   bids:
     path: services/bids
@@ -22,9 +13,6 @@ services:
     config: ${env:config}
   cart-management:
     path: services/cart-management
-    config: ${env:config}
-  cognito-auth:
-    path: services/cognito-auth
     config: ${env:config}
   buyer-wishlist:
     path: services/buyer-wishlist
