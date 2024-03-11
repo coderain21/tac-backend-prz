@@ -312,10 +312,7 @@ resources:
           RecoveryMechanisms:
             - Priority: 1
               Name: admin_only
-        
-    
-    
-    
+
     GoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -330,8 +327,7 @@ resources:
           client_secret: ${ssm:GOOGLE_CLIENT_SECRET}
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
-          
-    
+
     FacebookAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -347,11 +343,11 @@ resources:
         UserPoolId: { Ref: Buyers }
     
     
-    Group:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: "buyer"
-        UserPoolId: { Ref: Buyers }
+    # Group:
+    #   Type: AWS::Cognito::UserPoolGroup
+    #   Properties:
+    #     GroupName: "buyer"
+    #     UserPoolId: { Ref: Buyers }
 
     BuyersDomain:
       Type: "AWS::Cognito::UserPoolDomain"
@@ -413,9 +409,7 @@ resources:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
-        
 
-    
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
