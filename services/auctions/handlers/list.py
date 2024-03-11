@@ -145,14 +145,14 @@ def list_auction(event, context):
                 "$or": [
                     {
                         "start_date": {
-                            "$gte": start_date,
-                            "$lte": end_date
+                            "$gte": int(start_date),
+                            "$lte": int(end_date)
                         }
                     },
                     {
                         "end_date": {
-                            "$gte": start_date,
-                            "$lte": end_date
+                            "$gte": int(start_date),
+                            "$lte": int(end_date)
                         }
                     }
                 ]
