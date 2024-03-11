@@ -10,7 +10,6 @@ definitions:
       memory: 7128
       type: docker
 
-
   steps:
     - step: &BuildStep
         name: Build
@@ -366,14 +365,18 @@ pipelines:
           steps:
             - step: *BuildStep
             - step: *SecretChecking
-            
       - stage:
-            name: Testing and QA Deployment
+            name: QA Deployment
             deployment: QA
             steps:
               - step: *TerraDeploy
     
     Pre-Production:
+      - parallel:
+          fail-fast: true
+          steps:
+            - step: *BuildStep
+            - step: *SecretChecking
       - stage:
             name: Pre-Production Deployment
             deployment: Pre-Production

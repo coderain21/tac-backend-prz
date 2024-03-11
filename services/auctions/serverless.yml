@@ -96,6 +96,7 @@ provider:
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL:  https://${opt:stage, self:provider.stage}-cdn.indyauction.net/public
     SENDER_EMAIL: ${ssm:SENDER_EMAIL}
+    STATE_MACHINE_LOT_ARN: arn:aws:states:${ssm:REGION}:${ssm:ACCOUNT_ID}:stateMachine:${self:provider.stage}-lot-published
 
     
     
@@ -443,6 +444,17 @@ functions:
 
 resources:
   Resources:
+
+    GatewayResponseDefault4XX:
+       Type: 'AWS::ApiGateway::GatewayResponse'
+       Properties:
+         ResponseParameters:
+           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+         ResponseType: DEFAULT_4XX
+         RestApiId:
+           Ref: 'ApiGatewayRestApi'
+    
     LotStateMachineSSMParameter:
       Type: 'AWS::SSM::Parameter'
       Properties:
