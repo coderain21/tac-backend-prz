@@ -388,7 +388,7 @@ pipelines:
     master:
       - stage:
           name: PRODUCTION Deployment
-          deployment: New-Production
+          deployment: Production
           steps:
              - step: *BuildStep
              - step: *SecretChecking
