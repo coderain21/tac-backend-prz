@@ -534,7 +534,7 @@ resources:
           Name: BUYER_COGNITO_IDENTITY_POOL_NAME
           Type: String
           Value: indyauction-buyers-${self:provider.stage}
-  BuyerEmailOtp:
+    BuyerEmailOtp:
       Type: AWS::Pinpoint::EmailTemplate
       Properties: 
         HtmlPart: ${file(./templates/buyer_email_otp.html)}
