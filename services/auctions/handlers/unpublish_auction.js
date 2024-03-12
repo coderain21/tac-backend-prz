@@ -77,7 +77,7 @@ module.exports.handler = async (event) => {
                 message: 'Unauthorized',
             }
         }
-        if (request_body.type === 'UNPUBLISH' && getAuctionDetails[0].status === 'Accepting bids') {
+        if (request_body.type === 'UNPUBLISH' && getAuctionDetails[0].status === 'Published') {
             await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status: 'Draft' })
             const stepFunctionEnd = []
             const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
@@ -97,7 +97,7 @@ module.exports.handler = async (event) => {
             statusCode: 400,
             headers: await helpers.getHeaders(),
             message: JSON.stringify({
-                message: 'Update Error | Auction status not in the Accepting Bid state',
+                message: 'Update Error | Auction status not in the Published state',
             }),
         }
     } catch (error) {
