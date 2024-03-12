@@ -42,42 +42,18 @@ provider:
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     CDN_LINK: ${ssm:CDN_URL}
     BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
-    STATE_MACHINE_LOT_ARN:  
-      Fn::Join:
-          - ":"
-          - - "arn"
-            - "aws"
-            - "states"
-            - !Ref "AWS::Region"
-            - !Ref "AWS::AccountId"
-            - "stateMachine:${opt:stage}-lot-published"
     REDIS_URL: ${ssm:REDIS_URL}
-    STATE_MACHINE_AUCTION_ARN: 
-       Fn::Join:
-          - ":"
-          - - "arn"
-            - "aws"
-            - "states"
-            - !Ref "AWS::Region"
-            - !Ref "AWS::AccountId"
-            - "stateMachine:${opt:stage}-auction-ended"
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
-    SQS_QUEUE_ARN: ${ssm:SQS_QUEUE_ARN}
-    QUEUE_URL: 
-      Fn::Join:
-          - "/"
-          - - "https:/"
-            - "sqs.eu-west-2.amazonaws.com"
-            - !Ref "AWS::AccountId"
-            - "auto-completion-email-${opt:stage}.fifo"
-    LOT_UPDATE_QUEUE_URL: 
-      Fn::Join:
-          - "/"
-          - - "https:/"
-            - "sqs.eu-west-2.amazonaws.com"
-            - !Ref "AWS::AccountId"
-            - "${opt:stage}-bulk-lots-update"
+    SQS_QUEUE_ARN:  
+       Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "sqs"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "auto-completion-email-${self:provider.stage}.fifo"
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
@@ -96,6 +72,38 @@ provider:
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL:  https://${opt:stage, self:provider.stage}-cdn.indyauction.net/public
     SENDER_EMAIL: ${ssm:SENDER_EMAIL}
+    STATE_MACHINE_LOT_ARN:  
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-lot-published"
+    STATE_MACHINE_AUCTION_ARN: 
+       Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-auction-ended"
+    QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "auto-completion-email-${opt:stage}.fifo"
+    LOT_UPDATE_QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "${opt:stage}-bulk-lots-update"
 
     
     
@@ -156,6 +164,21 @@ stepFunctions:
                 Fn::GetAtt: ["process-cart", Arn]
               End: true
 
+    # auction-ended:
+    #  name: ${opt:stage}-auction-ended
+    #  definition:
+    #     Comment: "Step function will trigger when auction ended"
+    #     StartAt: check-auction-ends
+    #     States:
+    #       check-auction-ends:
+    #             Type: Wait
+    #             TimestampPath: "$.end_date"
+    #             Next: process-next-steps
+    #       process-next-steps:
+    #         Type: Task
+    #         Resource:
+    #           Fn::GetAtt: ["send-email_auction", Arn]
+    #         End: true
         
 
 custom:
@@ -430,10 +453,10 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     events:
       - sqs: 
-        arn:
+          arn: 
             Fn::GetAtt:
-              - messageQueue
-              - Arn
+                    - messageQueue
+                    - Arn
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
@@ -443,17 +466,6 @@ functions:
 
 resources:
   Resources:
-
-    GatewayResponseDefault4XX:
-       Type: 'AWS::ApiGateway::GatewayResponse'
-       Properties:
-         ResponseParameters:
-           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-         ResponseType: DEFAULT_4XX
-         RestApiId:
-           Ref: 'ApiGatewayRestApi'
-    
     LotStateMachineSSMParameter:
       Type: 'AWS::SSM::Parameter'
       Properties:
@@ -496,7 +508,6 @@ resources:
         Name: SQS_QUEUE_ARN
         Type: String
         Value: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:auto-completion-email-${opt:stage}.fifo"
-          
 
 
     SQSURLSSMParameter:
