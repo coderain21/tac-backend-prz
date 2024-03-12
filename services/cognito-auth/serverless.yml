@@ -511,12 +511,12 @@ resources:
           Type: String
           Value: indyauction-buyers-${self:provider.stage}
 
-    BuyerEmailOtp:
-      Type: AWS::Pinpoint::EmailTemplate
-      Properties: 
-        HtmlPart: ${file(./templates/buyer_email_otp.html)}
-        Subject: Indy.auction - OTP Verification for Your Account
-        TemplateName: ${self:provider.stage}-buyer_email_otp
+    # BuyerEmailOtp:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_email_otp.html)}
+    #     Subject: Indy.auction - OTP Verification for Your Account
+    #     TemplateName: ${self:provider.stage}-buyer_email_otp
 plugins:
   - serverless-offline
   - serverless-package-external
