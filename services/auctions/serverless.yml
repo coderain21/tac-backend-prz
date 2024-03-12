@@ -192,6 +192,19 @@ functions:
           method: post
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+
+  unpublish_auction:
+    handler: handlers/unpublish_auction.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /{auction_id}
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
     
   list_auction:
       handler: handlers/list.list_auction
@@ -515,15 +528,15 @@ resources:
         Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/${opt:stage}-bulk-lots-update"
 
     
-    GatewayResponseDefault4XX:
-       Type: 'AWS::ApiGateway::GatewayResponse'
-       Properties:
-         ResponseParameters:
-           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-         ResponseType: DEFAULT_4XX
-         RestApiId:
-           Ref: 'ApiGatewayRestApi'
+    # GatewayResponseDefault4XX:
+    #    Type: 'AWS::ApiGateway::GatewayResponse'
+    #    Properties:
+    #      ResponseParameters:
+    #        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+    #        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+    #      ResponseType: DEFAULT_4XX
+    #      RestApiId:
+    #        Ref: 'ApiGatewayRestApi'
     
     AuctionCompletion:
       Type: AWS::Pinpoint::EmailTemplate

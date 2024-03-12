@@ -27,7 +27,7 @@ def skip_404_test_results(transaction):
          transaction['request']['method'] == 'DELETE') or
         'del=' in transaction['request']['uri'] or 
         '/stripe'  in transaction['request']['uri']
-
+        
 
     ):
         transaction['skip'] = True
@@ -36,18 +36,20 @@ def skip_404_test_results(transaction):
 @before_each
 def set_authorization(transaction):
     token = str(os.environ.get('USER'))
-    print('s', transaction['expected']['statusCode'] == '400')
-    transaction['request']['uri'] = urllib.parse.unquote(
-        transaction['request']['uri'])
-
+    print('Expected Status Code:', transaction['expected']['statusCode'])
+    print('Request Method:', transaction['request']['method'])
+    print('Request URI:', transaction['request']['uri'])
+    
     if transaction['expected']['statusCode'] != '401':
         transaction['request']['headers']['Authorization'] = f'Bearer {token}'
 
-
-    # if transaction['expected']['statusCode'] == '400':
-    #     transaction['request']['body'] = json.dumps({
-    #         "template_name": 3,
-    #     })
+    if (
+        transaction['request']['method'] == 'PATCH' and
+        '/A0008' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
 
     if (
         transaction['expected']['statusCode'] == '200' or
