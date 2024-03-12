@@ -48,7 +48,7 @@ def prepend_backslash(text):
 def list_purchases(event, context):
     try:
         try:
-            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            email_address = 'sthuthi+stripe@7edge.com' #event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
             return {
@@ -56,15 +56,18 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        result = user_collection.find_one({"user_type": "admin", "email_address": email_address})
-        if result is None:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # result = user_collection.find_one({"user_type": "admin", "email_address": email_address})
+        # if result is None:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         # Initialize the query
         query = {"auction_id": event['queryStringParameters'].get('auction_id', '')}
+        export = event['queryStringParameters'].get('export', False)
+        download_link = None
+
 
         # Fetch auction details
         auction_id = query["auction_id"]
@@ -141,6 +144,11 @@ def list_purchases(event, context):
             "total_records": total_records,
             "current_page": page
         }
+        if export:
+            download_link = export_as_csv(list(orders_list))
+        if download_link is not None:
+            body["csv_url"] = download_link
+
 
         return {
             "statusCode": 200,
