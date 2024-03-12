@@ -513,17 +513,6 @@ resources:
         Name: LOT_UPDATE_QUEUE_URL
         Type: 'String'
         Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/${opt:stage}-bulk-lots-update"
-
-    
-    GatewayResponseDefault4XX:
-       Type: 'AWS::ApiGateway::GatewayResponse'
-       Properties:
-         ResponseParameters:
-           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-         ResponseType: DEFAULT_4XX
-         RestApiId:
-           Ref: 'ApiGatewayRestApi'
     
     AuctionCompletion:
       Type: AWS::Pinpoint::EmailTemplate

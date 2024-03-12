@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Otp Email For Seller Registration</title>
+        <style>
+            body{
+                background: #F7F8F9;
+                font-family: 'Inter', sans-serif !important;
+            }
+            .indy-logo{
+                margin: 48px auto 0px;
+                text-align: center;
+                cursor: pointer;
+            }
+            .maincontent{
+                background: #FFFFFF;
+                max-width: 666px;
+                height: auto;
+                margin: 40px auto;
+                border-radius: 10px;
+            }
+           
+            .headersection{
+                text-align: center;
+                padding: 56px 0px;
+                background-color: white;
+                border-radius: 6px;
+            }
+            .heading-con{
+                font-size: 22px;
+                line-height: normal;
+                color: #343434;
+                font-family: 'Inter', sans-serif !important;
+                font-style: medium;
+                font-weight: 500;
+                margin:0px;
+            }
+            .paragraph{
+                font-family: 'Inter', sans-serif !important;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+                color:#A1A1A9;
+                text-align: center;
+                padding:0px 132px;
+            }
+            .note-main{
+                margin: 0px !important;
+                padding: 0px;
+            }
+            .note-con{
+                font-family: 'Inter', sans-serif !important;
+                font-size: 14px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+                color:#A1A1A9;
+            }
+            .otp-con{
+                font-family: 'Inter', sans-serif !important;
+                font-size: 56px;
+                font-style: normal;
+                font-weight: 700;
+                line-height: normal;
+                margin:40px 0px 28px;
+            }
+            .validcode{
+                font-family: 'Inter', sans-serif !important;
+                font-size: 18px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+                color:#343434;
+            }
+            .indy-link{
+                font-family: 'Inter', sans-serif !important;
+                font-size: 14px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+                text-decoration-line: underline;
+                color:#343434 !important;
+                cursor: pointer;
+            }
+            .footer-con{
+                margin:22px auto 0px;
+                text-align: center;
+            }
+            .insta-icon{
+                margin-right:16px;
+                cursor: pointer;
+            }
+            .linkedin-icon{
+                cursor: pointer;
+            }
+            .facebook-icon{
+                margin-right:16px;
+                cursor: pointer;
+            }
+            .twitter-icon{
+                margin-right:16px;
+                cursor: pointer;
+            }
+            .footer-content{
+                font-family: Inter;
+                font-size: 10px;
+                font-style: normal;
+                font-weight: 500;
+                line-height: normal;
+                color:#A1A1A9;
+            }
+            @media(max-width:575px){
+                .headersection{
+                    padding: 22px 20px 40px 20px;
+                    background-color: white;
+                    border-radius: 6px;
+                }
+                .heading-con{
+                    font-size: 20px;
+                }
+                .paragraph{
+                    font-size: 16px;
+                    padding: 0px;
+                }
+                .otp-con{
+                    margin:24px;
+                    font-size: 38px;
+                }
+                .validcode{
+                    font-size: 16px;
+                }
+                .main-content{
+                    margin: 120px auto;
+                }
+                .note-con{
+                    font-size: 13px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="indy-logo">
+          <a href="https://theauctioncollective.com/"><img  src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/Logo-indy-email.png" alt="img"></a> 
+        </div>
+        <div class="maincontent">
+            <div class="headersection">
+                <P class="heading-con">Thank you for joining Indy.auction </P>
+                <p class="paragraph">Please verify your email address by using the 6-digit code below.</p>
+                <p class="otp-con">{{otp}}</p>
+                <p class="validcode">This code is valid for 10 minutes.</p>
+                <div class="note-main">
+                    <p class="note-con" style="margin-top: 25px;">If you did not register this address, please contact <a href="#" class="indy-link">indy@indy.com</a></p>
+                </div>
+            </div>
+        </div>
+        <div class="footer-con">
+           <a href="#"><img class="insta-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/insta-icon-dark.png" alt="img"></a>
+           <a href="#"><img class="facebook-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/facebook-dark-icon.png" alt="img"></a>
+           <a href="#"><img class="twitter-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/twitter-dark-icon.png" alt="img"></a>
+           <a href="#"><img class="linkedin-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/linkedin-dark-logo.png" alt="img"></a>
+           <p class="footer-content">Copyright 2023 Indy.auction. All rights reserved.</p>
+        </div>
+    </body>
+</html>
