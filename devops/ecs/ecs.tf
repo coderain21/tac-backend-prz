@@ -135,11 +135,7 @@ resource "aws_iam_role_policy_attachment" "stepfunctions_full_access_task_role" 
   provider = aws.deployment-eu
 }
 
-resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
-  role       = "${aws_iam_role.ecs_task_execution_role.name}
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  provider = aws.deployment-eu
-}
+
 resource "aws_iam_role_policy_attachment" "task_s3" {
   role       = "${aws_iam_role.ecs_task_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
@@ -169,6 +165,11 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_logs_full_access_task_exec
 resource "aws_iam_role_policy_attachment" "cloudwatch_full_access_task_execution_role" {
   role      = "${aws_iam_role.ecs_task_execution_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
+  provider = aws.deployment-eu
+}
+resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
+  role       = "${aws_iam_role.ecs_task_execution_role.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   provider = aws.deployment-eu
 }
 
@@ -375,11 +376,3 @@ resource "aws_ecs_service" "ecs_service" {
 }
 
 
-
-output "subnet_cidr_blocks" {
-  value = data.aws_subnets.public.ids
-}
-
-#output "default_vpc_ids" {
-#  value = data.aws_vpc.default.id
-#}
