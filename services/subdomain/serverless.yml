@@ -164,19 +164,19 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
-    # BuyerEmailOtp:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/buyer_email_otp.html)}
-    #     Subject: Indy.auction - OTP Verification for Your Account
-    #     TemplateName: ${self:provider.stage}-buyer_email_otp
+    BuyerEmailOtp:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/buyer_email_otp.html)}
+        Subject: Indy.auction - OTP Verification for Your Account
+        TemplateName: ${self:provider.stage}-buyer_email_otp
       
-    # BuyerResetPassword:
-    #   Type: AWS::Pinpoint::EmailTemplate
-    #   Properties: 
-    #     HtmlPart: ${file(./templates/buyer_reset_password.html)}
-    #     Subject: Indy.auction- Reset your password
-    #     TemplateName: ${self:provider.stage}-buyer_reset_password
+    BuyerResetPassword:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/buyer_reset_password.html)}
+        Subject: Indy.auction- Reset your password
+        TemplateName: ${self:provider.stage}-buyer_reset_password
 
 
 plugins:
