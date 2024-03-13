@@ -688,6 +688,7 @@
                       "_id": "65b79dad9c5418096cc1f868",
                       "email_address": "anusha.k+admin@7edge.com",
                       "status": true
+                      
                     },
                     {
                       "_id": "65f07e5ad0d3dba1b8dbf4f4",
@@ -706,15 +707,6 @@
                       "country": "",
                       "kyc_status": "false",
                       "kyb_status": "pending"
-                    },
-                    {
-                      "_id": "65f05711477ab501c63d3a8c",
-                      "email_address": "sthuthi+test@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "pending",
-                      "kyb_status": "init"
                     },
                     {
                       "_id": "65e868c86900bfb397baea7d",
@@ -766,7 +758,7 @@
                       "full_name": " "
                     }
                   ],
-                  "total_sellers": 33,
+                  "total_sellers": 38,
                   "page_size": 10,
                   "page_number": 1
                 }
