@@ -32,29 +32,48 @@ auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 def wishlist_list(event, context):
     try:
-        try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            email_address = cognito_data['email']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # try:
+        #     cognito_data = json.loads(event['requestContext']['authorizer']['data'])
+        #     email_address = cognito_data['email']
+        #     if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
 
         # client = MongoClient(os.environ['MONGO_CLIENT'])
         # db = client[os.environ['DATABASE']]
         # wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
         # lot_collection = db[os.environ['LOTS_TABLE_NAME']]
         # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        email_address = 'sthuthi+auction@7edge.com'
+        data = event['queryStringParameters']
 
-        # data = event['queryStringParameters']
+        seller_email = str(data.get('seller_email'))
+        print('seller email', seller_email)
+        if not seller_email:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Please provide a valid seller_email'})
+            }
+
+        auction_id = data.get('auction_id')
+        if not auction_id:
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({'message': 'Please provide a valid auction_uid'})
+            }
+
+        # buyer_id = data.get('buyer_id')
         # buyer_id = ObjectId(data.get('buyer_id'))
         # print('buyer id', buyer_id)
 
@@ -64,15 +83,10 @@ def wishlist_list(event, context):
         #         'headers': headers,
         #         'body': json.dumps({'message': 'Please provide a valid buyer_email'})
         #     }
+
+
         pipeline = [
             {"$match": {"email_address": email_address}},
-            {"$lookup": {
-                "from": os.environ['AUCTION_MONGODB_COLLECTION_NAME'],
-                "localField": "auction_uid",
-                "foreignField": "_id",
-                "as": "auction_details"
-            }},
-            {"$unwind": {"path": "$auction_details", "preserveNullAndEmptyArrays": True}},
             {"$lookup": {
                 "from": os.environ['LOTS_TABLE_NAME'],
                 "localField": "lot_id",
@@ -80,15 +94,24 @@ def wishlist_list(event, context):
                 "as": "lot_details"
             }},
             {"$unwind": "$lot_details"},
+            {"$match": {"lot_details.auction_id": auction_id, "lot_details.seller_email": seller_email}},
+            {"$lookup": {
+                "from": os.environ['AUCTION_MONGODB_COLLECTION_NAME'],
+                "localField": "auction_uid",
+                "foreignField": "_id",
+                "as": "auction_details"
+            }},
+            {"$unwind": "$auction_details"},
+            # {"$match": {"auction_details.seller_email": seller_email}},
             {"$project": {
                 "_id": 0,
-                "lot_details":1,
-                "auction_title": "$auction_details.title",
-                "auction_uid": "$auction_details._id",
-                "currency": "$auction_details.currency",
-                "auction_end_date": "$auction_details.end_date",
+                "lot_details": 1,
+                "auction_name": "$auction_details.title",
+                "auction_id": "$auction_details.auction_id",
+                "auction_uid": "$auction_details._id"
             }}
         ]
+
 
 
         print('pipeline', pipeline)
