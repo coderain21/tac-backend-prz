@@ -267,8 +267,8 @@ functions:
           cors: true
           path: /lots
           method: get
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+          # authorizer:
+          #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
  
   admin_list_lots:
     handler: handlers/admin_list_lots.list_lots
