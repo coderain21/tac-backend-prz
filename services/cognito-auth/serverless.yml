@@ -20,6 +20,8 @@ provider:
     BUYER_RECAPTCHA_KEY: ${ssm:BUYER_RECAPTCHA_KEY}
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
@@ -27,6 +29,7 @@ provider:
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
@@ -48,8 +51,8 @@ provider:
     JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
     BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
     CDN_LINK: ${ssm:CDN_URL}
-    DEFAULT_USERPOOL_ID: { Ref: Buyers }
-    DEFAULT_COGNITO_DOMAIN: buyers-indyauction-${self:provider.stage}
+    DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
@@ -125,12 +128,16 @@ functions:
     layers:
       
       - ${ssm:COMMON_LIB_ARN}
-    events:
-        - cognitoUserPool:
-            pool: ${opt:stage, self:provider.stage}-indyauction-buyers
-            trigger: PreSignUp
-            existing: true
-
+    # events:
+    #   - cognitoUserPool:
+    #       pool: indyauction-buyers-${self:provider.stage}
+    #       trigger: PreSignUp
+    #       existing: true
+    # events:
+    #   - cognitoUserPool:
+    #       pool: ${ssm:BUYER_COGNITO_USERPOOL_NAME}
+    #       trigger: PreSignUp
+    #       existing: true
 
 
 resources:
@@ -282,6 +289,11 @@ resources:
             StringAttributeConstraints:
               MinLength: "0"
               MaxLength: "2048"
+          # - Name: phonenumber_verified
+          #   AttributeDataType: Boolean
+          #   DeveloperOnlyAttribute: false
+          #   Mutable: true
+          #   Required: false
           - Name: address
             AttributeDataType: String
             DeveloperOnlyAttribute: false
@@ -297,6 +309,13 @@ resources:
             Required: false
             NumberAttributeConstraints:
               MinValue: "0"
+          # - Name: identities
+          #   AttributeDataType: String
+          #   DeveloperOnlyAttribute: false
+          #   Mutable: true
+          #   Required: false
+          #   StringAttributeConstraints:
+          #     MaxLength: "2048"
         AliasAttributes:
           - preferred_username
         VerificationMessageTemplate:
@@ -304,6 +323,8 @@ resources:
         UserAttributeUpdateSettings:
           AttributesRequireVerificationBeforeUpdate: []
         MfaConfiguration: "OFF"
+        # EnabledMfas:
+        #   - SOFTWARE_TOKEN_MFA
         EmailConfiguration:
           EmailSendingAccount: COGNITO_DEFAULT
         UsernameConfiguration:
@@ -312,7 +333,10 @@ resources:
           RecoveryMechanisms:
             - Priority: 1
               Name: admin_only
-
+        
+    
+    
+    
     GoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -327,7 +351,8 @@ resources:
           client_secret: ${ssm:GOOGLE_CLIENT_SECRET}
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
-
+          
+    
     FacebookAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -357,9 +382,6 @@ resources:
 
     BuyersClient:
       Type: AWS::Cognito::UserPoolClient
-      DependsOn: 
-        - GoogleAuth
-        - FacebookAuth
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
@@ -409,7 +431,9 @@ resources:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
+        
 
+    
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
@@ -510,20 +534,20 @@ resources:
           Name: BUYER_COGNITO_IDENTITY_POOL_NAME
           Type: String
           Value: indyauction-buyers-${self:provider.stage}
-
     BuyerEmailOtp:
       Type: AWS::Pinpoint::EmailTemplate
       Properties: 
         HtmlPart: ${file(./templates/buyer_email_otp.html)}
         Subject: Indy.auction - OTP Verification for Your Account
         TemplateName: ${self:provider.stage}-buyer_email_otp
-      
     BuyerResetPassword:
       Type: AWS::Pinpoint::EmailTemplate
       Properties: 
         HtmlPart: ${file(./templates/buyer_reset_password.html)}
         Subject: Indy.auction- Reset your password
         TemplateName: ${self:provider.stage}-buyer_reset_password
+
+            
 plugins:
   - serverless-offline
   - serverless-package-external
