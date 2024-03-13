@@ -673,63 +673,96 @@
                     }
                   }
                 },
-                "example": {
+                "example": {           
                   "sellers": [
                     {
+                      "_id": "65f13e4090d036599492b002",
+                      "email_address": "william.pham@theauctioncollective.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "false"
+                    },
+                    {
                       "_id": "65b79dad9c5418096cc1f868",
-                      "email_address": "anusha.k+admin@7edge.com"
+                      "email_address": "anusha.k+admin@7edge.com",
+                      "status": true
+                    },
+                    {
+                      "_id": "65f07e5ad0d3dba1b8dbf4f4",
+                      "email_address": "sthuthi+testp@7edge.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "pending"
+                    },
+                    {
+                      "_id": "65f07f10d0d3dba1b8dbf4f8",
+                      "email_address": "sthuthi+tests@7edge.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "pending"
+                    },
+                    {
+                      "_id": "65f05711477ab501c63d3a8c",
+                      "email_address": "sthuthi+test@7edge.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "pending",
+                      "kyb_status": "init"
                     },
                     {
                       "_id": "65e868c86900bfb397baea7d",
                       "email_address": "vinonithi139@gmail.com",
-                      "created_at": "2024-03-06 12:59:52.628000"
+                      "status": true,
+                      "brand_name": "XYZ",
+                      "country": "India",
+                      "kyc_status": "completed",
+                      "kyb_status": "true"
                     },
                     {
-                      "_id": "654f664042b81a4af17a0fd8",
-                      "email_address": "aishwarya+seller2@7edge.com",
-                      "created_at": "2023-11-11 11:32:16.818000",
-                      "full_name": " "
-                    },
-                    {
-                      "_id": "64eed436721b55a9e6941c1c",
-                      "email_address": "aishwarya+30@7edge.com",
-                      "created_at": "2023-08-30 05:31:34.125000",
+                      "_id": "65ba23604b7bcbcaf824eed5",
+                      "email_address": "anusha.k+7z9ivqr7@7edge.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "false",
                       "full_name": " "
                     },
                     {
                       "_id": "65ba23f552b2af5ffae31e81",
                       "email_address": "anusha.k+7azenmhz@7edge.com",
-                      "created_at": "2024-01-31 10:41:57.694000",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "false",
                       "full_name": " "
                     },
                     {
-                      "_id": "65ba23604b7bcbcaf824eed5",
-                      "email_address": "anusha.k+7z9ivqr7@7edge.com",
-                      "created_at": "2024-01-31 10:39:28.308000",
-                      "full_name": " "
-                    },
-                    {
-                      "_id": "65c0b42f450ef7ab82692287",
-                      "email_address": "namratha.shettigar+seller@7edge.com",
-                      "created_at": "2024-02-05 10:10:55.075000",
-                      "full_name": " "
-                    },
-                    {
-                      "_id": "65ba25a197d810c14774c5f5",
-                      "email_address": "anusha.k+7bgns16z@7edge.com",
-                      "created_at": "2024-01-31 10:49:05.029000",
+                      "_id": "654f664042b81a4af17a0fd8",
+                      "email_address": "aishwarya+seller2@7edge.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "false",
                       "full_name": " "
                     },
                     {
                       "_id": "65c0b5af03ed5973bf5456c6",
                       "email_address": "sushiachrya@7edge.com",
-                      "created_at": "2024-02-05 10:17:19.473000",
-                      "full_name": " "
-                    },
-                    {
-                      "_id": "65c0d085be93f335bb2a4414",
-                      "email_address": "anusha.k+subdomain@7edge.com",
-                      "created_at": "2024-02-05 12:11:49.327000",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "completed",
+                      "kyb_status": "false",
                       "full_name": " "
                     }
                   ],
