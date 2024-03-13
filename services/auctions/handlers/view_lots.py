@@ -248,8 +248,6 @@ def export_lots_as_csv(lots, db):
     except Exception as err:
         print("Error:", err)
         return None
-    
-
 
 
 def currency_symbol(amount, currency_code):
