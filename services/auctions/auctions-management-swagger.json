@@ -596,7 +596,7 @@
                 }
               },
               "example": {
-                "type":"UNPUBLISHED"
+                "type":"UNPUBLISH"
               }
             }
           }
