@@ -49,15 +49,7 @@ def list_purchases(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-            print('email', email_address)
         except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-        result = user_collection.find_one({"user_type": "admin", "email_address": email_address})
-        if result is None:
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -65,11 +57,13 @@ def list_purchases(event, context):
             }
         # Initialize the query
         query = {"auction_id": event['queryStringParameters'].get('auction_id', '')}
+        export = event['queryStringParameters'].get('export', False)
+        download_link = None
+
 
         # Fetch auction details
         auction_id = query["auction_id"]
         auction_details = auction_collection.find_one({"_id": ObjectId(auction_id)})
-        print('buyer_details', auction_details)
 
         if auction_details is None:
             return {
@@ -84,8 +78,6 @@ def list_purchases(event, context):
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'created_at')
         sort_order = data.get('sort_order', 'descending')
-        payment_type = data.get("payment_type", '')
-        payment_status = data.get("payment_status", '')
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
 
@@ -123,7 +115,6 @@ def list_purchases(event, context):
                 'auction_title': 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
-
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
         total_pages = math.ceil(total_records / limit)
@@ -134,14 +125,31 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No Orders found"})
             }
-
         body = {
             "data": list(orders_list),
             "total_pages": total_pages,
             "total_records": total_records,
             "current_page": page
         }
-
+        if export:
+            orders = orders_collection.find(
+                query,
+                {
+                    "_id": 1,
+                    "name": 1,
+                    "amount": 1,
+                    "created_at": 1,
+                    "order_number": 1,
+                    "currency": 1,
+                    "payment_status": 1,
+                    "payment": 1,
+                    'auction_title': 1,
+                    'shipping_address': 1,
+                }
+            )
+            download_link = export_as_csv(list(orders))
+        if download_link is not None:
+            body["csv_url"] = download_link
         return {
             "statusCode": 200,
             "headers": headers,
@@ -180,13 +188,14 @@ def export_as_csv(sales):
         Exception: If an error occurs during the export and upload process.
     """
     try:
+        print('sales', sales)
         # Export QR codes as CSV and upload to S3
         csv_file = os.environ["SALES_CSV_FILE"]
         s3_key = f"exports/{csv_file}"
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date","Payment Type", "Payment Status"])
+            writer = csv.DictWriter(file, ["Order no.", "Customer name", "Date","Result", "Payment type", "Payment status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
@@ -195,14 +204,15 @@ def export_as_csv(sales):
                 date = datetime.fromtimestamp(sale['created_at'])
                 # Format the date as a string with only the date
                 formatted_date = date.strftime('%Y-%m-%d')
+                # Format the date as a string with only the date
                 shipping_address = sale['shipping_address']
                 full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
-                modified_sales["ORDER ID"] = sale["order_number"]
-                modified_sales["Customer Name"] = full_name
-                modified_sales["Auction Name"] = sale['auction_title']
-                modified_sales["Order Date"] = formatted_date
-                modified_sales["Payment Status"] = sale["payment_status"]
-                modified_sales["Payment Type"]= sale["payment"]
+                modified_sales["Order no."] = sale["order_number"]
+                modified_sales["Customer name"] = sale['name']
+                modified_sales["Date"] = formatted_date
+                modified_sales['Result'] = sale['amount']
+                modified_sales["Payment status"] = sale["payment_status"]
+                modified_sales["Payment type"]= sale["payment"]
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)

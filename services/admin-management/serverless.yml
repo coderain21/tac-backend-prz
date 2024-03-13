@@ -39,6 +39,7 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     KMS_KEY_ID: ${ssm:KMS_KEY_ID}
+    SALES_CSV_FILE: ${ssm:SALES_CSV_FILE}
     BUYER_EMAIL_OTP_TEMPLATE:
       Fn::Join:
         - ":"
