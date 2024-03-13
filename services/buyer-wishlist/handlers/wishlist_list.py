@@ -93,7 +93,7 @@ def wishlist_list(event, context):
                 "as": "lot_details"
             }},
             {"$unwind": "$lot_details"},
-            {"$match": {"lot_details.auction_id": auction_id, "lot_details.seller_email": seller_email}},
+            {"$match": {"lot_details.seller_email": seller_email}},
             {"$lookup": {
                 "from": os.environ['AUCTION_MONGODB_COLLECTION_NAME'],
                 "localField": "auction_uid",
