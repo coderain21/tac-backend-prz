@@ -72,7 +72,6 @@ def list_purchases(event, context):
         # Fetch auction details
         auction_id = query["auction_id"]
         auction_details = auction_collection.find_one({"_id": ObjectId(auction_id)})
-        print('buyer_details', auction_details)
 
         if auction_details is None:
             return {
@@ -126,7 +125,7 @@ def list_purchases(event, context):
                 'auction_title': 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
-
+        
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
         total_pages = math.ceil(total_records / limit)
@@ -137,19 +136,20 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No Orders found"})
             }
-
+        print('@@@@@@@@@@@@@@@@@@@@@', list(orders_list))
         body = {
             "data": list(orders_list),
             "total_pages": total_pages,
             "total_records": total_records,
             "current_page": page
         }
+        
         if export:
             download_link = export_as_csv(list(orders_list))
         if download_link is not None:
             body["csv_url"] = download_link
 
-
+        
         return {
             "statusCode": 200,
             "headers": headers,
@@ -188,6 +188,7 @@ def export_as_csv(sales):
         Exception: If an error occurs during the export and upload process.
     """
     try:
+        print('sales', sales)
         # Export QR codes as CSV and upload to S3
         csv_file = os.environ["SALES_CSV_FILE"]
         s3_key = f"exports/{csv_file}"
