@@ -200,7 +200,18 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     events:
       - http:
-          cors: true
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
           path: /{auction_id}
           method: patch
           authorizer:

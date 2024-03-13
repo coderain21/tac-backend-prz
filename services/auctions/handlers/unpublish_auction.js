@@ -73,8 +73,10 @@ module.exports.handler = async (event) => {
         if (seller_email !== getAuctionDetails[0].seller_email) {
             return {
                 statusCode: 401,
-                headers: await helpers.getHeaders(),
-                message: 'Unauthorized',
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Unauthorized',
+                }),
             }
         }
         if (request_body.type === 'UNPUBLISH' && getAuctionDetails[0].status === 'Published') {
@@ -88,15 +90,17 @@ module.exports.handler = async (event) => {
             await Promise.all(stepFunctionEnd)
             return {
                 statusCode: 204,
-                headers: await helpers.getHeaders(),
-                message: 'Successfully updated',
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Successfully Updated',
+                }),
             }
         }
 
         return {
             statusCode: 400,
-            headers: await helpers.getHeaders(),
-            message: JSON.stringify({
+            headers: helpers.getHeaders(),
+            body: JSON.stringify({
                 message: 'Update Error | Auction status not in the Published state',
             }),
         }
@@ -104,7 +108,7 @@ module.exports.handler = async (event) => {
         console.log(error)
         return {
             statusCode: 500,
-            headers: await helpers.getHeaders(),
+            headers: helpers.getHeaders(),
             body: JSON.stringify({
                 message: 'Internal Server Error',
             }),
