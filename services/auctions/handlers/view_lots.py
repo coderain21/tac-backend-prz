@@ -43,8 +43,6 @@ def list_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            
-        seller_email = 'sthuthi+stripe@7edge.com'
 
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
