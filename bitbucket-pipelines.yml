@@ -307,7 +307,7 @@ pipelines:
       - stage:
           name: RUNBOOK EXECUTION
           image: python:3.7.2
-          deployment: New-Production
+          deployment: Production
           steps:
             - step: *runcommands
     
@@ -375,7 +375,6 @@ pipelines:
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
             - step: *SecretChecking
       - stage:
             name: Pre-Production Deployment
@@ -389,7 +388,6 @@ pipelines:
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
             - step: *SecretChecking
       - stage:
             name: Production Deployment
@@ -397,4 +395,5 @@ pipelines:
             steps:
               - step: *BuildStep
               - step: *TerraDeploy
+
             

@@ -58,6 +58,7 @@ exports.handler = async (event, context, callback) => {
             const userData = {
                 first_name: '',
                 last_name: '',
+                full_name: '',
                 registered_through: 'federated',
                 email_address: event.request.userAttributes.email,
                 password: newPassword,

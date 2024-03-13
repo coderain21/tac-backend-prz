@@ -14,7 +14,7 @@
                 font-family: 'Inter', sans-serif !important;
             }
             .indy-logo{
-                margin: 0 auto 0px;
+                margin: 48px auto 0px;
                 text-align: center;
                 cursor: pointer;
             }
@@ -54,22 +54,19 @@
                 font-weight: 500;
                 margin:0px;
                 font-family: 'Inter', sans-serif !important;
-                text-align: left;
-                padding:0px 56px;
             }
             .heading-con1{
                 font-size: 16px;
             }
             .paragraph{
-                font-size: 16px;
+                font-size: 17px;
                 font-style: normal;
                 font-weight: 500;
                 line-height: normal;
                 color:#343434;
-                text-align: left;
-                padding:24px 56px 0;
+                text-align: center;
+                padding:0px 132px;
                 font-family: 'Inter', sans-serif !important;
-                margin: 0;
             }
             .note-main{
                 margin: 0px !important;
@@ -83,14 +80,13 @@
                 line-height: normal;
                 color:#343434;
                 font-family: 'Inter', sans-serif !important;
-                margin: 25px 56px;
-                text-align: left;            
+                margin: 25px 0;
             }
             .paddle-body{
                 max-width: 540px;
                 margin: 28px auto;
                 border-radius: 8px;
-                background: #323232;
+                background: {{background_color}};
                 padding: 1px;
             }
             .paddle-body p{
@@ -155,37 +151,6 @@
                 color:#A1A1A9;
                 font-family: 'Inter', sans-serif !important;
             }
-            .winning-lots, .not-winning-lots{
-                margin-top: 0;
-                border: 1px solid #E4E4E7;
-                border-radius: 8px;
-                padding: 18px 20px 0;
-                margin: 20px 40px;
-            }
-            .winning-lot-section, .not-winning-lot-section{
-                display: flex;
-                margin-bottom: 18px;
-            }
-            .winning-lot-section img, .not-winning-lots img{
-                width: 136px;
-                height: 136px;
-                object-fit: cover;
-            }
-            .lot-details{
-                margin-left: 48px;
-            }
-            .lot-details p{
-                color: #343434;
-                font: 500;
-                font-size: 18px;
-                line-height: 20px;
-                text-align: left;
-                flex-wrap: wrap;
-            }
-            .lot-details p:last-child{
-                font-size: 14px;
-                margin: 0;
-            }
             @media(max-width:575px){
                 .headersection{
                     padding: 22px 20px 40px 20px;
@@ -194,11 +159,10 @@
                 }
                 .heading-con{
                     font-size: 20px;
-                    padding: 0 20px 15px;
                 }
                 .paragraph{
                     font-size: 16px;
-                    padding: 15px 20px;
+                    padding: 0px;
                 }
                 .otp-con{
                     margin:20px;
@@ -220,78 +184,30 @@
                 .indy-logo {
                     margin: 20px auto 0px;
                 }
-                .winning-lots, .not-winning-lots{
-                    margin: 20px 10px;
-                }
-                .lot-details{
-                    margin-left: 20px;
-                }
-                .winning-lot-section img, .not-winning-lots img {
-                    width: 120px;
-                    height: 120px;
-                }
-                .lot-details p{
-                    margin: 10px 0;
-                }
-                .note-con{
-                    margin: 0 20px;
-                }
-                .footer-content1{
-                    margin-bottom: 20px;
-                }
             }
         </style>
     </head>
     <body>
         <div class="maincontent">
             <div class="indy-logo">
-                <a href="https://theauctioncollective.com/"><img src= {{logo_url}} alt="img" style="width: 100px;"></a> 
+                <a href="#"><img src="{{img}}" alt="img" style="width: 180px; height: 35px;"></a> 
             </div>
             <div class="headersection">
-                <P class="heading-con">Dear {{buyer}}, </P>
-                <p class="paragraph">Thank you for taking part in {{title}}.</p>
-                {{#gt winning_lot_count 0}}
-                <p class="paragraph">Congratulations on winning the bids on the following lots:</p>
-                <div class="winning-lots">
-                    {{#each winning_lot}}
-                    <div class="winning-lot-section">
-                        <div>
-                            <img src={{lot_image}} alt="icon" >
-                        </div>
-                        <div class="lot-details">
-                            <p>{{lot_number}}. {{title1}}</p>
-                            <p>Bid Amount: {{bid_amount}}</p>
-                        </div>
-                    </div>
-                    {{/each}}
-                   
+                <P class="heading-con">Dear {{user_first_name}}, </P>
+                <p class="paragraph">Congratulations, you are now registered to bid in the auction:</p>
+                <p class="otp-con">{{Auction_title}}</p>
+                <p class="validcode">{{auction_start_date}} at {{auction_start_time}}.</p>
+                <p class="heading-con1">Your paddle number is attached. It is unique to you <br/> and this auction.</p>
+                <div class="paddle-body">
+                    <p style="color:{{color}}">{{paddle}}</p>
                 </div>
-                {{/gt}}
-                {{#gt not_winning_lot_count 0 }}
-                <p class="paragraph">Unfortunately, your following bid(s) did not win the auction.</p>
-                <div class="not-winning-lots">
-                 {{#each not_winning_lot}}
-                    <div class="not-winning-lot-section">
-                        <div>
-                            <img src={{lot_image}} alt="icon" >
-                        </div>
-                        <div class="lot-details">
-                            <p>{{lot_number}}. {{title1}}</p>
-                            <p>Bid Amount: {{bid_amount}}</p>
-                        </div>
-                    </div>
-                 {{/each}}
-                </div>
-                {{/gt}}
-                <p class="paragraph">A payment request email will follow shortly along with instructions on the next steps.</p>
-                <p class="paragraph">For any questions, please contact {{seller_email}}.</p>
                 <div class="note-main">
-                    <p class="note-con" style="margin-top: 25px;">All our best,<br/>  {{seller_name}}</p>
-                </div>
-                <div>
-                    <p class="footer-content1">Powered by Indy.auction</p>
+                    <p class="note-con" style="margin-top: 25px;">All our best,<br/>  {{Seller_name}}</p>
                 </div>
             </div>
+        </div>
+        <div>
+            <p class="footer-content1">Powered by Indy.auction</p>
         </div>
     </body>
 </html>

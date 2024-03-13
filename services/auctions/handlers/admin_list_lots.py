@@ -9,6 +9,7 @@ import boto3
 from lib.common_helper import Encoder
 from urllib.parse import unquote
 
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',

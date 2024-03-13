@@ -4,10 +4,13 @@
         <meta charset="UTF-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Otp Email For Seller Registration</title>
+        <title>Otp Template For Buyer Registration</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Noto+Sans:wght@300;400;500&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&family=Roboto:wght@100;400;500&display=swap" rel="stylesheet">
         <style>
             body{
-                background: #F7F8F9;
+                background: #E6E6E6;
                 font-family: 'Inter', sans-serif !important;
             }
             .indy-logo{
@@ -21,6 +24,7 @@
                 height: auto;
                 margin: 40px auto;
                 border-radius: 10px;
+                font-family: 'Inter', sans-serif !important;
             }
            
             .headersection{
@@ -28,18 +32,18 @@
                 padding: 56px 0px;
                 background-color: white;
                 border-radius: 6px;
+                font-family: 'Inter', sans-serif !important;
             }
             .heading-con{
                 font-size: 22px;
                 line-height: normal;
                 color: #343434;
-                font-family: 'Inter', sans-serif !important;
                 font-style: medium;
                 font-weight: 500;
                 margin:0px;
+                font-family: 'Inter', sans-serif !important;
             }
             .paragraph{
-                font-family: 'Inter', sans-serif !important;
                 font-size: 18px;
                 font-style: normal;
                 font-weight: 500;
@@ -47,37 +51,39 @@
                 color:#A1A1A9;
                 text-align: center;
                 padding:0px 132px;
+                font-family: 'Inter', sans-serif !important;
             }
             .note-main{
                 margin: 0px !important;
                 padding: 0px;
+                font-family: 'Inter', sans-serif !important;
             }
             .note-con{
-                font-family: 'Inter', sans-serif !important;
                 font-size: 14px;
                 font-style: normal;
                 font-weight: 500;
                 line-height: normal;
                 color:#A1A1A9;
+                font-family: 'Inter', sans-serif !important;
             }
             .otp-con{
-                font-family: 'Inter', sans-serif !important;
                 font-size: 56px;
                 font-style: normal;
                 font-weight: 700;
                 line-height: normal;
                 margin:40px 0px 28px;
+                font-family: 'Inter', sans-serif !important;
             }
             .validcode{
-                font-family: 'Inter', sans-serif !important;
                 font-size: 18px;
                 font-style: normal;
                 font-weight: 500;
                 line-height: normal;
                 color:#343434;
+                margin-bottom: 40px;
+                font-family: 'Inter', sans-serif !important;
             }
             .indy-link{
-                font-family: 'Inter', sans-serif !important;
                 font-size: 14px;
                 font-style: normal;
                 font-weight: 500;
@@ -85,14 +91,17 @@
                 text-decoration-line: underline;
                 color:#343434 !important;
                 cursor: pointer;
+                font-family: 'Inter', sans-serif !important;
             }
             .footer-con{
                 margin:22px auto 0px;
                 text-align: center;
+                font-family: 'Inter', sans-serif !important;
             }
             .insta-icon{
                 margin-right:16px;
                 cursor: pointer;
+                font-family: 'Inter', sans-serif !important;
             }
             .linkedin-icon{
                 cursor: pointer;
@@ -106,12 +115,12 @@
                 cursor: pointer;
             }
             .footer-content{
-                font-family: Inter;
                 font-size: 10px;
                 font-style: normal;
                 font-weight: 500;
                 line-height: normal;
                 color:#A1A1A9;
+                font-family: 'Inter', sans-serif !important;
             }
             @media(max-width:575px){
                 .headersection{
@@ -132,6 +141,7 @@
                 }
                 .validcode{
                     font-size: 16px;
+                    margin-bottom: 20px;
                 }
                 .main-content{
                     margin: 120px auto;
@@ -144,11 +154,11 @@
     </head>
     <body>
         <div class="indy-logo">
-          <a href="https://theauctioncollective.com/"><img  src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/Logo-indy-email.png" alt="img"></a> 
+          <a href="#"><img  src={{logo_image}} alt="img" style="width: 100px; height: auto"></a> 
         </div>
         <div class="maincontent">
             <div class="headersection">
-                <P class="heading-con">Thank you for joining Indy.auction </P>
+                <P class="heading-con">Thank you for joining {{seller_name}} </P>
                 <p class="paragraph">Please verify your email address by using the 6-digit code below.</p>
                 <p class="otp-con">{{otp}}</p>
                 <p class="validcode">This code is valid for 10 minutes.</p>
@@ -156,13 +166,6 @@
                     <p class="note-con" style="margin-top: 25px;">If you did not register this address, please contact <a href="#" class="indy-link">indy@indy.com</a></p>
                 </div>
             </div>
-        </div>
-        <div class="footer-con">
-           <a href="#"><img class="insta-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/insta-icon-dark.png" alt="img"></a>
-           <a href="#"><img class="facebook-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/facebook-dark-icon.png" alt="img"></a>
-           <a href="#"><img class="twitter-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/twitter-dark-icon.png" alt="img"></a>
-           <a href="#"><img class="linkedin-icon" src="https://qa-cdn.indyauction.net/EMAIL-TEMPLATE-ASSETS/linkedin-dark-logo.png" alt="img"></a>
-           <p class="footer-content">Copyright 2023 Indy.auction. All rights reserved.</p>
         </div>
     </body>
 </html>
