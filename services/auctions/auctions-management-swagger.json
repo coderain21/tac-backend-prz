@@ -596,7 +596,7 @@
                 }
               },
               "example": {
-                "type":"UNPUBLISH"
+                "type":"UNPUBLISH/CANCEL" 
               }
             }
           }
