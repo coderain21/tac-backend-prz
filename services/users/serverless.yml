@@ -17,8 +17,8 @@ provider:
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    COGNITO_USER_POOL_ID: { Ref: SellerUsers }
+    COGNITO_SELLER_CLIENT_ID: { Ref: SellerUsersClient } 
     REGION: ${ssm:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -139,32 +139,12 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
   
-    # events:
-    #   - cognitoUserPool:
-    #       pool: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
-    #       trigger: PreSignUp
-    #       existing: true
-   
+    events:
+        - cognitoUserPool:
+            pool: ${opt:stage, self:provider.stage}-indyauction-seller
+            trigger: PreSignUp
+            existing: true
 
-
-  # # COGNITO POST SIGNUP CONFIRMATION TRIGGER   
-  # cognito-post-signup-confirmation-trigger:
-  #   handler: handlers/cognito_post_confirmation.handler
-  #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
-  #   events:
-  #     - cognitoUserPool:
-  #         pool: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
-  #         trigger: PostConfirmation
-  #         existing: true
-  #   vpc:
-  #     securityGroupIds:
-  #       - ${ssm:SECURITY_GROUP_ID}
-  #     subnetIds:
-  #       - ${ssm:SUBNET_ID}
-  
-  
-  # COGNITO PRE SIGNUP TRIGGER
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verifyReCaptcha
     layers:
@@ -242,8 +222,6 @@ functions:
           path: /reset_password
           method: post
   
-    
-
   view-profile:
     handler: handlers/view_profile.view_customer
     runtime: python3.8
@@ -261,7 +239,9 @@ functions:
             path: /{email}
             method: GET
             authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
+
 
 
   update-profile:
@@ -279,7 +259,8 @@ functions:
               path: /{email}
               method: PATCH
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   generate_token:
     handler: handlers/generate.generate_token
@@ -298,7 +279,8 @@ functions:
           path: /generate
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   kyc_webhook:
     handler: handlers/kyc_webhook.kyc_webhook
@@ -333,7 +315,8 @@ functions:
               path: /password-update/{email}
               method: PATCH
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   update-plans:
         handler: handlers/update_plan.updatePlan
@@ -350,7 +333,8 @@ functions:
               path: /update-plan/{email}
               method: PATCH
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
   
   kyb_generate_token:
     handler: handlers/kyb_generate.generate_token
@@ -369,7 +353,8 @@ functions:
           path: /kyb-generate
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   split_payment:
     handler: handlers/split_payment.splitPayment
@@ -387,7 +372,8 @@ functions:
           path: /payment-intent
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
     
   seller_sub_domain:
     handler: handlers/seller_domain.create_subdomain
@@ -406,7 +392,8 @@ functions:
           path: /seller-sub-domain
           method: post
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   disconnect_account:
     handler: handlers/stripe_disconnect.disconnect_account
@@ -424,7 +411,8 @@ functions:
           path: /stripe
           method: patch
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   stripe-connect:
     handler: handlers/create.create
@@ -442,7 +430,8 @@ functions:
             path: /stripe
             method: GET
             authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              type: COGNITO_USER_POOLS
+              authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   stripe-webhook:
       handler: handlers/stripe_webhook.create
@@ -714,9 +703,7 @@ resources:
           RecoveryMechanisms:
             - Priority: 1
               Name: admin_only
-    
-    
-    
+
     GoogleAuth:
       Type: "AWS::Cognito::UserPoolIdentityProvider"
       Properties:
@@ -763,6 +750,9 @@ resources:
  
     SellerUsersClient:
       Type: AWS::Cognito::UserPoolClient
+      DependsOn: 
+        - GoogleAuth
+        - FacebookAuth
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
@@ -863,7 +853,18 @@ resources:
             ProviderName: !GetAtt SellerUsers.ProviderName
             ServerSideTokenCheck: false
         # Define more configuration properties as needed
-
+    MyApiGatewayAuthorizer: 
+      Type: AWS::ApiGateway::Authorizer
+      Properties: 
+        Name: CognitoUserPool
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        RestApiId: 
+          Ref: ApiGatewayRestApi
+        ProviderARNs: 
+          - Fn::GetAtt:
+              - SellerUsers
+              - Arn
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
