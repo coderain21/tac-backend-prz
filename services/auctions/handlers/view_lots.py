@@ -43,7 +43,7 @@ def list_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-
+        
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
         auction_id = query_parameters.get('auction_id')
@@ -215,8 +215,8 @@ def export_lots_as_csv(lots, db):
                     "Thumbnail URL": thumbnail_url,
                     "Title": lot.get("title1", ""),
                     "Starting Bid": currency_symbol(lot.get("starting_price", ""), auction_status['currency']),
-                    "Current Bid": currency_symbol(lot.get("current_bid", 0), auction_status['currency']) if lot.get("current_bid") else 0,
-                    "Top Bidder": lot.get("Top_bidder", ""),
+                    "Current Bid": currency_symbol(lot.get("current_bid", 0), auction_status['currency']) if lot.get("current_bid") else '',
+                    "Top Bidder": lot.get("top_bidder", ""),
                     # "Total Current Bid": lot.get("total_current_bid",""),
                     # "Total Bids": lot.get("total_bids", ""),
                     # "Active Bidders": lot.get("active_bidders", ""),
