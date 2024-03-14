@@ -6,6 +6,28 @@
 /* eslint-disable import/no-extraneous-dependencies */
 
 const redis = require('redis')
+const { createCluster } = require('redis')
+
+async function createRedisClient() {
+    const client = createCluster({
+        rootNodes: [
+            {
+                url: 'redis://websocket-redis-cluster-enabled.z4q2as.clustercfg.euw2.cache.amazonaws.com:6379',
+            },
+        ],
+        legacyMode: true,
+        useReplicas: true,
+
+    })
+    // return client
+    client.on('error', (error) => console.error(
+        'getRedisClient: error occurred for ',
+        error,
+    ))
+    // Wait for it to connect to avoid any errors.
+    await client.connect()
+    return client
+}
 
 /**
  * Function to save the lot to cache after auction publish
@@ -20,12 +42,14 @@ const redis = require('redis')
 module.exports.handler = async (event, context, callback) => {
     try {
         const data = typeof event === 'string' ? JSON.parse(event) : event
-        const client = await redis.createClient({
-            url: process.env.REDIS_URL,
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        if (!client.isOpen) {
-            await client.connect()
-        }
+        // const client = await redis.createClient({
+        //     url: process.env.REDIS_URL,
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // if (!client.isOpen) {
+        //     await client.connect()
+        // }
+        const client = await createRedisClient()
+        console.log('client', client)
         const redisKey = `lot:${data._id}`
         let endDateISO
         const redisPayload = JSON.stringify(data)

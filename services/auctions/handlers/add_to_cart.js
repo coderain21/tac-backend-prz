@@ -4,10 +4,32 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 const redis = require('redis')
+const { createCluster } = require('redis')
+
 const mongodbHelper = require('../lib/mongodb_helper')
 const { sqsTriggerFunction } = require('./sqs_trigger_function')
 const BidInformation = require('../entities/BidInformation')
 
+async function createRedisClient() {
+    const client = createCluster({
+        rootNodes: [
+            {
+                url: 'redis://websocket-redis-cluster-enabled.z4q2as.clustercfg.euw2.cache.amazonaws.com:6379',
+            },
+        ],
+        legacyMode: true,
+        useReplicas: true,
+
+    })
+    // return client
+    client.on('error', (error) => console.error(
+        'getRedisClient: error occurred for ',
+        error,
+    ))
+    // Wait for it to connect to avoid any errors.
+    await client.connect()
+    return client
+}
 async function getLot(rediskey, client, id) {
     const allBidders = await client.hGetAll('lot', rediskey)
     return Object.values(allBidders || {}).filter((bidder) => {
@@ -31,13 +53,15 @@ module.exports.handler = async (event) => {
         const currentTimestamp = new Date(Date.now()).getTime()
         console.log(currentTimestamp)
         const rediskey = `lot:${event._id}`
-        const client = await redis.createClient({
-            url: process.env.REDIS_URL,
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        // Check if the Redis client is not open, then connect
-        if (!client.isOpen) {
-            await client.connect()
-        }
+        // const client = await redis.createClient({
+        //     url: process.env.REDIS_URL,
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // // Check if the Redis client is not open, then connect
+        // if (!client.isOpen) {
+        //     await client.connect()
+        // }
+        const client = await createRedisClient()
+        console.log('client', client)
         const getLotInfo = await getLot(rediskey, client, event._id)
         const lotInformation = JSON.parse(getLotInfo)
         if (lotInformation.end_date < currentTimestamp) {

@@ -405,7 +405,7 @@ functions:
   update_auction:
       handler: handlers/update.update_auction
       runtime: python3.8
-      memorySize: 128
+      memorySize: 2048
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
