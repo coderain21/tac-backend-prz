@@ -353,11 +353,11 @@ resources:
           authorize_scopes: "email openid profile"
         UserPoolId: { Ref: Buyers }
     
-    Group:
-      Type: AWS::Cognito::UserPoolGroup
-      Properties:
-        GroupName: "buyer"
-        UserPoolId: { Ref: Buyers }
+    # Group:
+    #   Type: AWS::Cognito::UserPoolGroup
+    #   Properties:
+    #     GroupName: "buyer"
+    #     UserPoolId: { Ref: Buyers }
 
     BuyersDomain:
       Type: "AWS::Cognito::UserPoolDomain"
