@@ -96,12 +96,29 @@ module.exports.handler = async (event) => {
                 }),
             }
         }
+        if (request_body.type === 'CANCEL' && getAuctionDetails[0].status === 'Accepting bids') {
+            await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status: 'Cancelled' })
+            const stepFunctionEnd = []
+            const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            for (const item of getAllArns) {
+                const executionArn = item.arn
+                stepFunctionEnd.push(stopExecutions(executionArn))
+            }
+            await Promise.all(stepFunctionEnd)
+            return {
+                statusCode: 204,
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Successfully Updated',
+                }),
+            }
+        }
 
         return {
             statusCode: 400,
             headers: helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'Update Error | Auction status not in the Published state',
+                message: request_body.type === 'UNPUBLISH' ? 'Update Error | Auction status not in the Published state' : 'Update Error | Auction status not in the Accepting Bids state',
             }),
         }
     } catch (error) {
