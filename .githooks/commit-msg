@@ -34,4 +34,3 @@ with open(commit_msg_filepath, 'r') as f:
             fwriter.write(commit_content)
         if provided != issue_id:
             print(f"Issue ID is changed from {provided} to {issue_id}")
-
