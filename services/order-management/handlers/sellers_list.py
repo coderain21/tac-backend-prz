@@ -200,7 +200,7 @@ def export_as_csv(sales):
                 shipping_address = sale['shipping_address']
                 full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
                 modified_sales["ORDER ID"] = sale["order_number"]
-                modified_sales["Customer Name"] = full_name
+                modified_sales["Customer Name"] = sale['name']
                 modified_sales["Auction Name"] = sale['auction_title']
                 modified_sales["Order Date"] = formatted_date
                 modified_sales["Payment Status"] = sale["payment_status"]
