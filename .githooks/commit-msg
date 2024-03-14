@@ -14,18 +14,18 @@ def validate_commit_message(commit_message):
     pattern = re.compile(r'^([A-Za-z]+-\d+)\s+#time\s+(\d+[hdmw]\s*\d*[hdmw]?\s*\d*[hdmw]?)\s+(bugfix|hotfix|feature):\s+[A-Za-z]{5,}.*')
     return bool(pattern.match(commit_message))
 
-if email and '7edge.com' not in email:
-    print(f"Please commit with 7edge account")
+if (email and '7edge.com' not in email) and (email and 'theauctioncollective.com' not in email): 
+    print("Please commit with a 7edge account")
     sys.exit(1)
 
 with open(commit_msg_filepath, 'r') as f:
     content = f.read()
     if not validate_commit_message(content) and not content.startswith('Merge'):
         print("commit-msg: The commit message should adhere to a specific format.\nIt should include the Jira issue ID,\nthe time spent on the task (in weeks, hours, and minutes), the type of work (bugfix, hotfix, or feature),\nand a description with at least 5 letters.")
-        print("Example: EX-1 #time 1h 5m feature: short description")
+        print("Example: EX-1 #time 1h5m feature: short description")
         sys.exit(1)
     if bool(re.match(branch_name_starts_with, current_branch)):
-        issue_id = current_branch.split('/')[2].split('--')[0]
+        issue_id = current_branch.split('/')[2].split('-')[0]+'-'+current_branch.split('/')[2].split('-')[1]
         commit_content = content.split(' ')
         provided = commit_content[0]
         commit_content[0] = issue_id
@@ -34,3 +34,4 @@ with open(commit_msg_filepath, 'r') as f:
             fwriter.write(commit_content)
         if provided != issue_id:
             print(f"Issue ID is changed from {provided} to {issue_id}")
+            
