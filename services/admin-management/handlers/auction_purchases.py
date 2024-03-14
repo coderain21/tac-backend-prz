@@ -195,22 +195,27 @@ def export_as_csv(sales):
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["Order no.", "Customer name", "Date","Result", "Payment type", "Payment status"])
+            writer = csv.DictWriter(file, ["Order no.", "Customer name", "Date", "Payment type", "Payment status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
-                date = datetime.fromtimestamp(sale['created_at'])
+                # date = datetime.fromtimestamp(sale['created_at'])
+                # Assuming sale['created_at'] is a Unix timestamp
+                timestamp = sale['created_at']
+
+                # Convert Unix timestamp to datetime object
+                date = datetime.fromtimestamp(timestamp)
                 # Format the date as a string with only the date
-                formatted_date = date.strftime('%Y-%m-%d')
+                formatted_date = date.strftime('%d %b %Y')
                 # Format the date as a string with only the date
                 shipping_address = sale['shipping_address']
                 full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
                 modified_sales["Order no."] = sale["order_number"]
                 modified_sales["Customer name"] = sale['name']
                 modified_sales["Date"] = formatted_date
-                modified_sales['Result'] = sale['amount']
+                # modified_sales['Result'] = sale['amount']
                 modified_sales["Payment status"] = sale["payment_status"]
                 modified_sales["Payment type"]= sale["payment"]
                 writer.writerow(modified_sales)
