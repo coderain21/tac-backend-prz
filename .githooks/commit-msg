@@ -22,7 +22,7 @@ with open(commit_msg_filepath, 'r') as f:
     content = f.read()
     if not validate_commit_message(content) and not content.startswith('Merge'):
         print("commit-msg: The commit message should adhere to a specific format.\nIt should include the Jira issue ID,\nthe time spent on the task (in weeks, hours, and minutes), the type of work (bugfix, hotfix, or feature),\nand a description with at least 5 letters.")
-        print("Example: EX-1 #time 1h5m feature: short description")
+        print("Example: EX-1 #time 1h 5m feature: short description")
         sys.exit(1)
     if bool(re.match(branch_name_starts_with, current_branch)):
         issue_id = current_branch.split('/')[2].split('--')[0]
