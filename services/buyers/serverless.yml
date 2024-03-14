@@ -485,18 +485,18 @@ resources:
         HtmlPart: ${file(./templates/paddle.html)}
         Subject: "{{subject}}"
         TemplateName: ${opt:stage, 'dev'}-paddle
-    BuyerEmailOtp:
-      Type: AWS::Pinpoint::EmailTemplate
-      Properties: 
-        HtmlPart: ${file(./templates/buyer_email_otp.html)}
-        Subject: Indy.auction - OTP Verification for Your Account
-        TemplateName: ${self:provider.stage}-buyer_email_otp
-    BuyerResetPassword:
-      Type: AWS::Pinpoint::EmailTemplate
-      Properties: 
-        HtmlPart: ${file(./templates/buyer_reset_password.html)}
-        Subject: Indy.auction- Reset your password
-        TemplateName: ${self:provider.stage}-buyer_reset_password
+    # BuyerEmailOtp:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_email_otp.html)}
+    #     Subject: Indy.auction - OTP Verification for Your Account
+    #     TemplateName: ${self:provider.stage}-buyer_email_otp
+    # BuyerResetPassword:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/buyer_reset_password.html)}
+    #     Subject: Indy.auction- Reset your password
+    #     TemplateName: ${self:provider.stage}-buyer_reset_password
           
 plugins:
   - serverless-offline

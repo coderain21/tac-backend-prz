@@ -262,6 +262,15 @@
           "schema": {
             "type": "string"
           },
+          "example": "sthuthi+stripe@7edge.com"
+        },
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "auction id",
+          "schema":{
+            "type": "string"
+          },
           "example": "A0029"
         }
       ],
