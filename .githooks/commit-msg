@@ -4,7 +4,7 @@ import sys
 import re
 from subprocess import check_output
 
-email = check_output(['git', 'show', '-s', "--format='%ae'"]).strip().decode()
+email = check_output(['git', 'config', '--global', 'user.email']).decode()
 current_branch = check_output(["git", "symbolic-ref", "--short", "HEAD"]).strip().decode()
 branch_name_starts_with = r"^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert|release)"
 
@@ -16,6 +16,7 @@ def validate_commit_message(commit_message):
 
 if (email and '7edge.com' not in email) and (email and 'theauctioncollective.com' not in email): 
     print("Please commit with a 7edge account")
+    print(f"Please commit with 7edge account")
     sys.exit(1)
 
 with open(commit_msg_filepath, 'r') as f:
@@ -34,4 +35,3 @@ with open(commit_msg_filepath, 'r') as f:
             fwriter.write(commit_content)
         if provided != issue_id:
             print(f"Issue ID is changed from {provided} to {issue_id}")
-            
