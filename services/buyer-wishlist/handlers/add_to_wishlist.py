@@ -69,8 +69,8 @@ def create(event, context):
         auction_name = body['auction_name']
         auction_uid = data['auction_uid']
 
-        buyer_details = buyer_collection.find_one({'email_address': email_address})
-        buyer_id = buyer_details['_id']
+        # buyer_details = buyer_collection.find_one({'email_address': email_address})
+        buyer_id = ObjectId(data['buyer_id'])
         insert_data = {
             'seller_email': seller_email,
             'lot_id': lot_id,
