@@ -391,7 +391,7 @@ pipelines:
             - step: *SecretChecking
       - stage:
             name: Production Deployment
-            deployment: Pre-Production
+            deployment: Production
             steps:
               - step: *BuildStep
               - step: *TerraDeploy
