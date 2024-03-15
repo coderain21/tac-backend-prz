@@ -70,7 +70,7 @@ def create(event, context):
         auction_uid = data['auction_uid']
 
         # buyer_details = buyer_collection.find_one({'email_address': email_address})
-        buyer_id = data['buyer_id']
+        buyer_id = ObjectId(data['buyer_id'])
         insert_data = {
             'seller_email': seller_email,
             'lot_id': lot_id,
