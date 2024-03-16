@@ -41,6 +41,15 @@
               "type": "string"
             },
             "example": "65c2294ed2c31913959127d6"
+          },
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "description": "buyer id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65dc37d1c98f42d0b5ea0935"
           }
         ],
         "requestBody": {
@@ -227,6 +236,51 @@
             "type": "string"
           },
           "example": "65c9f5123226f499622c5cd4"
+        },
+        {
+          "name": "seller_email",
+          "in": "query",
+          "description": "seller email",
+          "schema": {
+            "type": "string"
+          },
+          "example": "sthuthi+stripe@7edge.com"
+        },
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "auction id",
+          "schema":{
+            "type": "string"
+          },
+          "example": "A0029"
+        },
+        {
+          "name": "seller_email",
+          "in": "query",
+          "description": "seller email",
+          "schema": {
+            "type": "string"
+          },
+          "example": "sthuthi+stripe@7edge.com"
+        },
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "auction id",
+          "schema": {
+            "type": "string"
+          },
+          "example": "sthuthi+stripe@7edge.com"
+        },
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "auction id",
+          "schema":{
+            "type": "string"
+          },
+          "example": "A0029"
         }
       ],
       
@@ -276,7 +330,7 @@
                             "under_bidder": {"type": ["string", "null"]}
                           }
                         },
-                        "auction_title": {"type": "string"},
+                        "auction_name": {"type": "string"},
                         "auction_uid": {"type": "string"},
                         "currency": {"type": "string"},
                         "auction_end_date": {"type": "number"}

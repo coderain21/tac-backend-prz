@@ -191,13 +191,16 @@ def export_as_csv(sales):
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
-                date = datetime.fromtimestamp(sale['created_at'])
+                timestamp = sale['created_at']
+
+                # Convert Unix timestamp to datetime object
+                date = datetime.fromtimestamp(timestamp)
                 # Format the date as a string with only the date
-                formatted_date = date.strftime('%Y-%m-%d')
+                formatted_date = date.strftime('%d %b %Y')
                 shipping_address = sale['shipping_address']
                 full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
                 modified_sales["ORDER ID"] = sale["order_number"]
-                modified_sales["Customer Name"] = full_name
+                modified_sales["Customer Name"] = sale['name']
                 modified_sales["Auction Name"] = sale['auction_title']
                 modified_sales["Order Date"] = formatted_date
                 modified_sales["Payment Status"] = sale["payment_status"]

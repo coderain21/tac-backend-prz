@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable security/detect-object-injection */
 /* eslint-disable security/detect-unsafe-regex */
 import { danger, warn, fail } from 'danger'
@@ -21,6 +22,7 @@ const shouldSkipLoop = commits.some((commit) => {
 if (shouldSkipLoop) {
     console.log('Skipping the loop for commits with email addresses not from @7edge.com')
 } else {
+    // eslint-disable-next-line no-restricted-syntax
     for (const commit of commits) {
         const numberOfParents = commit.parents.length
         if (numberOfParents === 1) {
