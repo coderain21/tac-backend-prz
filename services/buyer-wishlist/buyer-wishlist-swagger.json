@@ -41,6 +41,15 @@
               "type": "string"
             },
             "example": "65c2294ed2c31913959127d6"
+          },
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "description": "buyer id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65dc37d1c98f42d0b5ea0935"
           }
         ],
         "requestBody": {
@@ -321,7 +330,6 @@
                             "under_bidder": {"type": ["string", "null"]}
                           }
                         },
-                        "auction_name": {"type": "string"},
                         "auction_name": {"type": "string"},
                         "auction_uid": {"type": "string"},
                         "currency": {"type": "string"},
