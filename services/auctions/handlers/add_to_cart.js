@@ -4,44 +4,11 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
-const redis = require('redis')
-const { createCluster } = require('redis')
 
 const mongodbHelper = require('../lib/mongodb_helper')
 const { sqsTriggerFunction } = require('./sqs_trigger_function')
 const BidInformation = require('../entities/BidInformation')
-
-async function createRedisClient() {
-    try {
-        const client = createCluster({
-            rootNodes: [
-                {
-                    url: 'redis://websocket-redis-cluster-enabled.z4q2as.clustercfg.euw2.cache.amazonaws.com:6379',
-                },
-            ],
-            legacyMode: true,
-            useReplicas: true,
-            scaleReads: 'slave',
-            lazyConnect: true,
-            slotsRefreshInterval: 3000,
-            slotsRefreshTimeout: 10000,
-            enableOfflineQueue: false,
-            dnsLookup: (address, callback) => callback(null, address),
-            enableReadyCheck: true,
-
-        })
-        // return client
-        client.on('error', (error) => console.error(
-            'getRedisClient: error occurred for ',
-            error,
-        ))
-        // Wait for it to connect to avoid any errors.
-        await client.connect()
-        return client
-    } catch (err) {
-        console.log('errrr', err)
-    }
-}
+const redisHelper = require('../lib/redis_helper')
 
 async function getLot(rediskey, client, id) {
     const allBidders = await client.hGetAll('lot', rediskey)
@@ -73,7 +40,7 @@ module.exports.handler = async (event) => {
         // if (!client.isOpen) {
         //     await client.connect()
         // }
-        const client = await createRedisClient()
+        const client = await redisHelper.createRedisClient()
         console.log('client', client)
         const getLotInfo = await getLot(rediskey, client, event._id)
         const lotInformation = JSON.parse(getLotInfo)

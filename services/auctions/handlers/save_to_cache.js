@@ -1,3 +1,4 @@
+/* eslint-disable import/extensions */
 /* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
@@ -6,41 +7,7 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
 
-const redis = require('redis')
-const { createCluster } = require('redis')
-
-async function createRedisClient() {
-    try {
-        const client = createCluster({
-            rootNodes: [
-                {
-                    url: 'redis://websocket-redis-cluster-enabled.z4q2as.clustercfg.euw2.cache.amazonaws.com:6379',
-                },
-            ],
-            legacyMode: true,
-            useReplicas: true,
-            scaleReads: 'slave',
-            lazyConnect: true,
-            slotsRefreshInterval: 3000,
-            slotsRefreshTimeout: 10000,
-            enableOfflineQueue: false,
-            dnsLookup: (address, callback) => callback(null, address),
-            enableReadyCheck: true,
-
-        })
-        // return client
-        client.on('error', (error) => console.error(
-            'getRedisClient: error occurred for ',
-            error,
-        ))
-        // Wait for it to connect to avoid any errors.
-        await client.connect()
-        return client
-    } catch (err) {
-        console.log('errrr', err)
-    }
-}
-
+const redisHelper = require('../lib/redis_helper')
 
 /**
  * Function to save the lot to cache after auction publish
@@ -55,14 +22,7 @@ async function createRedisClient() {
 module.exports.handler = async (event, context, callback) => {
     try {
         const data = typeof event === 'string' ? JSON.parse(event) : event
-        // const client = await redis.createClient({
-        //     url: process.env.REDIS_URL,
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        // if (!client.isOpen) {
-        //     await client.connect()
-        // }
-        const client = await createRedisClient()
-        console.log('client', client)
+        const client = await redisHelper.createRedisClient()
         const redisKey = `lot:${data._id}`
         let endDateISO
         const redisPayload = JSON.stringify(data)
@@ -76,7 +36,6 @@ module.exports.handler = async (event, context, callback) => {
             data.lot_extended = true
             await client.hSet('lot', redisKey, redisPayload)
         }
-        console.log('end', endDateISO, data)
         data.end_date = endDateISO
         return { ...data }
     } catch (e) {
