@@ -200,7 +200,7 @@ def update_auction(event, context):
                 # Convert the list of documents to a JSON-serializable format
                 json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 total_lots = len(json_serializable_list)
-                batch_size = 30
+                batch_size = 10
                 user_batches = []
                 for i in range(0, total_lots, batch_size):
                     # Ensure all remaining items are included in the last batch
@@ -296,7 +296,7 @@ def update_auction(event, context):
                             item['end_date'] = end_date
 
                 total_lots = len(json_serializable_list)
-                batch_size = 30
+                batch_size = 10
                 user_batches = []
                 for i in range(0, total_lots, batch_size):
                     # Ensure all remaining items are included in the last batch

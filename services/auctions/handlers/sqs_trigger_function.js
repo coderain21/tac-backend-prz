@@ -18,6 +18,7 @@ const {
 const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
+const redisHelper = require('../lib/redis_helper')
 
 const pinpoint = new PinpointEmail()
 
@@ -86,13 +87,7 @@ module.exports.sqsTriggerFunction = async (event) => {
     try {
         connection = await mongodbHelper.connect()
         const getBidders = await mongodbHelper.getBidders(event)
-        const client = await redis.createClient({
-            url: process.env.REDIS_URL,
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        if (!client.isOpen) {
-            await client.connect()
-        }
-
+        const client = await redisHelper.createRedisClient()
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
 

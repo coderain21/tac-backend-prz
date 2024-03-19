@@ -173,10 +173,6 @@ module.exports.handler = async (event) => {
         // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
         const client = await redisHelper.createRedisClient()
         const currentTimeEpoch = Date.now()
-
-        if (!client.isOpen) {
-            await client.connect()
-        }
         let extend_time = auctionDetails.extension_time.replace('m', '')
         extend_time = parseInt(extend_time, 10)
         extend_time = extend_time * 60 * 1000
