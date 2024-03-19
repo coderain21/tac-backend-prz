@@ -488,6 +488,30 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
   
 
+  badd_update_status:
+    handler: handlers/bdd_api.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
+          path: /bdd-update/{auction_id}
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+ 
+
 resources:
   Resources:
     LotStateMachineSSMParameter:
