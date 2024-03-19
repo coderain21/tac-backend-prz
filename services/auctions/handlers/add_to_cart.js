@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
@@ -11,25 +12,37 @@ const { sqsTriggerFunction } = require('./sqs_trigger_function')
 const BidInformation = require('../entities/BidInformation')
 
 async function createRedisClient() {
-    const client = createCluster({
-        rootNodes: [
-            {
-                url: 'redis://websocket-redis-cluster-enabled.z4q2as.clustercfg.euw2.cache.amazonaws.com:6379',
-            },
-        ],
-        legacyMode: true,
-        useReplicas: true,
+    try {
+        const client = createCluster({
+            rootNodes: [
+                {
+                    url: 'redis://websocket-redis-cluster-enabled.z4q2as.clustercfg.euw2.cache.amazonaws.com:6379',
+                },
+            ],
+            legacyMode: true,
+            useReplicas: true,
+            scaleReads: 'slave',
+            lazyConnect: true,
+            slotsRefreshInterval: 3000,
+            slotsRefreshTimeout: 10000,
+            enableOfflineQueue: false,
+            dnsLookup: (address, callback) => callback(null, address),
+            enableReadyCheck: true,
 
-    })
-    // return client
-    client.on('error', (error) => console.error(
-        'getRedisClient: error occurred for ',
-        error,
-    ))
-    // Wait for it to connect to avoid any errors.
-    await client.connect()
-    return client
+        })
+        // return client
+        client.on('error', (error) => console.error(
+            'getRedisClient: error occurred for ',
+            error,
+        ))
+        // Wait for it to connect to avoid any errors.
+        await client.connect()
+        return client
+    } catch (err) {
+        console.log('errrr', err)
+    }
 }
+
 async function getLot(rediskey, client, id) {
     const allBidders = await client.hGetAll('lot', rediskey)
     return Object.values(allBidders || {}).filter((bidder) => {

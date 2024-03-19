@@ -104,6 +104,7 @@ async function stopExecutions(executionArn) {
     }
 }
 
+
 /*
 The function begins by setting the initial end time of the lot based on its end date.
 It checks if the Redis client is open and connects if it is not.
