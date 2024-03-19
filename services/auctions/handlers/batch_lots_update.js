@@ -10,11 +10,11 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-undef */
 const request = require('request')
-const redis = require('redis')
 
 const { StepFunctions, config } = require('aws-sdk')
 const mongodbHelper = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
+const redisHelper = require('../lib/redis_helper')
 
 mongodbHelper.connect()
 const Lot = require('../entities/Lot')
@@ -104,7 +104,6 @@ async function stopExecutions(executionArn) {
     }
 }
 
-
 /*
 The function begins by setting the initial end time of the lot based on its end date.
 It checks if the Redis client is open and connects if it is not.
@@ -119,9 +118,6 @@ A socket event is emitted to join a bid room, and the function returns true on s
 async function findAndUpdateTime(lotInformation, client) {
     try {
         lotInformation.initial_end_time = lotInformation.end_date
-        if (!client.isOpen) {
-            await client.connect()
-        }
         const multi = client.multi()
         const lot_id = lotInformation._id.toString()
         const bidKey = `lot:${lot_id}`
@@ -172,9 +168,10 @@ module.exports.handler = async (event) => {
         // Parsing the JSON strings to JavaScript objects
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
-        const client = await redis.createClient({
-            url: process.env.REDIS_URL,
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        // const client = await redis.createClient({
+        //     url: process.env.REDIS_URL,
+        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redisHelper.createRedisClient()
         const currentTimeEpoch = Date.now()
 
         if (!client.isOpen) {
