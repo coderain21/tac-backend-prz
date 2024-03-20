@@ -61,7 +61,7 @@ def update_payment_data(payment_intent_id,update_data):
                 print('here')
                 # Delete the cart data
                 cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-        
+
             client.close()
             return update_result
 
@@ -69,8 +69,8 @@ def update_payment_data(payment_intent_id,update_data):
             # If payment details are not found, return None
             client.close()
             return None
-        
-        
+
+
         # client.close()
         # if update_result:
         #     return update_result
