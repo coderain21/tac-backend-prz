@@ -67,7 +67,7 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
             record["currency"] = lot.get("currency")
             results.append(record)
 
-        cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+        # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
         client.close()
         if cart_data:
             return results,lot_numbers

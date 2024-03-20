@@ -19,7 +19,7 @@ headers = {
 # This is your Stripe CLI webhook secret for testing your endpoint locally.
 endpoint_secret = os.environ['STRIPE_ENDPOINT_SECRET']
 
-def update_payment_data(id,update_data):
+def update_payment_data(payment_intent_id,update_data):
     """
     Update payment data in the MongoDB collection.
 
@@ -38,14 +38,43 @@ def update_payment_data(id,update_data):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         payments_collection = db[os.environ['ORDERS_COLLECTION']]
-        print(update_data)
+        cart_collection = db[os.environ['CART_COLLECTION']]
+        # print(update_data)
 
-        update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
+        # update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
 
-        client.close()
-        if update_result:
+        payment_details = payments_collection.find_one({"payment_intent": payment_intent_id})
+        print('payment_details', payment_details)
+
+        if payment_details:
+            # Retrieve seller email, buyer email, and auction ID
+            seller_email = payment_details.get("seller_email")
+            buyer_email = payment_details.get("email_address")
+            auction_id = payment_details.get("auction_id")
+
+            # Update the payment data
+            update_result = payments_collection.update_one({"payment_intent": payment_intent_id}, {"$set": update_data})
+            print('update_data', update_data)
+
+            # Check if the payment status is "Paid"
+            if update_data.get("payment_status") == "Paid":
+                print('here')
+                # Delete the cart data
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+        
+            client.close()
             return update_result
-        return None
+
+        else:
+            # If payment details are not found, return None
+            client.close()
+            return None
+        
+        
+        # client.close()
+        # if update_result:
+        #     return update_result
+        # return None
     except BaseException as err:
         client.close()
         print(f"Unexpected {err=}, {type(err)=}")
