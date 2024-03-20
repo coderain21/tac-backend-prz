@@ -102,7 +102,7 @@ resource "aws_default_subnet" "default_az1" {
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
-  instance_class     = "db.t3.medium"
+  instance_class     = "${data.external.env.result["INSTANCE_CLASS"]}"
   provider = aws.deployment-eu
 }
 
