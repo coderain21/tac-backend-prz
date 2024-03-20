@@ -128,7 +128,7 @@ def list_orders(event, context):
         if payment_status:
             query["payment_status"] = payment_status
         if export is not None and export == 1:
-            download_link = export_as_csv(list(orders_collection.find(query)))
+            download_link = export_as_csv(list(orders_collection.find(query).sort(sort_criteria)))
 
         # Query the MongoDB collection to find lots matching the criteria
         orders_list = orders_collection.find(query, {"_id": 1,"name": 1,"amount": 1,"created_at": 1,"order_number": 1,"payment_status": 1,"payment": 1,'auction_image':1,'auction_title':1,'currency':1}).sort(sort_criteria).skip((page-1)*limit).limit(limit)
