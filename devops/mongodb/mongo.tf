@@ -103,6 +103,7 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
   instance_class     = "${data.external.env.result["INSTANCE_CLASS"]}"
+  apply_immediately = true
   provider = aws.deployment-eu
 }
 

@@ -146,7 +146,7 @@ def list_purchases(event, context):
                     'auction_title': 1,
                     'shipping_address': 1,
                 }
-            )
+            ).sort(sort_criteria)
             download_link = export_as_csv(list(orders))
         if download_link is not None:
             body["csv_url"] = download_link
