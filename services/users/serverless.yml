@@ -711,6 +711,8 @@ resources:
           preferred_username: "email"
           username: "sub"
           email: "email"
+          given_name: "first_name"
+          family_name: "last_name"
         ProviderName: Google
         ProviderType: Google
         ProviderDetails:
@@ -732,6 +734,8 @@ resources:
         AttributeMapping:
           username: "id"
           email: "email"
+          given_name: "first_name"
+          family_name: "last_name"
         ProviderName: Facebook
         ProviderType: Facebook
         ProviderDetails:
