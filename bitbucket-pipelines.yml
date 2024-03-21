@@ -69,6 +69,7 @@ definitions:
             variables:
               SCAN_PATH: "./package.json"
               CVSS_FAIL_LEVEL: "1"
+              EXTRA_ARGS: "--noupdate"
         artifacts:
           - test-results/**  
 
