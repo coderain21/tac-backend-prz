@@ -264,6 +264,7 @@ def update_auction(event, context):
                        value in request_body.items() if key in updatable_fields}
         documents = []
         if end_date != None:
+            print('inisdeeeee updateeeee')
             existing_lots_count = collection.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
             extension_time_str = auction_record.get('extension_time_between_lots', '0')
@@ -281,7 +282,7 @@ def update_auction(event, context):
 
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
-            if auction_record['status']== 'Accepting bids':
+            if auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_record_str = json.dumps(auction_record, cls=Encoder)
                 json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 # Modify start_date and end_date before sending SQS

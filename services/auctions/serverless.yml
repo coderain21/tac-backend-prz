@@ -456,7 +456,7 @@ functions:
 
   sqs-lot-update:
     handler: handlers/batch_lots_update.handler
-    MemorySize: 2048
+    MemorySize: 6400
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
