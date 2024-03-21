@@ -62,19 +62,25 @@ def update_payment_data(payment_intent_id,update_data):
 
             # Check if the payment status is "Paid"
             if update_data.get("payment_status") == "Paid":
-                
-                # Create the order using the temporary payment data
-                insert_result = create_order(temp_payment_details)
-                print('here')
-                # Delete the cart data
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-            elif update_data.get('payment_status') == 'Unpaid':
-                # Create the order using the temporary payment data
-                insert_result = create_order(temp_payment_details)
-                print('here')
-                # Delete the cart data
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
 
+                combined_data = {**temp_payment_details, **update_data}
+
+                # Create the order using the temporary payment data
+                insert_result = create_order(combined_data)
+                delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
+                print('here')
+                # Delete the cart data
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+            elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
+                # Create the order using the temporary payment data
+                combined_data = {**temp_payment_details, **update_data}
+
+                insert_result = create_order(combined_data)
+                delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
+                print('here')
+                # Delete the cart data
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                print('after')
             client.close()
             return update_result
 
@@ -172,6 +178,7 @@ def update(event, context):
         data = json.loads(event_body)
         account_id = data["account"]
         data=data["data"]
+        print('data after payment', data)
         # Handle the event
         if data["object"]["object"] == "payment_intent":
             payment_id = data["object"]["id"]
