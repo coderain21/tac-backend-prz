@@ -944,12 +944,12 @@ resources:
             Fn::GetAtt:
               - SellerUsers
               - Arn     
-    SellerDomainStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: SELLER_COGNITO_USERPOOL_DOMAIN
-          Type: String
-          Value: indyauction-seller-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
+    # SellerDomainStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: SELLER_COGNITO_USERPOOL_DOMAIN
+    #       Type: String
+    #       Value: indyauction-seller-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
 
     
 

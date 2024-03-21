@@ -64,12 +64,13 @@ definitions:
           - docker
         script:
           - echo "Dependency Scanning"
-        #   - pipe: docker://aligent/owasp-dependency-check-pipe
-        #     variables:
-        #       SCAN_PATH: "./package.json"
-        #       CVSS_FAIL_LEVEL: "1"
-        # artifacts:
-        #   - test-results/**  
+          - pipe: docker://aligent/owasp-dependency-check-pipe
+            variables:
+              SCAN_PATH: "./package.json"
+              CVSS_FAIL_LEVEL: "1"
+              EXTRA_ARGS: "--noupdate"
+        artifacts:
+          - test-results/**  
 
 
     - step: &SecretChecking

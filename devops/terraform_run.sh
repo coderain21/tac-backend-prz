@@ -96,4 +96,8 @@ cd ../..
 cd services/auctions
 sls deploy --region $REGION --stage $STAGE
 cd ../..
+terraform -chdir=devops/cognito_custom_domain init
+terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 sls deploy --stage ${STAGE} --max-concurrency 5
+
+
