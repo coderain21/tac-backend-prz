@@ -452,25 +452,21 @@
                       }
                     },
                     {
-                      "_id": "65ccb24d32dbbc56c941e74a",
+                      "_id": "65d862060050c68d96bde647",
                       "user_type": "buyer",
-                      "password": "U2FsdGVkX18BeZP7zO8FTLAav+qG8U6I0MJb/1oPDUU=",
+                      "password": "",
                       "email_address": "namratha.shettigar@7edge.com",
                       "newsletter_notification": false,
+                      "seller_email": "namratha.shettigar+dev@7edge.com",
                       "terms_and_condition": true,
                       "first_name": "",
                       "last_name": "",
-                      "registered_through": "",
-                      "created_at": "2024-02-14 12:30:05.415000",
-                      "buyer_id": "B0150",
-                      "__v": 0,
-                      "seller_email": "sthuthi@7edge.com",
                       "token": {
-                        "endpoint": "https://fcm.googleapis.com/fcm/send/dO2EvlMMxZ4:APA91bE7ymoVUIKVm5umDJhrAB4ZtKq0sBp0csJsqiGfSLw49q7oyeAgMl05JFn1lgr_MQIhethcX-_gOikIM0eXyO-gyPOELxNrDhORCrT3bkr5vVQ0f2jm97-bXY8ZA7aRP1i43Pj6",
+                        "endpoint": "https://fcm.googleapis.com/fcm/send/eqdKpQXWhfs:APA91bFcbomSLGmiVi6dXNfD2g4Qon0SHmBQTPe7PUuFN8XNf-aFKQr0PDStzEeG3aJgFKfphyqCUbE_3116B0Z64WuygG3rB0kw1Dcs5kpFzkOhU795b-f0w4kyffmVn5tRt20AvVyq",
                         "expirationTime": null,
                         "keys": {
-                          "p256dh": "BNp2a4vvlBBBZO8aA9tJ9RTgq_Cc1D2G547q_64ucyArdnhPHgD3i5y1mCvbgP0qSCfVdB4tyy-sONgTBPxLAtU",
-                          "auth": "gNyDnvArpkisxDE5BvxnZw"
+                          "p256dh": "BGLP0CfBGiw5qTKv8SUAT8pkRhjKRgCLGeIMwGpLzWVdtyADPeF0G_m2iSzqTvkL6zlSMLk1C271o0g9qIip6g0",
+                          "auth": "WiYWF1-akZXs8YEkbaPtdg"
                         }
                       }
                     },
@@ -545,7 +541,7 @@
                       "county": ""
                     }
                   ],
-                  "total_buyers": 49,
+                  "total_buyers": 50,
                   "page_size": 10,
                   "page_number": 1
                 }

@@ -79,6 +79,7 @@ provider:
     PAYMENTS_COLLECTION: ${opt:stage, self:provider.stage}-buyers-payments
     STRIPE_ENDPOINT_SECRET: ${ssm:STRIPE_ENDPOINT_SECRET}
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
+    TEMP_ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-temp-orders
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
