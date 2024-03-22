@@ -26,23 +26,23 @@ def sales_details(event, context):
     :return: The code is returning a JSON response with the following structure:
     """
     try:
-        try:
-            seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('email ', seller_email)
-            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "do not have access to perform this API action"})
-                }
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-        # seller_email= 'anusha.k+subdomain@7edge.com'
+        # try:
+        #     seller_email = event['requestContext']['authorizer']['claims']['email']
+        #     print('email ', seller_email)
+        #     if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
+        #             'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
+        seller_email= 'sthuthi+stripe@7edge.com'
         projection={
             'order_number':1,
             'created_at':1,
@@ -56,7 +56,8 @@ def sales_details(event, context):
             'status':1,
             "billing_address":1,
             "shipping_address":1,
-            'seller_email':1
+            'seller_email':1,
+            'name': 1
         }
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
@@ -64,6 +65,7 @@ def sales_details(event, context):
         data = event['queryStringParameters']
         order_id = data['order_id']
         order_data = collection.find_one({'_id':ObjectId(order_id),'seller_email':seller_email},projection)
+        print(order_data)
         if order_data is None:
             return {
                 "statusCode": 404,
