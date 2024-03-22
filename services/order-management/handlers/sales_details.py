@@ -42,7 +42,7 @@ def sales_details(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         projection={
             'order_number':1,
             'created_at':1,
