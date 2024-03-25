@@ -55,6 +55,7 @@ def view_bidder(event, context):
         ordered_dict = {key: buyer_bidder_details[key] if key in buyer_bidder_details else '' for key in key_order}
         ordered_dict['created_at'] = bidder_details['created_at']
         ordered_dict['marketing'] = bidder_details['marketing']
+        ordered_dict['buyer_id'] = buyer_bidder_details['_id']
 
         # Create an "address" object
         ordered_dict['address'] = {
