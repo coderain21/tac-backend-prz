@@ -23,14 +23,12 @@ data "aws_vpc" "default" {
   provider = aws.deployment-us
 }
 
-data "aws_subnet" "selected" {
-  availability_zone = [eu-west-2c]
-  provider = aws.deployment-us
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "eu-west-2c"
 }
-
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
-  subnet_ids = [data.aws_subnet.selected.id] 
+  subnet_ids = [data.aws_default_subnet.default_az1.id] 
   provider = aws.deployment-us
 }
 
