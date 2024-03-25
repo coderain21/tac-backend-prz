@@ -56,8 +56,8 @@ def view_bidder(event, context):
         ordered_dict['created_at'] = bidder_details['created_at']
         ordered_dict['marketing'] = bidder_details['marketing']
         ordered_dict['buyer_id'] = buyer_bidder_details['_id']
-        ordered_dict['phone_number'] = buyer_bidder_details['phone_number']
-        ordered_dict['country_code'] = buyer_bidder_details['country_code']
+        ordered_dict['phone_number'] = buyer_bidder_details.get('phone_number', '')
+        ordered_dict['country_code'] = buyer_bidder_details.get('country_code', '')
 
         # Create an "address" object
         ordered_dict['address'] = {
