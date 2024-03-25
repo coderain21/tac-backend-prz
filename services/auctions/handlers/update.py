@@ -196,8 +196,12 @@ def update_auction(event, context):
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
-                auction_record_str = json.dumps(auction_record, cls=Encoder)
-                # Convert the list of documents to a JSON-serializable format
+                auction_data_sqs = {
+                    'extension_time': auction_record.get('extension_time'),
+                    'seller_email': auction_record.get('seller_email'),
+                    'auction_id': auction_record.get('auction_id'),
+                }
+                auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
                 json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 total_lots = len(json_serializable_list)
                 batch_size = 10
@@ -207,9 +211,6 @@ def update_auction(event, context):
                     batch_end = min(i + batch_size, total_lots)
                     user_batches.append(json_serializable_list[i:batch_end])
 
-                # Split the list into batches of size 10
-                # user_batches = [json_serializable_list[i:i + 10] for i in range(0, len(json_serializable_list), 10)]
-
                 sqs.send_message_batch(
                     QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
                     Entries=[
@@ -218,15 +219,17 @@ def update_auction(event, context):
                         'auction': {'DataType': 'String', 'StringValue': auction_record_str,
                         },
                         'type': {'DataType': 'String', 'StringValue':'published'},
-                        # 'status': {'DataType': 'String', 'StringValue': str(data['status'])}
                         }} for item in user_batches
                     ]
                 )
+
+                # You should move the return statement outside of the loop to avoid exiting prematurely
                 return {
                     "statusCode": 204,
                     'headers': headers,
-                    "body": json.dumps({'message': "suceessfull"})
+                    "body": json.dumps({'message': "successful"})
                 }
+
 
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
@@ -283,8 +286,25 @@ def update_auction(event, context):
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
             if auction_record['status'] in ['Accepting bids' , 'Published']:
-                auction_record_str = json.dumps(auction_record, cls=Encoder)
-                json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
+                auction_data_sqs = {
+                    'extension_time': auction_record.get('extension_time'),
+                    'seller_email': auction_record.get('seller_email'),
+                    'auction_id': auction_record.get('auction_id'),
+                }
+                auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
+                allLots = []
+                for item in listLots:
+                    # Create a new dictionary with only the required fields
+                    required_fields = {
+                        '_id': item.get('_id'),
+                        'start_date': item.get('start_date'),
+                        'end_date': item.get('end_date'),
+                        'auction_id': item.get('auction_id'),
+                        'seller_email': item.get('seller_email'),
+                        # Add more required fields as needed
+                    }
+                    allLots.append(required_fields)
+                json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 # Modify start_date and end_date before sending SQS
                 for item in json_serializable_list:
                     if not item['end_date'] < epoch_time_milliseconds:
@@ -303,10 +323,10 @@ def update_auction(event, context):
                     # Ensure all remaining items are included in the last batch
                     batch_end = min(i + batch_size, total_lots)
                     user_batches.append(json_serializable_list[i:batch_end])
-                    # user_batches = [json_serializable_list[i:i + 10] for i in range(0, len(json_serializable_list), 10)]
 
+                # Split the list into batches of size 10
+                # user_batches = [json_serializable_list[i:i + 10] for i in range(0, len(json_serializable_list), 10)]
 
-                # update = update_redis_data(auction_record, item )
                 sqs.send_message_batch(
                     QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
                     Entries=[

@@ -10,7 +10,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-await-in-loop */
-const redis = require('redis')
 
 const {
     PinpointEmail,

@@ -26,6 +26,7 @@ module.exports.handler = async (event, context, callback) => {
         const redisKey = `lot:${data._id}`
         let endDateISO
         const redisPayload = JSON.stringify(data)
+        console.log('redis payload', redisPayload)
         if (data && data.lot_end_time) {
             endDateISO = new Date(data.lot_end_time).toISOString()
             data.extended = false
