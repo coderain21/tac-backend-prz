@@ -24,10 +24,7 @@ data "aws_vpc" "default" {
 }
 
 data "aws_subnet" "selected" {
-  filter {
-    name   = "tag:Name"
-    values = ["EC2"]
-  }
+  availability_zone = [eu-west-2c]
   provider = aws.deployment-us
 }
 
