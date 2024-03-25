@@ -1,0 +1,111 @@
+data "external" "env" {
+  program = ["../envs.sh"]
+}
+
+  
+#AWS Provider with profile main account
+provider "aws" {
+  region = data.external.env.result["REGION"]
+  alias = "main"   # Specify a default AWS region here
+  profile = "indyauction-main"
+}
+
+
+
+#AWS Provider with profile Stage account
+provider "aws" {
+  region = data.external.env.result["REGION"]
+  alias = "deployment-us"   # Specify a default AWS region here
+  profile = "indyauction-${data.external.env.result["STAGE"]}"
+}
+data "aws_vpc" "default" {
+  default = true
+  provider = aws.deployment-us
+}
+
+data "aws_subnet" "selected" {
+  filter {
+    name   = "tag:Name"
+    values = ["EC2"]
+  }
+  provider = aws.deployment-us
+}
+
+resource "aws_elasticache_subnet_group" "subnet_groups" {
+  name       = "redis-subnet-group-cluster-enabled"
+  subnet_ids = [data.aws_subnet.selected.id] 
+  provider = aws.deployment-us
+}
+
+resource "aws_security_group" "security_groups" {
+  name        = "redis-security-group-cluster-enabled"
+  description = "Allow inbound traffic on ports 22, 80, 443, and 6379"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 6379
+    to_port     = 6379
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+   egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+  provider = aws.deployment-us
+}
+
+
+
+resource "aws_elasticache_replication_group" "websocket" {
+  automatic_failover_enabled  = true
+  subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
+  replication_group_id        = "websocket-redis-cluster-enabled"
+  description                 = "websocket description with cluster enabled"
+  node_type                   = "cache.t3.medium"
+  num_node_groups         = 3
+  replicas_per_node_group = 2
+  parameter_group_name        = "default.redis7.cluster.on"
+  port                        = 6379
+  security_group_ids = [resource.aws_security_group.security_groups.id]
+  provider                  = aws.deployment-us
+}
+resource "aws_ssm_parameter" "distribution_id" {
+  name  = "REDIS_CLUSTER_ENDPOINT"
+  type  = "String"
+  value = aws_elasticache_replication_group.websocket.configuration_endpoint_address
+  provider = aws.deployment-us
+  overwrite = true 
+}
+locals {
+  redis_host     = split(":", aws_elasticache_replication_group.websocket.configuration_endpoint_address)[0]
+}
+resource "aws_ssm_parameter" "redis_host_parameter" {
+  name  = "REDIS_CLUSTER_CONNECTION_URL"
+  type  = "String"
+  value = "redis://${local.redis_host}:6379"
+  overwrite = true 
+}
