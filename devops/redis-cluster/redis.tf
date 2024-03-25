@@ -28,7 +28,7 @@ resource "aws_default_subnet" "default_az1" {
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
-  subnet_ids = [data.aws_default_subnet.default_az1.id] 
+  subnet_ids = [resource.aws_default_subnet.default_az1.id]
   provider = aws.deployment-us
 }
 
