@@ -128,9 +128,6 @@ async function findAndUpdateTime(lotInformation, client) {
             lot_end_date: lotInformation.lot_end_time,
             end_date: lotInformation.lot_end_time,
         }
-        // const multi = client.multi()
-        // await multi.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        // await multi.exec()
         const updatePromise = client
             .multi()
             .hSet('lot', bidKey, JSON.stringify(updateRequest))
@@ -167,16 +164,12 @@ async function findAndUpdateTime(lotInformation, client) {
 
 module.exports.handler = async (event) => {
     try {
-        console.log('enteringggggg', event.Records[0])
         const firstRecord = event.Records[0]
         const lotsString = firstRecord.messageAttributes.lots.stringValue
-        console.log('lotsString', lotsString)
         const auctionString = firstRecord.messageAttributes.auction.stringValue
         const type = firstRecord.messageAttributes.type.stringValue
-        // // Parsing the JSON strings to JavaScript objects
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
-        console.log('auction', auctionLots)
         const client = await redisHelper.createRedisClient()
         const currentTimeEpoch = Date.now()
         let extend_time = auctionDetails.extension_time.replace('m', '')
@@ -209,9 +202,8 @@ module.exports.handler = async (event) => {
         if (type === 'published') {
             // Start the new execution
             const startNewExecution = []
-            console.log('auctionlostss', typeof auctionLots, auctionLots)
+            console.log('auctionlostss', typeof auctionLots)
             for (const item of auctionLots) {
-                console.log('itemmm', item)
                 startNewExecution.push(startExecutionAfterPublish(process.env.STATE_MACHINE_LOT_ARN, item))
             }
             await Promise.all(startNewExecution)

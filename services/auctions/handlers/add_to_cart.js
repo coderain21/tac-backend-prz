@@ -31,25 +31,17 @@ async function getLot(rediskey, client, id) {
 module.exports.handler = async (event) => {
     try {
         const currentTimestamp = new Date(Date.now()).getTime()
-        console.log(currentTimestamp)
         const rediskey = `lot:${event._id}`
-        // const client = await redis.createClient({
-        //     url: process.env.REDIS_URL,
-        // }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        // // Check if the Redis client is not open, then connect
-        // if (!client.isOpen) {
-        //     await client.connect()
-        // }
         const client = await redisHelper.createRedisClient()
-        console.log('client', client)
         const getLotInfo = await getLot(rediskey, client, event._id)
         const lotInformation = JSON.parse(getLotInfo)
         if (lotInformation.end_date < currentTimestamp) {
+            console.log('about enddd')
             const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
-            await mongodbHelper.lotToCart(lotInformation, auctionData)
+            const cart = await mongodbHelper.lotToCart(lotInformation, auctionData)
+            console.log('cart', cart)
             await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
             const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp)
-
             // const callSQS = await sqsTriggerFunction(event)
             if (auctionData[0].extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
