@@ -485,6 +485,28 @@ functions:
           method: post
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  unpublish_auction:
+    handler: handlers/unpublish_auction.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
+          path: /unpublish-auction
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
   Resources:
