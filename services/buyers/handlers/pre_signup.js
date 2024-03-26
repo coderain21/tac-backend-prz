@@ -56,9 +56,9 @@ exports.handler = async (event, context, callback) => {
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
             console.log('event - >', event)
             const userData = {
-                first_name: '',
-                last_name: '',
-                full_name: '',
+                first_name: event.request.userAttributes.given_name,
+                last_name: event.request.userAttributes.family_name,
+                full_name: `${event.request.userAttributes.given_name} ${event.request.userAttributes.family_name}`,
                 registered_through: 'federated',
                 email_address: event.request.userAttributes.email,
                 password: newPassword,
