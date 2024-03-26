@@ -17,9 +17,6 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
-db = client[os.environ['DATABASE']]
-
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 
@@ -38,6 +35,7 @@ def fetch_seller_email_from_auction(auction_id):
     auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
     email = auction_collection.find_one({"_id": ObjectId(auction_id)}, {
                                         'seller_email': 1}).get('seller_email')
+    client.close()
     return email
 
 
@@ -54,8 +52,10 @@ def update_user(event, context):
     """
     try:
         try:
+            print(event)
             cognito_data = json.loads(
                 event['requestContext']['authorizer']['data'])
+            print(cognito_data)
             email_address = cognito_data['email']
             if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
                 return {
@@ -98,9 +98,11 @@ def update_user(event, context):
                 "newsletter_notification": False,
                 "seller_email": seller_email,
                 "terms_and_condition": True,
-                "first_name": "",
-                "last_name": ""
+                "first_name": cognito_data['given_name'],
+                "last_name": cognito_data['family_name']
             }
+            client = MongoClient(os.environ['MONGO_CLIENT'])
+            db = client[os.environ['DATABASE']]
             buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
             # Check if the user already has a seller_email associated
@@ -117,8 +119,8 @@ def update_user(event, context):
                         "newsletter_notification": False,
                         "seller_email": seller_email,
                         "terms_and_condition": True,
-                        "first_name": "",
-                        "last_name": ""
+                        "first_name": cognito_data['given_name'],
+                        "last_name": cognito_data['family_name']
                     }
                     buyer_data_new = buyer_collection.find_one(
                         {"email_address": email_address},{"_id":0,"seller_email":0})
@@ -141,6 +143,7 @@ def update_user(event, context):
                     if buyer_data_without_seller == None:
                         buyer_collection.insert_one(buyer_data_to_add)
 
+            client.close()
             return {
                 "statusCode": 204,
                 'headers': headers,
@@ -153,7 +156,7 @@ def update_user(event, context):
                 "body": json.dumps({"message": "User does not exist"})
             }
     except Exception as err:
-        print(err, 'errrrr')
+        print(err)
         return {
             "statusCode": 500,
             'headers': headers,
