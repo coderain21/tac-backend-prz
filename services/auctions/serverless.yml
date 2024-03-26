@@ -467,6 +467,43 @@ functions:
                     - updateLotsQueue
                     - Arn
 
+  sqs-lot-update_1:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+  sqs-lot-update_2:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+  sqs-lot-update_3:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
@@ -524,6 +561,7 @@ resources:
         Value: !Sub
           - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
           - StateMachineName: ${opt:stage}-lot-published
+          
 
     
 
@@ -549,7 +587,6 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
-        VisibilityTimeout: 60
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter

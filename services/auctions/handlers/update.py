@@ -211,10 +211,10 @@ def update_auction(event, context):
                     batch_end = min(i + batch_size, total_lots)
                     user_batches.append(json_serializable_list[i:batch_end])
 
-                sqs.send_message_batch(
+                cc = sqs.send_message_batch(
                     QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
                     Entries=[
-                        {'Id': str(uuid.uuid4()), 'MessageBody': 'update status', 'MessageAttributes':
+                        {'Id': str(uuid.uuid4()), 'DelaySeconds': 30, 'MessageBody': 'update status', 'MessageAttributes':
                         {'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                         'auction': {'DataType': 'String', 'StringValue': auction_record_str,
                         },
@@ -222,6 +222,7 @@ def update_auction(event, context):
                         }} for item in user_batches
                     ]
                 )
+                print('cc', cc)
 
                 # You should move the return statement outside of the loop to avoid exiting prematurely
                 return {
@@ -324,13 +325,10 @@ def update_auction(event, context):
                     batch_end = min(i + batch_size, total_lots)
                     user_batches.append(json_serializable_list[i:batch_end])
 
-                # Split the list into batches of size 10
-                # user_batches = [json_serializable_list[i:i + 10] for i in range(0, len(json_serializable_list), 10)]
-
-                sqs.send_message_batch(
+                xx = sqs.send_message_batch(
                     QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
                     Entries=[
-                        {'Id': str(uuid.uuid4()), 'MessageBody': 'update status', 'MessageAttributes':
+                        {'Id': str(uuid.uuid4()),'DelaySeconds': 30,'MessageBody': 'update status', 'MessageAttributes':
                         {'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                         'auction': {'DataType': 'String', 'StringValue': auction_record_str,
                         },
@@ -339,6 +337,7 @@ def update_auction(event, context):
                         }} for item in user_batches
                     ]
                 )
+                print('xx', xx)
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
