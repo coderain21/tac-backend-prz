@@ -19,7 +19,7 @@ const StepFunctionArn = require('../entities/stepFunctionArn')
 
 config.update({ region: 'eu-west-2' })
 
-mongoConnection.connect()
+// mongoConnection.connect()
 
 /**
  * The function `stopExecutions` asynchronously stops a Step Functions execution with a specified ARN
@@ -66,6 +66,7 @@ async function stopExecutions(executionArn) {
 
 module.exports.handler = async (event) => {
     try {
+        const connection = await mongoConnection.connect()
         const request_body = JSON.parse(event.body)
         // const seller_email = event.requestContext.authorizer.claims['cognito:username']
         const { seller_email } = request_body

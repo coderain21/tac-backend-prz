@@ -485,6 +485,7 @@ functions:
           method: post
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            
   unpublish_auction:
     handler: handlers/unpublish_auction.handler
     layers:
@@ -501,7 +502,6 @@ functions:
               - X-Amz-Security-Token
               - X-Requested-With
               - Accept
-              - Requestid
               - Access-Control-Allow-Header
           path: /unpublish-auction
           method: patch
