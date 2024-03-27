@@ -46,7 +46,7 @@ def handler(event, context):
                 # Update auction status to 'Cancelled' and stop all related executions
                 collection.update_one({"_id": ObjectId(auction_details['_id'])}, {"$set": {"status": "Cancelled"}})
                 stop_executions([item['arn'] for item in all_arns])
-                
+
                 return {
                     "statusCode": 204,
                     "headers": {
