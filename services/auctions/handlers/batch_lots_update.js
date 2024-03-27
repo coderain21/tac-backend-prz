@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
@@ -24,6 +25,7 @@ config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
     try {
+        console.log('execution starteddd')
         const stepfunctions = new StepFunctions()
         const newStartDate = new Date(lots.start_date).toISOString()
         lots.start_date = newStartDate
@@ -46,7 +48,7 @@ async function startExecution(executionARN, lots) {
             })
         })
     } catch (err) {
-        console.log('start err')
+        console.log('start err', err)
     }
 }
 
@@ -134,25 +136,52 @@ async function findAndUpdateTime(lotInformation, client) {
             .exec()
         await Promise.all([updatePromise])
 
-        const payload = {
-            lots: updateRequest,
-        }
+        // const payload = {
+        //     lots: updateRequest,
+        // }
+        // const headersList = {
+        //     Accept: '*/*',
+        //     'User-Agent': 'API TEST',
+        //     'Content-Type': 'application/json',
+        // }
+
+        // const reqUrl = `${process.env.SOCKET_URL}/notification`
+        // console.log('request', reqUrl)
+        // return new Promise((resolve, reject) => {
+        //     request({
+        //         method: 'POST',
+        //         url: reqUrl,
+        //         headers: headersList,
+        //         body: JSON.stringify(payload),
+        //     }, (error, response, body) => {
+        //         console.log('redis responsse', error, response)
+        //         if (error) reject(error)
+        //         else {
+        //             resolve(response)
+        //         }
+        //     })
+        // })
+        const payload = { lots: updateRequest }
         const headersList = {
             Accept: '*/*',
             'User-Agent': 'API TEST',
             'Content-Type': 'application/json',
         }
-
         const reqUrl = `${process.env.SOCKET_URL}/notification`
         return new Promise((resolve, reject) => {
-            request({
+            const options = {
                 method: 'POST',
                 url: reqUrl,
                 headers: headersList,
                 body: JSON.stringify(payload),
-            }, (error, response, body) => {
-                if (error) reject(error)
-                else {
+            }
+
+            request(options, (error, response) => {
+                if (error) {
+                    console.error('Error:', error)
+                    reject(error)
+                } else {
+                    console.log('Response:', response.statusCode)
                     resolve(response)
                 }
             })
@@ -177,32 +206,37 @@ module.exports.handler = async (event) => {
         extend_time = extend_time * 60 * 1000
         if (type === 'update') {
             const stepFunctionEnd = []
-            const getAllArns = await mongodbHelper.getAllExecutionArn(auctionDetails, StepFunctionArn)
-            if (getAllArns.length > 0) {
-                for (const item of getAllArns) {
-                    const executionArn = item.arn
-                    stepFunctionEnd.push(stopExecutions(executionArn))
-                }
-                await Promise.all(stepFunctionEnd)
-            }
-
+            // const getAllArns = await mongodbHelper.getAllExecutionArn(auctionDetails, StepFunctionArn)
+            // if (getAllArns.length > 0) {
+            //     for (const item of getAllArns) {
+            //         const executionArn = item.arn
+            //         stepFunctionEnd.push(stopExecutions(executionArn))
+            //     }
+            //     await Promise.all(stepFunctionEnd)
+            // }
             const operations = []
+            const startExecutions = []
+            const redisUpdate = []
+
             for (const item of auctionLots) {
                 console.log('item', item)
                 item.lot_end_time = item.end_date + extend_time
                 if (item.end_date > currentTimeEpoch) {
-                    operations.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
-                    operations.push(findAndUpdateTime(item, client))
+                    const getAllArns = await mongodbHelper.singleGetAllExecutionArn(item, StepFunctionArn)
+                    console.log('getAllArns', getAllArns)
+                    const executionArn = getAllArns.arn
+                    startExecutions.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
+                    stepFunctionEnd.push(stopExecutions(executionArn))
+                    redisUpdate.push(findAndUpdateTime(item, client))
                     operations.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
                 }
             }
-            await Promise.all(operations)
+            await Promise.all([redisUpdate, startExecutions, stepFunctionEnd, operations])
         }
 
         if (type === 'published') {
             // Start the new execution
             const startNewExecution = []
-            console.log('auctionlostss', typeof auctionLots)
             for (const item of auctionLots) {
                 startNewExecution.push(startExecutionAfterPublish(process.env.STATE_MACHINE_LOT_ARN, item))
             }
