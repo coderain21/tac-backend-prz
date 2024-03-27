@@ -20,7 +20,7 @@ def handler(event, context):
         request_body = json.loads(event['body'])
         seller_email = request_body.get('seller_email')
         auction_id = event['queryStringParameters']['auction_id']
-        print('aud', Auction)
+        print('aud', collection)
         # Query Auction collection to fetch auction details and StepFunctionArn collection to fetch all ARNs
         auction_details = collection.find_one({"seller_email": seller_email, "auction_id": auction_id})
         print('######################')
@@ -29,7 +29,7 @@ def handler(event, context):
         if auction_details:
             if request_body['type'] == 'UNPUBLISH' and auction_details.get('status') == 'Published':
                 # Update auction status to 'Draft' and stop all related executions
-                Auction.update_one({"_id": auction_details['_id']}, {"$set": {"status": "Draft"}})
+                collection.update_one({"_id": auction_details['_id']}, {"$set": {"status": "Draft"}})
                 stop_executions([item['arn'] for item in all_arns])
                 
                 return {
@@ -43,7 +43,7 @@ def handler(event, context):
             
             if request_body['type'] == 'CANCEL' and auction_details.get('status') == 'Accepting bids':
                 # Update auction status to 'Cancelled' and stop all related executions
-                Auction.update_one({"_id": ObjectId(auction_details['_id'])}, {"$set": {"status": "Cancelled"}})
+                collection.update_one({"_id": ObjectId(auction_details['_id'])}, {"$set": {"status": "Cancelled"}})
                 stop_executions([item['arn'] for item in all_arns])
                 
                 return {
