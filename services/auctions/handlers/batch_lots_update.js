@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
@@ -15,6 +16,7 @@ const redis = require('redis')
 const { StepFunctions, config } = require('aws-sdk')
 const mongodbHelper = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
+const redisHelper = require('../lib/redis_helper')
 
 mongodbHelper.connect()
 const Lot = require('../entities/Lot')
@@ -23,6 +25,7 @@ config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
     try {
+        console.log('execution starteddd')
         const stepfunctions = new StepFunctions()
         const newStartDate = new Date(lots.start_date).toISOString()
         lots.start_date = newStartDate
@@ -45,7 +48,7 @@ async function startExecution(executionARN, lots) {
             })
         })
     } catch (err) {
-        console.log('start err')
+        console.log('start err', err)
     }
 }
 
@@ -118,10 +121,6 @@ A socket event is emitted to join a bid room, and the function returns true on s
 async function findAndUpdateTime(lotInformation, client) {
     try {
         lotInformation.initial_end_time = lotInformation.end_date
-        if (!client.isOpen) {
-            await client.connect()
-        }
-        const multi = client.multi()
         const lot_id = lotInformation._id.toString()
         const bidKey = `lot:${lot_id}`
         const existingRecord = await client.hGet('lot', bidKey)
@@ -131,28 +130,58 @@ async function findAndUpdateTime(lotInformation, client) {
             lot_end_date: lotInformation.lot_end_time,
             end_date: lotInformation.lot_end_time,
         }
-        await multi.hSet('lot', bidKey, JSON.stringify(updateRequest))
-        await multi.exec()
+        const updatePromise = client
+            .multi()
+            .hSet('lot', bidKey, JSON.stringify(updateRequest))
+            .exec()
+        await Promise.all([updatePromise])
 
-        const payload = {
-            lots: updateRequest,
-        }
+        // const payload = {
+        //     lots: updateRequest,
+        // }
+        // const headersList = {
+        //     Accept: '*/*',
+        //     'User-Agent': 'API TEST',
+        //     'Content-Type': 'application/json',
+        // }
+
+        // const reqUrl = `${process.env.SOCKET_URL}/notification`
+        // console.log('request', reqUrl)
+        // return new Promise((resolve, reject) => {
+        //     request({
+        //         method: 'POST',
+        //         url: reqUrl,
+        //         headers: headersList,
+        //         body: JSON.stringify(payload),
+        //     }, (error, response, body) => {
+        //         console.log('redis responsse', error, response)
+        //         if (error) reject(error)
+        //         else {
+        //             resolve(response)
+        //         }
+        //     })
+        // })
+        const payload = { lots: updateRequest }
         const headersList = {
             Accept: '*/*',
             'User-Agent': 'API TEST',
             'Content-Type': 'application/json',
         }
-
         const reqUrl = `${process.env.SOCKET_URL}/notification`
         return new Promise((resolve, reject) => {
-            request({
+            const options = {
                 method: 'POST',
                 url: reqUrl,
                 headers: headersList,
                 body: JSON.stringify(payload),
-            }, (error, response, body) => {
-                if (error) reject(error)
-                else {
+            }
+
+            request(options, (error, response) => {
+                if (error) {
+                    console.error('Error:', error)
+                    reject(error)
+                } else {
+                    console.log('Response:', response.statusCode)
                     resolve(response)
                 }
             })
@@ -168,60 +197,34 @@ module.exports.handler = async (event) => {
         const lotsString = firstRecord.messageAttributes.lots.stringValue
         const auctionString = firstRecord.messageAttributes.auction.stringValue
         const type = firstRecord.messageAttributes.type.stringValue
-        // Parsing the JSON strings to JavaScript objects
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
-        const client = await redis.createClient({
-            url: process.env.REDIS_URL,
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
+        const client = await redisHelper.createRedisClient()
         const currentTimeEpoch = Date.now()
-
-        if (!client.isOpen) {
-            await client.connect()
-        }
         let extend_time = auctionDetails.extension_time.replace('m', '')
         extend_time = parseInt(extend_time, 10)
         extend_time = extend_time * 60 * 1000
         if (type === 'update') {
             const stepFunctionEnd = []
-            const getAllArns = await mongodbHelper.getAllExecutionArn(auctionDetails, StepFunctionArn)
-            if (getAllArns.length > 0) {
-                for (const item of getAllArns) {
-                    const executionArn = item.arn
-                    stepFunctionEnd.push(stopExecutions(executionArn))
-                }
-                await Promise.all(stepFunctionEnd)
-            }
+            const operations = []
+            const startExecutions = []
+            const redisUpdate = []
 
-            // Start the new execution
-            const startNewExecution = []
             for (const item of auctionLots) {
+                console.log('item', item)
                 item.lot_end_time = item.end_date + extend_time
                 if (item.end_date > currentTimeEpoch) {
-                    startNewExecution.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
+                    const getAllArns = await mongodbHelper.singleGetAllExecutionArn(item, StepFunctionArn)
+                    console.log('getAllArns', getAllArns)
+                    const executionArn = getAllArns.arn
+                    startExecutions.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
+                    stepFunctionEnd.push(stopExecutions(executionArn))
+                    redisUpdate.push(findAndUpdateTime(item, client))
+                    operations.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
                 }
             }
-            await Promise.all(startNewExecution)
-            // Code extends in Redis cache and send extension alerts
-            const promiseList = []
-            for (const item of auctionLots) {
-                item.lot_end_time = item.end_date + extend_time
-                // if (item.end_date > currentTimeEpoch) {
-                promiseList.push(findAndUpdateTime(item, client))
-                // }
-            }
-            await Promise.all(promiseList)
+            await Promise.all([redisUpdate, startExecutions, stepFunctionEnd, operations])
         }
-
-        // updating auctions lot in documentDB
-        const updateLots = []
-        for (const item of auctionLots) {
-            item.lot_end_time = item.end_date + extend_time
-            if (item.end_date > currentTimeEpoch) {
-                updateLots.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
-            }
-        }
-        await Promise.all(updateLots)
 
         if (type === 'published') {
             // Start the new execution

@@ -59,6 +59,7 @@ provider:
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
+    REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     TEMPLATE_ARN_AUCTION_COMPLETION:
@@ -405,7 +406,7 @@ functions:
   update_auction:
       handler: handlers/update.update_auction
       runtime: python3.8
-      memorySize: 128
+      memorySize: 2048
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -456,7 +457,123 @@ functions:
 
   sqs-lot-update:
     handler: handlers/batch_lots_update.handler
-    MemorySize: 2048
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+  sqs-lot-update_1:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+  sqs-lot-update_2:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+  sqs-lot-update_3:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+  sqs-lot-update_4:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+  sqs-lot-update_5:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+  sqs-lot-update_6:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+
+
+  sqs-lot-update_7:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+  sqs-lot-update_8:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+  sqs-lot-update_9:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: 
+            Fn::GetAtt:
+                    - updateLotsQueue
+                    - Arn
+  sqs-lot-update_10:
+    handler: handlers/batch_lots_update.handler
+    MemorySize: 6400
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -488,6 +605,30 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
   
 
+  badd_update_status:
+    handler: handlers/bdd_api.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
+          path: /bdd-update/{auction_id}
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+ 
+
 resources:
   Resources:
     LotStateMachineSSMParameter:
@@ -499,6 +640,7 @@ resources:
         Value: !Sub
           - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
           - StateMachineName: ${opt:stage}-lot-published
+          
 
     
 
@@ -524,7 +666,6 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
-        VisibilityTimeout: 60
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter
