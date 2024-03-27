@@ -24,7 +24,7 @@ data "aws_vpc" "default" {
 }
 
 resource "aws_default_subnet" "default_az1" {
-  availability_zone = "eu-west-2c"
+  availability_zone = "eu-west-2a"
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
