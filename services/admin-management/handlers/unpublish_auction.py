@@ -1,3 +1,4 @@
+'''This api will unpublish/cancel an auction'''
 import json
 import pymongo
 from bson.objectid import ObjectId
@@ -25,13 +26,13 @@ def handler(event, context):
         auction_details = collection.find_one({"seller_email": seller_email, "auction_id": auction_id})
         print('######################')
         all_arns = list(StepFunctionArn.find({"seller_email": seller_email, "auction_id": auction_id}))
-        
+
         if auction_details:
             if request_body['type'] == 'UNPUBLISH' and auction_details.get('status') == 'Published':
                 # Update auction status to 'Draft' and stop all related executions
                 collection.update_one({"_id": auction_details['_id']}, {"$set": {"status": "Draft"}})
                 stop_executions([item['arn'] for item in all_arns])
-                
+
                 return {
                     "statusCode": 204,
                     "headers": {
@@ -40,7 +41,7 @@ def handler(event, context):
                     },
                     "body": json.dumps({"message": "Successfully Updated"})
                 }
-            
+
             if request_body['type'] == 'CANCEL' and auction_details.get('status') == 'Accepting bids':
                 # Update auction status to 'Cancelled' and stop all related executions
                 collection.update_one({"_id": ObjectId(auction_details['_id'])}, {"$set": {"status": "Cancelled"}})
@@ -54,7 +55,7 @@ def handler(event, context):
                     },
                     "body": json.dumps({"message": "Successfully Updated"})
                 }
-            
+
             return {
                 "statusCode": 400,
                 "headers": {

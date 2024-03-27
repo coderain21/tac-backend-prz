@@ -2512,6 +2512,141 @@
           }
         }
       }
+    },
+    "/unpublish-auction":{
+      "patch":{
+        "tags": ["Auction"],
+        "summary": "unpublish auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Update auction information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0008"
+          
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type":{
+                    "type": "string"
+                  }
+
+                }
+              },
+              "example": {
+                "type":"UNPUBLISH/CANCEL" 
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction status not in accepting bid state to update."
+                      
+                    }
+                  }
+                
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "API does not exists"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction doesn't exists."
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "There was an error while updating the auction"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
