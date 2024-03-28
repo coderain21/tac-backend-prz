@@ -112,13 +112,23 @@ def view_list_lots(event, context):
 
         sort_param = data.get("sort_by", "")
         search_keyword = data.get('search', "")
+        per_page = int(data.get('per_page', 0))
+        page = int(data.get('page', 1))
 
         lots_list = get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param)
+
+        total_lots = len(lots_list)
+        total_pages = (total_lots + per_page - 1) // per_page if per_page > 0 else 1
+
+        if per_page > 0:
+            start_index = (page - 1) * per_page
+            end_index = min(start_index + per_page, total_lots)
+            lots_list = lots_list[start_index:end_index]
 
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data': lots_list}, cls=Encoder)
+            "body": json.dumps({'data': lots_list, 'page': page, 'total_pages': total_pages, 'total_records': total_lots}, cls=Encoder)
         }
     except Exception as e:
         print(str(e))
