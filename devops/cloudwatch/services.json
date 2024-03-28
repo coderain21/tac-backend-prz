@@ -1,0 +1,219 @@
+{
+    "widgets": [
+        {
+            "height": 1,
+            "width": 24,
+            "y": 0,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# API Gateway"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 1,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"Count\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "title": "Count: Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "period": 300
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 1,
+            "x": 8,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"5XXError\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e2",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "5XXError: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 1,
+            "x": 16,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"4XXError\"', 'Sum', 300), SUM, DESC)", "id": "e2", "period": 300, "stat": "Sum", "label": "${LABEL} [Count:${SUM}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "4XXError: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 5,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"Latency\"', 'Average', 300), SUM, DESC)", "id": "e1", "period": 300, "stat": "Average", "label": "${LABEL} [Count:${AVG}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Latency: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 5,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"IntegrationLatency\"', 'Average', 300), AVG, DESC)", "id": "e1", "period": 300, "stat": "Average", "label": "${LABEL} [Count:${AVG}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "IntegrationLatency: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 6,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# Lambda"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 7,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Invocations\"', 'Sum', 300), SUM, DESC)", "id": "e1", "period": 300, "stat": "Average", "label": "${LABEL} [Count:${SUM}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Invocations: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 7,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Duration\"', 'Average', 300), AVG, DESC)", "id": "e1", "period": 300, "stat": "Average", "label": "${LABEL} [Count:${SUM}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Duration: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 11,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Errors\"', 'Sum', 300), SUM, DESC)", "id": "e1", "period": 300, "stat": "Sum", "label": "${LABEL} [SUM:${SUM}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Errors: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 11,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Throttles\"', 'Sum', 300), SUM, DESC)", "id": "e1", "period": 300, "stat": "Sum", "label": "${LABEL} [SUM:${SUM}]" } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Throttles: Sum"
+            }
+        }
+    ]
+}
