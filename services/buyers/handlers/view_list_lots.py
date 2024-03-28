@@ -116,7 +116,7 @@ def view_list_lots(event, context):
         page = int(data.get('page', 1))
 
         lots_list = get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param)
-        
+
         total_lots = len(lots_list)
         total_pages = (total_lots + per_page - 1) // per_page if per_page > 0 else 1
 
