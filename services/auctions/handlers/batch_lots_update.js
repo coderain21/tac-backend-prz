@@ -23,6 +23,8 @@ const Lot = require('../entities/Lot')
 
 config.update({ region: 'eu-west-2' })
 
+const currentTimeEpoch = Date.now()
+
 async function startExecution(executionARN, lots) {
     try {
         console.log('execution starteddd')
@@ -83,29 +85,6 @@ async function startExecutionAfterPublish(executionARN, lots) {
         console.log('errr', err)
     }
 }
-async function stopExecutions(executionArn) {
-    try {
-        console.log('INSIDE STOP: ')
-        const stepFunctions = new StepFunctions()
-        const params = {
-            executionArn,
-            cause: 'User initiated stop',
-        }
-        return new Promise((resolve, reject) => {
-            stepFunctions.stopExecution(params, async (error, data) => {
-                if (error) {
-                    reject(error)
-                }
-                if (data) {
-                    resolve(data)
-                }
-                resolve({ status: false })
-            })
-        })
-    } catch (err) {
-        console.log('errrireds', err)
-    }
-}
 
 /*
 The function begins by setting the initial end time of the lot based on its end date.
@@ -135,32 +114,6 @@ async function findAndUpdateTime(lotInformation, client) {
             .hSet('lot', bidKey, JSON.stringify(updateRequest))
             .exec()
         await Promise.all([updatePromise])
-
-        // const payload = {
-        //     lots: updateRequest,
-        // }
-        // const headersList = {
-        //     Accept: '*/*',
-        //     'User-Agent': 'API TEST',
-        //     'Content-Type': 'application/json',
-        // }
-
-        // const reqUrl = `${process.env.SOCKET_URL}/notification`
-        // console.log('request', reqUrl)
-        // return new Promise((resolve, reject) => {
-        //     request({
-        //         method: 'POST',
-        //         url: reqUrl,
-        //         headers: headersList,
-        //         body: JSON.stringify(payload),
-        //     }, (error, response, body) => {
-        //         console.log('redis responsse', error, response)
-        //         if (error) reject(error)
-        //         else {
-        //             resolve(response)
-        //         }
-        //     })
-        // })
         const payload = { lots: updateRequest }
         const headersList = {
             Accept: '*/*',
@@ -191,6 +144,46 @@ async function findAndUpdateTime(lotInformation, client) {
     }
 }
 
+async function stopExecutions(executionArn) {
+    try {
+        console.log('INSIDE STOP: ')
+        const stepFunctions = new StepFunctions()
+        const params = {
+            executionArn,
+            cause: 'User initiated stop',
+        }
+        return new Promise((resolve, reject) => {
+            stepFunctions.stopExecution(params, async (error, data) => {
+                if (error) {
+                    reject(error)
+                }
+                if (data) {
+                    resolve(data)
+                }
+                resolve({ status: false })
+            })
+        })
+    } catch (err) {
+        console.log('errrireds', err)
+    }
+}
+
+async function redisUpdateAll(auctionLots, client, extend_time) {
+    try {
+        const redisPromise = []
+        for (const item of auctionLots) {
+            console.log('item', item)
+            item.lot_end_time = item.end_date + extend_time
+            if (item.end_date > currentTimeEpoch) {
+                redisPromise.push(findAndUpdateTime(item, client))
+            }
+        }
+        await Promise.all(redisPromise)
+    } catch (err) {
+        console.log('redisupdateerr', err)
+    }
+}
+
 module.exports.handler = async (event) => {
     try {
         const firstRecord = event.Records[0]
@@ -200,7 +193,6 @@ module.exports.handler = async (event) => {
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
         const client = await redisHelper.createRedisClient()
-        const currentTimeEpoch = Date.now()
         let extend_time = auctionDetails.extension_time.replace('m', '')
         extend_time = parseInt(extend_time, 10)
         extend_time = extend_time * 60 * 1000
@@ -209,7 +201,7 @@ module.exports.handler = async (event) => {
             const operations = []
             const startExecutions = []
             const redisUpdate = []
-
+            redisUpdate.push(redisUpdateAll(auctionLots, client, extend_time))
             for (const item of auctionLots) {
                 console.log('item', item)
                 item.lot_end_time = item.end_date + extend_time
@@ -219,7 +211,6 @@ module.exports.handler = async (event) => {
                     const executionArn = getAllArns.arn
                     startExecutions.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
                     stepFunctionEnd.push(stopExecutions(executionArn))
-                    redisUpdate.push(findAndUpdateTime(item, client))
                     operations.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
                 }
             }
