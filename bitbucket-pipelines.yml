@@ -63,12 +63,12 @@ definitions:
         services:
           - docker
         script:
-          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - echo "Dependency Scanning"
           - pipe: docker://aligent/owasp-dependency-check-pipe
             variables:
               SCAN_PATH: "./package.json"
               CVSS_FAIL_LEVEL: "1"
+              EXTRA_ARGS: "--noupdate"
         artifacts:
           - test-results/**  
 

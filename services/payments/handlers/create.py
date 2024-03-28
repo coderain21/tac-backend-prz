@@ -67,7 +67,7 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
             record["currency"] = lot.get("currency")
             results.append(record)
 
-        cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+        # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
         client.close()
         if cart_data:
             return results,lot_numbers
@@ -146,7 +146,7 @@ def create_order(insert_data):
         # MongoDB configuration
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
-        payments_collection = db[os.environ['ORDERS_COLLECTION']]
+        payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         insert_result = payments_collection.insert_one(insert_data)
         client.close()
         if insert_result:
@@ -288,7 +288,7 @@ def create_intent(event, context):
 
         counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
-        orders_collection = db[os.environ["ORDERS_COLLECTION"]]
+        orders_collection = db[os.environ["TEMP_ORDERS_COLLECTION"]]
 
         #fetch address data and add to order data
         billing_address = address_collection.find_one({"_id": ObjectId(billing)})

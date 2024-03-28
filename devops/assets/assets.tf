@@ -33,6 +33,8 @@ resource "aws_acm_certificate" "cert_us_east_1" {
   provider = aws.deployment-us
 }
 
+
+
 resource "aws_acm_certificate" "cert_ap_south_1" {
   domain_name ="*.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"
@@ -82,7 +84,23 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   zone_id         = data.aws_route53_zone.domain_zone.zone_id
   provider = aws.main
 }
+resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert_cognito_us_east_1.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
 
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.domain_zone.zone_id
+  provider = aws.main
+}
 resource "aws_s3_bucket" "assets" {
   bucket = "indyauction-assets-${data.external.env.result["STAGE"]}"
   force_destroy = true

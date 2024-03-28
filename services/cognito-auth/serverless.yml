@@ -331,6 +331,8 @@ resources:
           preferred_username: "email"
           username: "sub"
           email: "email"
+          given_name: "given_name"
+          family_name: "family_name"
         ProviderName: Google
         ProviderType: Google
         ProviderDetails:
@@ -345,6 +347,8 @@ resources:
         AttributeMapping:
           username: "id"
           email: "email"
+          given_name: "first_name"
+          family_name: "last_name"
         ProviderName: Facebook
         ProviderType: Facebook
         ProviderDetails:
@@ -509,12 +513,12 @@ resources:
               - Buyers
               - Arn
     
-    BuyersDomainStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: BUYER_COGNITO_USERPOOL_DOMAIN
-          Type: String
-          Value: buyers-indyauction-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
+    # BuyersDomainStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: BUYER_COGNITO_USERPOOL_DOMAIN
+    #       Type: String
+    #       Value: buyers-indyauction-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
 
     BuyersCognitoIdentityPoolNameStore:
         Type: AWS::SSM::Parameter

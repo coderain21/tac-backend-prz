@@ -77,8 +77,8 @@ exports.handler = async (event, context, callback) => {
                 console.log('update value', updateValue)
 
                 const userData = {
-                    first_name: '',
-                    last_name: '',
+                    first_name: event.request.userAttributes.given_name,
+                    last_name: event.request.userAttributes.family_name,
                     registered_through: 'federated',
                     email_address: event.request.userAttributes.email,
                     password: newPassword,

@@ -19,7 +19,7 @@ headers = {
 # This is your Stripe CLI webhook secret for testing your endpoint locally.
 endpoint_secret = os.environ['STRIPE_ENDPOINT_SECRET']
 
-def update_payment_data(id,update_data):
+def update_payment_data(payment_intent_id,update_data):
     """
     Update payment data in the MongoDB collection.
 
@@ -37,19 +37,100 @@ def update_payment_data(id,update_data):
         # MongoDB configuration
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
+        temp_payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         payments_collection = db[os.environ['ORDERS_COLLECTION']]
-        print(update_data)
+        cart_collection = db[os.environ['CART_COLLECTION']]
+        # print(update_data)
 
-        update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
+        # update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
 
-        client.close()
-        if update_result:
+        temp_payment_details = temp_payments_collection.find_one({"payment_intent": payment_intent_id})
+        print('payment_details', temp_payment_details)
+
+        if temp_payment_details:
+            # Retrieve seller email, buyer email, and auction ID
+            seller_email = temp_payment_details.get("seller_email")
+            buyer_email = temp_payment_details.get("email_address")
+            auction_id = temp_payment_details.get("auction_id")
+
+            # # Create the order using the temporary payment data
+            # insert_result = create_order(temp_payment_details)
+
+            # Update the payment data
+            update_result = temp_payments_collection.update_one({"payment_intent": payment_intent_id}, {"$set": update_data})
+            print('update_data', update_data)
+
+            # Check if the payment status is "Paid"
+            if update_data.get("payment_status") == "Paid":
+
+                combined_data = {**temp_payment_details, **update_data}
+
+                # Create the order using the temporary payment data
+                insert_result = create_order(combined_data)
+                delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
+                print('here')
+                # Delete the cart data
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+            elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
+                # Create the order using the temporary payment data
+                combined_data = {**temp_payment_details, **update_data}
+
+                insert_result = create_order(combined_data)
+                delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
+                print('here')
+                # Delete the cart data
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                print('after')
+            client.close()
             return update_result
-        return None
+
+        else:
+            # If payment details are not found, return None
+            client.close()
+            return None
+
+
+        # client.close()
+        # if update_result:
+        #     return update_result
+        # return None
     except BaseException as err:
         client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
+
+
+def create_order(insert_data):
+    """
+    Add payment data to the MongoDB collection.
+
+    Args:
+        insert_data (dict): Dictionary containing payment data to be inserted.
+
+    Returns:
+        pymongo.results.InsertOneResult: The result of the MongoDB insert operation.
+    """
+    try:
+        # MongoDB configuration
+        client = MongoClient(os.environ['MONGO_CLIENT'])
+        db = client[os.environ['DATABASE']]
+        orders_collection = db[os.environ['ORDERS_COLLECTION']]
+
+        insert_result = orders_collection.insert_one(insert_data)
+        if insert_result:
+            print("order created")
+        client.close()
+
+        if insert_result:
+            return insert_result
+
+        return None
+
+    except BaseException as err:
+        client.close()
+        print(f"Unexpected {err=}, {type(err)=}")
+        raise
+
 
 def update(event, context):
     """
@@ -97,6 +178,7 @@ def update(event, context):
         data = json.loads(event_body)
         account_id = data["account"]
         data=data["data"]
+        print('data after payment', data)
         # Handle the event
         if data["object"]["object"] == "payment_intent":
             payment_id = data["object"]["id"]
