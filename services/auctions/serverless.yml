@@ -488,7 +488,7 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
   
 
-  badd_update_status:
+  bdd_update_status:
     handler: handlers/bdd_api.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
