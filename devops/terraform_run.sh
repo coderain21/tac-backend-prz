@@ -22,54 +22,54 @@ aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
 
 
-terraform -chdir=devops/assets init
-terraform -chdir=devops/assets apply -auto-approve
-terraform -chdir=devops/admin_web_application init
-terraform -chdir=devops/admin_web_application apply -auto-approve
-terraform -chdir=devops/seller_web_application init
-terraform -chdir=devops/seller_web_application apply -auto-approve
-terraform -chdir=devops/api_gateway init
-terraform -chdir=devops/api_gateway apply -auto-approve
-terraform -chdir=devops/dependency/node init
-terraform -chdir=devops/dependency/node apply -auto-approve
-terraform -chdir=devops/dependency/nodejs-auth-layer init
-terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
-terraform -chdir=devops/dependency/python init
-terraform -chdir=devops/dependency/python apply -auto-approve
-terraform -chdir=devops/kms init
-terraform -chdir=devops/kms apply -auto-approve
-terraform -chdir=devops/mongodb init
-terraform -chdir=devops/mongodb apply -auto-approve
-terraform -chdir=devops/redis init
-terraform -chdir=devops/redis apply -auto-approve
-terraform -chdir=devops/ecs init
-terraform -chdir=devops/ecs apply -auto-approve
-terraform -chdir=devops/cloudwatch_alarms init
-terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
-terraform -chdir=devops/redis-cluster init
-terraform -chdir=devops/redis-cluster apply -auto-approve
-if [ "STAGE" = "qa" ]; then
-    terraform -chdir=devops/dependency/bitbucket-layer-node init
-    terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
-fi
+# terraform -chdir=devops/assets init
+# terraform -chdir=devops/assets apply -auto-approve
+# terraform -chdir=devops/admin_web_application init
+# terraform -chdir=devops/admin_web_application apply -auto-approve
+# terraform -chdir=devops/seller_web_application init
+# terraform -chdir=devops/seller_web_application apply -auto-approve
+# terraform -chdir=devops/api_gateway init
+# terraform -chdir=devops/api_gateway apply -auto-approve
+# terraform -chdir=devops/dependency/node init
+# terraform -chdir=devops/dependency/node apply -auto-approve
+# terraform -chdir=devops/dependency/nodejs-auth-layer init
+# terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
+# terraform -chdir=devops/dependency/python init
+# terraform -chdir=devops/dependency/python apply -auto-approve
+# terraform -chdir=devops/kms init
+# terraform -chdir=devops/kms apply -auto-approve
+# terraform -chdir=devops/mongodb init
+# terraform -chdir=devops/mongodb apply -auto-approve
+# terraform -chdir=devops/redis init
+# terraform -chdir=devops/redis apply -auto-approve
+# terraform -chdir=devops/ecs init
+# terraform -chdir=devops/ecs apply -auto-approve
+# terraform -chdir=devops/cloudwatch_alarms init
+# terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
+# terraform -chdir=devops/redis-cluster init
+# terraform -chdir=devops/redis-cluster apply -auto-approve
+# if [ "STAGE" = "qa" ]; then
+#     terraform -chdir=devops/dependency/bitbucket-layer-node init
+#     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
+# fi
 
-parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
+# parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
-# Loop through each parameter
-for param_name in "${parameter_names[@]}"; do
-    echo "$param_name"
-    # Get parameter value
-    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+# # Loop through each parameter
+# for param_name in "${parameter_names[@]}"; do
+#     echo "$param_name"
+#     # Get parameter value
+#     param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
-    # Set environment variable
-    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+#     # Set environment variable
+#     export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
 
-    echo "Set $param_name as environment variable with value: $param_value"
-done <<< "$parameter_names"
+#     echo "Set $param_name as environment variable with value: $param_value"
+# done <<< "$parameter_names"
 
 
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 
 
 npm i -g serverless@3.15.2
