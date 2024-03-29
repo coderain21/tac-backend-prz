@@ -112,7 +112,7 @@ async function findAndUpdateTime(lotInformation, client) {
         console.log('updateRequest', updateRequest)
         const updatePromise = client
             .multi()
-            .hSet('lot', bidKey, JSON.stringify(updateRequest))
+            .hset('lot', bidKey, JSON.stringify(updateRequest))
             .exec()
         await Promise.all([updatePromise])
         const payload = { lots: updateRequest }
