@@ -106,7 +106,7 @@ def update_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        seller_email = event['queryStringParameters']['seller_email']   
+        seller_email = str(event['queryStringParameters']['seller_email'])   
         
      
         if not seller_email:
