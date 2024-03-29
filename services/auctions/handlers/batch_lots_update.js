@@ -207,6 +207,7 @@ module.exports.handler = async (event) => {
             for (const item of auctionLots) {
                 console.log('item', item)
                 item.lot_end_time = item.end_date + extend_time
+                console.log('curre', currentTimeEpoch, item.end_date > currentTimeEpoch)
                 if (item.end_date > currentTimeEpoch) {
                     const getAllArns = await mongodbHelper.singleGetAllExecutionArn(item, StepFunctionArn)
                     console.log('getAllArns', getAllArns)
