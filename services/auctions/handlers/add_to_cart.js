@@ -11,7 +11,7 @@ const BidInformation = require('../entities/BidInformation')
 const redisHelper = require('../lib/redis_helper')
 
 async function getLot(rediskey, client, id) {
-    const allBidders = await client.hGetAll('lot', rediskey)
+    const allBidders = await client.hget('lot', rediskey)
     return Object.values(allBidders || {}).filter((bidder) => {
         const parsedBidder = JSON.parse(bidder)
         return parsedBidder._id === id
@@ -34,6 +34,7 @@ module.exports.handler = async (event) => {
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
         const getLotInfo = await getLot(rediskey, client, event._id)
+        console.log('getLotInfo', getLotInfo)
         const lotInformation = JSON.parse(getLotInfo)
         if (lotInformation.end_date < currentTimestamp) {
             console.log('about enddd')

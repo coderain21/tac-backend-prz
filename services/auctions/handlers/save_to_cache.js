@@ -34,7 +34,7 @@ module.exports.handler = async (event, context, callback) => {
             endDateISO = new Date(data.end_date).toISOString()
             data.extended = true
             data.lot_extended = true
-            await client.hSet('lot', redisKey, redisPayload)
+            await client.hset('lot', redisKey, redisPayload)
         }
         data.end_date = endDateISO
         return { ...data }

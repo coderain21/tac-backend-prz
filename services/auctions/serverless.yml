@@ -42,7 +42,7 @@ provider:
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     CDN_LINK: ${ssm:CDN_URL}
     BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
-    REDIS_URL: ${ssm:REDIS_URL}
+    # REDIS_URL: ${ssm:REDIS_URL}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     SQS_QUEUE_ARN:  
@@ -60,7 +60,7 @@ provider:
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
-    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    # REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     TEMPLATE_ARN_AUCTION_COMPLETION:
       Fn::Join:
@@ -605,7 +605,7 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
   
 
-  badd_update_status:
+  bdd_update_status:
     handler: handlers/bdd_api.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
