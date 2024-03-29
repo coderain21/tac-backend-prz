@@ -520,10 +520,10 @@ functions:
       runtime: python3.8
       memorySize: 128
       vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -532,8 +532,8 @@ functions:
             cors: true
             path: /publish-auction/{auction_id}
             method: patch
-            authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            # authorizer:
+            #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
   Resources:
