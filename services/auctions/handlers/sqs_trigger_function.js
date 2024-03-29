@@ -23,7 +23,7 @@ const pinpoint = new PinpointEmail()
 
 let connection
 async function getLot(rediskey, client, auctionData) {
-    const allBidders = await client.hget('lot', rediskey)
+    const allBidders = await client.hgetall(rediskey)
     return Object.values(allBidders || {}).filter((bidder) => {
         const parsedBidder = JSON.parse(bidder)
         return parsedBidder.seller_email === auctionData.seller_email && parsedBidder.auction_id === auctionData.auction_id
@@ -32,8 +32,6 @@ async function getLot(rediskey, client, auctionData) {
 
 function formatCurrency(amount, currencyCode) {
     try {
-        console.log('amountttt', amount)
-
         // Convert amount to a string
         const amountString = String(amount)
 
@@ -118,7 +116,6 @@ module.exports.sqsTriggerFunction = async (event) => {
             if (winningLot.length <= 0) {
                 subjectDescription = 'You lost the Auction'
             }
-            console.log('winningLot', winningLot)
 
             const template_data = {
                 winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),

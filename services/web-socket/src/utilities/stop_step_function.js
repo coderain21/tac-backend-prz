@@ -17,16 +17,12 @@ const Auction = require('../models/Auction')
 config.update({ region: 'eu-west-2' })
 
 async function startExecution(executionARN, lots) {
-    console.log('Starting', typeof lots.start_date, lots.start_date)
     const newStartDate = new Date(lots.start_date).toISOString()
-    console.log('new start date', newStartDate)
     lots.start_date = newStartDate
-    console.log('before stepfunc', lots)
     const params = {
         stateMachineArn: executionARN,
         input: JSON.stringify(lots),
     }
-    console.log('params', params)
     const stepfunctions = new StepFunctions()
     return new Promise((resolve, reject) => {
         stepfunctions.startExecution(params, async (error, data) => {

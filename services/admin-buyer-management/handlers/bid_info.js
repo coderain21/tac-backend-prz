@@ -54,7 +54,6 @@ const currencySymbolMapping = {
 
 const formatDate = (timestamp, timeZone) => {
     const date = new Date(timestamp) // Convert timestamp to Date
-    // console.log('timezone_3', timeZone)
     // Format options for date and time
     const options = {
         day: 'numeric',
@@ -88,18 +87,12 @@ const formatDate = (timestamp, timeZone) => {
 
 async function exportAsCsv(bidders) {
     try {
-        // console.log('bidders', bidders)
-        // if (!bidders || bidders.length === 0) {
-        //     throw new Error('No bidders found.')
-        // }
-        // const auctionId = String(bidders[0]?.auction_id || '')
         const filename = 'Bidding Information'
 
         const tempDir = '/tmp'
         const csvFilePath = `${tempDir}/${filename}.csv`
 
         const s3Key = `admin/exports/bidders/${filename}.csv`
-        console.log('s3Key', s3Key)
         const s3Bucket = process.env.BUCKET_NAME
 
         const csvWriter = createCsvWriter({
@@ -115,13 +108,8 @@ async function exportAsCsv(bidders) {
         const records = []
 
         for (const bidder of bidders) {
-            console.log('bidder', bidder)
             bidder.updated_at = new Date(bidder.updated_at)
-            // const { time_zone } = bidder.time_zone
-            // console.log('timezone_1', time_zone)
-            // console.log('timezone----', bidder.time_zone)
             const formattedDate = formatDate(bidder.updated_at, bidder.time_zone)
-            console.log('currency', bidder.currency)
             const currencySymbol = currencySymbolMapping[bidder.currency]
             // Append currency symbol to the bid amount
             const amountWithSymbol = `${currencySymbol}${bidder.bid_amount}`
@@ -219,7 +207,6 @@ module.exports.handler = async (event) => {
         let bidsList = null
         if (queryParams.export === 'true') {
             try {
-                console.log('mongose', mongoose_query)
                 if (options.sort) {
                     // Fetch all documents with sorting
                     bidsList = await BidInformation.find(mongoose_query).sort(options.sort)
@@ -232,7 +219,6 @@ module.exports.handler = async (event) => {
                     // Handle the case where no documents are found
                     return // or throw an error, depending on your requirement
                 }
-                console.log('bidsList', bidsList)
                 return {
                     statusCode: 200,
                     headers: helpers.getHeaders(),
