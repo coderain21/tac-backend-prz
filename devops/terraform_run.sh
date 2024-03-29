@@ -53,23 +53,23 @@ aws configure list --profile $PROFILE_ENV
 #     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 # fi
 
-# parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
+parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
 # # Loop through each parameter
-# for param_name in "${parameter_names[@]}"; do
-#     echo "$param_name"
-#     # Get parameter value
-#     param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+for param_name in "${parameter_names[@]}"; do
+    echo "$param_name"
+    # Get parameter value
+    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
-#     # Set environment variable
-#     export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+    # Set environment variable
+    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
 
-#     echo "Set $param_name as environment variable with value: $param_value"
-# done <<< "$parameter_names"
+    echo "Set $param_name as environment variable with value: $param_value"
+done <<< "$parameter_names"
 
 
-# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
-# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 
 
 npm i -g serverless@3.15.2
@@ -86,20 +86,20 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 
-cd services/cognito-auth
-sls deploy --region $REGION --stage $STAGE
-cd ../..
-cd services/users
-sls deploy --region $REGION --stage $STAGE
-cd ../..
-cd services/lambda-authorizer
-sls deploy --region $REGION --stage $STAGE
-cd ../..
+# cd services/cognito-auth
+# sls deploy --region $REGION --stage $STAGE
+# cd ../..
+# cd services/users
+# sls deploy --region $REGION --stage $STAGE
+# cd ../..
+# cd services/lambda-authorizer
+# sls deploy --region $REGION --stage $STAGE
+# cd ../..
 cd services/auctions
 sls deploy --region $REGION --stage $STAGE
 cd ../..
-terraform -chdir=devops/cognito_custom_domain init
-terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-sls deploy --stage ${STAGE} --max-concurrency 5
+# terraform -chdir=devops/cognito_custom_domain init
+# terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+# sls deploy --stage ${STAGE} --max-concurrency 5
 
 
