@@ -259,7 +259,7 @@ pipelines:
           deployment: Pre-Production
           image: python:3.7.2
           steps:
-            - step: *BuildStep
+            # - step: *BuildStep
             - step: *TerraDeploy
     DeleteDisposableEnvironment:
       - stage:
