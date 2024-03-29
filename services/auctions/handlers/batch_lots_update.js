@@ -109,6 +109,7 @@ async function findAndUpdateTime(lotInformation, client) {
             lot_end_date: lotInformation.lot_end_time,
             end_date: lotInformation.lot_end_time,
         }
+        console.log('updateRequest', updateRequest)
         const updatePromise = client
             .multi()
             .hSet('lot', bidKey, JSON.stringify(updateRequest))
@@ -121,6 +122,7 @@ async function findAndUpdateTime(lotInformation, client) {
             'Content-Type': 'application/json',
         }
         const reqUrl = `${process.env.SOCKET_URL}/notification`
+        console.log(reqUrl)
         return new Promise((resolve, reject) => {
             const options = {
                 method: 'POST',
