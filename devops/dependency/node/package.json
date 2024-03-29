@@ -25,6 +25,7 @@
     "split-array": "^1.0.1",
     "stripe": "^13.2.0",
     "csv-writer": "^1.6.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ioredis": "^5.3.2"
   }
 }

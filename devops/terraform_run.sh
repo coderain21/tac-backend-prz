@@ -86,20 +86,20 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 
-cd services/cognito-auth
-sls deploy --region $REGION --stage $STAGE
-cd ../..
-cd services/users
-sls deploy --region $REGION --stage $STAGE
-cd ../..
-cd services/lambda-authorizer
-sls deploy --region $REGION --stage $STAGE
-cd ../..
+# cd services/cognito-auth
+# sls deploy --region $REGION --stage $STAGE
+# cd ../..
+# cd services/users
+# sls deploy --region $REGION --stage $STAGE
+# cd ../..
+# cd services/lambda-authorizer
+# sls deploy --region $REGION --stage $STAGE
+# cd ../..
 cd services/auctions
 sls deploy --region $REGION --stage $STAGE
 cd ../..
 # terraform -chdir=devops/cognito_custom_domain init
 # terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-sls deploy --stage ${STAGE} --max-concurrency 5
+# sls deploy --stage ${STAGE} --max-concurrency 5
 
 
