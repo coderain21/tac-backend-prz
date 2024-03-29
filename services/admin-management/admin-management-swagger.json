@@ -2647,7 +2647,175 @@
           }
         }
       }
-    }
+    },
+    "/publish-auction/{auction_id}": {      
+      "patch":{
+        "tags": ["Auction"],
+        "summary": "Updating auction details",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Update auction information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          },
+          {
+            "name": "published",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          },
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "description":"Join our auction event!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "required and cannot be empty."
+                      
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                        "message": "required fields are missing or empty"
+                      
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                        "message": "Some lots are missing lot images"
+                      
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                        "message": "Please complete the Individual or Business verification before publishing the auction."
+                      
+                    }
+                  }       
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction doesn't exists."
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "There was an error while updating the auction"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          }
+        }
+      }
+     }
   },
   "components": {
     "securitySchemes": {
