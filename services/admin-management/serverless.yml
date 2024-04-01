@@ -75,10 +75,71 @@ provider:
     SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
+    SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    # REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+
+    SQS_QUEUE_ARN:  
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "sqs"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "auto-completion-email-${self:provider.stage}.fifo"
+    BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
+    SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
+    UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
+    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
+    STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    SOCKET_URL: ${ssm:SOCKET_URL}
+    TEMPLATE_ARN_AUCTION_COMPLETION:
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
+    S3_BUCKET_URL:  https://${opt:stage, self:provider.stage}-cdn.indyauction.net/public
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL}
+    STATE_MACHINE_LOT_ARN:  
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-lot-published"
+    STATE_MACHINE_AUCTION_ARN: 
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-auction-ended"
+    QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "auto-completion-email-${opt:stage}.fifo"
+    LOT_UPDATE_QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "${opt:stage}-bulk-lots-update"
 
   http:
     cors: true
@@ -101,6 +162,8 @@ provider:
             - dynamodb:*
             - execute-api:*
             - states:*
+            - sqs:*
+            - sts:*
           Resource: "*"
 
 package:
@@ -517,6 +580,11 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   bdd_admin_update_status:
     handler: handlers/bdd_api.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -535,6 +603,43 @@ functions:
               - Access-Control-Allow-Header
           path: /admin_bdd-update/{auction_id}
           method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  update_auction:
+      handler: handlers/publish_auction.update_auction
+      runtime: python3.8
+      memorySize: 128
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+      events:
+        - http:
+            cors: true
+            path: /publish-auction/{auction_id}
+            method: patch
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  admin-sub-domain:
+    handler: handlers/subdomain.subdomain
+    runtime: python3.8
+    # timeout: 100
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /admin-subdomain
+          method: get
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 

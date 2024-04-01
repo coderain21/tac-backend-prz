@@ -37,6 +37,15 @@ module.exports.handler = async (event) => {
         const auction_id = decodeURIComponent(event.pathParameters.auction_id)
         const { seller_email } = event.queryStringParameters
         const getAuctionDetails = await mongoConnection.view(Auction, { seller_email, auction_id })
+        if (!getAuctionDetails || getAuctionDetails.length === 0) {
+            return {
+                statusCode: 404,
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Auction not found',
+                }),
+            }
+        }
         await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status: 'Accepting bids' })
         return {
             statusCode: 204,
