@@ -12,9 +12,6 @@ from datetime import datetime
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
 sqs = boto3.client('sqs')
-from urllib.parse import unquote
-
-
 
 headers = {
     'Content-Type': 'application/json',
@@ -107,8 +104,8 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         seller_email = str(event['queryStringParameters']['seller_email'])   
-        
-     
+        request_body = json.loads(event['body'])
+
         if not seller_email:
             return {
                 "statusCode": 400,
