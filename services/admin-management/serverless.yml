@@ -578,6 +578,33 @@ functions:
           method: patch
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  bdd_admin_update_status:
+    handler: handlers/bdd_api.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
+          path: /admin_bdd-update/{auction_id}
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   update_auction:
       handler: handlers/publish_auction.update_auction
       runtime: python3.8
