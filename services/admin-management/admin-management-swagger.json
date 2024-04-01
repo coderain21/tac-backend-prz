@@ -2815,6 +2815,72 @@
           }
         }
       }
+     },
+     "/admin-subdomain": {
+      "get": {
+        "tags": ["Admin Management"],
+        "summary": "Admin get subdomain",
+        "description": "Get subdomain",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi@7edge.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved buyer detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "subdomain": {
+                    "type": "string"
+                  }
+                },
+                "example": {
+                  "subdomain": "www-devo"
+              }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
      }
   },
   "components": {
