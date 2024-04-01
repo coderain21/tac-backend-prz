@@ -596,6 +596,24 @@ functions:
             method: patch
             authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  admin-sub-domain:
+    handler: handlers/subdomain.subdomain
+    runtime: python3.8
+    # timeout: 100
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /admin-subdomain
+          method: get
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
   Resources:
