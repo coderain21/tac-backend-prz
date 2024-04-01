@@ -11,6 +11,12 @@ const mongodbHelper = require('../lib/mongodb_helper')
 const { sqsTriggerFunction } = require('./sqs_trigger_function')
 const BidInformation = require('../entities/BidInformation')
 const redisHelper = require('../lib/redis_helper')
+const Buyers = require('../entities/Buyers')
+const Cart = require('../entities/Cart')
+const Lot = require('../entities/Lot')
+const Auction = require('../entities/Auction')
+
+mongodbHelper.connect()
 
 async function getLot(rediskey, client) {
     try {
@@ -41,6 +47,7 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
+        console.log('triggered', event)
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
@@ -51,16 +58,20 @@ module.exports.handler = async (event) => {
         }
         const lotInformation = get_lot[0]
         if (lotInformation.end_date < currentTimestamp) {
-            const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
-            await mongodbHelper.lotToCart(lotInformation, auctionData)
+            const auctionData = await mongodbHelper.getAuction(event, Auction)
+            const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+            console.log('buyer', getBuyerData)
+            lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
+            lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
+            await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
             await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
-            const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp)
+            const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
             // const callSQS = await sqsTriggerFunction(event)
-            if (auctionData[0].extension_type === 'All Lots' && event.lot_number === 1) {
+            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
             }
             if (getLots.length <= 0) {
-                if (auctionData[0].extension_type === 'Cascade' || auctionData[0].extension_type === 'Individual Lots') {
+                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
                     await sqsTriggerFunction(event)
                 }
             } else {

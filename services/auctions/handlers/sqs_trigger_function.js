@@ -18,10 +18,15 @@ const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
 const redisHelper = require('../lib/redis_helper')
+const BidInformation = require('../entities/BidInformation')
+const Users = require('../entities/Users')
+const Buyers = require('../entities/Buyers')
 
 const pinpoint = new PinpointEmail()
 
-let connection
+mongodbHelper.connect()
+
+
 async function getLot(rediskey, client, auctionData) {
     const allBidders = await client.hgetall(rediskey)
     return Object.values(allBidders || {}).filter((bidder) => {
@@ -82,13 +87,13 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
 
 module.exports.sqsTriggerFunction = async (event) => {
     try {
-        connection = await mongodbHelper.connect()
-        const getBidders = await mongodbHelper.getBidders(event)
+        const getBidders = await mongodbHelper.getBidders(event, BidInformation)
+        console.log('getBidders', getBidders)
         const client = await redisHelper.createRedisClient()
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
 
-        const auctionData = await mongodbHelper.getAuction(event, process.env.TABLE_NAME)
+        const auctionData = await mongodbHelper.getAuction(event, Auction)
 
         const promiseList = getBidders.map(async (user) => {
             const winningLot = []
@@ -99,16 +104,18 @@ module.exports.sqsTriggerFunction = async (event) => {
             const sellerQuery = {
                 email_address: event.seller_email,
             }
-            const buyerInformation = await mongodbHelper.getUser(query, process.env.BUYERS_TABLE)
-            const sellerInformation = await mongodbHelper.getUser(sellerQuery, process.env.SELLERS_TABLE)
+            const buyerInformation = await mongodbHelper.getUser(query, Buyers)
+            const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+            console.log(sellerInformation, 'sellerInformation')
+            console.log('buyerInformation', buyerInformation)
             let subjectDescription = 'You Won the Auction'
             get_lot.forEach((item) => {
                 item.lot_image = `${process.env.CDN_LINK}${item.images[0].url}`
                 if (item.winning_user === user.buyer_id) {
-                    item.bid_amount = formatCurrency(item.bid_amount, auctionData[0].currency)
+                    item.bid_amount = formatCurrency(item.bid_amount, auctionData.currency)
                     winningLot.push(item)
                 } else if (item.winning_user !== user.buyer_id) {
-                    item.bid_amount = formatCurrency(item.starting_price, auctionData[0].currency)
+                    item.bid_amount = formatCurrency(item.starting_price, auctionData.currency)
                     notWinning.push(item)
                 }
             })
@@ -116,17 +123,16 @@ module.exports.sqsTriggerFunction = async (event) => {
             if (winningLot.length <= 0) {
                 subjectDescription = 'You lost the Auction'
             }
-
             const template_data = {
                 winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
-                title: auctionData[0].title,
-                logo_url: auctionData[0].logo_image === '' ? `${process.env.S3_BUCKET_URL}/Logo.png` : `${process.env.S3_BUCKET_URL}/${auctionData[0].logo_image}`,
+                title: auctionData.title,
+                logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}/Logo.png` : `${process.env.S3_BUCKET_URL}/${auctionData.logo_image}`,
                 not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
-                seller_email: auctionData[0].seller_email,
+                seller_email: auctionData.seller_email,
                 subject: subjectDescription,
             }
 
@@ -135,12 +141,8 @@ module.exports.sqsTriggerFunction = async (event) => {
 
         await Promise.all(promiseList)
 
-        await mongodbHelper.update(Auction, auctionData[0]._id, { status: 'Completed' })
+        await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
     } catch (err) {
         console.log('err', err)
-    } finally {
-        if (connection) {
-            await connection.disconnect()
-        }
     }
 }
