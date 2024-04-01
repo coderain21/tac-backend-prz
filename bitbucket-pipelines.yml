@@ -25,30 +25,23 @@ definitions:
         artifacts:
           - .env
 
-    - step: &ESlint
-        name: ESLint
+    - step: &CodeQuality
+        name: Code Quality
         script:
-           - echo "ESLint"
-           - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
+           - echo "Code Quality"
            - npm install eslint
            - npm run eslint
+           - apt-get update   # Update package manager (for Debian/Ubuntu-based images)
+           - apt-get install -y python3-pip   # Install pip (for Debian/Ubuntu-based images)
+           - pip install pylint
+           - pylint services/**/**/*.py
 
-    - step: &Pylint
-        name: PyLint
-        image: python:3.9   # Choose the desired Python version
-        script:
-            - echo "Pylint is skipped"
-            - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
-            - apt-get update   # Update package manager (for Debian/Ubuntu-based images)
-            - apt-get install -y python3-pip   # Install pip (for Debian/Ubuntu-based images)
-            - pip install pylint
-            - pylint services/**/**/*.py
+           
 
     - step: &LicenseCompliance
-        name: License Compliance
+        name: License Scanning
         script:
-          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
-          - echo "License Compliance"
+          - echo "License Scanning"
           - npm i --force
           - npm install -g license-checker
           - license-checker --json > licenses.json  
@@ -77,7 +70,6 @@ definitions:
         name: Secret Detection
         script:
           - echo "Secret Checking"
-          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - pipe: atlassian/git-secrets-scan:0.4.3
 
     - step: &SAST
@@ -85,7 +77,6 @@ definitions:
         image: python:latest
         script:
           - echo "SAST"
-          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
           - pip install pip==23.2.1 --break-system-packages
           - pip3 install njsscan
@@ -94,11 +85,11 @@ definitions:
           - bandit -r services/**/*.py
 
 
-    - step: &Deploy
+    - step: &Deployment
         name: Deployment
         size: 2x
         script:
-          - echo "Deploy"
+          - echo "Deployment"
           - npm i -g serverless@3.15.2
           - npm i -g @serverless/compose
           - npm i serverless-aws-documentation
@@ -124,7 +115,7 @@ definitions:
         name: Deployment
         size: 2x
         script:
-          - echo "Deploy"
+          - echo "Deployment"
           # - pipe: atlassian/aws-code-deploy:1.4.0
           #   variables:
           #     AWS_DEFAULT_REGION: $AWS_REGION
@@ -157,10 +148,9 @@ definitions:
 
     
     - step: &APITesting 
-        name: API Test Automation
+        name: Unit Testing
         script:
-          - if [ "$BITBUCKET_PR_DESTINATION_BRANCH" == staging ]; then exit 0 ; fi
-          - echo "API Testing Automation"
+          - echo "Unit Testing"
           - source .env
           - apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y && apt-get install jq -y
           - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
@@ -189,7 +179,7 @@ definitions:
               DISTRIBUTION_ID: $DISTRIBUTION_ID  
 
     - step: &DAST 
-        name: Dynamic Application Security Testing (DAST) 
+        name: Dynamic Application Security Testing (DAST)
         image: softwaresecurityproject/zap-stable
         services:
           - docker-high-memory
@@ -255,7 +245,7 @@ pipelines:
     
     CreateDisposableEnvironment:
       - stage:
-          name: Testing and Pre-Production Deployment
+          name: Deployment
           deployment: Pre-Production
           image: python:3.7.2
           steps:
@@ -263,7 +253,7 @@ pipelines:
             - step: *TerraDeploy
     DeleteDisposableEnvironment:
       - stage:
-          name: Testing and Pre-Production Deployment
+          name: Deployment
           deployment: Pre-Production
           image: python:3.7.2
           steps:
@@ -272,40 +262,40 @@ pipelines:
     
     RunBookExecutionQA:
       - variables:
-        - name: RUNBOOK_PATH
+        - name: Runbooks
           default: 'runbooks/'
       - stage:
-          name: RUNBOOK EXECUTION
+          name: Runbooks
           image: python:3.7.2
           deployment: QA
           steps:
             - step: *runcommands
     RunBookExecutionDev:
       - variables:
-        - name: RUNBOOK_PATH
+        - name: Runbooks
           default: 'runbooks/'
       - stage:
-          name: RUNBOOK EXECUTION
+          name: Runbooks
           image: python:3.7.2
           deployment: Develop
           steps:
             - step: *runcommands
     RunBookExecutionPreProd:
       - variables:
-        - name: RUNBOOK_PATH
+        - name: Runbooks
           default: 'runbooks/'
       - stage:
-          name: RUNBOOK EXECUTION
+          name: Runbooks
           image: python:3.7.2
           deployment: Pre-Production
           steps:
             - step: *runcommands
     RunBookExecutionProd:
       - variables:
-        - name: RUNBOOK_PATH
+        - name: Runbooks
           default: 'runbooks/'
       - stage:
-          name: RUNBOOK EXECUTION
+          name: Runbooks
           image: python:3.7.2
           deployment: Production
           steps:
@@ -313,84 +303,55 @@ pipelines:
     
   pull-requests:    
     feature/**:
+      - step: *CodeQuality
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
             - step: *SAST
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            - step: *Danger
+      - step: *BuildStep
       - step: *APITesting
-      - step: *DAST
         
       
     bugfix/**:
+      - step: *CodeQuality
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
             - step: *SAST
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            - step: *Danger
+      - step: *BuildStep
       - step: *APITesting
-      - step: *DAST
+           
 
     hotfix/**:
+      - step: *CodeQuality
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
-            - step: *Pylint
-            - step: *ESlint
             - step: *SAST
             - step: *SecretChecking
             - step: *LicenseCompliance
             - step: *DependencyScanning
-            - step: *Danger
+      - step: *BuildStep
       - step: *APITesting
-      - step: *DAST
 
   branches:
     qa:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *BuildStep
-            - step: *SecretChecking
       - stage:
-            name: QA Deployment
+            name: Deployment
             deployment: QA
-            steps:
-              - step: *TerraDeploy
-    
-    Pre-Production:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *SecretChecking
-      - stage:
-            name: Pre-Production Deployment
-            deployment: Pre-Production
             steps:
               - step: *BuildStep
               - step: *TerraDeploy
 
-
     master:
-      - parallel:
-          fail-fast: true
-          steps:
-            - step: *SecretChecking
       - stage:
-            name: Production Deployment
+            name: Deployment
             deployment: Pre-Production
             steps:
               - step: *BuildStep
