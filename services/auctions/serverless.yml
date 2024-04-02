@@ -690,6 +690,7 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
+        VisibilityTimeout: 3600
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter
