@@ -133,7 +133,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                 subject: subjectDescription,
             }
 
-            return sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION)
+            return 
+            // sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION)
         })
 
         await Promise.all(promiseList)

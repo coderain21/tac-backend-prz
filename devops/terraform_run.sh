@@ -22,36 +22,36 @@ aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
 
 
-# terraform -chdir=devops/assets init
-# terraform -chdir=devops/assets apply -auto-approve
-# terraform -chdir=devops/admin_web_application init
-# terraform -chdir=devops/admin_web_application apply -auto-approve
-# terraform -chdir=devops/seller_web_application init
-# terraform -chdir=devops/seller_web_application apply -auto-approve
-# terraform -chdir=devops/api_gateway init
-# terraform -chdir=devops/api_gateway apply -auto-approve
-# terraform -chdir=devops/dependency/node init
-# terraform -chdir=devops/dependency/node apply -auto-approve
-# terraform -chdir=devops/dependency/nodejs-auth-layer init
-# terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
-# terraform -chdir=devops/dependency/python init
-# terraform -chdir=devops/dependency/python apply -auto-approve
-# terraform -chdir=devops/kms init
-# terraform -chdir=devops/kms apply -auto-approve
-# terraform -chdir=devops/mongodb init
-# terraform -chdir=devops/mongodb apply -auto-approve
-# terraform -chdir=devops/redis init
-# terraform -chdir=devops/redis apply -auto-approve
-# terraform -chdir=devops/ecs init
-# terraform -chdir=devops/ecs apply -auto-approve
-# terraform -chdir=devops/cloudwatch_alarms init
-# terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
-# terraform -chdir=devops/redis-cluster init
-# terraform -chdir=devops/redis-cluster apply -auto-approve
-# if [ "STAGE" = "qa" ]; then
-#     terraform -chdir=devops/dependency/bitbucket-layer-node init
-#     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
-# fi
+terraform -chdir=devops/assets init
+terraform -chdir=devops/assets apply -auto-approve
+terraform -chdir=devops/admin_web_application init
+terraform -chdir=devops/admin_web_application apply -auto-approve
+terraform -chdir=devops/seller_web_application init
+terraform -chdir=devops/seller_web_application apply -auto-approve
+terraform -chdir=devops/api_gateway init
+terraform -chdir=devops/api_gateway apply -auto-approve
+terraform -chdir=devops/dependency/node init
+terraform -chdir=devops/dependency/node apply -auto-approve
+terraform -chdir=devops/dependency/nodejs-auth-layer init
+terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
+terraform -chdir=devops/dependency/python init
+terraform -chdir=devops/dependency/python apply -auto-approve
+terraform -chdir=devops/kms init
+terraform -chdir=devops/kms apply -auto-approve
+terraform -chdir=devops/mongodb init
+terraform -chdir=devops/mongodb apply -auto-approve
+terraform -chdir=devops/redis init
+terraform -chdir=devops/redis apply -auto-approve
+terraform -chdir=devops/ecs init
+terraform -chdir=devops/ecs apply -auto-approve
+terraform -chdir=devops/cloudwatch_alarms init
+terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
+terraform -chdir=devops/redis-cluster init
+terraform -chdir=devops/redis-cluster apply -auto-approve
+if [ "STAGE" = "qa" ]; then
+    terraform -chdir=devops/dependency/bitbucket-layer-node init
+    terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
+fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
@@ -86,20 +86,20 @@ export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 
-# cd services/cognito-auth
-# sls deploy --region $REGION --stage $STAGE
-# cd ../..
-# cd services/users
-# sls deploy --region $REGION --stage $STAGE
-# cd ../..
-# cd services/lambda-authorizer
-# sls deploy --region $REGION --stage $STAGE
-# cd ../..
+cd services/cognito-auth
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/users
+sls deploy --region $REGION --stage $STAGE
+cd ../..
+cd services/lambda-authorizer
+sls deploy --region $REGION --stage $STAGE
+cd ../..
 cd services/auctions
 sls deploy --region $REGION --stage $STAGE
 cd ../..
-# terraform -chdir=devops/cognito_custom_domain init
-# terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-# sls deploy --stage ${STAGE} --max-concurrency 5
+terraform -chdir=devops/cognito_custom_domain init
+terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+sls deploy --stage ${STAGE} --max-concurrency 5
 
 
