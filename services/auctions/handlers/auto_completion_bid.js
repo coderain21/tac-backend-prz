@@ -32,10 +32,7 @@ and sends them to an AWS Simple Queue Service (SQS) in batches for further proce
  */
 module.exports.handler = async (event) => {
     try {
-        console.log('event', event)
         const getBidders = await mongodbHelper.getBidders(event)
-        // const getLots = await mongodbHelper.getAuctionLots(event)
-        // console.log('getting lots', getLots)
         const splittedUsers = splitArray(getBidders, 25)
         const params = {
             QueueUrl: queueUrl,

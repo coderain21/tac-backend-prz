@@ -66,6 +66,8 @@ exports.handler = async (event, context, callback) => {
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
 
             const userData = {
+                first_name: event.request.userAttributes.given_name,
+                last_name: event.request.userAttributes.family_name,
                 user_name: event.request.userAttributes.email,
                 email_address: event.request.userAttributes.email,
                 password: newPassword,

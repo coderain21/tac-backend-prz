@@ -711,12 +711,14 @@ resources:
           preferred_username: "email"
           username: "sub"
           email: "email"
+          given_name: "given_name"
+          family_name: "family_name"
         ProviderName: Google
         ProviderType: Google
         ProviderDetails:
           client_id: ${ssm:GOOGLE_CLIENT_ID}
           client_secret: ${ssm:GOOGLE_CLIENT_SECRET}
-          authorize_scopes: "email"
+          authorize_scopes: "email openid profile"
         UserPoolId: { Ref: SellerUsers }
     
     Group:
@@ -732,12 +734,14 @@ resources:
         AttributeMapping:
           username: "id"
           email: "email"
+          given_name: "first_name"
+          family_name: "last_name"
         ProviderName: Facebook
         ProviderType: Facebook
         ProviderDetails:
           client_id: ${ssm:FACEBOOK_CLIENT_ID}
           client_secret: ${ssm:FACEBOOK_CLIENT_SECRET}
-          authorize_scopes: "email"
+          authorize_scopes: "email openid profile"
         UserPoolId: { Ref: SellerUsers }
     
     
@@ -944,12 +948,12 @@ resources:
             Fn::GetAtt:
               - SellerUsers
               - Arn     
-    SellerDomainStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: SELLER_COGNITO_USERPOOL_DOMAIN
-          Type: String
-          Value: indyauction-seller-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
+    # SellerDomainStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: SELLER_COGNITO_USERPOOL_DOMAIN
+    #       Type: String
+    #       Value: indyauction-seller-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
 
     
 

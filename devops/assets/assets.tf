@@ -33,6 +33,8 @@ resource "aws_acm_certificate" "cert_us_east_1" {
   provider = aws.deployment-us
 }
 
+
+
 resource "aws_acm_certificate" "cert_ap_south_1" {
   domain_name ="*.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"

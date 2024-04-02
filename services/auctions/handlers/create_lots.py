@@ -23,6 +23,11 @@ Returns:
 import os
 import json
 import pymongo
+from lib.invoke_step_function import invoke_state_machine
+from datetime import datetime, timezone
+from lib.common_helper import Encoder
+
+
 
 
 
@@ -113,7 +118,7 @@ def lambda_handler(event, context):
         auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
         # Get the extension type from the auction record
         extension_type = auction_record.get('extension_type', '')
-        print('extension', extension_type)
+        auction_status = auction_record.get('status', '')
         if extension_type in ['All Lots']:
             request_body['start_date'] = auction_record['start_date']
             request_body['end_date'] = auction_record['end_date']
@@ -130,29 +135,41 @@ def lambda_handler(event, context):
             extension_time_str = auction_record.get('extension_time_between_lots', '0')
             extension_time = 2  # Convert the string to an integer
             if extension_time_str != '':
-                print('extension_time_str' )
                 extension_time = int(extension_time_str)  # Convert the string to an integer
-            print('times', extension_time)
             if len(latest_lot) > 0:
-                print('iffffffffffffffffff',latest_lot)
                 latest_end_date = latest_lot[0]['end_date']
                 request_body['start_date'] = latest_lot[0]['start_date']
                 request_body['end_date'] = latest_end_date + extension_time*60*1000
             else:
-                print('entering else', request_body)
                 # If no previous lots, use auction start_date and add time_between_lots
                 request_body['start_date'] = auction_record.get('start_date', 0)
                 end_date = auction_record.get('end_date', 0)  # Assuming a default value of current datetime if 'end_date' is not available
                 enddate=end_date + extension_time*60*1000
                 request_body['end_date'] = enddate
                 updateCheck = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': enddate}})
-                print('updateCheck', updateCheck)
 
         # request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]
         request_body["seller_email"] = seller_email
         # Insert the lot data into the MongoDB collection
-        collection.insert_one(request_body)
+        inserting = collection.insert_one(request_body)
+        if  auction_status in ['Published', 'Accepting bids']:
+            inserted_id = inserting.inserted_id
+            start_date_timestamp = auction_record['start_date'] / 1000
+            date_time = datetime.utcfromtimestamp(start_date_timestamp)
+            iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+            request_body['start_date'] = iso_date_with_offset
+            itemData = json.loads(json.dumps(request_body, cls= Encoder))
+            invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
+            collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
+            step_request={}
+            step_request['arn'] = invoking['executionArn']
+            id_value = str(inserted_id)
+            step_request['lot_id'] = id_value
+            step_request['auction_id'] = auction_record['auction_id']
+            step_request['seller_email'] = auction_record['seller_email']
+            inserted = collection.insert_one(step_request)
+
 
         # After inserting the lot, update the total_lots count for the associated auction
         auction_id = request_body["auction_id"]
