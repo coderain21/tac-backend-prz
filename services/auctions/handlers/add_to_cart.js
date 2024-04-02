@@ -16,7 +16,7 @@ const Cart = require('../entities/Cart')
 const Lot = require('../entities/Lot')
 const Auction = require('../entities/Auction')
 
-mongodbHelper.connect()
+let connection = null
 
 async function getLot(rediskey, client) {
     try {
@@ -47,6 +47,10 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongodbHelper.connect()
+        }
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
@@ -56,7 +60,7 @@ module.exports.handler = async (event) => {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
         const lotInformation = get_lot[0]
-        if (lotInformation.end_date < currentTimestamp) {
+        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
             const auctionData = await mongodbHelper.getAuction(event, Auction)
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
             lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
@@ -80,5 +84,10 @@ module.exports.handler = async (event) => {
     } catch (err) {
         console.log(err)
         return err
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
+        }
     }
 }
