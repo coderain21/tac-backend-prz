@@ -4,7 +4,7 @@ import os
 import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.helper_python import send_pinpoint_email
+# from lib.helper_python import send_pinpoint_email
 from datetime import datetime
 #from lib.common_helper import Encoder
 headers = {

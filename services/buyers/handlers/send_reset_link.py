@@ -7,7 +7,7 @@ import jwt
 import json
 from pymongo import MongoClient
 from lib.get import fetch_seller_data_from_auction
-from lib.helper_python import send_pinpoint_email
+# from lib.helper_python import send_pinpoint_email
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
