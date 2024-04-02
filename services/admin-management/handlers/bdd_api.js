@@ -36,6 +36,17 @@ module.exports.handler = async (event) => {
         // const seller_email = event.requestContext.authorizer.claims['cognito:username']
         const auction_id = decodeURIComponent(event.pathParameters.auction_id)
         const { seller_email } = event.queryStringParameters
+        const { status } = JSON.parse(event.body)
+        if (!seller_email || !auction_id || !status) {
+            return {
+                statusCode: 400,
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Missing required parameters',
+                }),
+            }
+        }
+
         const getAuctionDetails = await mongoConnection.view(Auction, { seller_email, auction_id })
         if (!getAuctionDetails || getAuctionDetails.length === 0) {
             return {
@@ -46,7 +57,7 @@ module.exports.handler = async (event) => {
                 }),
             }
         }
-        await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status: 'Accepting bids' })
+        await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status })
         return {
             statusCode: 204,
             headers: helpers.getHeaders(),
