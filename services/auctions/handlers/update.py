@@ -330,7 +330,7 @@ def update_auction(event, context):
                             item['end_date'] = end_date
 
                 # total_lots = len(json_serializable_list)
-                batch_size_lots = 20  # Batch size for lots
+                batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
                 user_batches = []

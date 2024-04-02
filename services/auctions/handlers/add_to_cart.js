@@ -47,7 +47,6 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
-        console.log('triggered', event)
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
@@ -60,7 +59,6 @@ module.exports.handler = async (event) => {
         if (lotInformation.end_date < currentTimestamp) {
             const auctionData = await mongodbHelper.getAuction(event, Auction)
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
-            console.log('buyer', getBuyerData)
             lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
             lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
             await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
