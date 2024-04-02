@@ -7,7 +7,7 @@ import jwt
 import json
 from pymongo import MongoClient
 from lib.get import fetch_seller_data_from_auction
-# from lib.helper_python import send_pinpoint_email
+from lib.helper_python import send_pinpoint_email
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -81,8 +81,8 @@ def send_reset_link(event, context):
         if seller_data:
             buyer_data = fetch_buyer_data(email_address)
             if buyer_data:
-                # send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], json.dumps(
-                #     {'link': link, 'logo_image': data['logo_image']}), os.environ["TEMPLATE_ARN_EMAIL_RESET_PASSWORD"])
+                send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], json.dumps(
+                    {'link': link, 'logo_image': data['logo_image']}), os.environ["TEMPLATE_ARN_EMAIL_RESET_PASSWORD"])
                 return {
                     "headers": headers,
                     "statusCode": 201,

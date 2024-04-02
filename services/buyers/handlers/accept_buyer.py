@@ -4,7 +4,7 @@ import os
 import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
-# from lib.helper_python import send_pinpoint_email
+from lib.helper_python import send_pinpoint_email
 from datetime import datetime
 headers = {
     'Content-Type': 'application/json',
@@ -100,10 +100,10 @@ def accept_buyer(event, context):
                             "background_color":paddle_background_color,
                             "img":logo_img,
                             "subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
-            #                     template_data,
-            #                     os.environ['TEMPLATE_ARN_PADDLE']
-            #                     )
+            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
+                                template_data,
+                                os.environ['TEMPLATE_ARN_PADDLE']
+                                )
             auction_register.update_one({"auction_id": auction_id,'email_address':email_address, 'seller_email':seller_email },
                                     {"$set":{"status":register_status,'paddle':paddle['starting_sequence']}})
         elif status == 'Rejected':
