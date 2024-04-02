@@ -51,7 +51,6 @@ module.exports.handler = async (event) => {
                 },
             })
         }
-        console.log('mongoose_query', JSON.stringify(mongoose_query))
         /** Configure pagination and sorting options */
         const options = {
             page: parseInt(queryParams?.page, 10) || 1,

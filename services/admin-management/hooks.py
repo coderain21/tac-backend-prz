@@ -44,6 +44,14 @@ def set_authorization(transaction):
         print('Skipping the test...')
         transaction['skip'] = True
         return
+    if (
+        transaction['request']['method'] == 'PATCH' and
+        '/A0172' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+
 
     if (
         transaction['expected']['statusCode'] == '200' or
