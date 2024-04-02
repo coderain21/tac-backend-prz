@@ -1,3 +1,5 @@
+/* eslint-disable import/extensions */
+/* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable no-param-reassign */
@@ -5,7 +7,7 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable import/no-extraneous-dependencies */
 
-const redis = require('redis')
+const redisHelper = require('../lib/redis_helper')
 
 /**
  * Function to save the lot to cache after auction publish
@@ -20,12 +22,7 @@ const redis = require('redis')
 module.exports.handler = async (event, context, callback) => {
     try {
         const data = typeof event === 'string' ? JSON.parse(event) : event
-        const client = await redis.createClient({
-            url: process.env.REDIS_URL,
-        }).on('error', (err) => console.log('Redis Client Error', err)).connect()
-        if (!client.isOpen) {
-            await client.connect()
-        }
+        const client = await redisHelper.createRedisClient()
         const redisKey = `lot:${data._id}`
         let endDateISO
         const redisPayload = JSON.stringify(data)
@@ -37,9 +34,8 @@ module.exports.handler = async (event, context, callback) => {
             endDateISO = new Date(data.end_date).toISOString()
             data.extended = true
             data.lot_extended = true
-            await client.hSet('lot', redisKey, redisPayload)
+            await client.hset('lot', redisKey, redisPayload)
         }
-        console.log('end', endDateISO, data)
         data.end_date = endDateISO
         return { ...data }
     } catch (e) {
