@@ -81,7 +81,7 @@ resource "aws_security_group" "security_groups" {
 
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
-  preferred_cache_cluster_azs = ["eu-west-2c", "eu-west-2b"]
+  preferred_cache_cluster_azs = ["eu-west-2a", "eu-west-2b"]
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
   replication_group_id        = "websocket-redis"
   description                 = "websocket description"
