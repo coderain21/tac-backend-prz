@@ -57,9 +57,9 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   provider = aws.main
 }
 locals {
-  computed_variable = "${data.external.env.result["STAGE"]}" == "dev" ? "www-develop" : 
-                     ( "${data.external.env.result["STAGE"]}" == "prod" ? "www" : 
-                      "www-${data.external.env.result["STAGE"]}")
+  computed_variable = data.external.env.result["STAGE"] == "dev" ? "www-develop" : 
+                      (data.external.env.result["STAGE"] == "prod" ? "www" : 
+                       "www-${data.external.env.result["STAGE"]}")
 }
 resource "aws_acm_certificate" "cert_cognito_us_east_2" {
   domain_name ="*.${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
