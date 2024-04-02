@@ -59,7 +59,7 @@ data "aws_subnets" "default" {
 }
 
 resource "aws_default_subnet" "default_az1" {
-  availability_zone = "eu-west-2a"
+  availability_zone = "eu-west-2c"
   provider = aws.deployment-eu
 }
 
