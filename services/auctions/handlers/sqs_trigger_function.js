@@ -24,7 +24,7 @@ const Buyers = require('../entities/Buyers')
 
 const pinpoint = new PinpointEmail()
 
-mongodbHelper.connect()
+let connection = null
 
 /**
  * Gets all the bidders for a given redis key, and filters them to only include
@@ -135,6 +135,10 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
  */
 module.exports.sqsTriggerFunction = async (event) => {
     try {
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongodbHelper.connect()
+        }
         // Retrieve the bidders from MongoDB
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
@@ -216,5 +220,10 @@ module.exports.sqsTriggerFunction = async (event) => {
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
     } catch (err) {
         console.log('err', err)
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
+        }
     }
 }

@@ -8,9 +8,6 @@ const stage = process.env.STAGE
 const CartSchema = new Schema({
     auction_id: { type: String, required: true },
     seller_email: { type: String },
-    _id: {
-        type: Schema.Types.ObjectId, trim: true,
-    },
     lot_number: { type: Number },
     lot_id: { type: String },
     buyer_id: { type: String },
