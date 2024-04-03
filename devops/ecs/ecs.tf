@@ -262,8 +262,8 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
   execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = "512"
-  memory                   = "1024"
+  cpu                      = "2048"
+  memory                   = "8192"
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
   container_definitions = jsonencode([
     {
