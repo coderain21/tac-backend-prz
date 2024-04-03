@@ -255,6 +255,20 @@ resource "aws_ecr_repository" "repo1" {
   provider = aws.deployment-eu
 }
 
+########################
+
+data "aws_s3_bucket_object" "my_objects" {
+  bucket = data.external.env.result["ECS_S3_BUCKET"]
+  key = "ecr-credential/task-definition.json"
+  provider = aws.deployment-eu
+}
+
+locals {
+  datafile       = jsondecode(data.aws_s3_bucket_object.my_objects.body)["containerDefinitions"]
+}
+
+#######################
+
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
   family                   = "websocket-task-definition"
@@ -265,27 +279,7 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   cpu                      = "2048"
   memory                   = "8192"
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
-  container_definitions = jsonencode([
-    {
-      name  = "websocket-container" ######change my container name
-      image = "${aws_ecr_repository.repo1.repository_url}:latest", # Use the ECR repository URI
-      portMappings = [
-        {
-          containerPort = 5000,
-          hostPort      = 5000,
-        }
-      ]
-      logConfiguration = {
-        logDriver = "awslogs",
-        options = {
-          "awslogs-group"         = "/ecs/task",
-          "awslogs-region"        = data.external.env.result["REGION"],
-          "awslogs-create-group"  = "true",
-          "awslogs-stream-prefix" = "ecs",
-        },
-      }
-    }
-  ])
+  container_definitions = jsonencode(local.datafile)
   provider = aws.deployment-eu
 }
 
@@ -380,6 +374,30 @@ resource "aws_ecs_service" "ecs_service" {
   provider = aws.deployment-eu
 }
 
+resource "aws_appautoscaling_target" "target" {
+  max_capacity = 5
+  min_capacity = 1
+  resource_id =  "service/${aws_ecs_cluster.websocket-cluster.name}/${aws_ecs_service.ecs_service.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace = "ecs"
+}
+
+
+resource "aws_appautoscaling_policy" "cpu" {
+  name = "cpu"
+  policy_type = "TargetTrackingScaling"
+  resource_id = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace = aws_appautoscaling_target.target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    target_value = 70
+  }
+}
 
 
 
