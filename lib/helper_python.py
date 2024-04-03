@@ -9,7 +9,7 @@ import boto3
 import redis
 
 
-redis_client = redis.Redis(host=os.environ["REDIS_ENDPOINT"], port=6379)
+redis_client = redis.Redis(host=os.environ["REDIS_CLUSTER_ENDPOINT"], port=6379)
 
 client = boto3.client('pinpoint-email',region_name = os.environ['REGION'])
 def send_pinpoint_email(to_email,from_email,template_data,template_arn):
