@@ -46,6 +46,8 @@ terraform -chdir=devops/ecs init
 terraform -chdir=devops/ecs apply -auto-approve
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
+terraform -chdir=devops/redis-cluster init
+terraform -chdir=devops/redis-cluster apply -auto-approve
 if [ "STAGE" = "qa" ]; then
     terraform -chdir=devops/dependency/bitbucket-layer-node init
     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
@@ -53,7 +55,7 @@ fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
-# Loop through each parameter
+# # Loop through each parameter
 for param_name in "${parameter_names[@]}"; do
     echo "$param_name"
     # Get parameter value
@@ -66,8 +68,7 @@ for param_name in "${parameter_names[@]}"; do
 done <<< "$parameter_names"
 
 
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+
 
 
 npm i -g serverless@3.15.2
@@ -98,6 +99,8 @@ sls deploy --region $REGION --stage $STAGE
 cd ../..
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 sls deploy --stage ${STAGE} --max-concurrency 5
 
 
