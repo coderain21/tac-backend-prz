@@ -73,7 +73,7 @@ provider:
     SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
-    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     
   http:
     cors: true

@@ -82,7 +82,7 @@ provider:
     TEMP_ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-temp-orders
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
-    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
 
 
     
