@@ -16,7 +16,8 @@ const Cart = require('../entities/Cart')
 const Lot = require('../entities/Lot')
 const Auction = require('../entities/Auction')
 
-mongodbHelper.connect()
+let connection = null
+
 async function getLot(rediskey, client) {
     try {
         const existingRecord = await client.hget('lot', rediskey)
@@ -46,11 +47,11 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
-        console.log('event', event.lot_number)
-        // if (connection === null || !connection.readyState) {
-        // console.log('not coonected')
-        // connection = await mongodbHelper.connect()
-        // }
+        console.log('connection', event.lot_number, connection)
+        if (connection === null || !connection.readyState) {
+            console.log('not connected')
+            connection = await mongodbHelper.connect()
+        }
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
