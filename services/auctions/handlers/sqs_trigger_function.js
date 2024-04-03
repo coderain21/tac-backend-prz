@@ -264,7 +264,8 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
     }
     try {
         // Send the email using the AWS Pinpoint service
-        await pinpoint.sendEmail(params).promise()
+        const sendEmail = await pinpoint.sendEmail(params).promise()
+        console.log('sendEmail', sendEmail)
     } catch (error) {
         // Log any errors that occur
         console.error('Failed to send email:', error)
@@ -410,7 +411,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 seller_email: auctionData.seller_email,
                 subject: subjectDescription,
             }
-            promiseList.push(await sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+            promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
         }
         // Run all the promises in parallel
         await Promise.all(promiseList)
