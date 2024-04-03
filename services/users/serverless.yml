@@ -741,7 +741,7 @@ resources:
         ProviderDetails:
           client_id: ${ssm:FACEBOOK_CLIENT_ID}
           client_secret: ${ssm:FACEBOOK_CLIENT_SECRET}
-          authorize_scopes: "email openid profile"
+          authorize_scopes: "email"
         UserPoolId: { Ref: SellerUsers }
     
     
