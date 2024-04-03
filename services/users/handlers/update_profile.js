@@ -18,7 +18,7 @@ const headers = {
     'Access-Control-Allow-Methods': '*',
 }
 
-let connection
+let connection = null
 
 /* This code exports a function called `updateUserInformation` that is used to update a user's
 information in a MongoDB database. The function takes an `event` parameter, which is likely an HTTP
@@ -26,6 +26,10 @@ request object that contains information about the request, such as the request 
 parameters. */
 module.exports.updateUserInformation = async (event) => {
     try {
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongoConnection.connect()
+        }
         const request_body = JSON.parse(event.body)
         const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)

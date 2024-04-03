@@ -11,8 +11,8 @@ const UserPlanHistory = require('../entities/UserPlanHistory')
 const dataHelper = require('../data/plan_validation_check')
 const helpers = require('../lib/helper')
 
-let body; let
-    connection
+let body
+let connection = null
 
 module.exports.updatePlan = async (event) => {
     try {
@@ -20,7 +20,10 @@ module.exports.updatePlan = async (event) => {
         const email = decodeURIComponent(event.pathParameters.email)
         const keys = Object.keys(request_body)
         let update_value
-        connection = await mongoConnection.connect()
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongoConnection.connect()
+        }
         if (keys.length === 0) {
             body = JSON.stringify({
                 message: 'Please pass atleast one field',
