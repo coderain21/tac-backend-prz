@@ -16,8 +16,7 @@ const Cart = require('../entities/Cart')
 const Lot = require('../entities/Lot')
 const Auction = require('../entities/Auction')
 
-let connection = null
-
+mongodbHelper.connect()
 async function getLot(rediskey, client) {
     try {
         const existingRecord = await client.hget('lot', rediskey)
@@ -47,10 +46,11 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
-        if (connection === null || !connection.readyState) {
-            console.log('not coonected')
-            connection = await mongodbHelper.connect()
-        }
+        console.log('event', event.lot_number)
+        // if (connection === null || !connection.readyState) {
+        // console.log('not coonected')
+        // connection = await mongodbHelper.connect()
+        // }
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
@@ -60,6 +60,7 @@ module.exports.handler = async (event) => {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
         const lotInformation = get_lot[0]
+        console.log('lotInformation', lotInformation)
         if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
             const auctionData = await mongodbHelper.getAuction(event, Auction)
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
@@ -69,6 +70,7 @@ module.exports.handler = async (event) => {
             await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
             const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
             // const callSQS = await sqsTriggerFunction(event)
+            console.log('lotn', event.lot_number)
             if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
             }
@@ -84,10 +86,5 @@ module.exports.handler = async (event) => {
     } catch (err) {
         console.log(err)
         return err
-    } finally {
-        // Disconnect from the MongoDB database
-        if (connection) {
-            await connection.disconnect()
-        }
     }
 }
