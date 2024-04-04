@@ -50,6 +50,10 @@ if [ "STAGE" = "qa" ]; then
     terraform -chdir=devops/dependency/bitbucket-layer-node init
     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 fi
+if [ "STAGE" = "prod" ]; then
+    terraform -chdir=devops/cloudwatch init
+    terraform -chdir=devops/cloudwatch apply -auto-approve
+fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
