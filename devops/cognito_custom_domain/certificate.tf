@@ -27,8 +27,11 @@ data "aws_route53_zone" "domain_zone" {
   name = data.external.env.result["DOMAIN"] # Replace with your domain name
   provider = aws.main
 }
+locals {
+  computed_domain = "${data.external.env.result["STAGE"]}" == "prod" ? "seller" : "${data.external.env.result["STAGE"]}-seller"
+}
 resource "aws_acm_certificate" "cert_cognito_us_east_1" {
-  domain_name ="*.${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
+  domain_name ="*.${local.computed_domain}.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -54,10 +57,14 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   provider = aws.main
 }
 locals {
-  computed_variable = "${data.external.env.result["STAGE"]}" == "dev" ? "develop" : "${data.external.env.result["STAGE"]}"
+ a= "${data.external.env.result["STAGE"] == "dev" ? "www-develop" : ""}"
+ b = "${data.external.env.result["STAGE"] == "prod" ? "www" : ""}"
+ c = "www-${data.external.env.result["STAGE"]}"
+ computed_variable = "${coalesce(local.a,local.b, local.c)}"
 }
+
 resource "aws_acm_certificate" "cert_cognito_us_east_2" {
-  domain_name ="*.www-${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
+  domain_name ="*.${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -85,7 +92,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_2" {
 }
 
 resource "aws_cognito_user_pool_domain" "seller" {
-  domain          = "auth.${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
+  domain          = "auth.${local.computed_domain}.${data.external.env.result["DOMAIN"]}"
   certificate_arn = aws_acm_certificate.cert_cognito_us_east_1.arn
   user_pool_id = data.external.env.result["SELLER_COGNITO_USERPOOL_ID"]
   depends_on = [resource.aws_route53_record.route_53_certificate_records_us_east_1]
@@ -105,7 +112,7 @@ resource "aws_route53_record" "auth_cognito_seller_A" {
 }
 
 resource "aws_cognito_user_pool_domain" "buyer" {
-  domain          = "auth.www-${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
+  domain          = "auth.${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
   certificate_arn = aws_acm_certificate.cert_cognito_us_east_2.arn
   user_pool_id = data.external.env.result["BUYER_COGNITO_USERPOOL_ID"]
   depends_on = [resource.aws_route53_record.route_53_certificate_records_us_east_2]
@@ -128,7 +135,7 @@ resource "aws_route53_record" "auth-cognito-buyer-A" {
 resource "aws_ssm_parameter" "seller_cognito_custom_domain" {
   name  = "SELLER_COGNITO_USERPOOL_DOMAIN"
   type  = "String"
-  value = "auth.${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
+  value = "auth.${local.computed_domain}.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-ap
   overwrite = true
 }
@@ -136,7 +143,7 @@ resource "aws_ssm_parameter" "seller_cognito_custom_domain" {
 resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
   name  = "BUYER_COGNITO_USERPOOL_DOMAIN"
   type  = "String"
-  value = "auth.www-${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
+  value = "auth.${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
   provider = aws.deployment-ap
   overwrite = true
 }

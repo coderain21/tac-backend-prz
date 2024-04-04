@@ -38,7 +38,7 @@ provider:
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     CDN_LINK: ${ssm:CDN_URL}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
-    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
 
 
 
