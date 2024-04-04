@@ -20,7 +20,7 @@ of an auction. It takes an `event` parameter, which is typically an HTTP request
 module.exports.create_auction = async (event) => {
     try {
         if (connection === null || !connection.readyState) {
-            connection = await mongodbHelper.connect()
+            connection = await mongoConnection.connect()
         }
         const request_body = JSON.parse(event.body)
         const email = event.requestContext.authorizer.claims['cognito:username']
@@ -53,7 +53,7 @@ module.exports.create_auction = async (event) => {
     } catch (error) {
         console.log('err', error)
         return {
-            headers,
+            headers: await helpers.getHeaders(),
             statusCode: 500,
             body: JSON.stringify({
                 message: 'Internal Server Error',
