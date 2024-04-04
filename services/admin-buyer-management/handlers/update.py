@@ -1,4 +1,4 @@
-import os
+'''This module is used to update the auction details'''
 import pymongo
 
 
