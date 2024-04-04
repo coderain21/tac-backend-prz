@@ -1,0 +1,1830 @@
+{
+    "widgets": [
+        {
+            "height": 1,
+            "width": 24,
+            "y": 0,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# API Gateway"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 1,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"Count\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "title": "Count: Sum",
+                "view": "timeSeries",
+                "stacked": false,
+                "period": 300
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 1,
+            "x": 8,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"5XXError\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e2",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "5XXError: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 1,
+            "x": 16,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"4XXError\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e2",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "4XXError: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 5,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"Latency\"', 'Average', 300), SUM, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Average",
+                            "label": "${LABEL} [Count:${AVG}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Latency: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 5,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/ApiGateway,ApiName} MetricName=\"IntegrationLatency\"', 'Average', 300), AVG, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Average",
+                            "label": "${LABEL} [Count:${AVG}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "IntegrationLatency: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 6,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# Lambda"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 7,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Invocations\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Average",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Invocations: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 7,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Duration\"', 'Average', 300), AVG, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Average",
+                            "label": "${LABEL} [Count:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Duration: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 11,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Errors\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [SUM:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Errors: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 11,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Throttles\"', 'Sum', 300), SUM, DESC)",
+                            "id": "e1",
+                            "period": 300,
+                            "stat": "Sum",
+                            "label": "${LABEL} [SUM:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Throttles: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 15,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/Lambda} MetricName=\"ConcurrentExecutions\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ],
+                    [
+                        "AWS/Lambda",
+                        "ConcurrentExecutions",
+                        {
+                            "id": "m1"
+                        }
+                    ],
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/Lambda}', 'Average', 300)",
+                            "id": "e2",
+                            "period": 300
+                        }
+                    ],
+                    [
+                        "AWS/Lambda",
+                        "UnreservedConcurrentExecutions",
+                        {
+                            "id": "m1"
+                        }
+                    ],
+                    [
+                        ".",
+                        "ClaimedAccountConcurrency",
+                        {
+                            "id": "m2"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Concurrencies: Avg"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 19,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# SQS"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 20,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"ApproximateAgeOfOldestMessage\"', 'Sum', 300)",
+                            "id": "e2",
+                            "period": 300
+                        }
+                    ],
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"ApproximateNumberOfMessagesVisible\"', 'Sum', 300)",
+                            "id": "e3",
+                            "period": 300
+                        }
+                    ],
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"ApproximateNumberOfMessagesNotVisible\"', 'Sum', 300)",
+                            "id": "e4",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "view": "bar",
+                "timezone": "UTC",
+                "title": "Message Approximation: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 20,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"SentMessageSize\"', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300,
+                            "label": "Average: ${AVG}"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "SentMessageSize: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 24,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"NumberOfEmptyReceives\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300,
+                            "label": "${LABEL} [SUM:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NumberOfEmptyReceives: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 24,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"NumberOfMessagesSent\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300,
+                            "label": "${LABEL} [SUM:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NumberOfMessagesSent: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 28,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"NumberOfMessagesReceived\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300,
+                            "label": "${LABEL} [SUM:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NumberOfMessagesReceived: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 28,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/SQS,QueueName} MetricName=\"NumberOfMessagesDeleted\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300,
+                            "label": "${LABEL} [SUM:${SUM}]"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NumberOfMessagesDeleted: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 32,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# DocumentDB"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 33,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "AVG(SEARCH('Namespace=\"AWS/DocDB\" CPUUtilization', 'Average', 300))",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CPUUtilization: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 33,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} LowMemThrottleQueueDepth', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "LowMemThrottleQueueDepth: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 37,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} LowMemThrottleMaxQueueDepth', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "LowMemThrottleMaxQueueDepth: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 37,
+            "x": 8,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} ReadLatency', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ReadLatency: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 37,
+            "x": 16,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} WriteLatency', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "WriteLatency: Sum"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 41,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('Namespace=\"AWS/DocDB\" DatabaseConnections', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "DatabaseConnections: Count"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 41,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} DatabaseCursorsMax', 'Average', 300)",
+                            "id": "e2",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "view": "bar",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "DatabaseCursorsMax: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 45,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} DatabaseCursorsTimedOut', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "DatabaseCursorsTimedOut: Count"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 45,
+            "x": 8,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} ReadIOPS', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ReadIOPS: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 8,
+            "y": 45,
+            "x": 16,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/DocDB,DBClusterIdentifier,Role} WriteIOPS', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "view": "bar",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "WriteIOPS: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 49,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# ALB"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 50,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ApplicationELB,AvailabilityZone,LoadBalancer,TargetGroup} HTTPCode_Target_4XX_Count', 'Average', 300)",
+                            "id": "e2",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "HTTPCode_Target_4XX_Count: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 50,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ApplicationELB,LoadBalancer} RequestCount', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "RequestCount: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 54,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# SES"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 55,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/SES",
+                        "Bounce",
+                        {
+                            "period": 300,
+                            "id": "m1"
+                        }
+                    ],
+                    [
+                        ".",
+                        "Reputation.BounceRate",
+                        {
+                            "period": 300,
+                            "id": "m2"
+                        }
+                    ],
+                    [
+                        ".",
+                        "Reputation.ComplaintRate",
+                        {
+                            "period": 300,
+                            "id": "m3"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "SES Reputation: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 59,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# Elastic Container Service"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 60,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ECS,ClusterName,ServiceName} MetricName=\"CPUUtilization\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CPUUtilization: Average"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 60,
+            "x": 12,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ECS,ClusterName,ServiceName} MetricName=\"MemoryUtilization\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "MemoryUtilization: Average"
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 64,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# CloudFront"
+            }
+        },
+        {
+            "height": 4,
+            "width": 12,
+            "y": 65,
+            "x": 0,
+            "type": "metric",
+            "properties": {
+                "metrics": [
+                    [
+                        "AWS/CloudFront",
+                        "TotalErrorRate",
+                        "Region",
+                        "Global",
+                        "DistributionId",
+                        "E2GNRGA5HO2RSW"
+                    ],
+                    [
+                        ".",
+                        "4xxErrorRate",
+                        ".",
+                        ".",
+                        ".",
+                        ".",
+                        {
+                            "label": "Total4xxErrors",
+                            "region": "us-east-1"
+                        }
+                    ],
+                    [
+                        ".",
+                        "5xxErrorRate",
+                        ".",
+                        ".",
+                        ".",
+                        ".",
+                        {
+                            "label": "Total5xxErrors",
+                            "region": "us-east-1"
+                        }
+                    ],
+                    [
+                        {
+                            "expression": "(m4+m5+m6)/m7*100",
+                            "label": "5xxErrorByLambdaEdge",
+                            "id": "e1",
+                            "region": "us-east-1"
+                        }
+                    ],
+                    [
+                        "AWS/CloudFront",
+                        "LambdaExecutionError",
+                        "Region",
+                        "Global",
+                        "DistributionId",
+                        "E2GNRGA5HO2RSW",
+                        {
+                            "id": "m4",
+                            "stat": "Sum",
+                            "visible": false,
+                            "region": "us-east-1"
+                        }
+                    ],
+                    [
+                        ".",
+                        "LambdaValidationError",
+                        ".",
+                        ".",
+                        ".",
+                        ".",
+                        {
+                            "id": "m5",
+                            "stat": "Sum",
+                            "visible": false,
+                            "region": "us-east-1"
+                        }
+                    ],
+                    [
+                        ".",
+                        "LambdaLimitExceededError",
+                        ".",
+                        ".",
+                        ".",
+                        ".",
+                        {
+                            "id": "m6",
+                            "stat": "Sum",
+                            "visible": false,
+                            "region": "us-east-1"
+                        }
+                    ],
+                    [
+                        ".",
+                        "Requests",
+                        ".",
+                        ".",
+                        ".",
+                        ".",
+                        {
+                            "id": "m7",
+                            "stat": "Sum",
+                            "visible": false,
+                            "region": "us-east-1"
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CloudFront Error and Request Metrics "
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 69,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# Elasticache"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 70,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"CPUUtilization\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CPUUtilization: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 70,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"FreeableMemory\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "FreeableMemory: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 70,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"SwapUsage\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "SwapUsage: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 74,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"NetworkBytesIn\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NetworkBytesIn: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 74,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"NetworkBytesOut\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NetworkBytesOut: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 78,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"ReplicationLag\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ReplicationLag: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 78,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"Evictions\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Evictions: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 82,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"BytesUsedForCache\"', 'Average', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "BytesUsedForCache: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 82,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"CurrConnections\"', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CurrConnections: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 86,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"Reclaimed\"', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "Reclaimed: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 86,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [
+                        {
+                            "expression": "SEARCH('{AWS/ElastiCache,CacheClusterId} MetricName=\"ReplicationBytes\"', 'Sum', 300)",
+                            "id": "e1",
+                            "period": 300
+                        }
+                    ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ReplicationBytes: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 90,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# S3"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 91,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/S3,BucketName,StorageType} MetricName=\"BucketSizeBytes\"', 'Average', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "BucketSizeBytes: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 91,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/S3,BucketName,StorageType} MetricName=\"NumberOfObjects\"', 'Average', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NumberOfObjects: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 95,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/S3,BucketName,StorageType} MetricName=\"4xxErrors\"', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "4xxErrors: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 95,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/S3,BucketName,StorageType} MetricName=\"5xxErrors\"', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "5xxErrors: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 99,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# EC2"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 100,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} CPUUtilization', 'Average', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CPUUtilization: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 100,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} StatusCheckFailed', 'Sum', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "StatusCheckFailed: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 104,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} NetworkIn', 'Average', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NetworkIn: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 104,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} NetworkOut', 'Average', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "NetworkOut: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 108,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} DiskReadOps', 'Sum', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "DiskReadOps: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 12,
+            "y": 108,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} DiskWriteOps', 'Sum', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "DiskWriteOps: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 112,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# SMSvoice - pinpoint"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 113,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/EC2,InstanceId} CPUUtilization', 'Average', 300)", "id": "e3", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "CPUUtilization: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 117,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# ECR"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 118,
+            "width": 12,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('{AWS/ECR,RepositoryName} MetricName=\"RepositoryPullCount\"', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "right"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "RepositoryPullCount: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "height": 1,
+            "width": 24,
+            "y": 122,
+            "x": 0,
+            "type": "text",
+            "properties": {
+                "markdown": "# Step Functions"
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 123,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('Namespace=\"AWS/States\" ExecutionTime', 'Average', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "bottom"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ExecutionTime: Average",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 123,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('Namespace=\"AWS/States\" ExecutionsSucceeded', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "bottom"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ExecutionsSucceeded: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 123,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('Namespace=\"AWS/States\" ExecutionsFailed', 'Sum', 300)", "id": "e1", "period": 300, "region": "eu-west-2" } ]
+                ],
+                "legend": {
+                    "position": "bottom"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ExecutionsFailed: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 0,
+            "y": 127,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('Namespace=\"AWS/States\" ExecutionThrottled', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "bottom"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ExecutionThrottled: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 8,
+            "y": 127,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('Namespace=\"AWS/States\" ExecutionsAborted', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "bottom"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ExecutionsAborted: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        },
+        {
+            "type": "metric",
+            "x": 16,
+            "y": 127,
+            "width": 8,
+            "height": 4,
+            "properties": {
+                "metrics": [
+                    [ { "expression": "SEARCH('Namespace=\"AWS/States\" ExecutionsTimedOut', 'Sum', 300)", "id": "e1", "period": 300 } ]
+                ],
+                "legend": {
+                    "position": "bottom"
+                },
+                "region": "eu-west-2",
+                "liveData": false,
+                "timezone": "UTC",
+                "title": "ExecutionsTimedOut: Sum",
+                "period": 300,
+                "view": "timeSeries",
+                "stacked": false
+            }
+        }
+    ]
+}
