@@ -31,7 +31,7 @@ locals {
   computed_domain = "${data.external.env.result["STAGE"]}" == "prod" ? "seller" : "${data.external.env.result["STAGE"]}-seller"
 }
 resource "aws_acm_certificate" "cert_cognito_us_east_1" {
-  domain_name ="*.${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
+  domain_name ="*.${local.computed_domain}.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -57,10 +57,12 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   provider = aws.main
 }
 locals {
-  computed_variable = data.external.env.result["STAGE"] == "dev" ? "www-develop" : 
-                      (data.external.env.result["STAGE"] == "prod" ? "www" : 
-                       "www-${data.external.env.result["STAGE"]}")
+ a= "${data.external.env.result["STAGE"] == "dev" ? "www-develop" : ""}"
+ b = "${data.external.env.result["STAGE"] == "prod" ? "www" : ""}"
+ c = "www-${data.external.env.result["STAGE"]}"
+ computed_variable = "${coalesce(local.a,local.b, local.c)}"
 }
+
 resource "aws_acm_certificate" "cert_cognito_us_east_2" {
   domain_name ="*.${local.computed_variable}.${data.external.env.result["DOMAIN"]}"
   validation_method = "DNS"

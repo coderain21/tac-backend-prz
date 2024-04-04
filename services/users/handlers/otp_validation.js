@@ -26,7 +26,7 @@ const cognito = new AWS.CognitoIdentityServiceProvider()
 
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider()
 
-let connection
+let connection = null
 
 const createGroup = async (username, userPoolId) => {
     try {
@@ -74,6 +74,10 @@ process. It is an asynchronous function that takes in three parameters: `event`,
 `callback`. */
 module.exports.otpValidation = async (event, _context, callback) => {
     try {
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongoConnection.connect()
+        }
         let userData = JSON.parse(event.body)
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
@@ -136,7 +140,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const ciphertext = CryptoJS.AES.encrypt(userData.password, process.env.PASSWORD_SECRET_KEY).toString()
                     userData.password = ciphertext
-                    connection = await mongoConnection.connect()
                     const user = await mongoConnection.save(userData, Users)
                     const domainInfo = {
                         seller_email: userData.email_address,
