@@ -171,8 +171,8 @@ const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 
 const pinpoint = new PinpointEmail()
+let connection = null
 
-mongodbHelper.connect()
 /**
  * Gets all the bidders for a given redis key, and filters them to only include
  * bidders that match the auction data passed in
@@ -264,7 +264,8 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
     }
     try {
         // Send the email using the AWS Pinpoint service
-        await pinpoint.sendEmail(params).promise()
+        const sendEmail = await pinpoint.sendEmail(params).promise()
+        console.log('sendEmail', sendEmail)
     } catch (error) {
         // Log any errors that occur
         console.error('Failed to send email:', error)
@@ -282,9 +283,9 @@ async function sendMail(destinationId, sourceId, templateData, templateArn) {
  */
 module.exports.sqsTriggerFunction = async (event) => {
     try {
-        // if (connection === null || !connection.readyState) {
-        // connection = await mongodbHelper.connect()
-        // }
+        if (connection === null || !connection.readyState) {
+            connection = await mongodbHelper.connect()
+        }
         // Retrieve the bidders from MongoDB
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
@@ -368,6 +369,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             email_address: event.seller_email,
         }
         const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+        const promiseList = []
         for (const user of getBidders) {
             // Set up a MongoDB query to find the user's information
             const query = {
@@ -409,10 +411,10 @@ module.exports.sqsTriggerFunction = async (event) => {
                 seller_email: auctionData.seller_email,
                 subject: subjectDescription,
             }
-
-            await sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION)
+            promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
         }
         // Run all the promises in parallel
+        await Promise.all(promiseList)
 
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
