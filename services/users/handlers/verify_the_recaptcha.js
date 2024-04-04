@@ -49,7 +49,7 @@ const schema = Joi.object().keys({
     }),
 })
 
-let connection
+let connection = null
 
 /**
  * The function encrypts data with a secret key and includes a timestamp for time validation.
@@ -110,6 +110,10 @@ parameter and performs various operations to verify a user's reCAPTCHA response 
 user account. */
 module.exports.verifyReCaptcha = async (event) => {
     try {
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongoConnection.connect()
+        }
         const userData = JSON.parse(event.body)
         const validationResult = schema.validate(userData)
         if (validationResult.error && !(userData.email_address.includes('anusha.k+7'))) {
@@ -120,7 +124,6 @@ module.exports.verifyReCaptcha = async (event) => {
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        connection = await mongoConnection.connect()
         const userExist = await Users.findOne({ email_address: userData.email_address, user_type: userData.user_type })
         if (userExist) {
             return {
