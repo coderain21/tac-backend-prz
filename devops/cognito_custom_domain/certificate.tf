@@ -58,7 +58,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
 }
 locals {
  a= "${data.external.env.result["STAGE"] == "dev" ? "www-develop" : ""}"
- b = "${data.external.env.result["STAGE"] == "prod" ? "www" : ""}"
+ b = "${data.external.env.result["STAGE"] == "prod" ? "bid" : ""}"
  c = "www-${data.external.env.result["STAGE"]}"
  computed_variable = "${coalesce(local.a,local.b, local.c)}"
 }
