@@ -66,7 +66,7 @@ async function stopExecutions(executionArn) {
 module.exports.handler = async (event) => {
     try {
         if (connection === null || !connection.readyState) {
-            connection = await mongodbHelper.connect()
+            connection = await mongoConnection.connect()
         }
         const request_body = JSON.parse(event.body)
         const seller_email = event.requestContext.authorizer.claims['cognito:username']

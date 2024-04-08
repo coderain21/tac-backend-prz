@@ -205,16 +205,6 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Missing mandatory fields."})
                     }
-                # Split tags and check if there are more than 3
-                # tags = [tag.strip() for tag in row['Tags'].split(',')]
-
-                # if len(tags) > 3:
-                #     return {
-                #         "statusCode": 400,
-                #         'headers': headers,
-                #         "body": json.dumps({"message": "Too many tags. Maximum allowed is 3."})
-                # }
-                # Parse and check low and high estimates
                 starting_price = int(row.get('Starting Price'))
                 low_estimate = 0 if row.get('Low Estimate')=='' else int(row.get('Low Estimate',0))
                 high_estimate = 0 if row.get('High Estimate') == '' else int(row.get('High Estimate', 0))
@@ -225,9 +215,6 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
-                # static_image_url = "DomainName/Auctions/lots/images/5006a747-b5d7-ecd2-b16f-48dc0762620f/painting.jpg"
-                # static_image_data = {"url": static_image_url, "featured": True}
-                # dict1["images"] = [static_image_data]
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
