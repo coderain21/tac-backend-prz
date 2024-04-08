@@ -20,8 +20,7 @@ const StepFunctionArn = require('../entities/stepFunctionArn')
 const redisHelper = require('../lib/redis_helper')
 
 // const { startExecution, stopExecutions } = require('../lib/step_function_helper')
-
-mongodbHelper.connect()
+let connection = null
 const Lot = require('../entities/Lot')
 
 config.update({ region: 'eu-west-2' })
@@ -299,6 +298,9 @@ async function findAndUpdateTime(auctionLots, client, extend_time) {
  */
 module.exports.handler = async (event, context, callback) => {
     try {
+        if (connection === null || !connection.readyState) {
+            connection = await mongodbHelper.connect()
+        }
         const firstRecord = event.Records[0]
         // Get the lots, auction details and type from the event message
         const lotsString = firstRecord.messageAttributes.lots.stringValue
