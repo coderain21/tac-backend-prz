@@ -157,7 +157,7 @@ def import_lots(event, context):
             "starting_bid": 0,
             "current_bid": 0,
             "Top_bidder": "",
-            # "images": [],
+            "images": [],
         }
         print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
@@ -225,9 +225,9 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
-                static_image_url = "DomainName/Auctions/lots/images/5006a747-b5d7-ecd2-b16f-48dc0762620f/painting.jpg"
-                static_image_data = {"url": static_image_url, "featured": True}
-                dict1["images"] = [static_image_data]
+                # static_image_url = "DomainName/Auctions/lots/images/5006a747-b5d7-ecd2-b16f-48dc0762620f/painting.jpg"
+                # static_image_data = {"url": static_image_url, "featured": True}
+                # dict1["images"] = [static_image_data]
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
