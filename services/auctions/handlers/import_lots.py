@@ -112,8 +112,8 @@ def import_lots(event, context):
             'Starting Price',
             'Low Estimate',
             'High Estimate',
-            'Product Shipping Location',
-            'Tags'
+            'Product Shipping Location'
+            # 'Tags'
         ]
         # Initialize the MongoDB client
         client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -157,7 +157,7 @@ def import_lots(event, context):
             "starting_bid": 0,
             "current_bid": 0,
             "Top_bidder": "",
-            "images": [],
+            # "images": [],
         }
         print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
@@ -199,21 +199,21 @@ def import_lots(event, context):
                     dict1['start_date'] = start_date
                     dict1['end_date'] = end_date
 
-                if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "" or row['Tags'] == "":
+                if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "": # or row['Tags'] == "":
                     return {
                         "statusCode": 400,
                         'headers': headers,
                         "body": json.dumps({"message": "Missing mandatory fields."})
                     }
                 # Split tags and check if there are more than 3
-                tags = [tag.strip() for tag in row['Tags'].split(',')]
+                # tags = [tag.strip() for tag in row['Tags'].split(',')]
 
-                if len(tags) > 3:
-                    return {
-                        "statusCode": 400,
-                        'headers': headers,
-                        "body": json.dumps({"message": "Too many tags. Maximum allowed is 3."})
-                }
+                # if len(tags) > 3:
+                #     return {
+                #         "statusCode": 400,
+                #         'headers': headers,
+                #         "body": json.dumps({"message": "Too many tags. Maximum allowed is 3."})
+                # }
                 # Parse and check low and high estimates
                 starting_price = int(row.get('Starting Price'))
                 low_estimate = 0 if row.get('Low Estimate')=='' else int(row.get('Low Estimate',0))
@@ -225,6 +225,9 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
+                static_image_url = "DomainName/Auctions/lots/images/5006a747-b5d7-ecd2-b16f-48dc0762620f/painting.jpg"
+                static_image_data = {"url": static_image_url, "featured": True}
+                dict1["images"] = [static_image_data]
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
@@ -232,7 +235,7 @@ def import_lots(event, context):
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
-                dict1["tags"] = tags
+                # dict1["tags"] = tags
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number

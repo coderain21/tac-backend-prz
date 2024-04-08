@@ -37,22 +37,14 @@ function formatDate(date) {
 async function exportAsCsv(bidders) {
     try {
         const auctionId = String(bidders[0]?.auction_id || '')
-        // console.log('auctionId', auctionId)
-        // const auctionCollection = db.collection(process.env.AUCTION_MONGODB_COLLECTION_NAME)
-        // const auctionDetails = await mongodbHelper.getAuction(auctionId, process.env.AUCTION_MONGODB_COLLECTION_NAME)
-        // console.log('auctionDetails', auctionDetails)
         const filename = 'Bidder List'
-        console.log('filename', filename)
 
         // Use a temporary directory
         const tempDir = '/tmp' // Use the Lambda /tmp directory
         const csvFilePath = `${tempDir}/${filename}.csv`
-        console.log('CSV file path:', csvFilePath)
 
         const s3Key = `admin/exports/bidders/${auctionId}/${filename}.csv`
         const s3Bucket = process.env.BUCKET_NAME
-
-        // console.log('Bidders details------------', bidders)
 
         const csvWriter = createCsvWriter({
             path: csvFilePath,
@@ -120,9 +112,6 @@ async function exportAsCsv(bidders) {
             Key: s3Key,
             Expires: 3600,
         })
-
-        // console.log('CSV file uploaded successfully.')
-        // console.log('Presigned URL:', s3SignedUrl)
 
         return s3SignedUrl
     } catch (err) {
@@ -210,8 +199,6 @@ module.exports.handler = async (event) => {
 
             // Export to CSV
             const download_link = await exportAsCsv(buyerList)
-            // console.log('Download link:', download_link)
-            console.log('data', buyerList.docs)
 
             /** Return successful response with CSV download link */
             return {

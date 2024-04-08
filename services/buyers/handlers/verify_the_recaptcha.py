@@ -8,7 +8,7 @@ from bson import ObjectId
 import requests
 from pymongo import MongoClient
 from botocore.exceptions import ClientError
-from lib.helper_python import encrypt_with_time_validation, send_pinpoint_email
+from lib.helper_python import encrypt_with_time_validation,    send_pinpoint_email
 
 headers = {
     'Content-Type': 'application/json',

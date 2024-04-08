@@ -71,7 +71,7 @@ locals {
   computed_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "seller.${data.external.env.result["DOMAIN"]}" : "${data.external.env.result["STAGE"]}-seller.${data.external.env.result["DOMAIN"]}"
 }
 locals {
-  computed_domain_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "www" : "www-${data.external.env.result["STAGE"]}"
+  computed_domain_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "bid" : "www-${data.external.env.result["STAGE"]}"
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {

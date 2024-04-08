@@ -79,7 +79,7 @@ provider:
     COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
-    # REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
 
     SQS_QUEUE_ARN:  
       Fn::Join:
@@ -95,7 +95,7 @@ provider:
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     TEMPLATE_ARN_AUCTION_COMPLETION:
       Fn::Join:
@@ -575,6 +575,33 @@ functions:
               - Accept
               - Access-Control-Allow-Header
           path: /unpublish-auction
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  bdd_admin_update_status:
+    handler: handlers/bdd_api.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Requestid
+              - Access-Control-Allow-Header
+          path: /admin_bdd-update/{auction_id}
           method: patch
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}

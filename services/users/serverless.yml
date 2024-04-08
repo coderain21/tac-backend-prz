@@ -73,7 +73,7 @@ provider:
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     DEFAULT_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
-    REDIS_ENDPOINT: ${ssm:REDIS_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     
     
   http:
@@ -741,7 +741,7 @@ resources:
         ProviderDetails:
           client_id: ${ssm:FACEBOOK_CLIENT_ID}
           client_secret: ${ssm:FACEBOOK_CLIENT_SECRET}
-          authorize_scopes: "email openid profile"
+          authorize_scopes: "email"
         UserPoolId: { Ref: SellerUsers }
     
     

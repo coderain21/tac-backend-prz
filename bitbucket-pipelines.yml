@@ -259,7 +259,7 @@ pipelines:
           deployment: Pre-Production
           image: python:3.7.2
           steps:
-            - step: *BuildStep
+            # - step: *BuildStep
             - step: *TerraDeploy
     DeleteDisposableEnvironment:
       - stage:
@@ -363,12 +363,13 @@ pipelines:
       - parallel:
           fail-fast: true
           steps:
-            - step: *BuildStep
+           
             - step: *SecretChecking
       - stage:
             name: QA Deployment
             deployment: QA
             steps:
+              - step: *BuildStep
               - step: *TerraDeploy
     
     Pre-Production:
