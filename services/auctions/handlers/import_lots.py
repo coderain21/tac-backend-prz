@@ -157,7 +157,7 @@ def import_lots(event, context):
             "starting_bid": 0,
             "current_bid": 0,
             "Top_bidder": "",
-            # "images": [],
+            "images": []
         }
         print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
@@ -225,9 +225,7 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
-                static_image_url = "DomainName/Auctions/lots/images/5006a747-b5d7-ecd2-b16f-48dc0762620f/painting.jpg"
-                static_image_data = {"url": static_image_url, "featured": True}
-                dict1["images"] = [static_image_data]
+                
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
@@ -239,6 +237,10 @@ def import_lots(event, context):
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number
+                if email_address == "anusha.k+stripeconnect@7edge.com":
+                    static_image_url = "DomainName/Auctions/lots/images/000c0a2b-a20e-f6bb-0ad0-19969991696b/spring-maidenhair-trees.jpg"
+                    static_image_data = {"url": static_image_url, "featured": True}
+                    dict1['images'].append(static_image_data)
                 documents.append(dict1)
         except Exception as err:
             print(err)
