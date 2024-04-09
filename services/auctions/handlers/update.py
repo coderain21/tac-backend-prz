@@ -125,6 +125,16 @@ def update_auction(event, context):
         collection_seller = db[os.environ["SELLERS_TABLE"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
+
+        state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+
+        if state['status'] == 'Published' or state['status']== 'Accepting bids':
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Auction is already published or is Accepting bids"})
+            }
+
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                      "auction_id": auction_id}))
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
