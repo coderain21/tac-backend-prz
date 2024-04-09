@@ -130,8 +130,7 @@ def view(event, context):
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {
                               "$set": {"status": updated_status}})
-        result = collection.find_one({"seller_email": email_address,
-                                      "auction_id": auction_id}, projection)
+        result = collection.find_one({"_id": ObjectId(auction_id)}, projection)
         if result is None:
             return {
                 "headers": headers,
