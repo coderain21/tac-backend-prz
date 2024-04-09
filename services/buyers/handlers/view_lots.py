@@ -16,7 +16,6 @@ headers = {
 
 def lot_details(event, context):
     try:
-        print(event,"yyyyyyyyyyyyyyyyyyyyyy")
         # Parse query parameters from the event
         data = event['queryStringParameters']
         if data is None or "lot_id" not in data:
