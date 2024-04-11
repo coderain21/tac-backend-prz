@@ -313,6 +313,7 @@ pipelines:
             - step: *DependencyScanning
       - step: *BuildStep
       - step: *APITesting
+      - step: *DAST
         
       
     bugfix/**:
@@ -326,7 +327,7 @@ pipelines:
             - step: *DependencyScanning
       - step: *BuildStep
       - step: *APITesting
-           
+      - step: *DAST
 
     hotfix/**:
       - step: *CodeQuality
@@ -339,6 +340,7 @@ pipelines:
             - step: *DependencyScanning
       - step: *BuildStep
       - step: *APITesting
+      - step: *DAST
 
   branches:
     qa:
@@ -351,10 +353,10 @@ pipelines:
 
     master:
       - stage:
-            name: Deployment
-            deployment: Pre-Production
-            steps:
-              - step: *BuildStep
-              - step: *TerraDeploy
+          name: Deployment
+          deployment: Production
+          steps:
+             - step: *BuildStep
+             - step: *TerraDeploy
 
             
