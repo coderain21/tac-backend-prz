@@ -42,6 +42,7 @@ module.exports.create_auction = async (event) => {
                 body: JSON.stringify({
                     message: 'Auction created successfully',
                     auctions_id: sequenceNumber,
+                    _id: auction._id,
                 }),
             }
         }
