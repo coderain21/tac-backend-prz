@@ -123,10 +123,10 @@ def update_auction(event, context):
             published_status = 'false'
         print('event', event['queryStringParameters'])
         print('published status', published_status)
-            
+
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
         print('state', state['status'])
-        
+
         if published_status == 'true':
             if state['status'] == 'Published' or state['status']== 'Accepting bids':
                 return {
