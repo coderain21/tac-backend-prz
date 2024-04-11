@@ -9,6 +9,8 @@ const Users = require('../entities/Users')
 const mongoConnection = require('../lib/mongodb_helper')
 const helpers = require('../lib/helper')
 
+let connection = null
+
 /**
  * The function encrypts data with a secret key and includes a timestamp for time validation.
  * @param data - The `data` parameter is the data that you want to encrypt. It can be any type of data,
@@ -29,8 +31,10 @@ function encryptWithTimeValidation(data, secretKey) {
 module.exports.generate_otp = async (event) => {
     try {
         const userData = JSON.parse(event.body)
-        // eslint-disable-next-line no-unused-vars
-        const connection = await mongoConnection.connect()
+        if (connection === null || !connection.readyState) {
+            console.log('not coonected')
+            connection = await mongoConnection.connect()
+        }
 
         const userExist = await Users.findOne({ email_address: userData.email_address, user_type: userData.user_type })
         if (!userExist || !userData) {

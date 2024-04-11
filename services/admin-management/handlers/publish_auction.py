@@ -23,6 +23,9 @@ headers = {
 
 client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
+collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+collection_seller = db[os.environ["SELLERS_TABLE"]]
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
@@ -119,11 +122,18 @@ def update_auction(event, context):
                 'published', 'false')
         else:
             published_status = 'false'
+        state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
 
+        if state['status'] == 'Published' or state['status']== 'Accepting bids':
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Auction is already published or is Accepting bids"})
+            }
         # Initialize the MongoDB client
-        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
-        collection_seller = db[os.environ["SELLERS_TABLE"]]
+        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+        # collection_seller = db[os.environ["SELLERS_TABLE"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
         listLots = list(collection_lot.find({"seller_email": seller_email,

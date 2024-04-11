@@ -21,7 +21,7 @@ const mongoConnection = require('../lib/mongodb_helper')
 
 const cognitoHelper = require('../lib/cognito_helper')
 
-let connection
+let connection = null
 
 const createGroup = async (username, userPoolId) => {
     try {
@@ -37,8 +37,11 @@ const createGroup = async (username, userPoolId) => {
 exports.handler = async (event, context, callback) => {
     async function checkForExistingUsers(event, linkToExistingUser) {
         console.log('Executing checkForExistingUsers')
-
         try {
+            if (connection === null || !connection.readyState) {
+                console.log('not coonected')
+                connection = await mongoConnection.connect()
+            }
             const params = {
                 UserPoolId: event.userPoolId,
                 AttributesToGet: ['sub', 'email'],
@@ -81,7 +84,6 @@ exports.handler = async (event, context, callback) => {
                 client_id: process.env.DEFAULT_CLIENT_ID,
                 group_name: event.request.userAttributes.email.split('@')[0],
             }
-            connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
             const domain = await mongoConnection.save(domainInfo, SubDomain)
             await createGroup(event.request.userAttributes.email.split('@')[0], process.env.DEFAULT_USERPOOL_ID)

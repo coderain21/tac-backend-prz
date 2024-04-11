@@ -26,7 +26,7 @@ const BidSchema = new Schema({
         type: String, trim: true,
     },
     paddle_number: {
-        type: String, trim: true,
+        type: Number
     },
     starting_bid: {
         type: Number, trim: true,

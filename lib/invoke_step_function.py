@@ -1,7 +1,6 @@
 '''invoke state machine'''
 import json
 import boto3
-import redis
 import os
 from lib.common_helper import Encoder
 import requests
@@ -11,12 +10,11 @@ from datetime import datetime, timezone
 
 client_step_function = boto3.client('stepfunctions')
 from pymongo import MongoClient
+
 mongo_client = MongoClient(os.environ['MONGO_CLIENT'])
 db = mongo_client[os.environ['DATABASE']]
 collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
 
-
-redis_client = redis.Redis(host=os.environ["REDIS_ENDPOINT"], port=6379)
 
 def invoke_state_machine(invocation_params, step_function_arn=None):
     client = boto3.client('stepfunctions')
