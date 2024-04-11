@@ -107,7 +107,7 @@ def update_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         request_body = json.loads(event['body'])
         end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
