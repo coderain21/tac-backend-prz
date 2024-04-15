@@ -2987,6 +2987,18 @@
         ],
         "summary": "Update lot",
         "description": "Update lot",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "anusha.k+subdomain@7edge.com"
+          }
+          
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -3043,7 +3055,7 @@
                 }
               },
               "example": {              
-                "auction_id":"A0012",
+                "auction_id":"A1269",
                 "lot_number": 1,
                 "images":[{"url": "abcdef","feature": false }],
                 "title1":"ring",
