@@ -642,6 +642,26 @@ functions:
           method: get
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  edit_auction:
+      handler: handlers/update_auction.update_auction
+      runtime: python3.8
+      memorySize: 2048
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+      events:
+        - http:
+            cors: true
+            path: /edit-auction/{auction_id}
+            method: patch
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
   Resources:
