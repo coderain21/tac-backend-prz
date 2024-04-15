@@ -675,22 +675,22 @@
                 "example": {
                   "sellers": [
                     {
-                      "_id": "65f07e5ad0d3dba1b8dbf4f4",
-                      "email_address": "sthuthi+testp@7edge.com",
+                      "_id": "660e33faec72a0641f3096c7",
+                      "email_address": "sushmitha.j+stripe@7edge.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "pending"
+                      "kyc_status": "completed",
+                      "kyb_status": "false"
                     },
                     {
-                      "_id": "66014fd08729ec6470271e8a",
-                      "email_address": "sandhyashri@7edge.com",
+                      "_id": "65f05711477ab501c63d3a8c",
+                      "email_address": "sthuthi+test@7edge.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
+                      "kyc_status": "pending",
+                      "kyb_status": "init"
                     },
                     {
                       "_id": "66017079016a9e1a00b9ca64",
@@ -711,6 +711,15 @@
                       "kyb_status": "true"
                     },
                     {
+                      "_id": "65f07e5ad0d3dba1b8dbf4f4",
+                      "email_address": "sthuthi+testp@7edge.com",
+                      "status": false,
+                      "brand_name": "",
+                      "country": "",
+                      "kyc_status": "false",
+                      "kyb_status": "pending"
+                    },
+                    {
                       "_id": "65f07f10d0d3dba1b8dbf4f8",
                       "email_address": "sthuthi+tests@7edge.com",
                       "status": true,
@@ -718,15 +727,6 @@
                       "country": "",
                       "kyc_status": "false",
                       "kyb_status": "pending"
-                    },
-                    {
-                      "_id": "65f05711477ab501c63d3a8c",
-                      "email_address": "sthuthi+test@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "pending",
-                      "kyb_status": "init"
                     },
                     {
                       "_id": "65b79dad9c5418096cc1f868",
@@ -743,29 +743,27 @@
                       "kyb_status": "false"
                     },
                     {
-                      "_id": "65ba25a197d810c14774c5f5",
-                      "email_address": "anusha.k+7bgns16z@7edge.com",
+                      "_id": "66014fd08729ec6470271e8a",
+                      "email_address": "sandhyashri@7edge.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
                       "kyc_status": "false",
-                      "kyb_status": "false",
-                      "full_name": " "
+                      "kyb_status": "false"
                     },
                     {
-                      "_id": "65ba23604b7bcbcaf824eed5",
-                      "email_address": "anusha.k+7z9ivqr7@7edge.com",
+                      "_id": "660f8edd2e5b718eab3fd34f",
+                      "email_address": "william.pham+2@theauctioncollective.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
                       "kyc_status": "false",
-                      "kyb_status": "false",
-                      "full_name": " "
+                      "kyb_status": "false"
                     }
                   ],
-                  "total_sellers": 38,
+                  "total_sellers": 42,
                   "page_size": 10,
-                  "page_number": 1
+                  "page_number": 1                
                 }
               }
             }
