@@ -16,11 +16,12 @@
       "description": "APIs to manage the Admin"
     }
   ],
-
   "paths": {
     "/auctions": {
       "get": {
-        "tags": ["Admin Auction Management"],
+        "tags": [
+          "Admin Auction Management"
+        ],
         "summary": "Listing auction",
         "description": "Listing auction",
         "parameters": [
@@ -250,7 +251,9 @@
     },
     "/buyers": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Listing Buyers",
         "description": "Listing Buyers",
         "parameters": [
@@ -345,6 +348,29 @@
                 "example": {
                   "buyers": [
                     {
+                      "_id": "65cc9e212eb6f2314355c5ec",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX19dE7O6j5jYrrTT2MV8NWiOjD92QMoPRkI=",
+                      "email_address": "sandhyashri@7edge.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "",
+                      "last_name": "",
+                      "registered_through": "",
+                      "created_at": "2024-02-14 11:04:01.224000",
+                      "buyer_id": "0143",
+                      "__v": 0,
+                      "seller_email": "namratha.shettigar+dev@7edge.com",
+                      "token": {
+                        "endpoint": "https://fcm.googleapis.com/fcm/send/dX97s2TCJic:APA91bHBSam5hZr-AEADiJD_vM5dgb39hbLTfXvWikI1bUshMLt7MD411pTVPEobRXALc39WDLfJ_vrFCpoe1Tw51InJO_3cxyCjQ8amU2aRCm2yy_DNYxNsYj0jFkiuugJ7KQXPmjdt",
+                        "expirationTime": null,
+                        "keys": {
+                          "p256dh": "BLFVDIe36Kk-9F3QlZiofeWReVomElrCXrlZoAzpnS1uYNQ5AWXxkcTAiQBUZwpk4m-jOyHLxWAeCp7jZ9QcSNk",
+                          "auth": "QAJ7GkBbcmCQS_KMC-FXgQ"
+                        }
+                      }
+                    },
+                    {
                       "_id": "65ccadc1d4228ae1476b125d",
                       "user_type": "buyer",
                       "password": "U2FsdGVkX1+YMdi39a+tiwDur/UiQ8JSSkuXymOiXqQ=",
@@ -368,25 +394,25 @@
                       }
                     },
                     {
-                      "_id": "65cc9e212eb6f2314355c5ec",
+                      "_id": "65ddb73baa16b42058bd2409",
                       "user_type": "buyer",
-                      "password": "U2FsdGVkX19dE7O6j5jYrrTT2MV8NWiOjD92QMoPRkI=",
-                      "email_address": "sandhyashri@7edge.com",
+                      "password": "U2FsdGVkX19LehET4s7ONDMhZZb7lh5J+uoMwj0CY4A=",
+                      "email_address": "anusha.k@7edge.com",
                       "newsletter_notification": false,
                       "terms_and_condition": true,
                       "first_name": "",
                       "last_name": "",
                       "registered_through": "",
-                      "created_at": "2024-02-14 11:04:01.224000",
-                      "buyer_id": "0143",
+                      "created_at": "2024-02-27 10:19:39.751000",
+                      "buyer_id": "B0158",
                       "__v": 0,
                       "seller_email": "namratha.shettigar+dev@7edge.com",
                       "token": {
-                        "endpoint": "https://fcm.googleapis.com/fcm/send/dX97s2TCJic:APA91bHBSam5hZr-AEADiJD_vM5dgb39hbLTfXvWikI1bUshMLt7MD411pTVPEobRXALc39WDLfJ_vrFCpoe1Tw51InJO_3cxyCjQ8amU2aRCm2yy_DNYxNsYj0jFkiuugJ7KQXPmjdt",
+                        "endpoint": "https://fcm.googleapis.com/fcm/send/cNwXTDIDRno:APA91bF33a84HP4u5RukvaMqOFGwmZO3RcQzpZtYTj7SNzT-lXplS15-kdL8splCyeF2eEJeOzOLluH6ehIYvbvXihSF90mV-UU6OJQomTc1b3Iu4Z3KPWNE2hrcU4Xqh6Y9cv4W47v1",
                         "expirationTime": null,
                         "keys": {
-                          "p256dh": "BLFVDIe36Kk-9F3QlZiofeWReVomElrCXrlZoAzpnS1uYNQ5AWXxkcTAiQBUZwpk4m-jOyHLxWAeCp7jZ9QcSNk",
-                          "auth": "QAJ7GkBbcmCQS_KMC-FXgQ"
+                          "p256dh": "BG1rbtdauzdOyQL8yvj6pqMN-vhzTsdt90r9YX2RU6j56Bk_gqN-tnk2GsFe8jXqoqLfVTt6-g7riVwYdiv0bYk",
+                          "auth": "LBR-_Ma1JF_RMv0p_FIgrA"
                         }
                       }
                     },
@@ -425,29 +451,6 @@
                         "keys": {
                           "p256dh": "BHilXltJxPkyHmHbS7DPZXHlnHIikQBPd-KUNUB85AI0ftGJ7NJCIsoVzJGGd4OxXKkpGs_Giu_l0BQ8pZaZKDI",
                           "auth": "EVzD5S9wBhawZY6nb7rzAQ"
-                        }
-                      }
-                    },
-                    {
-                      "_id": "65ddb73baa16b42058bd2409",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19LehET4s7ONDMhZZb7lh5J+uoMwj0CY4A=",
-                      "email_address": "anusha.k@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "",
-                      "created_at": "2024-02-27 10:19:39.751000",
-                      "buyer_id": "B0158",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com",
-                      "token": {
-                        "endpoint": "https://fcm.googleapis.com/fcm/send/cNwXTDIDRno:APA91bF33a84HP4u5RukvaMqOFGwmZO3RcQzpZtYTj7SNzT-lXplS15-kdL8splCyeF2eEJeOzOLluH6ehIYvbvXihSF90mV-UU6OJQomTc1b3Iu4Z3KPWNE2hrcU4Xqh6Y9cv4W47v1",
-                        "expirationTime": null,
-                        "keys": {
-                          "p256dh": "BG1rbtdauzdOyQL8yvj6pqMN-vhzTsdt90r9YX2RU6j56Bk_gqN-tnk2GsFe8jXqoqLfVTt6-g7riVwYdiv0bYk",
-                          "auth": "LBR-_Ma1JF_RMv0p_FIgrA"
                         }
                       }
                     },
@@ -544,7 +547,7 @@
                       }
                     }
                   ],
-                  "total_buyers": 52,
+                  "total_buyers": 55,
                   "page_size": 10,
                   "page_number": 1
                 }
@@ -586,7 +589,9 @@
     },
     "/sellers": {
       "get": {
-        "tags": ["Admin Seller Management"],
+        "tags": [
+          "Admin Seller Management"
+        ],
         "summary": "Listing Sellers",
         "description": "Listing Sellers",
         "parameters": [
@@ -763,7 +768,7 @@
                   ],
                   "total_sellers": 42,
                   "page_size": 10,
-                  "page_number": 1                
+                  "page_number": 1
                 }
               }
             }
@@ -803,7 +808,9 @@
     },
     "/buyer-auctions": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Buyers list auctions",
         "description": "Buyers list auctions",
         "parameters": [
@@ -953,7 +960,9 @@
     },
     "/buyer-details": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Buyer Details",
         "description": "Buyers Details",
         "parameters": [
@@ -1065,7 +1074,9 @@
     },
     "/{id}": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Buyer purchases Details",
         "description": "Buyers purchases details",
         "parameters": [
@@ -1243,7 +1254,9 @@
     },
     "/clone-auction": {
       "post": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Auction cloned",
         "requestBody": {
           "content": {
@@ -1322,7 +1335,9 @@
     },
     "/order-details": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Complete Order Details",
         "description": "Order details",
         "parameters": [
@@ -1608,7 +1623,9 @@
     },
     "/auction-purchases": {
       "get": {
-        "tags": ["Admin Auction Management"],
+        "tags": [
+          "Admin Auction Management"
+        ],
         "summary": "Auction purchases listing",
         "description": "Auction purchases listing",
         "parameters": [
@@ -1865,7 +1882,9 @@
     },
     "/auction-details": {
       "get": {
-        "tags": ["Admin Auction Management"],
+        "tags": [
+          "Admin Auction Management"
+        ],
         "summary": "Auction details",
         "description": "Auction details",
         "parameters": [
@@ -2223,7 +2242,9 @@
     },
     "/accountings": {
       "get": {
-        "tags": ["Admin Accounting Management"],
+        "tags": [
+          "Admin Accounting Management"
+        ],
         "summary": "Order Accounting listing",
         "description": "Accounting purchases listing",
         "parameters": [
@@ -2514,9 +2535,11 @@
         }
       }
     },
-    "/unpublish-auction":{
-      "patch":{
-        "tags": ["Auction"],
+    "/unpublish-auction": {
+      "patch": {
+        "tags": [
+          "Auction"
+        ],
         "summary": "unpublish auction",
         "parameters": [
           {
@@ -2528,7 +2551,6 @@
               "type": "string"
             },
             "example": "A0008"
-          
           }
         ],
         "requestBody": {
@@ -2537,14 +2559,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "type":{
+                  "type": {
                     "type": "string"
                   }
-
                 }
               },
               "example": {
-                "type":"UNPUBLISH/CANCEL" 
+                "type": "UNPUBLISH/CANCEL"
               }
             }
           }
@@ -2568,11 +2589,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction status not in accepting bid state to update."
-                      
+                      "message": "Auction status not in accepting bid state to update."
                     }
                   }
-                
                 }
               }
             }
@@ -2592,10 +2611,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "API does not exists"
-                      
+                      "message": "API does not exists"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2615,10 +2633,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction doesn't exists."
-                      
+                      "message": "Auction doesn't exists."
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2638,10 +2655,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "There was an error while updating the auction"
-                      
+                      "message": "There was an error while updating the auction"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2649,9 +2665,11 @@
         }
       }
     },
-    "/publish-auction/{auction_id}": {      
-      "patch":{
-        "tags": ["Auction"],
+    "/publish-auction/{auction_id}": {
+      "patch": {
+        "tags": [
+          "Auction"
+        ],
         "summary": "Updating auction details",
         "parameters": [
           {
@@ -2689,13 +2707,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "description":{
+                  "description": {
                     "type": "string"
                   }
                 }
               },
               "example": {
-                "description":"Join our auction event!"
+                "description": "Join our auction event!"
               }
             }
           }
@@ -2719,28 +2737,24 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "required and cannot be empty."
-                      
+                      "message": "required and cannot be empty."
                     }
                   },
                   "example2": {
                     "value": {
-                        "message": "required fields are missing or empty"
-                      
+                      "message": "required fields are missing or empty"
                     }
                   },
                   "example3": {
                     "value": {
-                        "message": "Some lots are missing lot images"
-                      
+                      "message": "Some lots are missing lot images"
                     }
                   },
                   "example4": {
                     "value": {
-                        "message": "Please complete the Individual or Business verification before publishing the auction."
-                      
+                      "message": "Please complete the Individual or Business verification before publishing the auction."
                     }
-                  }       
+                  }
                 }
               }
             }
@@ -2760,10 +2774,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "You do not have access to perform this API action"
-                      
+                      "message": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2783,10 +2796,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction doesn't exists."
-                      
+                      "message": "Auction doesn't exists."
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2806,20 +2818,21 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "There was an error while updating the auction"
-                      
+                      "message": "There was an error while updating the auction"
                     }
-                  }    
+                  }
                 }
               }
             }
           }
         }
       }
-     },
-     "/admin-subdomain": {
+    },
+    "/admin-subdomain": {
       "get": {
-        "tags": ["Admin Management"],
+        "tags": [
+          "Admin Management"
+        ],
         "summary": "Admin get subdomain",
         "description": "Get subdomain",
         "parameters": [
@@ -2846,7 +2859,7 @@
                 },
                 "example": {
                   "subdomain": "www-devo"
-              }
+                }
               }
             }
           },
@@ -2882,7 +2895,7 @@
           }
         }
       }
-     }
+    }
   },
   "components": {
     "securitySchemes": {
