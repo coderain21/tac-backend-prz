@@ -5,7 +5,7 @@ from Crypto.Random import get_random_bytes
 import os
 import json
 import time
-from redis_py_cluster import RedisCluster
+from rediscluster import RedisCluster
 import boto3
 import redis
 

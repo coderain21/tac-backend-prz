@@ -15,5 +15,6 @@ pycryptodome
 schema
 PyJWT==2.8.0
 redis
+redis-py-cluster==2.1.3
 
 
