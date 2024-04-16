@@ -5,11 +5,33 @@ from Crypto.Random import get_random_bytes
 import os
 import json
 import time
+from redis_py_cluster import RedisCluster
 import boto3
 import redis
 
 
-redis_client = redis.Redis(host=os.environ["REDIS_CLUSTER_ENDPOINT"], port=6379)
+def createRedisClient():
+    try:
+        startup_nodes = [
+            {
+                "host": os.environ["REDIS_CLUSTER_ENDPOINT"],
+                "port": 6379
+            }
+        ]
+        cluster = RedisCluster(
+            startup_nodes=startup_nodes,
+            decode_responses=True
+        )
+        return cluster
+    except (ConnectionError, Exception) as e:
+        print(f"Error connecting to Redis: {e}")
+        # Handle connection errors (optional)
+        # You can retry the operation here, log the error, etc.
+
+redis_client = createRedisClient()
+
+
+# redis_client = redis.Redis(host=os.environ["REDIS_CLUSTER_ENDPOINT"], port=6379)
 
 client = boto3.client('pinpoint-email',region_name = os.environ['REGION'])
 def send_pinpoint_email(to_email,from_email,template_data,template_arn):
