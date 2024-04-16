@@ -67,7 +67,6 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
-            console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
 
@@ -151,25 +150,31 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Retrieve the auction data from MongoDB
         const auctionData = await mongodbHelper.getAuction(event, Auction)
 
-        const winningLot = []
-        const notWinning = []
         // Set up a MongoDB query to find the seller's information
         const sellerQuery = {
             email_address: event.seller_email,
         }
         const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
         const promiseList = []
+        // Initialize empty lists for winning and not-winning lots
+        let winningLot = []
+        let notWinning = []
+
+        // Loop through bidders
         for (const user of getBidders) {
+            // Reset lists for each bidder
+            winningLot = []
+            notWinning = []
+
             // Set up a MongoDB query to find the user's information
             const query = {
                 _id: new ObjectId(user.buyer_id),
             }
 
             const buyerInformation = await mongodbHelper.getUser(query, Buyers)
-            // Set the email subject based on whether the user won or lost the auction
-            let subjectDescription = 'You Won the Auction'
+
             // Loop through the lots and add them to the winning or losing lists
-            get_lot.forEach((lot) => {
+            for (const lot of get_lot) {
                 // Add the CDN link to the image URL
                 lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
 
@@ -177,15 +182,14 @@ module.exports.sqsTriggerFunction = async (event) => {
                 if (lot.winning_user === user.buyer_id) {
                     lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
                     winningLot.push(lot)
-                } else if (lot.winning_user !== user.buyer_id) {
-                    lot.bid_amount = formatCurrency(lot.starting_price, auctionData.currency)
+                } else {
+                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
                     notWinning.push(lot)
                 }
-            })
-            // If the user didn't win any lots, change the email subject
-            if (winningLot.length <= 0) {
-                subjectDescription = 'You lost the Auction'
             }
+
+            // If the user didn't win any lots, change the email subject
+            const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
 
             // Create the email data
             const template_data = {
@@ -200,8 +204,11 @@ module.exports.sqsTriggerFunction = async (event) => {
                 seller_email: auctionData.seller_email,
                 subject: subjectDescription,
             }
+
+            // Send email
             promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
         }
+
         // Run all the promises in parallel
         await Promise.all(promiseList)
 
