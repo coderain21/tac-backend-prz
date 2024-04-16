@@ -67,7 +67,6 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
-            console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
 
