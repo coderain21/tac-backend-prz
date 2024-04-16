@@ -20,15 +20,14 @@ def createRedisClient():
         ]
         cluster = RedisCluster(
             startup_nodes=startup_nodes,
-            decode_responses=True
+            decode_responses=True,
+            skip_full_coverage_check=True  # Add this option
         )
         return cluster
     except (ConnectionError, Exception) as e:
         print(f"Error connecting to Redis: {e}")
-        # Handle connection errors (optional)
-        # You can retry the operation here, log the error, etc.
 
-redis_client = createRedisClient()
+# redis_client = createRedisClient()
 
 
 # redis_client = redis.Redis(host=os.environ["REDIS_CLUSTER_ENDPOINT"], port=6379)
@@ -99,7 +98,9 @@ def decrypt_with_time_validation(encrypted_data_hex, secret_key):
 
 def update_lot_data(item, lot_id): 
     print('inside update lot redis')
+    redis_client = createRedisClient()
     bid_key = f'lot:{lot_id}'
+    print('redis', redis_client)
     existing_record =  redis_client.hget('lot', bid_key)
     print('existing_record', existing_record)
     if existing_record is None:
