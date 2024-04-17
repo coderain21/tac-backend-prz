@@ -80,12 +80,13 @@ resource "aws_elasticache_replication_group" "websocket" {
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
   replication_group_id        = "websocket-redis-cluster-enabled"
   description                 = "websocket description with cluster enabled"
-  node_type                   = "cache.t3.medium"
-  num_node_groups         = 2
-  replicas_per_node_group = 1
+  node_type                   = "${data.external.env.result["REDIS_NODE_TYPE"]}"
+  num_node_groups         = data.external.env.result["REDIS_NODES"]
+  replicas_per_node_group = data.external.env.result["REDIS_REPLICAS"]
   parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
+  apply_immediately          = true
   provider                  = aws.deployment-us
 }
 resource "aws_ssm_parameter" "distribution_id" {
