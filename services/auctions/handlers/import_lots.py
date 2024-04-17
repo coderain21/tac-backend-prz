@@ -187,6 +187,7 @@ def import_lots(event, context):
             print(csv_reader)
             for row in csv_reader:
                 dict1 = {}
+                tags = row.get('Tags', '')
                 if end_date is not None:
                     if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
                         dict1['start_date'] = start_date
@@ -215,6 +216,7 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
+                dict1["tags"] = tags if tags else []
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
