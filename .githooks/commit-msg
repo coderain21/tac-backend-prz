@@ -6,7 +6,7 @@ from subprocess import check_output
 
 email = check_output(['git', 'config', '--global', 'user.email']).decode()
 current_branch = check_output(["git", "symbolic-ref", "--short", "HEAD"]).strip().decode()
-branch_name_starts_with = r"^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert|release)"
+branch_name_starts_with = r"^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert|release)\/\d+\.\d+\/\w+-\d+$"
 
 # Collect the parameters
 commit_msg_filepath = sys.argv[1]
@@ -26,7 +26,7 @@ with open(commit_msg_filepath, 'r') as f:
         print("Example: EX-1 #time 1h5m feature: short description")
         sys.exit(1)
     if bool(re.match(branch_name_starts_with, current_branch)):
-        issue_id = current_branch.split('/')[1].split('-')[0]+'-'+current_branch.split('/')[1].split('-')[1]
+        issue_id = current_branch.split('/')[2].split('-')[0]+'-'+current_branch.split('/')[2].split('-')[1]
         commit_content = content.split(' ')
         provided = commit_content[0]
         commit_content[0] = issue_id
