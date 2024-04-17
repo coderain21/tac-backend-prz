@@ -2887,7 +2887,7 @@
      "/edit-auction/{auction_id}":{
       "patch": {
         "tags": [
-          "Auction"
+          "Admin Management"
         ],
         "summary": "Delete Note",
         "description": "Delete Note",
@@ -2978,6 +2978,165 @@
           }
         }
         
+      }
+    },
+    "/update-lot": {
+      "patch": {
+        "tags": [
+          "Admin Management"
+        ],
+        "summary": "Update lot",
+        "description": "Update lot",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "anusha.k+subdomain@7edge.com"
+          }
+          
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title1":{
+                    "type": "string"
+                  },
+                  "title2":{
+                    "type": "string"
+                  },
+                  "description":{
+                    "type": "string"
+                  },
+                  "starting_price":{
+                    "type": "integer"
+                  },
+                  "low_estimate":{
+                    "type": "integer"
+                  },
+                  "high_estimate":{
+                    "type": "integer"
+                  },
+                  "shipping_details":{
+                    "type": "string"
+                  },
+                  "tags":{
+                    "type":"array",
+                    "items":{
+                      "type": "object",
+                      "properties": {
+                        "tags_name":{
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "images":{
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "feature": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+
+                }
+              },
+              "example": {              
+                "auction_id":"A1269",
+                "lot_number": 1,
+                "images":[{"url": "abcdef","feature": false }],
+                "title1":"ring",
+                "title2":"ghj",
+                "description":"",
+                "starting_price":22344,
+                "low_estimate":33332,
+                "high_estimate":123144,
+                "shipping_details":"Bandra",
+                "tags":"necklace"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }    
+                }
+              }
+            },
+            "400": {
+              "description": "Missing parameters in request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "auction_id lot_number and seller_email are required for lot update."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "lot not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Lot not found for seller."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },
