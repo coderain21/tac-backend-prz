@@ -35,6 +35,20 @@ for param_name in "${parameter_names[@]}"; do
     echo "Set $param_name as environment variable with value: $param_value"
 done <<< "$parameter_names"
 
+parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
+
+# # Loop through each parameter
+for param_name in "${parameter_names[@]}"; do
+    echo "$param_name"
+    # Get parameter value
+    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+
+    # Set environment variable
+    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+
+    echo "Set $param_name as environment variable with value: $param_value"
+done <<< "$parameter_names"
+
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
 terraform -chdir=devops/admin_web_application init
@@ -72,7 +86,7 @@ fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
-# # Loop through each parameter
+# Loop through each parameter
 for param_name in "${parameter_names[@]}"; do
     echo "$param_name"
     # Get parameter value
