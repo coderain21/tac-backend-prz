@@ -60,11 +60,9 @@ def list_bids(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        email_address = 'sthuthi@7edge.com'
         # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
         print('here')
-        # email_address='sthuthi+testing@7edge.com'
         auction_id = query_parameters.get('auction_id')
         print('auction_id', auction_id)
         sort_by = query_parameters.get('sort_by', 'lot_number')  # Default sort by lot number
@@ -263,7 +261,7 @@ def export_lots_as_csv(lots):
     """
     try:
         auction_id = str(lots[0].get('auction_id', ''))
-        filename = auction_id
+        filename = 'Bid Insights'
         # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
         # seller_email = lots[0]["email_address"]
         # auction_status = auction_collection.find_one({
@@ -272,9 +270,9 @@ def export_lots_as_csv(lots):
         # }, {"status": 1})
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
-        csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
+        csv_file_path = os.path.join(temp_dir, f'{filename}.csv')
 
-        s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
+        s3_key = f"exports/lots/{auction_id}/{filename}.csv"
         s3_bucket = os.environ['S3_BUCKET']
         print('Lots details------------', lots)
 
