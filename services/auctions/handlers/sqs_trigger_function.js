@@ -67,6 +67,7 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
+            console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
 
@@ -183,7 +184,10 @@ module.exports.sqsTriggerFunction = async (event) => {
                     lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
                     winningLot.push(lot)
                 } else {
-                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
+                    event.lot_number = lot.lot_number
+                    const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                    console.log('@@@@@@@@@@@', getAmount)
+                    lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                     notWinning.push(lot)
                 }
             }
@@ -197,7 +201,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 winning_lot_count: winningLot.length,
                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                 title: auctionData.title,
-                logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}/Logo.png` : `${process.env.S3_BUCKET_URL}/${auctionData.logo_image}`,
+                logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
                 not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
                 not_winning_lot_count: notWinning.length,
                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
