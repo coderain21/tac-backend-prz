@@ -106,7 +106,7 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
-    S3_BUCKET_URL:  https://${opt:stage, self:provider.stage}-cdn.indyauction.net/public
+    S3_BUCKET_URL: ${ssm:CDN_URL}
     SENDER_EMAIL: ${ssm:SENDER_EMAIL}
     STATE_MACHINE_LOT_ARN:  
       Fn::Join:
