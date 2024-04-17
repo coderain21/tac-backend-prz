@@ -285,9 +285,9 @@ def export_lots_as_csv(lots):
                 currency = lot.get("currency", "")
                 if currency in currencySymbolMapping:
                     currency = currencySymbolMapping[currency]
-                    print('currency', currency)
+                    # print('currency', currency)
                 timezone = lot.get("time_zone", "")
-                print('timezone', timezone)
+                # print('timezone', timezone)
                 # Extract the standard timezone identifier from the timezone string
                 # Extract the standard timezone identifier from the timezone string
                 timezone_identifier = lot.get("time_zone").split(' ')[0]

@@ -133,7 +133,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /buyer/{lot_id}
           method: GET
-          # authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
             
 
   bid-listing:
