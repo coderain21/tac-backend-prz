@@ -178,13 +178,13 @@ module.exports.sqsTriggerFunction = async (event) => {
             for (const lot of get_lot) {
                 // Add the CDN link to the image URL
                 lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
-
                 // Add the formatted bid amount to the lot
                 if (lot.winning_user === user.buyer_id) {
-                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
+                    lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
                     winningLot.push(lot)
                 } else {
                     event.lot_number = lot.lot_number
+                    event.email_address = user.email_address
                     const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                     console.log('@@@@@@@@@@@', getAmount)
                     lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
