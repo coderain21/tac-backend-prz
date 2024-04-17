@@ -14,7 +14,7 @@ locals {
 }
 
 resource "aws_cloudwatch_dashboard" "demo-dashboard" {
-  dashboard_name = "Indyauction Services Dashboard"
+  dashboard_name = "Indyauction-Services-Dashboard"
   provider = aws.deployment-eu
 
   dashboard_body = local.json_data

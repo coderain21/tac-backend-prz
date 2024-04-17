@@ -178,8 +178,10 @@ module.exports.sqsTriggerFunction = async (event) => {
             for (const lot of get_lot) {
                 // Add the CDN link to the image URL
                 lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
+                console.log('user and lot')
                 // Add the formatted bid amount to the lot
                 if (lot.winning_user === user.buyer_id) {
+                    console.log('winning')
                     lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
                     winningLot.push(lot)
                 } else {
