@@ -7,7 +7,6 @@ import re
 import csv
 import tempfile
 import boto3
-import pytz
 from lib.common_helper import Encoder
 
 headers = {
@@ -166,7 +165,7 @@ def list_bids(event, context):
             "total selling": percentage_bids_gt_zero
         }
         if export:
-            download_link = export_lots_as_csv(lots) 
+            download_link = export_lots_as_csv(lots)
             print(download_link)
         if download_link is not None:
             body["csv_url"] = download_link
@@ -284,7 +283,7 @@ def export_lots_as_csv(lots):
                 lot_image = lot.get("lot_image", "")
                 currency = lot.get("currency", "")
                 if currency in currencySymbolMapping:
-                    currency = currencySymbolMapping[currency]
+                    currency = currencySymbolMapping.get(currency, "")
                     # print('currency', currency)
                 timezone = lot.get("time_zone", "")
                 # print('timezone', timezone)
@@ -329,7 +328,7 @@ def export_lots_as_csv(lots):
 
         # print("CSV file uploaded successfully.")
         # print("Presigned URL:", s3_signed_url)
-        
+
         return s3_signed_url
     except Exception as err:
         print("Error:", err)
