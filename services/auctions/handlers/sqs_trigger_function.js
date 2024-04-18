@@ -186,15 +186,14 @@ module.exports.sqsTriggerFunction = async (event) => {
                 if (lot.winning_user === user.buyer_id) {
                     event.lot_number = lot.lot_number
                     event.email_address = user.email_address
-                    const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
-                    console.log('won', getAmount)
+                    // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                    // console.log('won', getAmount)
                     lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
                     winningLot.push(lot)
                 } else {
                     event.lot_number = lot.lot_number
                     event.email_address = user.email_address
                     const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
-                    console.log('not won', getAmount)
                     lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                     notWinning.push(lot)
                 }
