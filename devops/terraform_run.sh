@@ -3,7 +3,7 @@
 # set -a            
 # source .env
 # set +a
-
+set -e
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
 # # Configure AWS CLI profiles
@@ -21,6 +21,33 @@ aws s3 sync $log_bucket . --profile $PROFILE_ENV
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
 
+parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
+
+# # Loop through each parameter
+for param_name in "${parameter_names[@]}"; do
+    echo "$param_name"
+    # Get parameter value
+    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+
+    # Set environment variable
+    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+
+    echo "Set $param_name as environment variable with value: $param_value"
+done <<< "$parameter_names"
+
+parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
+
+# # Loop through each parameter
+for param_name in "${parameter_names[@]}"; do
+    echo "$param_name"
+    # Get parameter value
+    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+
+    # Set environment variable
+    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+
+    echo "Set $param_name as environment variable with value: $param_value"
+done <<< "$parameter_names"
 
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
@@ -46,7 +73,9 @@ terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 terraform -chdir=devops/redis-cluster init
 terraform -chdir=devops/redis-cluster apply -auto-approve
-if [ "${STAGE}" = "qa" ]; then
+terraform -chdir=devops/budgets init
+terraform -chdir=devops/budgets apply -auto-approve
+if [ "STAGE" = "qa" ]; then
     terraform -chdir=devops/dependency/bitbucket-layer-node init
     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 fi
@@ -57,7 +86,7 @@ fi
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
-# # Loop through each parameter
+# Loop through each parameter
 for param_name in "${parameter_names[@]}"; do
     echo "$param_name"
     # Get parameter value
@@ -102,7 +131,6 @@ cd ../..
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 sls deploy --stage ${STAGE} --max-concurrency 5
 
-
+exit 0

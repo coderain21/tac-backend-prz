@@ -6,12 +6,12 @@ from subprocess import check_output
 
 email = check_output(['git', 'config', '--global', 'user.email']).decode()
 current_branch = check_output(["git", "symbolic-ref", "--short", "HEAD"]).strip().decode()
-branch_name_starts_with = r"^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert|release)"
+branch_name_starts_with = r"^(feature|bugfix|hotfix|chore|refactor|documentation|style|test|performance|ci|build|revert|release)\/\d+\.\d+\/\w+-\d+$"
 
 # Collect the parameters
 commit_msg_filepath = sys.argv[1]
 def validate_commit_message(commit_message):
-    pattern = re.compile(r'^([A-Za-z]+-\d+)\s+#time\s+(\d+[hdmw]\s*\d*[hdmw]?\s*\d*[hdmw]?)\s+(bugfix|hotfix|feature):\s+[A-Za-z]{5,}.*')
+    pattern = re.compile(r'^([A-Za-z]+-\d+)\s+#time\s+(\d+[hdmw]\s*\d*[hdmw]?\s*\d*[hdmw]?)\s+(bugfix|hotfix|feature|ci):\s*(?=[A-Za-z])[A-Za-z\s]*.*')
     return bool(pattern.match(commit_message))
 
 if (email and '7edge.com' not in email) and (email and 'theauctioncollective.com' not in email): 

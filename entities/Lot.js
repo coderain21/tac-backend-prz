@@ -77,7 +77,7 @@ const LotSchema = new Schema({
         type: String, trim: true,
     },
     paddle_number: {
-        type: String,
+        type: Number,
     },
     winning_user: {
         type: String, trim: true,

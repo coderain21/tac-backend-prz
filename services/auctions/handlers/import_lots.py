@@ -116,14 +116,14 @@ def import_lots(event, context):
 
         # Expected column headers as set
         expected_headers = [
-            "Lot Title 1",
-            "Title 2(Optional)",
-            "Description",
-            "Starting Price",
-            "Low Estimate",
-            "High Estimate",
-            "Product Shipping Location",
-            "Tags",
+            'Lot Title 1',
+            'Title 2(Optional)',
+            'Description',
+            'Starting Price',
+            'Low Estimate',
+            'High Estimate',
+            'Product Shipping Location'
+            # 'Tags'
         ]
         # Initialize the MongoDB client
         client = MongoClient(os.environ["MONGO_CLIENT"])
@@ -204,6 +204,7 @@ def import_lots(event, context):
             print(csv_reader)
             for row in csv_reader:
                 dict1 = {}
+                tags = row.get('Tags', '')
                 if end_date is not None:
                     if auction_record["extension_type"] in [
                         "Cascade",
@@ -225,60 +226,31 @@ def import_lots(event, context):
                     dict1["start_date"] = start_date
                     dict1["end_date"] = end_date
 
-                if (
-                    row["Lot Title 1"] == ""
-                    or row["Description"] == ""
-                    or row["Starting Price"] == ""
-                    or row["Tags"] == ""
-                ):
+                if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "": # or row['Tags'] == "":
                     return {
                         "statusCode": 400,
                         "headers": headers,
                         "body": json.dumps({"message": "Missing mandatory fields."}),
                     }
-                # Split tags and check if there are more than 3
-                tags = [tag.strip() for tag in row["Tags"].split(",")]
-
-                if len(tags) > 3:
-                    return {
-                        "statusCode": 400,
-                        "headers": headers,
-                        "body": json.dumps(
-                            {"message": "Too many tags. Maximum allowed is 3."}
-                        ),
-                    }
-                # Parse and check low and high estimates
-                starting_price = int(row.get("Starting Price"))
-                low_estimate = (
-                    0
-                    if row.get("Low Estimate") == ""
-                    else int(row.get("Low Estimate", 0))
-                )
-                high_estimate = (
-                    0
-                    if row.get("High Estimate") == ""
-                    else int(row.get("High Estimate", 0))
-                )
+                starting_price = int(row.get('Starting Price'))
+                low_estimate = 0 if row.get('Low Estimate')=='' else int(row.get('Low Estimate',0))
+                high_estimate = 0 if row.get('High Estimate') == '' else int(row.get('High Estimate', 0))
 
                 if low_estimate > high_estimate:
                     return {
                         "statusCode": 400,
-                        "headers": headers,
-                        "body": json.dumps(
-                            {
-                                "message": "Low Estimate cannot be greater than High Estimate."
-                            }
-                        ),
+                        'headers': headers,
+                        "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
-
-                dict1["title1"] = row["Lot Title 1"]
-                dict1["title2"] = row["Title 2(Optional)"]
-                dict1["description"] = row["Description"]
+                dict1["tags"] = tags if tags else []
+                dict1["title1"] = row['Lot Title 1']
+                dict1["title2"] = row['Title 2(Optional)']
+                dict1["description"] = row['Description']
                 dict1["starting_price"] = starting_price
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
-                dict1["shipping_details"] = row["Product Shipping Location"]
-                dict1["tags"] = tags
+                dict1["shipping_details"] = row['Product Shipping Location']
+                # dict1["tags"] = tags
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number

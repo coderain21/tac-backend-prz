@@ -411,6 +411,29 @@
                         "endpoint": "https://fcm.googleapis.com/fcm/send/cNwXTDIDRno:APA91bF33a84HP4u5RukvaMqOFGwmZO3RcQzpZtYTj7SNzT-lXplS15-kdL8splCyeF2eEJeOzOLluH6ehIYvbvXihSF90mV-UU6OJQomTc1b3Iu4Z3KPWNE2hrcU4Xqh6Y9cv4W47v1",
                         "expirationTime": null,
                         "keys": {
+                          "p256dh": "BLFVDIe36Kk-9F3QlZiofeWReVomElrCXrlZoAzpnS1uYNQ5AWXxkcTAiQBUZwpk4m-jOyHLxWAeCp7jZ9QcSNk",
+                          "auth": "QAJ7GkBbcmCQS_KMC-FXgQ"
+                        }
+                      }
+                    },
+                    {
+                      "_id": "65ddb73baa16b42058bd2409",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX19LehET4s7ONDMhZZb7lh5J+uoMwj0CY4A=",
+                      "email_address": "anusha.k@7edge.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "",
+                      "last_name": "",
+                      "registered_through": "",
+                      "created_at": "2024-02-27 10:19:39.751000",
+                      "buyer_id": "B0158",
+                      "__v": 0,
+                      "seller_email": "namratha.shettigar+dev@7edge.com",
+                      "token": {
+                        "endpoint": "https://fcm.googleapis.com/fcm/send/cNwXTDIDRno:APA91bF33a84HP4u5RukvaMqOFGwmZO3RcQzpZtYTj7SNzT-lXplS15-kdL8splCyeF2eEJeOzOLluH6ehIYvbvXihSF90mV-UU6OJQomTc1b3Iu4Z3KPWNE2hrcU4Xqh6Y9cv4W47v1",
+                        "expirationTime": null,
+                        "keys": {
                           "p256dh": "BG1rbtdauzdOyQL8yvj6pqMN-vhzTsdt90r9YX2RU6j56Bk_gqN-tnk2GsFe8jXqoqLfVTt6-g7riVwYdiv0bYk",
                           "auth": "LBR-_Ma1JF_RMv0p_FIgrA"
                         }
@@ -547,7 +570,7 @@
                       }
                     }
                   ],
-                  "total_buyers": 55,
+                  "total_buyers": 54,
                   "page_size": 10,
                   "page_number": 1
                 }
@@ -685,7 +708,7 @@
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "completed",
+                      "kyc_status": "pending",
                       "kyb_status": "false"
                     },
                     {
@@ -757,8 +780,8 @@
                       "kyb_status": "false"
                     },
                     {
-                      "_id": "660f8edd2e5b718eab3fd34f",
-                      "email_address": "william.pham+2@theauctioncollective.com",
+                      "_id": "660f2de895194a940a0d5c34",
+                      "email_address": "william.pham+1@theauctioncollective.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
@@ -766,10 +789,11 @@
                       "kyb_status": "false"
                     }
                   ],
-                  "total_sellers": 42,
+                  "total_sellers": 40,
                   "page_size": 10,
                   "page_number": 1
                 }
+                
               }
             }
           },
@@ -2895,9 +2919,483 @@
           }
         }
       }
+     },
+     "/edit-auction/{auction_id}":{
+      "patch": {
+        "tags": [
+          "Admin Management"
+        ],
+        "summary": "Delete Note",
+        "description": "Delete Note",
+        "parameters": [
+         
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0179"
+          },
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi@7edge.com"
+          }
+          
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "note":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "note":"sandhyashri"
+
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved auctions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Auction"
+                },
+                "example": {
+                        "message": "Query successful"
+                      }
+                
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }    
+                }
+              }
+            },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+      }
+    },
+    "/update-lot": {
+      "patch": {
+        "tags": [
+          "Admin Management"
+        ],
+        "summary": "Update lot",
+        "description": "Update lot",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "anusha.k+subdomain@7edge.com"
+          }
+          
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title1":{
+                    "type": "string"
+                  },
+                  "title2":{
+                    "type": "string"
+                  },
+                  "description":{
+                    "type": "string"
+                  },
+                  "starting_price":{
+                    "type": "integer"
+                  },
+                  "low_estimate":{
+                    "type": "integer"
+                  },
+                  "high_estimate":{
+                    "type": "integer"
+                  },
+                  "shipping_details":{
+                    "type": "string"
+                  },
+                  "tags":{
+                    "type":"array",
+                    "items":{
+                      "type": "object",
+                      "properties": {
+                        "tags_name":{
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "images":{
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "feature": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+
+                }
+              },
+              "example": {              
+                "auction_id":"A1269",
+                "lot_number": 1,
+                "images":[{"url": "abcdef","feature": false }],
+                "title1":"ring",
+                "title2":"ghj",
+                "description":"",
+                "starting_price":22344,
+                "low_estimate":33332,
+                "high_estimate":123144,
+                "shipping_details":"Bandra",
+                "tags":"necklace"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "example": "You do not have access to perform this API action"
+                      }
+                    }
+                  }    
+                }
+              }
+            },
+            "400": {
+              "description": "Missing parameters in request body",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "auction_id lot_number and seller_email are required for lot update."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "lot not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Lot not found for seller."
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
+    "schemas": {
+      "Auction": {
+        "type": "object",
+        "properties": {
+          "seller_email":{
+            "type": "string"
+          },
+          "auction_id":{
+            "type": "string"
+          },
+          "template_name":{
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "menu_links":{
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "link_url": {
+                  "type": "string"
+                },
+                "dropdown": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title" :{
+                        "type": "string"
+                      },
+                      "link_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "logo_image":{
+            "type": "string"
+          },
+          "logo_redirection_url":{
+            "type": "string"
+          },
+          "title":{
+            "type": "string"
+          },
+          "auction_image":{
+            "type": "string"
+          },
+          "description":{
+            "type": "string"
+          },
+          "currency":{
+            "type": "string"
+          },
+          "start_date":{
+            "type": "number"
+          },
+          "end_date":{
+            "type": "number"
+          },
+          "extension_type":{
+            "type": "string"
+          },
+          "extension_time":{
+            "type": "string"
+          },
+          "extension_time_between_lots": {
+            "type": "string"
+          },
+          "registration_type":{
+            "type": "string"
+          },
+          "add_buyer_fees":{
+            "type": "number"
+          },
+          "time_zone" :{
+            "type": "string"
+          },
+          "faq":{
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "terms_and_condition":{
+            "type": "string"
+          },
+          "publish_auction_result":{
+            "type": "boolean"
+          },
+          "show_bidder_location_in_bidder_history":{
+            "type": "boolean"
+          },
+          "make_your_auction_private":{
+            "type": "boolean"
+          },
+          "passcode":{
+            "type": "string"
+          },
+          "font":{
+            "type": "object"
+          },
+          "button":{
+            "type": "object"
+          },
+          "header":{
+            "type": "object"
+          },
+          "content_area":{
+            "type": "object"
+          },
+          "footer":{
+            "type": "object"
+          },
+          "paddle":{
+            "type": "object"
+          },
+          "status":{
+            "type": "string"
+          }
+      }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+    "Lots":{
+      "type": "object",
+      "properties": {
+        "auction_id":{
+          "type": "string"
+        },
+        "seller_email":{
+          "type": "string"
+        },
+        "lot_number":{
+          "type":"integer"
+        },
+        "lot_title":{
+          "type":"string"
+        },
+        "starting_bid":{
+          "type":"integer"
+        },
+        "current_bid":{
+          "type":"integer"
+        },
+        "Top_bidder":{
+          "type":"string"
+        },
+        "images":{
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "feature": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "title1":{
+          "type":"string"
+        },
+        "title2":{
+          "type":"string"
+        },
+        "description":{
+          "type":"string"
+        },
+        "starting_price":{
+          "type":"integer"
+        },
+        "low_estimate":{
+          "type":"integer"
+        },
+        "high_estimate":{
+          "type":"integer"
+        },
+        "shipping_details":{
+          "type":"string"
+        },
+        "tags":{
+          "type":"array",
+          "items":{
+            "type": "object",
+            "properties": {
+              "tags_name":{
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
     "securitySchemes": {
       "BearerAuth": {
         "type": "apiKey",

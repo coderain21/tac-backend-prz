@@ -13,14 +13,18 @@ const Auction = require('../entities/Auction')
 const Counter = require('../entities/Counter')
 const helpers = require('../lib/helper')
 
+let connection = null
+
 /* The `module.exports.create_auction` function is an asynchronous function that handles the creation
 of an auction. It takes an `event` parameter, which is typically an HTTP request event. */
 module.exports.create_auction = async (event) => {
     try {
+        if (connection === null || !connection.readyState) {
+            connection = await mongoConnection.connect()
+        }
         const request_body = JSON.parse(event.body)
         const email = event.requestContext.authorizer.claims['cognito:username']
         request_body.seller_email = email
-        const connection = await mongoConnection.connect()
         const get_user = await mongoConnection.view(Users, { email_address: email })
         const counter = await Counter.findOneAndUpdate({ seller_email: email, record_type: 'Auctions', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
@@ -38,10 +42,10 @@ module.exports.create_auction = async (event) => {
                 body: JSON.stringify({
                     message: 'Auction created successfully',
                     auctions_id: sequenceNumber,
+                    _id: auction._id,
                 }),
             }
         }
-        await connection.disconnect()
         return {
             statusCode: 400,
             headers: await helpers.getHeaders(),
@@ -50,7 +54,7 @@ module.exports.create_auction = async (event) => {
     } catch (error) {
         console.log('err', error)
         return {
-            headers,
+            headers: await helpers.getHeaders(),
             statusCode: 500,
             body: JSON.stringify({
                 message: 'Internal Server Error',

@@ -99,23 +99,19 @@ def update_auction(event, context):
     """
     try:
         try:
-            seller_email = event['requestContext']['authorizer']['claims']['email']
-            if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
-                    'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "do not have access to perform this API action"})
-                }
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+
         request_body = json.loads(event['body'])
         end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
+        seller_email = event['queryStringParameters']['seller_email']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
                 'published', 'false')
