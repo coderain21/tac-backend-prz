@@ -31,6 +31,9 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: no-reply@indy.auction
     BUCKET_NAME: ${ssm:BUCKET_NAME}
+    CSV_FILE: ${ssm:CSV_FILE}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
+    CDN_LINK: ${ssm:CDN_URL}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
