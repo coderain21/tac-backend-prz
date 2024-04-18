@@ -47,7 +47,6 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
-        console.log('connection', event.lot_number, connection)
         if (connection === null || !connection.readyState) {
             console.log('not connected')
             connection = await mongodbHelper.connect()
@@ -61,7 +60,6 @@ module.exports.handler = async (event) => {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
         const lotInformation = get_lot[0]
-        console.log('lotInformation', lotInformation)
         if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
             const auctionData = await mongodbHelper.getAuction(event, Auction)
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
@@ -71,7 +69,6 @@ module.exports.handler = async (event) => {
             await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
             const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
             // const callSQS = await sqsTriggerFunction(event)
-            console.log('lotn', event.lot_number)
             if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
             }

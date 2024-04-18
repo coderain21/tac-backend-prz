@@ -159,6 +159,7 @@ def view(event, context):
             data["header"] = result.get("header")
             data["font"] = result.get("font")
             data["buttons"] = result.get("buttons")
+            data['title'] = result.get("title")
             if domain_data is not None:
                 data["sub_domain"] = domain_data["subdomain"]
             return {

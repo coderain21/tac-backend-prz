@@ -1,6 +1,7 @@
 """This module is used to view the auction with auction id"""
 import json
 import os
+from bson import ObjectId
 from pymongo import MongoClient
 from lib.common_helper import Encoder
 from datetime import datetime
@@ -96,8 +97,7 @@ def view(event, context):
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1
         }
-        result = collection.find_one({"seller_email": email_address,
-                                      "auction_id": auction_id}, projection)
+        result = collection.find_one({"_id":ObjectId(auction_id)}, projection)
         if result is None:
             return {
                 "headers": headers,
@@ -119,8 +119,6 @@ def view(event, context):
         end_time= result['end_date']
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
-        print(end_time,"tttttttttttttt")
-        print(current_time,"ttttttttttt")
         if end_time is not None:
             if current_time >= end_time:
                 # Auction has ended
@@ -132,8 +130,7 @@ def view(event, context):
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {
                               "$set": {"status": updated_status}})
-        result = collection.find_one({"seller_email": email_address,
-                                      "auction_id": auction_id}, projection)
+        result = collection.find_one({"_id": ObjectId(auction_id)}, projection)
         if result is None:
             return {
                 "headers": headers,
