@@ -3,7 +3,7 @@
 # set -a            
 # source .env
 # set +a
-
+set -e
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
 # # Configure AWS CLI profiles
@@ -129,7 +129,6 @@ cd ../..
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 sls deploy --stage ${STAGE} --max-concurrency 5
 
-
+exit 0

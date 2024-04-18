@@ -48,8 +48,9 @@ npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
-
+terraform -chdir=devops/cognito_custom_domain init && terraform -chdir=devops/cognito_custom_domain destroy -auto-approve 
 sls remove --stage ${STAGE} --max-concurrency 5
 
 # Deploy the service located in the services folder
@@ -67,9 +68,10 @@ cd services/cognito-auth
 sls remove --region $REGION --stage $STAGE
 cd ../..
 
-aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
-terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve & terraform -chdir=devops/redis init && terraform -chdir=devops/redis destroy -auto-approve
+
+terraform -chdir=devops/budgets init && terraform -chdir=devops/budgets destroy -auto-approve & terraform -chdir=devops/redis-cluster init && terraform -chdir=devops/redis-cluster destroy -auto-approve
+terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve & terraform -chdir=devops/cloudwatch_alarms init && terraform -chdir=devops/cloudwatch_alarms destroy -auto-approve
 terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/kms init && terraform -chdir=devops/kms destroy -auto-approve 
 terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve & terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve 
 terraform -chdir=devops/admin_web_application init && terraform -chdir=devops/admin_web_application destroy -auto-approve & terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
