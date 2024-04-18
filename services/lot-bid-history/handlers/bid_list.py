@@ -231,21 +231,51 @@ currencySymbolMapping = {
 
 
 def format_date(timestamp, time_zone):
-    # Convert timestamp to a datetime object
-    date = datetime.datetime.fromtimestamp(timestamp)
+    print('Received timestamp:', timestamp)
+    print('Received time zone:', time_zone)
 
-    # Create a timezone object using pytz
-    # tz = pytz.timezone(time_zone)
+    # Define the timezone mapping
+    timeZoneMap = {
+        'UTC - Coordinated Universal Time': 'Etc/UTC',
+        'GMT - Greenwich Mean Time': 'Etc/GMT',
+        'BST - British Summer Time': 'Europe/London',
+        'CET - Central European Time': 'Europe/Paris',
+        'IST - India Standard Time': 'Asia/Kolkata',  # Updated key to match received timezone information
+        'CST - China Standard Time': 'Asia/Shanghai',
+        'JST - Japan Standard Time': 'Asia/Tokyo',
+        'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
+        'NZST - New Zealand Standard Time': 'Pacific/Auckland',
+        'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
+        'MST - Mountain Standard Time (US)': 'America/Denver',
+        'CST - Central Standard Time (US)': 'America/Chicago',
+        'EST - Eastern Standard Time (US)': 'America/New_York',
+    }
 
-    # Localize the datetime object to the specified timezone
-    # date_localized = tz.localize(date)
+    timezone_identifier = timeZoneMap.get(time_zone, 'Etc/UTC')  # Default to 'Etc/UTC' if timezone not found
+    print('Timezone identifier:', timezone_identifier)
 
-    # Format the localized datetime object
-    formatted_date = date.strftime('%d %b %Y')
-    formatted_time = date.strftime('%H:%M %Z')
+    try:
+        # Convert milliseconds to seconds
+        timestamp_seconds = timestamp / 1000.0
 
-    # Return the formatted date string
-    return f"{formatted_date} / {time_zone}"
+        # Convert the epoch timestamp to a UTC datetime object
+        utc_datetime = datetime.datetime.utcfromtimestamp(timestamp_seconds)
+
+        # Convert UTC datetime to local timezone
+        local_timezone = pytz.timezone(timezone_identifier)
+        localized_datetime = utc_datetime.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+        # Format the datetime object
+        formatted_date = localized_datetime.strftime('%d %b %Y / %H:%M %Z')
+        print('Formatted date:', formatted_date)
+
+        # Return the formatted date string
+        return formatted_date
+
+    except Exception as e:
+        print("Error:", e)
+        return None
+
 
 
 
@@ -292,7 +322,7 @@ def export_lots_as_csv(lots):
                 timezone_identifier = lot.get("time_zone").split(' ')[0]
 
                 # Pass the extracted timezone identifier to the format_date() function
-                latest_bid = format_date(lot.get("updated_at").timestamp(), timezone_identifier)
+                latest_bid = format_date(lot.get("updated_at"), timezone)
 
 
                 # Prepend the S3 URL to the thumbnail URL
