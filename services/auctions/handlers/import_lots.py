@@ -1,3 +1,4 @@
+
 """
 The `import_lots` function imports lots from a CSV file into a MongoDB database, with additional
 validation and checks.
