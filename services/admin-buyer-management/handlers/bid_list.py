@@ -1,4 +1,5 @@
 '''The `import os` statement is importing the `os` module in Python'''
+import datetime
 import os
 import json
 import pymongo
@@ -158,7 +159,7 @@ def list_bids(event, context):
             "total selling": percentage_bids_gt_zero
         }
         if export:
-            download_link = export_lots_as_csv(lots, db)
+            download_link = export_lots_as_csv(lots)
         if download_link is not None:
             body["csv_url"] = download_link
         # client.close()
@@ -175,7 +176,74 @@ def list_bids(event, context):
         }
 
 
-def export_lots_as_csv(lots, db):
+currencySymbolMapping = {
+    "GBP": '£',
+    "USD": '$',
+    "EUR": '€',
+    "HKD": 'HK$',
+    "JPY": '¥',
+    "CHF": 'Fr',
+    "SGD": 'S$',
+    "AUD": 'A$',
+    "CAD": 'C$',
+    "INR": '₹',
+}
+
+
+
+# def format_date(timestamp, time_zone):
+#     date = datetime.datetime.fromtimestamp(timestamp, time_zone)
+#     print('date', date)
+#     options = {
+#         'day': 'numeric',
+#         'month': 'short',
+#         'year': 'numeric',
+#         'hour': 'numeric',
+#         'minute': '2-digit',
+#         'timezone': time_zone,
+#     }
+
+#     formatted = date.strftime('%d %b %Y, %H:%M %Z')
+#     print('formatted', formatted)
+#     if '+05:30' in formatted:
+#         formatted = formatted.replace('+05:30', 'IST')
+#     elif '+11' in formatted:
+#         formatted = formatted.replace('+11', 'AESR')
+#     elif '+13' in formatted:
+#         formatted = formatted.replace('+13', 'NZST')
+#     elif '+01' in formatted:
+#         formatted = formatted.replace('+01', 'CET')
+#     elif '+09' in formatted:
+#         formatted = formatted.replace('+09', 'JST')
+#     elif '+08' in formatted:
+#         formatted = formatted.replace('+08', 'CST')
+
+#     return formatted.replace(',', ' /')
+
+
+
+def format_date(timestamp, time_zone):
+    # Convert timestamp to a datetime object
+    date = datetime.datetime.fromtimestamp(timestamp)
+
+    # Create a timezone object using pytz
+    # tz = pytz.timezone(time_zone)
+
+    # Localize the datetime object to the specified timezone
+    # date_localized = tz.localize(date)
+
+    # Format the localized datetime object
+    formatted_date = date.strftime('%d %b %Y')
+    formatted_time = date.strftime('%H:%M %Z')
+
+    # Return the formatted date string
+    return f"{formatted_date} / {formatted_time} {time_zone}"
+
+
+
+
+
+def export_lots_as_csv(lots):
     """
     The function exports lots of data as a CSV file using a database connection.
     :param lots: A list of dictionaries representing lots of data
@@ -184,69 +252,54 @@ def export_lots_as_csv(lots, db):
     """
     try:
         auction_id = str(lots[0].get('auction_id', ''))
-        filename = auction_id
-        auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
-        seller_email = lots[0]["seller_email"]
-        auction_status = auction_collection.find_one({
-            "seller_email": seller_email,
-            "auction_id": auction_id
-        }, {"status": 1})
+        filename = 'Bid Insights'
+        # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        # seller_email = lots[0]["email_address"]
+        # auction_status = auction_collection.find_one({
+        #     "seller_email": seller_email,
+        #     "auction_id": auction_id
+        # }, {"status": 1})
         # Use a temporary directory
         temp_dir = tempfile.mkdtemp()
-        csv_file_path = os.path.join(temp_dir, f'{filename}_lots.csv')
+        csv_file_path = os.path.join(temp_dir, f'{filename}.csv')
 
-        s3_key = f"exports/lots/{auction_id}/{filename}_lots.csv"
+        s3_key = f"exports/lots/{auction_id}/{filename}.csv"
         s3_bucket = os.environ['S3_BUCKET']
         print('Lots details------------', lots)
 
         with open(csv_file_path, "w") as file:
             writer = csv.DictWriter(file, [
-                 "Lot Number","Thumbnail URL", "Title", "Starting Bid","Top(Current) Bid", "Top Bidder", "Total Current Bid", "Total Bids",  "Active Bidders",  "Paddle Number", "Status(Selling, No Bids)", "Top Bid"
-            ])
+                 "Lot Number","Thumbnail Image", "Title", "Paddle Number", "Bidder Name", "Status", "Bid", "Latest Bid"])
             writer.writeheader()
             for lot in lots:
-                lot_images = lot.get("images", [])
-                featured_image = next((img["url"] for img in lot_images if img.get("featured")), None)
-                thumbnail_url = featured_image or ""
+                lot_image = lot.get("lot_image", "")
+                currency = lot.get("currency", "")
+                if currency in currencySymbolMapping:
+                    currency = currencySymbolMapping.get(currency, "")
+                    # print('currency', currency)
+                timezone = lot.get("time_zone", "")
+                # print('timezone', timezone)
+                # Extract the standard timezone identifier from the timezone string
+                # Extract the standard timezone identifier from the timezone string
+                timezone_identifier = lot.get("time_zone").split(' ')[0]
 
+                # Pass the extracted timezone identifier to the format_date() function
+                latest_bid = format_date(lot.get("updated_at").timestamp(), timezone_identifier)
 
-                bid_collection = db[os.environ['BID_INFORMATION_COLLECTION']]
-                bids_info_cursor = bid_collection.find({"auction_id": lot["auction_id"], "seller_email": lot["seller_email"], "auction_uuid": auction_status["_id"]})
-                bids_info = list(bids_info_cursor)  # Convert cursor to list to get count
-
-                total_current_bid = sum(bid["bid_amount"] for bid in bids_info)
-                total_bids = len(bids_info)
-                active_bidders = len(set(bid["buyer_id"] for bid in bids_info if bid["bid_status"] == "UnderBidder"))
-
-                # Identify top bid and top bidder based on the winning status
-                top_bid = max(bids_info, key=lambda bid: bid.get("bid_amount", 0), default={})
-                top_bidder = top_bid.get("buyer_id", "")
-                paddle_number = top_bid.get("paddle_number", "")
-
-                # Check if 'total_bids' is not None before converting to int
-                total_bids_lot = lot.get('total_bids')
-                if total_bids_lot is not None and int(total_bids_lot) > 0:
-                    status = 'Selling'
-                else:
-                    status = 'No Bids'
 
                 # Prepend the S3 URL to the thumbnail URL
                 s3_url_prefix = os.environ['CDN_LINK']
-                thumbnail_url = s3_url_prefix + thumbnail_url
+                thumbnail_url = s3_url_prefix + lot_image
 
                 writer.writerow({
                     "Lot Number": lot.get("lot_number", ""),
-                    "Thumbnail URL": thumbnail_url,
-                    "Title": lot.get("title1", ""),
-                    "Starting Bid": lot.get("starting_bid", ""),
-                    "Top(Current) Bid": lot.get("current_bid", ""),
-                    "Top Bidder": lot.get("top_bidder", ""),
-                    "Total Current Bid": lot.get("total_current_bid",""),
-                    "Total Bids": lot.get("total_bids", ""),
-                    "Active Bidders": lot.get("active_bidders", ""),
+                    "Thumbnail Image": thumbnail_url,
+                    "Title": lot.get("lot_title", ""),
                     "Paddle Number": lot.get("paddle_number", ""),
-                    "Status(Selling, No Bids)": status,
-                    "Top Bid": top_bid.get("bid_amount", "")  # Assuming this is how the top bid is represented in your data
+                    "Bidder Name": lot.get("name", ""),
+                    "Status": lot.get("bid_status", ""),
+                    "Bid": currency+str(lot.get("bid_amount", "")),
+                    "Latest Bid": latest_bid,
                 })
 
         # Upload the file to S3
