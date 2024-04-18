@@ -76,11 +76,37 @@ def list_bids(event, context):
         export = event['queryStringParameters'].get('export', False)
         print('export', export)
         download_link = None
+        pipeline = [
+            {
+                "$match": {
+                    "auction_id": auction_id,
+                    "seller_email": email_address
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$auction_id",
+                        "seller_email": "$seller_email",
+                        "buyer_id": "$buyer_id"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$_id.auction_id",
+                        "seller_email": "$_id.seller_email"
+                    },
+                    "uniqueBidders": {"$addToSet": "$_id.buyer_id"}
+                }
+            }
+        ]
 
-        total_bidders = collection_bidders.count_documents({"seller_email": email_address,
-                                                     "auction_id": auction_id})
-        if total_bidders:
-            print('total_bidders', total_bidders)
+        unique_bidders = list(collection_bidders.aggregate(pipeline))
+
+        total_bidders = sum(len(doc["uniqueBidders"]) for doc in unique_bidders)
+
         # else:
         #     return{
         #         "statusCode": 404,

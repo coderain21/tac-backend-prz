@@ -62,11 +62,42 @@ def list_lots(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
         collection_bidders = db[os.environ["UNIQUE_BIDDERS_COLLECTIONS"]]
-        total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
-                                                     "auction_id": auction_id})
-        print('total_bids', total_bidders)
+        # total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
+        #                                              "auction_id": auction_id})
+        # print('total_bids', total_bidders)
+        pipeline = [
+            {
+                "$match": {
+                    "auction_id": auction_id,
+                    "seller_email": seller_email
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$auction_id",
+                        "seller_email": "$seller_email",
+                        "buyer_id": "$buyer_id"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$_id.auction_id",
+                        "seller_email": "$_id.seller_email"
+                    },
+                    "uniqueBidders": {"$addToSet": "$_id.buyer_id"}
+                }
+            }
+        ]
 
-        # Define the sort criteria based on user input
+        unique_bidders = list(collection_bidders.aggregate(pipeline))
+
+        total_bidders = sum(len(doc["uniqueBidders"]) for doc in unique_bidders)
+
+
+                # Define the sort criteria based on user input
         if sort_by in ['starting_price', 'current_bid', 'title1', 'lot_number', 'top_bidder', 'paddle_number']:
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
