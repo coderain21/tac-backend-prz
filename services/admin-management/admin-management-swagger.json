@@ -682,8 +682,6 @@
                     {
                       "_id": "660e33faec72a0641f3096c7",
                       "email_address": "sushmitha.j+stripe@7edge.com",
-                      "_id": "660e33faec72a0641f3096c7",
-                      "email_address": "sushmitha.j+stripe@7edge.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
@@ -755,9 +753,7 @@
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
-                      "kyb_status": "false"
+                      "kyc_status": "false"
                     },
                     {
                       "_id": "660f8edd2e5b718eab3fd34f",
@@ -765,9 +761,7 @@
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
-                      "kyb_status": "false"
+                      "kyc_status": "false"
                     }
                   ],
                   "total_sellers": 42,
