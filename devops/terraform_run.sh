@@ -73,13 +73,11 @@ terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 terraform -chdir=devops/redis-cluster init
 terraform -chdir=devops/redis-cluster apply -auto-approve
-terraform -chdir=devops/budgets init
-terraform -chdir=devops/budgets apply -auto-approve
-if [ "STAGE" = "qa" ]; then
+if [ "${STAGE}" = "qa" ]; then
     terraform -chdir=devops/dependency/bitbucket-layer-node init
     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 fi
-if [ "STAGE" = "prod" ]; then
+if [ "${STAGE}" = "prod" ]; then
     terraform -chdir=devops/cloudwatch init
     terraform -chdir=devops/cloudwatch apply -auto-approve
 fi

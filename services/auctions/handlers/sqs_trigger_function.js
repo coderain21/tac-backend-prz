@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
@@ -19,6 +20,7 @@ const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
 const redisHelper = require('../lib/redis_helper')
 const BidInformation = require('../entities/BidInformation')
+const Bid = require('../entities/Bid')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 
@@ -67,6 +69,7 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
+            console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
 
@@ -137,40 +140,41 @@ module.exports.sqsTriggerFunction = async (event) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
+
         // Retrieve the bidders from MongoDB
-        const getBidders = await mongodbHelper.getBidders(event, BidInformation)
+        const getBidders = await mongodbHelper.getBidders(event, Bid)
+        console.log('getBidders', getBidders)
 
         // Connect to Redis and retrieve the auction lots
         const client = await redisHelper.createRedisClient()
-        const getAllLots = await getLot('lot', client, event)
 
-        // Create objects to store the lot and user information
-        const get_lot = getAllLots.map((item) => JSON.parse(item))
-
-        // Retrieve the auction data from MongoDB
-        const auctionData = await mongodbHelper.getAuction(event, Auction)
-
-        // Set up a MongoDB query to find the seller's information
-        const sellerQuery = {
-            email_address: event.seller_email,
-        }
-        const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+        // Initialize empty array to store promiseList
         const promiseList = []
-        // Initialize empty lists for winning and not-winning lots
-        let winningLot = []
-        let notWinning = []
+        const auctionData = await mongodbHelper.getAuction(event, Auction)
 
         // Loop through bidders
         for (const user of getBidders) {
+            // Retrieve the auction lots for each bidder
+            const getAllLots = await getLot('lot', client, event)
+            const get_lot = getAllLots.map((item) => JSON.parse(item))
+            console.log('get_lot', get_lot)
+
             // Reset lists for each bidder
-            winningLot = []
-            notWinning = []
+            const winningLot = []
+            const notWinning = []
+
+            // Retrieve the auction data from MongoDB
+
+            // Set up a MongoDB query to find the seller's information
+            const sellerQuery = {
+                email_address: event.seller_email,
+            }
+            const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
 
             // Set up a MongoDB query to find the user's information
             const query = {
                 _id: new ObjectId(user.buyer_id),
             }
-
             const buyerInformation = await mongodbHelper.getUser(query, Buyers)
 
             // Loop through the lots and add them to the winning or losing lists
@@ -180,16 +184,25 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                 // Add the formatted bid amount to the lot
                 if (lot.winning_user === user.buyer_id) {
-                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
+                    event.lot_number = lot.lot_number
+                    event.email_address = user.email_address
+                    // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                    // console.log('won', getAmount)
+                    lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
                     winningLot.push(lot)
                 } else {
-                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
+                    event.lot_number = lot.lot_number
+                    event.email_address = user.email_address
+                    const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                    lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                     notWinning.push(lot)
                 }
             }
 
             // If the user didn't win any lots, change the email subject
             const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
+
+            console.log('winningLot', winningLot)
 
             // Create the email data
             const template_data = {
