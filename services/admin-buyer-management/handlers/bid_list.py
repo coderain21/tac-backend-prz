@@ -78,10 +78,39 @@ def list_bids(event, context):
 
         export = event['queryStringParameters'].get('export', False)
         download_link = None
+        pipeline = [
+            {
+                "$match": {
+                    "auction_id": auction_id,
+                    "seller_email": seller_email
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$auction_id",
+                        "seller_email": "$seller_email",
+                        "buyer_id": "$buyer_id"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$_id.auction_id",
+                        "seller_email": "$_id.seller_email"
+                    },
+                    "uniqueBidders": {"$addToSet": "$_id.buyer_id"}
+                }
+            }
+        ]
 
-        total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
-                                                     "auction_id": auction_id})
-        print('total_bids', total_bidders)
+        unique_bidders = list(collection_bidders.aggregate(pipeline))
+
+        total_bidders = sum(len(doc["uniqueBidders"]) for doc in unique_bidders)
+
+        print("Total bidders:", total_bidders)
+
 
         # Define the sort criteria based on user input
         if sort_by in ['name', 'bid_status', 'lot_title', 'lot_number', 'bid_amount', 'paddle_number', 'updated_at']:
