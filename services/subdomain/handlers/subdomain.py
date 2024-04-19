@@ -160,25 +160,25 @@ def subdomain(event, context):
             else:
                 if existing_domain_record['default'] is True:
                     userpoolid=os.environ['DEFAULT_BUYER_USERPOOL_ID']
-                    userpool_client=create_app_client(userpoolid, seller_email.split('@')[0],subdomain)
-                    client_id= userpool_client['UserPoolClient']['ClientId']
+                    # userpool_client=create_app_client(userpoolid, seller_email.split('@')[0],subdomain)
+                    # client_id= userpool_client['UserPoolClient']['ClientId']
                     existing_subdomains.append({
                             'prefix': subdomain,
                             'branchName': os.environ["AMPLIFY_BRANCH"]
                         })
-                    identity_pool_client = boto3.client('cognito-identity')
-                    identity_response = identity_pool_client.update_identity_pool(
-                        IdentityPoolId=os.environ.get('DEFAULT_INDENTITY_POOL_ID'),
-                        IdentityPoolName=os.environ.get('DEFAULT_IDENTITY_POOL_NAME'),
-                        AllowUnauthenticatedIdentities=True,
-                        AllowClassicFlow=True,
-                        CognitoIdentityProviders=[
-                            {
-                                'ProviderName': f'cognito-idp.eu-west-2.amazonaws.com/{userpoolid}',
-                                'ClientId': client_id,
-                            },
-                        ]
-                    )
+                    # identity_pool_client = boto3.client('cognito-identity')
+                    # identity_response = identity_pool_client.update_identity_pool(
+                    #     IdentityPoolId=os.environ.get('DEFAULT_INDENTITY_POOL_ID'),
+                    #     IdentityPoolName=os.environ.get('DEFAULT_IDENTITY_POOL_NAME'),
+                    #     AllowUnauthenticatedIdentities=True,
+                    #     AllowClassicFlow=True,
+                    #     CognitoIdentityProviders=[
+                    #         {
+                    #             'ProviderName': f'cognito-idp.eu-west-2.amazonaws.com/{userpoolid}',
+                    #             'ClientId': client_id,
+                    #         },
+                    #     ]
+                    # )
                     result= subdomain_collection.update_one({'seller_email':seller_email},{"$set":{'subdomain':subdomain,"default":False,'client_id':client_id}})
                     response = amplify_client.update_domain_association(
                     appId=os.environ['AMPLIFY_APP_ID'],
@@ -186,6 +186,8 @@ def subdomain(event, context):
                     enableAutoSubDomain=True,
                     subDomainSettings=existing_subdomains,
                     )
+                    
+
 
                 else:
                     update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]

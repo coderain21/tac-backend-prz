@@ -18,6 +18,8 @@ from bson import ObjectId
 import base64
 from botocore.exceptions import ClientError
 from lib.common_helper import Encoder
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
 
 headers = {
     'Content-Type': 'application/json',
@@ -27,27 +29,27 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def encrypt_data(data):
-    """Encrypt data using AWS Key Management Service (KMS).
+# def encrypt_data(data):
+#     """Encrypt data using AWS Key Management Service (KMS).
 
-    Args:
-        data (str): The data to be encrypted.
+#     Args:
+#         data (str): The data to be encrypted.
 
-    Returns:
-        str: The encrypted data as a base64-encoded string.
-    """
-    kms_client = boto3.client('kms', region_name=os.environ['REGION'])
+#     Returns:
+#         str: The encrypted data as a base64-encoded string.
+#     """
+#     kms_client = boto3.client('kms', region_name=os.environ['REGION'])
 
-    # Encrypt the data using AWS KMS
-    response = kms_client.encrypt(
-        KeyId=os.environ['KMS_KEY_ID'],
-        Plaintext=data.encode('utf-8')
-    )
+#     # Encrypt the data using AWS KMS
+#     response = kms_client.encrypt(
+#         KeyId=os.environ['KMS_KEY_ID'],
+#         Plaintext=data.encode('utf-8')
+#     )
 
-    # Encode the ciphertext in base64
-    encrypted_data = base64.b64encode(response['CiphertextBlob']).decode('utf-8')
+#     # Encode the ciphertext in base64
+#     encrypted_data = base64.b64encode(response['CiphertextBlob']).decode('utf-8')
 
-    return encrypted_data
+#     return encrypted_data
 
 def create_user_pool(username):
     """Create a Cognito User Pool with a specified subdomain and associated configurations.
@@ -185,28 +187,26 @@ def fetch_seller_email_from_auction(auction_id):
     Returns:
         str: The seller's email associated with the given auction_id or None if not found.
     """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
+   
     auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
     email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
-    client.close()
     return email
 
-def store_user_pool_data_in_mongodb(user_pool_data):
-    """
-    Store user pool data in a MongoDB collection.
+# def store_user_pool_data_in_mongodb(user_pool_data):
+#     """
+#     Store user pool data in a MongoDB collection.
 
-    Args:
-        user_pool_data (dict): User pool data to be stored, including user pool ID, client ID, email, and subdomain.
+#     Args:
+#         user_pool_data (dict): User pool data to be stored, including user pool ID, client ID, email, and subdomain.
 
-    Returns:
-        None
-    """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-    user_pools_collection.insert_one(user_pool_data)
-    client.close()
+#     Returns:
+#         None
+#     """
+#     client = MongoClient(os.environ['MONGO_CLIENT'])
+#     db = client[os.environ['DATABASE']]
+#     user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+#     user_pools_collection.insert_one(user_pool_data)
+#     client.close()
 
 def get_user_pool_data(username, sub_domain_name):
     """
@@ -241,20 +241,21 @@ def create(event, context):
         dict: A response containing the encrypted data as a base64-encoded string or an error response in case of issues.
     """
     try:
-        sub_domain_name = event['queryStringParameters'].get('domain')
+        # sub_domain_name = event['queryStringParameters'].get('domain')
         auction_id = event['queryStringParameters'].get('auction_id')
-        default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
-        data = fetch_item_from_dynamodb(sub_domain_name, default, auction_id)
+        # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
+        data = fetch_seller_email_from_auction(auction_id)
+       
         # Encrypt the data using AWS KMS
-        if data is not None:
-            data["auth_domain"] = os.environ["DEFAULT_COGNITO_DOMAIN"]
-            data["user_pool_id"] = os.environ["DEFAULT_USERPOOL_ID"]
-        encrypted_data = encrypt_data(json.dumps(data, cls=Encoder))
+        # if data is not None:
+        #     data["auth_domain"] = os.environ["DEFAULT_COGNITO_DOMAIN"]
+        #     data["user_pool_id"] = os.environ["DEFAULT_USERPOOL_ID"]
+        # encrypted_data = encrypt_data(json.dumps(data, cls=Encoder))
 
         return {
             "statusCode": 201,
             "headers": headers,
-            "body": json.dumps({"data": encrypted_data})
+            "body": json.dumps({"seller_email": data})
         }
     except Exception as err:
         print(err)
