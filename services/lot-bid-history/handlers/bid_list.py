@@ -8,6 +8,13 @@ import csv
 import tempfile
 import boto3
 from lib.common_helper import Encoder
+import pytz
+
+
+
+
+
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -60,6 +67,7 @@ def list_bids(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # Parse query parameters from the event
+        # email_address='anusha.k+stripe@7edge.com'
         query_parameters = event.get('queryStringParameters')
         print('here')
         auction_id = query_parameters.get('auction_id')
@@ -76,11 +84,37 @@ def list_bids(event, context):
         export = event['queryStringParameters'].get('export', False)
         print('export', export)
         download_link = None
+        pipeline = [
+            {
+                "$match": {
+                    "auction_id": auction_id,
+                    "seller_email": email_address
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$auction_id",
+                        "seller_email": "$seller_email",
+                        "buyer_id": "$buyer_id"
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "auction_id": "$_id.auction_id",
+                        "seller_email": "$_id.seller_email"
+                    },
+                    "uniqueBidders": {"$addToSet": "$_id.buyer_id"}
+                }
+            }
+        ]
 
-        total_bidders = collection_bidders.count_documents({"seller_email": email_address,
-                                                     "auction_id": auction_id})
-        if total_bidders:
-            print('total_bidders', total_bidders)
+        unique_bidders = list(collection_bidders.aggregate(pipeline))
+
+        total_bidders = sum(len(doc["uniqueBidders"]) for doc in unique_bidders)
+
         # else:
         #     return{
         #         "statusCode": 404,
@@ -229,23 +263,51 @@ currencySymbolMapping = {
 #     return formatted.replace(',', ' /')
 
 
-
 def format_date(timestamp, time_zone):
-    # Convert timestamp to a datetime object
-    date = datetime.datetime.fromtimestamp(timestamp)
+    print('Received timestamp:', timestamp)
+    print('Received time zone:', time_zone)
 
-    # Create a timezone object using pytz
-    # tz = pytz.timezone(time_zone)
+    # Define the timezone mapping
+    timeZoneMap = {
+        'UTC - Coordinated Universal Time': 'Etc/UTC',
+        'GMT - Greenwich Mean Time': 'Etc/GMT',
+        'BST - British Summer Time': 'Europe/London',
+        'CET - Central European Time': 'Europe/Paris',
+        'IST - India Standard Time': 'Asia/Kolkata',  # Updated key to match received timezone information
+        'CST - China Standard Time': 'Asia/Shanghai',
+        'JST - Japan Standard Time': 'Asia/Tokyo',
+        'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
+        'NZST - New Zealand Standard Time': 'Pacific/Auckland',
+        'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
+        'MST - Mountain Standard Time (US)': 'America/Denver',
+        'CST - Central Standard Time (US)': 'America/Chicago',
+        'EST - Eastern Standard Time (US)': 'America/New_York',
+    }
 
-    # Localize the datetime object to the specified timezone
-    # date_localized = tz.localize(date)
+    timezone_identifier = timeZoneMap.get(time_zone, 'Etc/UTC')  # Default to 'Etc/UTC' if timezone not found
+    print('Timezone identifier:', timezone_identifier)
 
-    # Format the localized datetime object
-    formatted_date = date.strftime('%d %b %Y')
-    formatted_time = date.strftime('%H:%M %Z')
+    try:
+        # Convert milliseconds to seconds
+        timestamp_seconds = timestamp / 1000.0
 
-    # Return the formatted date string
-    return f"{formatted_date} / {time_zone}"
+        # Convert the epoch timestamp to a UTC datetime object
+        utc_datetime = datetime.datetime.utcfromtimestamp(timestamp_seconds)
+
+        # Convert UTC datetime to local timezone
+        local_timezone = pytz.timezone(timezone_identifier)
+        localized_datetime = utc_datetime.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+        # Format the datetime object
+        formatted_date = localized_datetime.strftime('%d %b %Y / %H:%M %Z')
+        print('Formatted date:', formatted_date)
+
+        # Return the formatted date string
+        return formatted_date
+
+    except Exception as e:
+        print("Error:", e)
+        return None
 
 
 
@@ -260,6 +322,7 @@ def export_lots_as_csv(lots):
     """
     try:
         auction_id = str(lots[0].get('auction_id', ''))
+        print('auction_id', auction_id)
         filename = 'Bid Insights'
         # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
         # seller_email = lots[0]["email_address"]
@@ -280,6 +343,7 @@ def export_lots_as_csv(lots):
                  "Lot Number","Thumbnail Image", "Title", "Paddle Number", "Bidder Name", "Status", "Bid", "Latest Bid"])
             writer.writeheader()
             for lot in lots:
+                print('lotssss', lot)
                 lot_image = lot.get("lot_image", "")
                 currency = lot.get("currency", "")
                 if currency in currencySymbolMapping:
@@ -292,7 +356,7 @@ def export_lots_as_csv(lots):
                 timezone_identifier = lot.get("time_zone").split(' ')[0]
 
                 # Pass the extracted timezone identifier to the format_date() function
-                latest_bid = format_date(lot.get("updated_at").timestamp(), timezone_identifier)
+                latest_bid = format_date(lot.get("time_stamp"), timezone)
 
 
                 # Prepend the S3 URL to the thumbnail URL

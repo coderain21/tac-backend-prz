@@ -24,7 +24,8 @@ def skip_404_test_results(transaction):
         '/auction-register' in transaction['request']['uri'] or 
         '/update-password' in transaction['request']['uri'] or 
         '/reset_password' in transaction['request']['uri'] or
-        '/verify-card' in transaction['request']['uri']
+        '/verify-card' in transaction['request']['uri'] or 
+        '/forgot_password' in transaction['request']['uri']
     ):
         transaction['skip'] = True
 
