@@ -63,8 +63,6 @@ terraform -chdir=devops/dependency/nodejs-auth-layer init
 terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 terraform -chdir=devops/dependency/python init
 terraform -chdir=devops/dependency/python apply -auto-approve
-terraform -chdir=devops/kms init
-terraform -chdir=devops/kms apply -auto-approve
 terraform -chdir=devops/mongodb init
 terraform -chdir=devops/mongodb apply -auto-approve
 terraform -chdir=devops/ecs init
@@ -75,11 +73,11 @@ terraform -chdir=devops/redis-cluster init
 terraform -chdir=devops/redis-cluster apply -auto-approve
 terraform -chdir=devops/budgets init
 terraform -chdir=devops/budgets apply -auto-approve
-if [ "STAGE" = "qa" ]; then
+if [ "${STAGE}" = "qa" ]; then
     terraform -chdir=devops/dependency/bitbucket-layer-node init
     terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
 fi
-if [ "STAGE" = "prod" ]; then
+if [ "${STAGE}" = "prod" ]; then
     terraform -chdir=devops/cloudwatch init
     terraform -chdir=devops/cloudwatch apply -auto-approve
 fi

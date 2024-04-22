@@ -4,7 +4,7 @@ import json
 import pymongo
 import boto3
 import uuid
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
 from bson import ObjectId
 from lib.get import get_by_email
 from lib.common_helper import Encoder
@@ -317,7 +317,37 @@ def update_auction(event, context):
 
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
-            if auction_record['status'] in ['Accepting bids' , 'Published']:
+            if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
+                for item in listLots:
+                    if not item['end_date'] < epoch_time_milliseconds:
+                        if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                            item['start_date'] = start_date
+                            item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
+                            count_import += 1
+                        elif auction_record['extension_type'] == "All Lots":
+                            item['start_date'] = start_date
+                            item['end_date'] = end_date
+                        documents.append(item)
+                print('documents',documents)
+                bulk_operations = []
+                for item in documents:
+                    filter_criteria = {
+                        "auction_id": auction_id, "_id": item['_id']
+                    }
+                    # Define update operation to perform conditional insert
+                    update_operation = UpdateOne(
+                        filter=filter_criteria,
+                        # Set data only if the document does not exist
+                        update={ "$set": {
+                                    "start_date": item['start_date'],
+                                    "end_date": item['end_date']
+                                }},
+                    )
+                    bulk_operations.append(update_operation)
+                if bulk_operations:
+                    # Execute the bulk operations
+                    result = collection_lot.bulk_write(bulk_operations)
+            if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_data_sqs = {
                     'extension_time': auction_record.get('extension_time'),
                     'seller_email': auction_record.get('seller_email'),
@@ -381,6 +411,8 @@ def update_auction(event, context):
                         Entries=entries
                     )
                     print('cc', cc)
+                # update in the mongodb database
+                # Modify start_date and end_date before sending SQS
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},

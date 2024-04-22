@@ -16,11 +16,12 @@
       "description": "APIs to manage the Admin"
     }
   ],
-
   "paths": {
     "/auctions": {
       "get": {
-        "tags": ["Admin Auction Management"],
+        "tags": [
+          "Admin Auction Management"
+        ],
         "summary": "Listing auction",
         "description": "Listing auction",
         "parameters": [
@@ -250,7 +251,9 @@
     },
     "/buyers": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Listing Buyers",
         "description": "Listing Buyers",
         "parameters": [
@@ -578,7 +581,9 @@
     },
     "/sellers": {
       "get": {
-        "tags": ["Admin Seller Management"],
+        "tags": [
+          "Admin Seller Management"
+        ],
         "summary": "Listing Sellers",
         "description": "Listing Sellers",
         "parameters": [
@@ -672,7 +677,7 @@
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "pending",
+                      "kyc_status": "completed",
                       "kyb_status": "false"
                     },
                     {
@@ -740,20 +745,18 @@
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
+                      "kyc_status": "false"
                     },
                     {
-                      "_id": "660f2de895194a940a0d5c34",
-                      "email_address": "william.pham+1@theauctioncollective.com",
+                      "_id": "660f8edd2e5b718eab3fd34f",
+                      "email_address": "william.pham+2@theauctioncollective.com",
                       "status": false,
                       "brand_name": "",
                       "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
+                      "kyc_status": "false"
                     }
                   ],
-                  "total_sellers": 40,
+                  "total_sellers": 42,
                   "page_size": 10,
                   "page_number": 1
                 }
@@ -796,7 +799,9 @@
     },
     "/buyer-auctions": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Buyers list auctions",
         "description": "Buyers list auctions",
         "parameters": [
@@ -946,7 +951,9 @@
     },
     "/buyer-details": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Buyer Details",
         "description": "Buyers Details",
         "parameters": [
@@ -1058,7 +1065,9 @@
     },
     "/{id}": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Buyer purchases Details",
         "description": "Buyers purchases details",
         "parameters": [
@@ -1236,7 +1245,9 @@
     },
     "/clone-auction": {
       "post": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Auction cloned",
         "requestBody": {
           "content": {
@@ -1315,7 +1326,9 @@
     },
     "/order-details": {
       "get": {
-        "tags": ["Admin Buyers Management"],
+        "tags": [
+          "Admin Buyers Management"
+        ],
         "summary": "Complete Order Details",
         "description": "Order details",
         "parameters": [
@@ -1601,7 +1614,9 @@
     },
     "/auction-purchases": {
       "get": {
-        "tags": ["Admin Auction Management"],
+        "tags": [
+          "Admin Auction Management"
+        ],
         "summary": "Auction purchases listing",
         "description": "Auction purchases listing",
         "parameters": [
@@ -1858,7 +1873,9 @@
     },
     "/auction-details": {
       "get": {
-        "tags": ["Admin Auction Management"],
+        "tags": [
+          "Admin Auction Management"
+        ],
         "summary": "Auction details",
         "description": "Auction details",
         "parameters": [
@@ -2216,7 +2233,9 @@
     },
     "/accountings": {
       "get": {
-        "tags": ["Admin Accounting Management"],
+        "tags": [
+          "Admin Accounting Management"
+        ],
         "summary": "Order Accounting listing",
         "description": "Accounting purchases listing",
         "parameters": [
@@ -2507,9 +2526,11 @@
         }
       }
     },
-    "/unpublish-auction":{
-      "patch":{
-        "tags": ["Auction"],
+    "/unpublish-auction": {
+      "patch": {
+        "tags": [
+          "Auction"
+        ],
         "summary": "unpublish auction",
         "parameters": [
           {
@@ -2521,7 +2542,6 @@
               "type": "string"
             },
             "example": "A0008"
-          
           }
         ],
         "requestBody": {
@@ -2530,14 +2550,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "type":{
+                  "type": {
                     "type": "string"
                   }
-
                 }
               },
               "example": {
-                "type":"UNPUBLISH/CANCEL" 
+                "type": "UNPUBLISH/CANCEL"
               }
             }
           }
@@ -2561,11 +2580,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction status not in accepting bid state to update."
-                      
+                      "message": "Auction status not in accepting bid state to update."
                     }
                   }
-                
                 }
               }
             }
@@ -2585,10 +2602,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "API does not exists"
-                      
+                      "message": "API does not exists"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2608,10 +2624,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction doesn't exists."
-                      
+                      "message": "Auction doesn't exists."
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2631,10 +2646,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "There was an error while updating the auction"
-                      
+                      "message": "There was an error while updating the auction"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2642,9 +2656,11 @@
         }
       }
     },
-    "/publish-auction/{auction_id}": {      
-      "patch":{
-        "tags": ["Auction"],
+    "/publish-auction/{auction_id}": {
+      "patch": {
+        "tags": [
+          "Auction"
+        ],
         "summary": "Updating auction details",
         "parameters": [
           {
@@ -2682,13 +2698,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "description":{
+                  "description": {
                     "type": "string"
                   }
                 }
               },
               "example": {
-                "description":"Join our auction event!"
+                "description": "Join our auction event!"
               }
             }
           }
@@ -2712,28 +2728,24 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "required and cannot be empty."
-                      
+                      "message": "required and cannot be empty."
                     }
                   },
                   "example2": {
                     "value": {
-                        "message": "required fields are missing or empty"
-                      
+                      "message": "required fields are missing or empty"
                     }
                   },
                   "example3": {
                     "value": {
-                        "message": "Some lots are missing lot images"
-                      
+                      "message": "Some lots are missing lot images"
                     }
                   },
                   "example4": {
                     "value": {
-                        "message": "Please complete the Individual or Business verification before publishing the auction."
-                      
+                      "message": "Please complete the Individual or Business verification before publishing the auction."
                     }
-                  }       
+                  }
                 }
               }
             }
@@ -2753,10 +2765,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "You do not have access to perform this API action"
-                      
+                      "message": "You do not have access to perform this API action"
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2776,10 +2787,9 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction doesn't exists."
-                      
+                      "message": "Auction doesn't exists."
                     }
-                  }    
+                  }
                 }
               }
             }
@@ -2799,20 +2809,21 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "There was an error while updating the auction"
-                      
+                      "message": "There was an error while updating the auction"
                     }
-                  }    
+                  }
                 }
               }
             }
           }
         }
       }
-     },
-     "/admin-subdomain": {
+    },
+    "/admin-subdomain": {
       "get": {
-        "tags": ["Admin Management"],
+        "tags": [
+          "Admin Management"
+        ],
         "summary": "Admin get subdomain",
         "description": "Get subdomain",
         "parameters": [
@@ -2839,7 +2850,7 @@
                 },
                 "example": {
                   "subdomain": "www-devo"
-              }
+                }
               }
             }
           },

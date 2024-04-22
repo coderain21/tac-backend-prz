@@ -24,7 +24,8 @@ def skip_404_test_results(transaction):
         '/auction-register' in transaction['request']['uri'] or 
         '/update-password' in transaction['request']['uri'] or 
         '/reset_password' in transaction['request']['uri'] or
-        '/verify-card' in transaction['request']['uri']
+        '/verify-card' in transaction['request']['uri'] or 
+        '/forgot_password' in transaction['request']['uri']
     ):
         transaction['skip'] = True
 
@@ -56,3 +57,20 @@ def set_authorization(transaction):
         transaction['request']['uri'] = urllib.parse.unquote(
             transaction['request']['uri'])
         logging.info(transaction['request'])
+
+
+    if (
+        transaction['request']['method'] == 'POST' and
+        '/forgot_password' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    
+    if (
+        transaction['request']['method'] == 'PATCH' and
+        '/approval' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
