@@ -51,25 +51,25 @@ headers = {
 
 #     return encrypted_data
 
-def create_user_pool(username):
-    """Create a Cognito User Pool with a specified subdomain and associated configurations.
+# def create_user_pool(username):
+#     """Create a Cognito User Pool with a specified subdomain and associated configurations.
 
-    Args:
-        sub_domain_name (str): The subdomain name used for creating the user pool.
+#     Args:
+#         sub_domain_name (str): The subdomain name used for creating the user pool.
 
-    Returns:
-        str: The user pool ID and client ID associated with the created user pool.
-    """
-    # Initialize AWS Cognito client
-    cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
+#     Returns:
+#         str: The user pool ID and client ID associated with the created user pool.
+#     """
+#     # Initialize AWS Cognito client
+#     cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
-    # Define the password policy
-    password_policy = {
-        'MinimumLength': 6,  # Minimum password length
-        'RequireUppercase': True,  # Requires at least one uppercase letter
-        'RequireLowercase': True,  # Requires at least one lowercase letter
-        'RequireNumbers': True,    # Requires at least one number
-    }
+#     # Define the password policy
+#     password_policy = {
+#         'MinimumLength': 6,  # Minimum password length
+#         'RequireUppercase': True,  # Requires at least one uppercase letter
+#         'RequireLowercase': True,  # Requires at least one lowercase letter
+#         'RequireNumbers': True,    # Requires at least one number
+#     }
 
     # Create a Cognito User Pool with the password policy
     # response = cognito_client.create_user_pool(
@@ -90,31 +90,31 @@ def create_user_pool(username):
     #         'AllowAdminCreateUserOnly': True
     #     }
     # )
-    user_pool_id = os.environ["DEFAULT_USERPOOL_ID"]
+    # user_pool_id = os.environ["DEFAULT_USERPOOL_ID"]
 
-    # Create a Cognito User Pool Client
-    response = cognito_client.create_user_pool_client(
-        UserPoolId=user_pool_id,
-        ClientName=f'Client_{username}',
-        GenerateSecret=False,
-        TokenValidityUnits={
-        'AccessToken': 'minutes',
-        'IdToken': 'minutes',
-        'RefreshToken': 'days'
-        },
-        ExplicitAuthFlows=[
-        'ALLOW_ADMIN_USER_PASSWORD_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_PASSWORD_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_REFRESH_TOKEN_AUTH'
-        ],
-        AccessTokenValidity=5,
-        IdTokenValidity=5,
-        RefreshTokenValidity=3650
-    )
-    client_id = response['UserPoolClient']['ClientId']
-    group_response = cognito_client.create_group(
-        GroupName=f'{username}',
-        UserPoolId=user_pool_id
-    )
-    return user_pool_id, client_id
+    # # Create a Cognito User Pool Client
+    # response = cognito_client.create_user_pool_client(
+    #     UserPoolId=user_pool_id,
+    #     ClientName=f'Client_{username}',
+    #     GenerateSecret=False,
+    #     TokenValidityUnits={
+    #     'AccessToken': 'minutes',
+    #     'IdToken': 'minutes',
+    #     'RefreshToken': 'days'
+    #     },
+    #     ExplicitAuthFlows=[
+    #     'ALLOW_ADMIN_USER_PASSWORD_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_PASSWORD_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_REFRESH_TOKEN_AUTH'
+    #     ],
+    #     AccessTokenValidity=5,
+    #     IdTokenValidity=5,
+    #     RefreshTokenValidity=3650
+    # )
+    # client_id = response['UserPoolClient']['ClientId']
+    # group_response = cognito_client.create_group(
+    #     GroupName=f'{username}',
+    #     UserPoolId=user_pool_id
+    # )
+    # return user_pool_id, client_id
 
 def fetch_item_from_dynamodb(sub_domain_name, default,id):
     """Fetch data from DynamoDB based on a subdomain name and query MongoDB for user pool data.
@@ -208,27 +208,27 @@ def fetch_seller_email_from_auction(auction_id):
 #     user_pools_collection.insert_one(user_pool_data)
 #     client.close()
 
-def get_user_pool_data(username, sub_domain_name):
-    """
-    Retrieve user pool data from a MongoDB collection based on username and subdomain.
+# def get_user_pool_data(username, sub_domain_name):
+#     """
+#     Retrieve user pool data from a MongoDB collection based on username and subdomain.
 
-    Args:
-        username (str): The username (email) associated with the user pool.
-        sub_domain_name (str): The subdomain name associated with the user pool.
+#     Args:
+#         username (str): The username (email) associated with the user pool.
+#         sub_domain_name (str): The subdomain name associated with the user pool.
 
-    Returns:
-        dict: User pool data, excluding email and subdomain, or None if not found.
-    """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    user_pools_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
-    user_pool_data = user_pools_collection.find_one({
-        'seller_email': username,
-        'subdomain': sub_domain_name
-    },{"_id":0})
+#     Returns:
+#         dict: User pool data, excluding email and subdomain, or None if not found.
+#     """
+#     client = MongoClient(os.environ['MONGO_CLIENT'])
+#     db = client[os.environ['DATABASE']]
+#     user_pools_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
+#     user_pool_data = user_pools_collection.find_one({
+#         'seller_email': username,
+#         'subdomain': sub_domain_name
+#     },{"_id":0})
 
-    client.close()
-    return user_pool_data
+#     client.close()
+#     return user_pool_data
 
 def create(event, context):
     """Handle a create event for a subdomain, fetch relevant data, encrypt it, and return the encrypted data as a response.
@@ -241,7 +241,7 @@ def create(event, context):
         dict: A response containing the encrypted data as a base64-encoded string or an error response in case of issues.
     """
     try:
-        # sub_domain_name = event['queryStringParameters'].get('domain')
+        sub_domain_name = event['queryStringParameters'].get('domain')
         auction_id = event['queryStringParameters'].get('auction_id')
         # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
         data = fetch_seller_email_from_auction(auction_id)
