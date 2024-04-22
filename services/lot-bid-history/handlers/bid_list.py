@@ -5,6 +5,7 @@ import json
 import pymongo
 import re
 import csv
+import pytz
 import tempfile
 import boto3
 from lib.common_helper import Encoder
@@ -290,6 +291,7 @@ def format_date(timestamp, time_zone):
     try:
         # Convert milliseconds to seconds
         timestamp_seconds = timestamp / 1000.0
+<<<<<<< HEAD
 
         # Convert the epoch timestamp to a UTC datetime object
         utc_datetime = datetime.datetime.utcfromtimestamp(timestamp_seconds)
@@ -308,6 +310,27 @@ def format_date(timestamp, time_zone):
     except Exception as e:
         print("Error:", e)
         return None
+=======
+
+        # Convert the epoch timestamp to a UTC datetime object
+        utc_datetime = datetime.datetime.utcfromtimestamp(timestamp_seconds)
+
+        # Convert UTC datetime to local timezone
+        local_timezone = pytz.timezone(timezone_identifier)
+        localized_datetime = utc_datetime.replace(tzinfo=pytz.utc).astimezone(local_timezone)
+
+        # Format the datetime object
+        formatted_date = localized_datetime.strftime('%d %b %Y / %H:%M %Z')
+        print('Formatted date:', formatted_date)
+
+        # Return the formatted date string
+        return formatted_date
+
+    except Exception as e:
+        print("Error:", e)
+        return None
+
+>>>>>>> 941d019731b5cddc08b714aa24890873ac8881c1
 
 
 
@@ -356,7 +379,11 @@ def export_lots_as_csv(lots):
                 timezone_identifier = lot.get("time_zone").split(' ')[0]
 
                 # Pass the extracted timezone identifier to the format_date() function
+<<<<<<< HEAD
                 latest_bid = format_date(lot.get("time_stamp"), timezone)
+=======
+                latest_bid = format_date(lot.get("updated_at"), timezone)
+>>>>>>> 941d019731b5cddc08b714aa24890873ac8881c1
 
 
                 # Prepend the S3 URL to the thumbnail URL

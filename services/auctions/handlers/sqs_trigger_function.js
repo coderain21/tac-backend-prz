@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-console */
 /* eslint-disable no-underscore-dangle */
@@ -19,6 +20,7 @@ const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
 const redisHelper = require('../lib/redis_helper')
 const BidInformation = require('../entities/BidInformation')
+// const Bid = require('../entities/Bid')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 
@@ -67,6 +69,7 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
+            console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
 
@@ -137,80 +140,90 @@ module.exports.sqsTriggerFunction = async (event) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
+
         // Retrieve the bidders from MongoDB
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
         // Connect to Redis and retrieve the auction lots
         const client = await redisHelper.createRedisClient()
-        const getAllLots = await getLot('lot', client, event)
 
-        // Create objects to store the lot and user information
-        const get_lot = getAllLots.map((item) => JSON.parse(item))
-
-        // Retrieve the auction data from MongoDB
-        const auctionData = await mongodbHelper.getAuction(event, Auction)
-
-        // Set up a MongoDB query to find the seller's information
-        const sellerQuery = {
-            email_address: event.seller_email,
-        }
-        const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+        // Initialize empty array to store promiseList
         const promiseList = []
-        // Initialize empty lists for winning and not-winning lots
-        let winningLot = []
-        let notWinning = []
-
+        const auctionData = await mongodbHelper.getAuction(event, Auction)
+        if (getBidders.length > 0) {
         // Loop through bidders
-        for (const user of getBidders) {
-            // Reset lists for each bidder
-            winningLot = []
-            notWinning = []
+            for (const user of getBidders) {
+            // Retrieve the auction lots for each bidder
+                const getAllLots = await getLot('lot', client, event)
+                const get_lot = getAllLots.map((item) => JSON.parse(item))
 
-            // Set up a MongoDB query to find the user's information
-            const query = {
-                _id: new ObjectId(user.buyer_id),
-            }
+                // Reset lists for each bidder
+                const winningLot = []
+                const notWinning = []
 
-            const buyerInformation = await mongodbHelper.getUser(query, Buyers)
+                // Retrieve the auction data from MongoDB
 
-            // Loop through the lots and add them to the winning or losing lists
-            for (const lot of get_lot) {
-                // Add the CDN link to the image URL
-                lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
-
-                // Add the formatted bid amount to the lot
-                if (lot.winning_user === user.buyer_id) {
-                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
-                    winningLot.push(lot)
-                } else {
-                    lot.bid_amount = formatCurrency(user.bid_amount, auctionData.currency)
-                    notWinning.push(lot)
+                // Set up a MongoDB query to find the seller's information
+                const sellerQuery = {
+                    email_address: event.seller_email,
                 }
+                const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+
+                // Set up a MongoDB query to find the user's information
+                const query = {
+                    _id: new ObjectId(user.buyer_id),
+                }
+                const buyerInformation = await mongodbHelper.getUser(query, Buyers)
+
+                // Loop through the lots and add them to the winning or losing lists
+                for (const lot of get_lot) {
+                // Add the CDN link to the image URL
+                    lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
+
+                    // Add the formatted bid amount to the lot
+                    if (lot.winning_user === user.buyer_id) {
+                        event.lot_number = lot.lot_number
+                        event.email_address = user.email_address
+                        // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                        // console.log('won', getAmount)
+                        lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
+                        winningLot.push(lot)
+                    } else {
+                        event.lot_number = lot.lot_number
+                        event.email_address = user.email_address
+                        const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                        if (getAmount !== null) {
+                            console.log('not null')
+                            lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
+                            notWinning.push(lot)
+                        }
+                    }
+                }
+
+                // If the user didn't win any lots, change the email subject
+                const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
+
+                // Create the email data
+                const template_data = {
+                    winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                    winning_lot_count: winningLot.length,
+                    buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
+                    title: auctionData.title,
+                    logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
+                    not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                    not_winning_lot_count: notWinning.length,
+                    seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                    seller_email: auctionData.seller_email,
+                    subject: subjectDescription,
+                }
+
+                // Send email
+                promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
             }
 
-            // If the user didn't win any lots, change the email subject
-            const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
-
-            // Create the email data
-            const template_data = {
-                winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
-                winning_lot_count: winningLot.length,
-                buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
-                title: auctionData.title,
-                logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
-                not_winning_lot_count: notWinning.length,
-                seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
-                seller_email: auctionData.seller_email,
-                subject: subjectDescription,
-            }
-
-            // Send email
-            promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+            // Run all the promises in parallel
+            await Promise.all(promiseList)
         }
-
-        // Run all the promises in parallel
-        await Promise.all(promiseList)
 
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })

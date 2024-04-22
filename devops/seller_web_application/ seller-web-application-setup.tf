@@ -183,7 +183,7 @@ resource "aws_ssm_parameter" "default_subdomain" {
 resource "aws_ssm_parameter" "static_auction_url" {
   name  = "BUYER_STATIC_AUCTION_URL"
   type  = "String"
-  value = "https://www-${local.computed_variable}/"
+  value = "${data.external.env.result["BUYER_STATIC_AUCTION_URL"]}"
   provider = aws.deployment-eu
   overwrite = true
 }

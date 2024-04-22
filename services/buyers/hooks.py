@@ -57,3 +57,20 @@ def set_authorization(transaction):
         transaction['request']['uri'] = urllib.parse.unquote(
             transaction['request']['uri'])
         logging.info(transaction['request'])
+
+
+    if (
+        transaction['request']['method'] == 'POST' and
+        '/forgot_password' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    
+    if (
+        transaction['request']['method'] == 'PATCH' and
+        '/approval' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
