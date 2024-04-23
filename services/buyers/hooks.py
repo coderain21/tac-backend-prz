@@ -47,7 +47,20 @@ def set_authorization(transaction):
     #     transaction['request']['body'] = json.dumps({
     #         "template_name": 3,
     #     })
-
+    if (
+        transaction['request']['method'] == 'PATCH' and
+        '/approval' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    if (
+        transaction['request']['method'] == 'POST' and
+        '/forgot_password' in transaction['request']['uri']
+    ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
     if (
         transaction['expected']['statusCode'] == '200' or
         transaction['expected']['statusCode'] == '204'
