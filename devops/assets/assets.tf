@@ -35,37 +35,37 @@ resource "aws_acm_certificate" "cert_us_east_1" {
 
 
 
-#resource "aws_acm_certificate" "cert_ap_south_1" {
- # domain_name ="*.${data.external.env.result["DOMAIN"]}"
-  #validation_method = "DNS"
-  #lifecycle {
-   # create_before_destroy = true
- # }
-  #provider = aws.deployment-ap
-#}
+resource "aws_acm_certificate" "cert_ap_south_1" {
+  domain_name ="*.${data.external.env.result["DOMAIN"]}"
+  validation_method = "DNS"
+  lifecycle {
+    create_before_destroy = true
+  }
+  provider = aws.deployment-ap
+}
 
 data "aws_route53_zone" "domain_zone" {
   name = data.external.env.result["DOMAIN"] # Replace with your domain name
   provider = aws.main
 }
 
-#resource "aws_route53_record" "route_53_certificate_records_ap_south_1" {
- # for_each = {
-  #  for dvo in aws_acm_certificate.cert_ap_south_1.domain_validation_options : dvo.domain_name => {
-   #   name   = dvo.resource_record_name
-    #  record = dvo.resource_record_value
-     # type   = dvo.resource_record_type
-    #}
-  #}
+resource "aws_route53_record" "route_53_certificate_records_ap_south_1" {
+  for_each = {
+    for dvo in aws_acm_certificate.cert_ap_south_1.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
 
-  #allow_overwrite = true
-  #name            = each.value.name
-  #records         = [each.value.record]
-  #ttl             = 60
-  #type            = each.value.type
-  #zone_id         = data.aws_route53_zone.domain_zone.zone_id
-  #provider = aws.main
-#}
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = data.aws_route53_zone.domain_zone.zone_id
+  provider = aws.main
+}
 
 resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   for_each = {
