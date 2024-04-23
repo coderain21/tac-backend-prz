@@ -37,7 +37,7 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
+    #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
