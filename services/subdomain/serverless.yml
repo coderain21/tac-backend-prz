@@ -38,8 +38,8 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    AWS_MAIN_ACCESS_KEY_ID: AKIA5QZYLFWFOVJT55BN
-    AWS_MAIN_SECRET_ACCESS_KEY: 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
+    AWS_MAIN_ACCESS_KEY_ID: ${ssm:AWS_MAIN_ACCESS_KEY_ID}
+    AWS_MAIN_SECRET_ACCESS_KEY: ${ssm:AWS_MAIN_SECRET_ACCESS_KEY}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
