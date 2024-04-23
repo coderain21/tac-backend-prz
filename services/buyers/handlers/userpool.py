@@ -10,14 +10,11 @@ The code provides functionality to create user pools in Amazon Cognito, fetch da
 
 Note that this code assumes specific environment variables are set for configuration, such as 'REGION', 'KMS_KEY_ID', 'SUB_DOMAIN_TABLE', 'MONGO_CLIENT', 'DATABASE', 'USERPOOLS_MONGO', and others as required.
 """
-import boto3
 from pymongo import MongoClient
 import json
 import os
 from bson import ObjectId
-import base64
 from botocore.exceptions import ClientError
-from lib.common_helper import Encoder
 client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 
@@ -156,40 +153,15 @@ def fetch_item_from_dynamodb(sub_domain_name, default,id):
         print(username)
         # Check if user pool data already exists for the seller email and domain
         user_pool_data = get_user_pool_data(email_data, sub_domain_name)
-
-        # if not user_pool_data:
-        #     # Create the user pool with the seller email
-        #     user_pool_id, client_id = create_user_pool(username)
-
-        #     # Store user pool data in MongoDB
-        #     user_pool_data = {
-        #         'sub_domain_name': sub_domain_name,
-        #         'email_address': email_data,
-        #         'user_pool_id': user_pool_id,
-        #         'client_id': client_id,
-        #     }
-
-        #     # Store user pool data in MongoDB
-        #     store_user_pool_data_in_mongodb(user_pool_data)
-        print(user_pool_data)
         return user_pool_data
     except ClientError as e:
         print("Error:", e)
         return None
 
 def fetch_seller_email_from_auction(auction_id):
-    """
-    Fetch the seller's email from the auction collection in MongoDB.
-
-    Args:
-        auction_id (str): The unique identifier of the auction.
-
-    Returns:
-        str: The seller's email associated with the given auction_id or None if not found.
-    """
-   
     auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-    email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
+    email = auction_collection.find_one(
+            {"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
     return email
 
 # def store_user_pool_data_in_mongodb(user_pool_data):
@@ -198,7 +170,6 @@ def fetch_seller_email_from_auction(auction_id):
 
 #     Args:
 #         user_pool_data (dict): User pool data to be stored, including user pool ID, client ID, email, and subdomain.
-
 #     Returns:
 #         None
 #     """
@@ -208,27 +179,25 @@ def fetch_seller_email_from_auction(auction_id):
 #     user_pools_collection.insert_one(user_pool_data)
 #     client.close()
 
-# def get_user_pool_data(username, sub_domain_name):
-#     """
-#     Retrieve user pool data from a MongoDB collection based on username and subdomain.
+def get_user_pool_data(username, sub_domain_name):
+    """
+    Retrieve user pool data from a MongoDB collection based on username and subdomain.
 
-#     Args:
-#         username (str): The username (email) associated with the user pool.
-#         sub_domain_name (str): The subdomain name associated with the user pool.
+    Args:
+        username (str): The username (email) associated with the user pool.
+        sub_domain_name (str): The subdomain name associated with the user pool.
 
-#     Returns:
-#         dict: User pool data, excluding email and subdomain, or None if not found.
-#     """
-#     client = MongoClient(os.environ['MONGO_CLIENT'])
-#     db = client[os.environ['DATABASE']]
-#     user_pools_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
-#     user_pool_data = user_pools_collection.find_one({
-#         'seller_email': username,
-#         'subdomain': sub_domain_name
-#     },{"_id":0})
+    Returns:
+        dict: User pool data, excluding email and subdomain, or None if not found.
+    """
+    user_pools_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
+    user_pool_data = user_pools_collection.find_one({
+        'seller_email': username,
+        'subdomain': sub_domain_name
+    },{"_id":0})
 
-#     client.close()
-#     return user_pool_data
+    client.close()
+    return user_pool_data
 
 def create(event, context):
     """Handle a create event for a subdomain, fetch relevant data, encrypt it, and return the encrypted data as a response.
@@ -245,7 +214,6 @@ def create(event, context):
         auction_id = event['queryStringParameters'].get('auction_id')
         # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
         data = fetch_seller_email_from_auction(auction_id)
-       
         # Encrypt the data using AWS KMS
         # if data is not None:
         #     data["auth_domain"] = os.environ["DEFAULT_COGNITO_DOMAIN"]

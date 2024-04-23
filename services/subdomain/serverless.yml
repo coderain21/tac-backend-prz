@@ -38,8 +38,8 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    AWS_MAIN_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID_MAIN}
-    AWS_MAIN_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY_MAIN}
+    AWS_MAIN_ACCESS_KEY_ID: AKIA5QZYLFWFOVJT55BN
+    AWS_MAIN_SECRET_ACCESS_KEY: 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
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -75,6 +75,7 @@ provider:
     DEFAULT_INDENTITY_POOL_ID: ${ssm:BUYER_COGNITO_IDENTITY_POOL_ID}
     DEFAULT_IDENTITY_POOL_NAME: ${ssm:BUYER_COGNITO_IDENTITY_POOL_NAME}
     DEFAULT_BUYER_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    BUYER_COGNITO_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     AMPLIFY_BRANCH: ${ssm:AMPLIFY_BRANCH}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
@@ -127,10 +128,10 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
-  serverlessIfElse:
-    - If: '${param:offline, "false"} == true'
-      Set:
-        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+  # serverlessIfElse:
+  #   - If: '${param:offline, "false"} == true'
+  #     Set:
+  #       provider.environment.MONGO_CLIENT: ${env:MONGO_CLIENT}
 
 functions: 
   sub-domain:
