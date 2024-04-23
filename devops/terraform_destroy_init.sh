@@ -48,7 +48,9 @@ npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-aws s3 sync $log_bucket . --profile $PROFILE_ENV
+
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+
 
 terraform -chdir=devops/cognito_custom_domain init && terraform -chdir=devops/cognito_custom_domain destroy -auto-approve 
 cd ../..
