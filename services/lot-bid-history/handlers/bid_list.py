@@ -65,8 +65,6 @@ def list_bids(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Parse query parameters from the event
-        # email_address='anusha.k+stripe@7edge.com'
         query_parameters = event.get('queryStringParameters')
         print('here')
         auction_id = query_parameters.get('auction_id')
@@ -198,7 +196,8 @@ def list_bids(event, context):
             "total selling": percentage_bids_gt_zero
         }
         if export:
-            download_link = export_lots_as_csv(lots)
+            export_lots = list(collection.find(query).sort(sort_criteria))
+            download_link = export_lots_as_csv(export_lots)
             print(download_link)
         if download_link is not None:
             body["csv_url"] = download_link
