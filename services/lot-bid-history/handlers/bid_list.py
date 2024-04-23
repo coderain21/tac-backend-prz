@@ -10,6 +10,11 @@ import tempfile
 import boto3
 from lib.common_helper import Encoder
 
+
+
+
+
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -60,7 +65,6 @@ def list_bids(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Parse query parameters from the event
         query_parameters = event.get('queryStringParameters')
         print('here')
         auction_id = query_parameters.get('auction_id')
@@ -192,7 +196,8 @@ def list_bids(event, context):
             "total selling": percentage_bids_gt_zero
         }
         if export:
-            download_link = export_lots_as_csv(lots)
+            export_lots = list(collection.find(query).sort(sort_criteria))
+            download_link = export_lots_as_csv(export_lots)
             print(download_link)
         if download_link is not None:
             body["csv_url"] = download_link
@@ -256,7 +261,6 @@ currencySymbolMapping = {
 #     return formatted.replace(',', ' /')
 
 
-
 def format_date(timestamp, time_zone):
     print('Received timestamp:', timestamp)
     print('Received time zone:', time_zone)
@@ -307,7 +311,6 @@ def format_date(timestamp, time_zone):
 
 
 
-
 def export_lots_as_csv(lots):
     """
     The function exports lots of data as a CSV file using a database connection.
@@ -317,6 +320,7 @@ def export_lots_as_csv(lots):
     """
     try:
         auction_id = str(lots[0].get('auction_id', ''))
+        print('auction_id', auction_id)
         filename = 'Bid Insights'
         # auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
         # seller_email = lots[0]["email_address"]
@@ -337,6 +341,7 @@ def export_lots_as_csv(lots):
                  "Lot Number","Thumbnail Image", "Title", "Paddle Number", "Bidder Name", "Status", "Bid", "Latest Bid"])
             writer.writeheader()
             for lot in lots:
+                print('lotssss', lot)
                 lot_image = lot.get("lot_image", "")
                 currency = lot.get("currency", "")
                 if currency in currencySymbolMapping:
@@ -349,7 +354,7 @@ def export_lots_as_csv(lots):
                 timezone_identifier = lot.get("time_zone").split(' ')[0]
 
                 # Pass the extracted timezone identifier to the format_date() function
-                latest_bid = format_date(lot.get("updated_at"), timezone)
+                latest_bid = format_date(lot.get("time_stamp"), timezone)
 
 
                 # Prepend the S3 URL to the thumbnail URL

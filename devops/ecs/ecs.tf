@@ -253,6 +253,7 @@ resource "aws_ecs_cluster" "websocket-cluster" {
 resource "aws_ecr_repository" "repo1" {
   name = "websocket-repo"
   provider = aws.deployment-eu
+  force_delete = true
 }
 
 ########################
