@@ -65,8 +65,6 @@ def list_bids(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Parse query parameters from the event
-        # email_address='anusha.k+stripe@7edge.com'
         query_parameters = event.get('queryStringParameters')
         print('here')
         auction_id = query_parameters.get('auction_id')
