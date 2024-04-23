@@ -30,6 +30,7 @@ provider "aws" {
 
 resource "aws_s3_bucket" "b" {
   bucket = "${data.external.env.result["SELLER_APPLICATION"]}-${data.external.env.result["STAGE"]}"
+  force_destroy = true
 
   tags = {
     Name = "${data.external.env.result["STAGE"]}"
