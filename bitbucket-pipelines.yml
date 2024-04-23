@@ -263,7 +263,7 @@ pipelines:
     
     RunBookExecutionQA:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
