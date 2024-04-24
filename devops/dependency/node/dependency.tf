@@ -4,7 +4,7 @@ data "external" "env" {
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }

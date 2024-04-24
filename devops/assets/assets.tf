@@ -21,11 +21,11 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
 }
 
 resource "aws_acm_certificate" "cert_us_east_1" {
-  domain_name ="*.${data.external.env.result["DOMAIN"]}"
+  domain_name ="*.${var.DOMAIN}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -36,7 +36,7 @@ resource "aws_acm_certificate" "cert_us_east_1" {
 
 
 resource "aws_acm_certificate" "cert_ap_south_1" {
-  domain_name ="*.${data.external.env.result["DOMAIN"]}"
+  domain_name ="*.${var.DOMAIN}"
   validation_method = "DNS"
   lifecycle {
     create_before_destroy = true
@@ -45,7 +45,7 @@ resource "aws_acm_certificate" "cert_ap_south_1" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 
@@ -150,7 +150,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "CDN for application"
 
 
-  aliases = ["${var.STAGE}-cdn.${data.external.env.result["DOMAIN"]}"]
+  aliases = ["${var.STAGE}-cdn.${var.DOMAIN}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -212,7 +212,7 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 resource "aws_route53_record" "assets_cname" {
-  name    = "${var.STAGE}-cdn.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
+  name    = "${var.STAGE}-cdn.${var.DOMAIN}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -231,7 +231,7 @@ resource "aws_ssm_parameter" "assets_bucket" {
 resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
-  value = "https://${var.STAGE}-cdn.${data.external.env.result["DOMAIN"]}/public/"
+  value = "https://${var.STAGE}-cdn.${var.DOMAIN}/public/"
   provider = aws.deployment-ap
   overwrite = true
 }
@@ -240,21 +240,21 @@ resource "aws_ssm_parameter" "customer_session_token" {
   name  = "CUSTOMER_SESSION_TOKEN_SECRET"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["CUSTOMER_SESSION_TOKEN_SECRET"]
+  value = var.CUSTOMER_SESSION_TOKEN_SECRET
   provider = aws.deployment-ap
 }
 resource "aws_ssm_parameter" "recaptch_key" {
   name  = "RECAPTCHA_KEY"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["RECAPTCHA_KEY"]
+  value = var.RECAPTCHA_KEY
   provider = aws.deployment-ap
 }
 resource "aws_ssm_parameter" "password_secret_key" {
   name  = "PASSWORD_SECRET_KEY"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["PASSWORD_SECRET_KEY"]
+  value = var.PASSWORD_SECRET_KEY
   provider = aws.deployment-ap
 }
 
