@@ -1,10 +1,8 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
 #AWS Provider with profile main account
 provider "aws" {
-  region  = data.external.env.result["REGION"]
+  region  = var.REGION
   alias   = "deployment-eu" # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }

@@ -1,7 +1,3 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
-
 provider "aws" {
   region = "us-east-1"
   alias = "main"   # Specify a default AWS region here
@@ -58,7 +54,7 @@ resource "aws_acm_certificate" "cert_us_east_1" {
   lifecycle {
     create_before_destroy = true
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
@@ -315,21 +311,21 @@ resource "aws_ssm_parameter" "customer_session_token" {
   name  = "CUSTOMER_SESSION_TOKEN_SECRET"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["CUSTOMER_SESSION_TOKEN_SECRET"]
+  value = var.CUSTOMER_SESSION_TOKEN_SECRET
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "recaptch_key" {
   name  = "RECAPTCHA_KEY"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["RECAPTCHA_KEY"]
+  value = var.RECAPTCHA_KEY
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "password_secret_key" {
   name  = "PASSWORD_SECRET_KEY"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["PASSWORD_SECRET_KEY"]
+  value = var.PASSWORD_SECRET_KEY
   provider = aws.deployment-eu
 }
 

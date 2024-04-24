@@ -17,10 +17,6 @@ variable "ADMIN_APPLICATION" {
   type        = string
   description = "Description of the variable"
 }
-variable "SELLER_APPLICATION" {
-  type        = string
-  description = "Description of the variable"
-}
 
 variable "CERTIFICATE_DOMAIN" {
   type        = string

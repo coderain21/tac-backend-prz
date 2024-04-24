@@ -1,11 +1,9 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
   
 #AWS Provider with profile main account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
@@ -14,7 +12,7 @@ provider "aws" {
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
@@ -23,19 +21,19 @@ provider "aws" {
 
 #Fetches the data from Main Domain Hosted Zones
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
+  domain   = var.CERTIFICATE_DOMAIN
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
 
 #creates a API DOMAIN NAME with ACM certificate generated for regional configuration
 resource "aws_api_gateway_domain_name" "dev_api" {
-  domain_name              = "apis-${var.STAGE}.${data.external.env.result["DOMAIN"]}"
+  domain_name              = "apis-${var.STAGE}.${var.DOMAIN}"
   regional_certificate_arn = data.aws_acm_certificate.existing_certificate.arn
 
   endpoint_configuration {
@@ -50,7 +48,7 @@ resource "aws_api_gateway_domain_name" "dev_api" {
 
 # Adds DNS record of newly created API domain name to Hosted Zone in main acc using Route53.
 resource "aws_route53_record" "record_updater" {
-  name    = "apis-${var.STAGE}.${data.external.env.result["DOMAIN"]}"
+  name    = "apis-${var.STAGE}.${var.DOMAIN}"
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   provider = aws.main
@@ -67,21 +65,21 @@ resource "aws_route53_record" "record_updater" {
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
   name  = "DOMAIN_NAME"
   type  = "String"
-  value = "apis-${var.STAGE}.${data.external.env.result["DOMAIN"]}"
+  value = "apis-${var.STAGE}.${var.DOMAIN}"
   provider = aws.deployment-us
   overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_domain_name_frontend" {
   name  = "DOMAIN_NAME_FRONT_END"
   type  = "String"
-  value = "https://apis-${var.STAGE}.${data.external.env.result["DOMAIN"]}"
+  value = "https://apis-${var.STAGE}.${var.DOMAIN}"
   provider = aws.deployment-us
   overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
   name  = "DOMAIN_CERTIFICATE"
   type  = "String"
-  value = "*.${data.external.env.result["DOMAIN"]}"
+  value = "*.${var.DOMAIN}"
   provider = aws.deployment-us
   overwrite = true
 }

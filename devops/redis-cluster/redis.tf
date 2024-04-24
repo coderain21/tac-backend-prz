@@ -1,11 +1,9 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
   
 #AWS Provider with profile main account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
@@ -14,7 +12,7 @@ provider "aws" {
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
@@ -80,9 +78,9 @@ resource "aws_elasticache_replication_group" "websocket" {
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
   replication_group_id        = "websocket-redis-cluster-enabled"
   description                 = "websocket description with cluster enabled"
-  node_type                   = "${data.external.env.result["REDIS_NODE_TYPE"]}"
-  num_node_groups         = data.external.env.result["REDIS_NODES"]
-  replicas_per_node_group = data.external.env.result["REDIS_REPLICAS"]
+  node_type                   = "cache.t3.medium"
+  num_node_groups         = 1
+  replicas_per_node_group = 1
   parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]

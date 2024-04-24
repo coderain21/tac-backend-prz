@@ -2,9 +2,7 @@ data "external" "token" {
   program = ["/bin/bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${data.external.env.result["BITBUCKET_SECRET]}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
 }
 
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
 output "oauth_token" {
   value = data.external.token.result.token
@@ -28,7 +26,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
 }
 
 
@@ -86,7 +84,7 @@ resource "aws_amplify_branch" "amplify_branch" {
 
 resource "aws_amplify_domain_association" "domain_association" {
   app_id      = aws_amplify_app.customer_web_application.id
-  domain_name = data.external.env.result["DOMAIN"]
+  domain_name = var.DOMAIN
   wait_for_verification = false
 
   
@@ -98,7 +96,7 @@ resource "aws_amplify_domain_association" "domain_association" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 

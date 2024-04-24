@@ -1,11 +1,9 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
   
 #AWS Provider with profile main account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
@@ -14,7 +12,7 @@ provider "aws" {
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
@@ -65,7 +63,7 @@ resource "aws_default_subnet" "default_az1" {
 
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
+  domain   = var.CERTIFICATE_DOMAIN
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-eu
 }
@@ -259,7 +257,7 @@ resource "aws_ecr_repository" "repo1" {
 ########################
 
 data "aws_s3_bucket_object" "my_objects" {
-  bucket = data.external.env.result["ECS_S3_BUCKET"]
+  bucket = "ecs-deployment-bucket
   key = "ecr-credential/task-definition.json"
   provider = aws.deployment-eu
 }
@@ -277,8 +275,8 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
   execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = data.external.env.result["CPU"]
-  memory                   = data.external.env.result["MEMORY"]
+  cpu                      = "4086"
+  memory                   = "8192"
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
   container_definitions = jsonencode(local.datafile)
   provider = aws.deployment-eu
@@ -310,12 +308,12 @@ resource "aws_lb" "load-balancer" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 
 resource "aws_route53_record" "my_cname" {
-  name    = "${var.STAGE}-websocket.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
+  name    = "${var.STAGE}-websocket.${var.DOMAIN}" # Replace with your desired CNAME
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id  # Replace with your Route 53 hosted zone ID
   alias {
@@ -402,7 +400,7 @@ resource "aws_appautoscaling_policy" "cpu" {
 resource "aws_ssm_parameter" "api_gateway_certificate" {
   name  = "SOCKET_URL"
   type  = "String"
-  value = "${var.STAGE}-websocket.${data.external.env.result["DOMAIN"]}"
+  value = "${var.STAGE}-websocket.${var.DOMAIN}"
   provider = aws.deployment-us
   overwrite = true
 }

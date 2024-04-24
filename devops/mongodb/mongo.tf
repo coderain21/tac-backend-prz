@@ -1,20 +1,22 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
   
 #AWS Provider with profile main account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
 
+resource "random_password" "password" {
+  length           = 16
+  special          = false
+}
 
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
@@ -102,7 +104,7 @@ resource "aws_default_subnet" "default_az1" {
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
-  instance_class     = "${data.external.env.result["INSTANCE_CLASS"]}"
+  instance_class     = db.t3.medium
   apply_immediately = true
   provider = aws.deployment-eu
 }
@@ -116,8 +118,8 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   skip_final_snapshot        = true
-  master_username         = "${data.external.env.result["MONGO_USERNAME"]}"
-  master_password         = "${data.external.env.result["MONGO_PASSWORD"]}"
+  master_username         = "indyauctionAdmin"
+  master_password         = random_password.password.result
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-eu
 }
@@ -256,7 +258,7 @@ resource "aws_eip" "example" {
 resource "aws_ssm_parameter" "documentdb" {
   name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
-  value = "mongodb://${data.external.env.result["MONGO_USERNAME"]}:${data.external.env.result["MONGO_PASSWORD"]}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
+  value = "mongodb://indyauctionAdmin:${random_password.password.result}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -280,23 +282,9 @@ resource "aws_ssm_parameter" "security_group_id" {
 resource "aws_default_vpc" "def_vpc"{
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "mongodb-username" {
-  name  = "MONGO_USERNAME"
-  type  = "String"
-  value = data.external.env.result["MONGO_USERNAME"]
-  provider = aws.deployment-eu
-  overwrite = true
-}
 
-resource "aws_ssm_parameter" "mongodb-password" {
-  name  = "MONGO_PASSWORD"
-  type  = "String"
-  value = data.external.env.result["MONGO_PASSWORD"]
-  provider = aws.deployment-eu
-  overwrite = true
-}
 resource "aws_ssm_parameter" "ec2_instance_id" {
-  name  = "EC_INSTANCE_ID"
+  name  = "EC2_INSTANCE_ID"
   type  = "String"
   value = resource.aws_instance.ssh_tunnel.id
   provider = aws.deployment-eu

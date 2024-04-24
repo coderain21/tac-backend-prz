@@ -1,6 +1,4 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
 variable "certificate_domain" {
   type        = string
@@ -25,11 +23,11 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
 }
 
 resource "aws_s3_bucket" "b" {
-  bucket = "${data.external.env.result["SELLER_APPLICATION"]}-${var.STAGE}"
+  bucket = "${var.SELLER_APPLICATION}-${var.STAGE}"
   force_destroy = true
 
   tags = {
@@ -56,7 +54,7 @@ resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
 
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
+  domain   = var.CERTIFICATE_DOMAIN
   statuses = ["ISSUED"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
@@ -69,7 +67,7 @@ locals {
   s3_origin_id = "myS3Origin"
 }
 locals {
-  computed_variable = "${var.STAGE}" == "prod" ? "seller.${data.external.env.result["DOMAIN"]}" : "${var.STAGE}-seller.${data.external.env.result["DOMAIN"]}"
+  computed_variable = "${var.STAGE}" == "prod" ? "seller.${var.DOMAIN}" : "${var.STAGE}-seller.${var.DOMAIN}"
 }
 locals {
   computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
@@ -132,7 +130,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 
@@ -148,7 +146,7 @@ resource "aws_route53_record" "my_cname" {
 resource "aws_ssm_parameter" "s3_bucket" {
   name  = "SELLER_S3_BUCKET"
   type  = "String"
-  value = "${data.external.env.result["SELLER_APPLICATION"]}-${var.STAGE}"
+  value = "${var.SELLER_APPLICATION}-${var.STAGE}"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -181,17 +179,10 @@ resource "aws_ssm_parameter" "default_subdomain" {
   provider = aws.deployment-eu
   overwrite = true
 }
-resource "aws_ssm_parameter" "static_auction_url" {
-  name  = "BUYER_STATIC_AUCTION_URL"
-  type  = "String"
-  value = "${data.external.env.result["BUYER_STATIC_AUCTION_URL"]}"
-  provider = aws.deployment-eu
-  overwrite = true
-}
 resource "aws_ssm_parameter" "amplify_domain_name" {
   name  = "AMPLIFY_DOMAIN_NAME"
   type  = "String"
-  value = "${data.external.env.result["DOMAIN"]}"
+  value = "${var.DOMAIN}"
   provider = aws.deployment-eu
   overwrite = true
 }
