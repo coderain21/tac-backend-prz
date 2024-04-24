@@ -37,16 +37,14 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
-    RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     SES_SENDER_EMAIL_ID: no-reply@indy.auction
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     DEFAULT_USERPOOL_ID: { Ref: Buyers }
     DEFAULT_COGNITO_DOMAIN: buyers-indyauction-${self:provider.stage}
@@ -111,8 +109,6 @@ custom:
       - '../../lib'
       - '../../entities'
       
-  
-
 functions: 
   pre-auth:
     handler: handlers/pre_signup.handler
@@ -356,17 +352,17 @@ resources:
           authorize_scopes: "email"
         UserPoolId: { Ref: Buyers }
     
-    # Group:
-    #   Type: AWS::Cognito::UserPoolGroup
-    #   Properties:
-    #     GroupName: "buyer"
-    #     UserPoolId: { Ref: Buyers }
-
-    BuyersDomain:
-      Type: "AWS::Cognito::UserPoolDomain"
+    Group:
+      Type: AWS::Cognito::UserPoolGroup
       Properties:
-        Domain: buyers-indyauction-${self:provider.stage}
+        GroupName: "buyer"
         UserPoolId: { Ref: Buyers }
+
+    # BuyersDomain:
+    #   Type: "AWS::Cognito::UserPoolDomain"
+    #   Properties:
+    #     Domain: buyers-indyauction-${self:provider.stage}
+    #     UserPoolId: { Ref: Buyers }
 
     BuyersClient:
       Type: AWS::Cognito::UserPoolClient

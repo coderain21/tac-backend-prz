@@ -13,7 +13,7 @@ aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS
 aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 
-log_bucket="s3://indyauction-$STAGE-pipeline-logs/"
+log_bucket="s3://indyauction-pipeline-states/$STAGE/"
 echo "$log_bucket"
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
 
@@ -35,19 +35,6 @@ for param_name in "${parameter_names[@]}"; do
     echo "Set $param_name as environment variable with value: $param_value"
 done <<< "$parameter_names"
 
-parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
-
-# # Loop through each parameter
-for param_name in "${parameter_names[@]}"; do
-    echo "$param_name"
-    # Get parameter value
-    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
-
-    # Set environment variable
-    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
-
-    echo "Set $param_name as environment variable with value: $param_value"
-done <<< "$parameter_names"
 
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
@@ -81,6 +68,7 @@ if [ "${STAGE}" = "prod" ]; then
     terraform -chdir=devops/cloudwatch init
     terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
@@ -95,11 +83,6 @@ for param_name in "${parameter_names[@]}"; do
 
     echo "Set $param_name as environment variable with value: $param_value"
 done <<< "$parameter_names"
-
-
-
-
-
 npm i -g serverless@3.15.2
 npm i -g @serverless/compose
 npm i serverless-aws-documentation

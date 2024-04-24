@@ -19,7 +19,7 @@ provider "aws" {
 provider "aws" {
   region = "us-east-1"
   alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
@@ -27,12 +27,13 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "b" {
-  bucket = "${var.SELLER_APPLICATION}-${var.STAGE}"
+  bucket = "indy-auction-seller-web-application-${var.STAGE}"
   force_destroy = true
 
   tags = {
     Name = "${var.STAGE}"
   }
+  provider = aws.deployment-eu
 }
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
   bucket = aws_s3_bucket.b.id
@@ -40,6 +41,7 @@ resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
   rule {
     object_ownership = "ObjectWriter"
   }
+  provider = aws.deployment-eu
 }
 
 
@@ -50,11 +52,16 @@ resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
+  provider = aws.deployment-eu
 }
 
 
+locals {
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
+}
+
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = var.CERTIFICATE_DOMAIN
+  domain   = "*.${local.sub_domain}"
   statuses = ["ISSUED"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
@@ -67,7 +74,7 @@ locals {
   s3_origin_id = "myS3Origin"
 }
 locals {
-  computed_variable = "${var.STAGE}" == "prod" ? "seller.${var.DOMAIN}" : "${var.STAGE}-seller.${var.DOMAIN}"
+  computed_variable = "${var.STAGE}" == "prod" ? "seller.${local.sub_domain}" : "seller.${local.sub_domain}"
 }
 locals {
   computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
@@ -130,7 +137,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
+  name = local.sub_domain # Replace with your domain name
   provider = aws.main
 }
 
@@ -146,7 +153,7 @@ resource "aws_route53_record" "my_cname" {
 resource "aws_ssm_parameter" "s3_bucket" {
   name  = "SELLER_S3_BUCKET"
   type  = "String"
-  value = "${var.SELLER_APPLICATION}-${var.STAGE}"
+  value = "indy-auction-seller-web-application-${var.STAGE}"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -182,7 +189,7 @@ resource "aws_ssm_parameter" "default_subdomain" {
 resource "aws_ssm_parameter" "amplify_domain_name" {
   name  = "AMPLIFY_DOMAIN_NAME"
   type  = "String"
-  value = "${var.DOMAIN}"
+  value = "${local.sub_domain}"
   provider = aws.deployment-eu
   overwrite = true
 }

@@ -13,15 +13,7 @@ variable "DOMAIN" {
   description = "Description of the variable"
 }
 
-variable "ADMIN_APPLICATION" {
-  type        = string
-  description = "Description of the variable"
-}
 
-variable "CERTIFICATE_DOMAIN" {
-  type        = string
-  description = "Description of the variable"
-}
 variable "CUSTOMER_SESSION_TOKEN_SECRET" {
   type        = string
   description = "Description of the variable"

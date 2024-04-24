@@ -29,6 +29,7 @@ resource "aws_route53_zone" "dev" {
   tags = {
     Environment = var.STAGE
   }
+  provider =  aws.deployment-us
 }
 
 resource "aws_route53_record" "dev-ns" {
@@ -37,14 +38,14 @@ resource "aws_route53_record" "dev-ns" {
   name    = local.sub_domain
   type    = "NS"
   ttl     = "30"
-  records = aws_route53_zone.dev.name_servers
+  records = aws_route53_zone.dev[0].name_servers
   provider =  aws.main
 }
 
 
 
 locals {
-  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone : aws_route53_zone.dev.zone_id
+  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : aws_route53_zone.dev[0].zone_id
 }
 
 
@@ -54,7 +55,7 @@ resource "aws_acm_certificate" "cert_us_east_1" {
   lifecycle {
     create_before_destroy = true
   }
-  provider = aws.deployment-eu
+  provider = aws.deployment-us
 }
 
 
@@ -68,53 +69,67 @@ resource "aws_acm_certificate" "cert_ap_south_1" {
   provider = aws.deployment-eu
 }
 
+
+
 resource "aws_route53_record" "route_53_certificate_records_ap_south_1_dev" {
-  count = var.STAGE != "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
-  name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
+  for_each = {
+    for dvo in aws_acm_certificate.cert_ap_south_1.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
   allow_overwrite = true
-  records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
+  name            = each.value.name
+  records         = [each.value.record]
   ttl             = 60
-  type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
+  type            = each.value.type
   zone_id         = local.zone_id
   provider = aws.deployment-us
 }
 
 
-resource "aws_route53_record" "route_53_certificate_records_ap_south_1_prod" {
-  count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
-  name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
-  allow_overwrite = true
-  records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
-  ttl             = 60
-  type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
-  zone_id         = local.zone_id
-  provider = aws.main
-}
+# resource "aws_route53_record" "route_53_certificate_records_ap_south_1_prod" {
+#   count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
+#   name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
+#   allow_overwrite = true
+#   records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
+#   ttl             = 60
+#   type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
+#   zone_id         = local.zone_id
+#   provider = aws.main
+# }
 
 resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
-  count = var.STAGE != "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
-  name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
+  for_each = {
+    for dvo in aws_acm_certificate.cert_us_east_1.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
   allow_overwrite = true
-  records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
+  name            = each.value.name
+  records         = [each.value.record]
   ttl             = 60
-  type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
+  type            = each.value.type
   zone_id         = local.zone_id
   provider = aws.deployment-us
 }
 
-resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
-  count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
-  name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
-  allow_overwrite = true
-  records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
-  ttl             = 60
-  type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
-  zone_id         = local.zone_id
-  provider = aws.main
-}
+# resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
+#   count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
+#   name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
+#   allow_overwrite = true
+#   records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
+#   ttl             = 60
+#   type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
+#   zone_id         = local.zone_id
+#   provider = aws.main
+# }
 
 resource "aws_s3_bucket" "assets" {
-  bucket = "indyauction-assets-${var.STAGE}"
+  bucket = "indyauction-assets-${var.STAGE}-v1"
   force_destroy = true
 
   tags = {
@@ -128,16 +143,17 @@ resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
   rule {
     object_ownership = "ObjectWriter"
   }
+  provider =  aws.deployment-eu
 }
 
 
 resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
   bucket = aws_s3_bucket.assets.id
-
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
+  provider =  aws.deployment-eu
 }
 
 
@@ -178,7 +194,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "CDN for application"
 
 
-  aliases = ["cdn.${locals.sub_domain}"]
+  aliases = ["cdn.${local.sub_domain}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -241,7 +257,7 @@ data "aws_iam_policy_document" "s3_policy" {
 
 resource "aws_route53_record" "assets_cname_dev" {
   count = var.STAGE != "prod" ? 1 : 0
-  name    = "cdn.${locals.sub_domain}" # Replace with your desired CNAME
+  name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = local.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -251,7 +267,7 @@ resource "aws_route53_record" "assets_cname_dev" {
 
 resource "aws_route53_record" "assets_cname_prod" {
   count = var.STAGE == "prod" ? 1 : 0
-  name    = "cdn.${locals.sub_domain}" # Replace with your desired CNAME
+  name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = local.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -263,7 +279,7 @@ resource "aws_route53_record" "assets_cname_prod" {
 resource "aws_ssm_parameter" "assets_bucket" {
   name  = "BUCKET_NAME"
   type  = "String"
-  value = "indyauction-assets-${var.STAGE}"
+  value = "indyauction-assets-${var.STAGE}-v1"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -271,7 +287,7 @@ resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
   value = <<-EOT
-    https://cdn.${locals.sub_domain}/public/
+    https://cdn.${local.sub_domain}/public/
   EOT
   provider = aws.deployment-eu
   overwrite = true
@@ -380,3 +396,10 @@ resource "aws_ssm_parameter" "google_client_secret" {
 }
 
 
+resource "aws_ssm_parameter" "buyyer_domain" {
+  name  = "BASE_URL_BUYER"
+  type  = "String"
+  value = "https://www.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}

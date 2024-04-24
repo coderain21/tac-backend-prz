@@ -1,15 +1,3 @@
- 
-
-  
-#AWS Provider with profile main account
-provider "aws" {
-  region = var.REGION
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
-}
-
-
-
 #AWS Provider with profile Stage account
 provider "aws" {
   region = var.REGION
@@ -23,6 +11,7 @@ data "aws_vpc" "default" {
 
 resource "aws_default_subnet" "default_az1" {
   availability_zone = "eu-west-2c"
+  provider = aws.deployment-us
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
@@ -102,4 +91,5 @@ resource "aws_ssm_parameter" "redis_host_parameter" {
   type  = "String"
   value = "redis://${local.redis_host}:6379"
   overwrite = true 
+  provider = aws.deployment-us
 }

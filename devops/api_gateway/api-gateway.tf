@@ -5,7 +5,7 @@
 provider "aws" {
   region = var.REGION
   alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  profile = "indyauction-${var.STAGE}"
 }
 
 
@@ -18,22 +18,25 @@ provider "aws" {
 }
 
 ########
+locals {
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
+}
 
 #Fetches the data from Main Domain Hosted Zones
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
-  provider = aws.main
+  name = local.sub_domain # Replace with your domain name
+  provider = aws.deployment-us
 }
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = var.CERTIFICATE_DOMAIN
+  domain   = "*.${local.sub_domain}"
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
 
 #creates a API DOMAIN NAME with ACM certificate generated for regional configuration
 resource "aws_api_gateway_domain_name" "dev_api" {
-  domain_name              = "apis-${var.STAGE}.${var.DOMAIN}"
+  domain_name              = "apis.${local.sub_domain}"
   regional_certificate_arn = data.aws_acm_certificate.existing_certificate.arn
 
   endpoint_configuration {
@@ -48,7 +51,7 @@ resource "aws_api_gateway_domain_name" "dev_api" {
 
 # Adds DNS record of newly created API domain name to Hosted Zone in main acc using Route53.
 resource "aws_route53_record" "record_updater" {
-  name    = "apis-${var.STAGE}.${var.DOMAIN}"
+  name    = "apis.${local.sub_domain}"
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   provider = aws.main
@@ -65,28 +68,21 @@ resource "aws_route53_record" "record_updater" {
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
   name  = "DOMAIN_NAME"
   type  = "String"
-  value = "apis-${var.STAGE}.${var.DOMAIN}"
+  value = "apis.${local.sub_domain}"
   provider = aws.deployment-us
   overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_domain_name_frontend" {
   name  = "DOMAIN_NAME_FRONT_END"
   type  = "String"
-  value = "https://apis-${var.STAGE}.${var.DOMAIN}"
+  value = "https://apis.${local.sub_domain}"
   provider = aws.deployment-us
   overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
   name  = "DOMAIN_CERTIFICATE"
   type  = "String"
-  value = "*.${var.DOMAIN}"
-  provider = aws.deployment-us
-  overwrite = true
-}
-resource "aws_ssm_parameter" "api_gateway_certificate" {
-  name  = "YOUR_HOSTED_ZONE_ID"
-  type  = "String"
-  value = data.aws_route53_zone.domain_zone.zone_id
+  value = "*.${local.sub_domain}"
   provider = aws.deployment-us
   overwrite = true
 }

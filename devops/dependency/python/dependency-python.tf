@@ -1,7 +1,3 @@
-data "external" "env" {
-  program = ["../../envs.sh"]
-}
-
 #AWS Provider with profile Stage account
 provider "aws" {
   region = var.REGION

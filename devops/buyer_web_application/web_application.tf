@@ -1,5 +1,5 @@
 data "external" "token" {
-  program = ["/bin/bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${data.external.env.result["BITBUCKET_SECRET]}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
+  program = ["/bin/bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${data.external.env.result["BITBUCKET_SECRET"]}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
 }
 
  
@@ -69,7 +69,7 @@ resource "aws_amplify_app" "customer_web_application" {
 }
 
 locals {
-  computed_variable = "${var.STAGE}" == "prod" ? "customer" : "${var.STAGE}-customer"
+  computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
 }
 
 output "env_result" {
@@ -82,6 +82,7 @@ resource "aws_amplify_branch" "amplify_branch" {
   provider = aws.deployment-eu
 }
 
+
 resource "aws_amplify_domain_association" "domain_association" {
   app_id      = aws_amplify_app.customer_web_application.id
   domain_name = var.DOMAIN
@@ -93,25 +94,6 @@ resource "aws_amplify_domain_association" "domain_association" {
     prefix      = local.computed_variable
   }
   provider = aws.deployment-eu
-}
-
-data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
-  provider = aws.main
-}
-
-
-locals {
-  amplify_domain_name = split(" ", join(",", [for sd in aws_amplify_domain_association.domain_association.sub_domain : sd.dns_record if sd.branch_name == "${data.external.env.result["BITBUCKET_BRANCH"]}"]))[2]
-}
-
-resource "aws_route53_record" "my_cname" {
-  name    = local.computed_variable
-  type    = "CNAME"
-  zone_id = data.aws_route53_zone.domain_zone.zone_id
-  records =  [local.amplify_domain_name]
-  provider = aws.main
-  ttl     = 300
 }
 
 resource "aws_ssm_parameter" "amplify_id" {

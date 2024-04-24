@@ -68,7 +68,6 @@ provider:
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     DASHBOARD_URL: ${ssm:SELLER_DASHBOARD_APPLICATION_URL}
     KYB_LEVEL_NAME: basic-kyb-level
-    YOUR_HOSTED_ZONE_ID: ${ssm:YOUR_HOSTED_ZONE_ID}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
@@ -79,8 +78,6 @@ provider:
   http:
     cors: true
      
-
-
   iam:
     role:
       statements:
@@ -746,11 +743,11 @@ resources:
     
     
     
-    SellerUsersDomain:
-      Type: "AWS::Cognito::UserPoolDomain"
-      Properties:
-        Domain: indyauction-seller-${self:provider.stage}
-        UserPoolId: { Ref: SellerUsers }
+    # SellerUsersDomain:
+    #   Type: "AWS::Cognito::UserPoolDomain"
+    #   Properties:
+    #     Domain: indyauction-seller-${self:provider.stage}
+    #     UserPoolId: { Ref: SellerUsers }
  
     SellerUsersClient:
       Type: AWS::Cognito::UserPoolClient

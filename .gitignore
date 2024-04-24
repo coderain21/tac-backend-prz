@@ -69,3 +69,4 @@ env
 .env
 login.sh
 services/**/package-lock.json
+devops/mongodb/tf-key-pair-dev.pem
