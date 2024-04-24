@@ -11,13 +11,13 @@ provider "aws" {
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-ap"   
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
@@ -86,11 +86,11 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
 }
 
 resource "aws_s3_bucket" "assets" {
-  bucket = "indyauction-assets-${data.external.env.result["STAGE"]}"
+  bucket = "indyauction-assets-${var.STAGE}"
   force_destroy = true
 
   tags = {
-    Name = "${data.external.env.result["STAGE"]}"
+    Name = "${var.STAGE}"
   }
   provider = aws.deployment-ap
 }
@@ -128,8 +128,8 @@ resource "aws_s3_bucket_cors_configuration" "enable_cors_assets" {
 
 
 resource "aws_cloudfront_origin_access_control" "cdn" {
-  name                              = "assets-${data.external.env.result["STAGE"]}"
-  description                       = "assets-${data.external.env.result["STAGE"]}"
+  name                              = "assets-${var.STAGE}"
+  description                       = "assets-${var.STAGE}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -150,7 +150,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   comment             = "CDN for application"
 
 
-  aliases = ["${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}"]
+  aliases = ["${var.STAGE}-cdn.${data.external.env.result["DOMAIN"]}"]
 
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
@@ -172,7 +172,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   tags = {
-    Environment = "${data.external.env.result["STAGE"]}"
+    Environment = "${var.STAGE}"
   }
   restrictions {
     geo_restriction {
@@ -212,7 +212,7 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 resource "aws_route53_record" "assets_cname" {
-  name    = "${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
+  name    = "${var.STAGE}-cdn.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
@@ -224,39 +224,18 @@ resource "aws_route53_record" "assets_cname" {
 resource "aws_ssm_parameter" "assets_bucket" {
   name  = "BUCKET_NAME"
   type  = "String"
-  value = "indyauction-assets-${data.external.env.result["STAGE"]}"
+  value = "indyauction-assets-${var.STAGE}"
   provider = aws.deployment-ap
   overwrite = true
 }
 resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
-  value = "https://${data.external.env.result["STAGE"]}-cdn.${data.external.env.result["DOMAIN"]}/public/"
+  value = "https://${var.STAGE}-cdn.${data.external.env.result["DOMAIN"]}/public/"
   provider = aws.deployment-ap
   overwrite = true
 }
 
-resource "aws_ssm_parameter" "base_url_admin" {
-  name  = "BASE_URL_ADMIN"
-  type  = "String"
-  value = data.external.env.result["BASE_URL_ADMIN"]
-  provider = aws.deployment-ap
-  overwrite = true
-}
-resource "aws_ssm_parameter" "base_url_seller" {
-  name  = "BASE_URL_SELLER"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["BASE_URL_SELLER"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "base_url_buyer" {
-  name  = "BASE_URL_BUYER"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["BASE_URL_BUYER"]
-  provider = aws.deployment-ap
-}
 resource "aws_ssm_parameter" "customer_session_token" {
   name  = "CUSTOMER_SESSION_TOKEN_SECRET"
   overwrite = true
@@ -278,13 +257,7 @@ resource "aws_ssm_parameter" "password_secret_key" {
   value = data.external.env.result["PASSWORD_SECRET_KEY"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "recpatch_url" {
-  name  = "RECAPTCHA_URL"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["RECAPTCHA_URL"]
-  provider = aws.deployment-ap
-}
+
 
 resource "aws_ssm_parameter" "sumsub_secret_key_webhook" {
   name  = "SUMSUB_SECRET_KEY_WEBHOOK"
@@ -314,34 +287,8 @@ resource "aws_ssm_parameter" "sumsub_app_token" {
   value = data.external.env.result["SUMSUB_APP_TOKEN"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "level_name" {
-  name  = "LEVEL_NAME"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["LEVEL_NAME"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "seller_google_password" {
-  name  = "SELLER_GOOGLE_PASSWORD"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["SELLER_GOOGLE_PASSWORD"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "stage" {
-  name  = "STAGE"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["STAGE"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "kyb_level_name" {
-  name  = "KYB_LEVEL_NAME"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["KYB_LEVEL_NAME"]
-  provider = aws.deployment-ap
-}
+
+
 resource "aws_ssm_parameter" "stripe_api_key" {
   name  = "STRIPE_API_KEY"
   overwrite = true
@@ -349,48 +296,15 @@ resource "aws_ssm_parameter" "stripe_api_key" {
   value = data.external.env.result["STRIPE_API_KEY"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "hosted_zone_id" {
-  name  = "YOUR_HOSTED_ZONE_ID"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["YOUR_HOSTED_ZONE_ID"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "csv_file" {
-  name  = "CSV_FILE"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["CSV_FILE"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "encryption_secret_key" {
-  name  = "ENCRYPTION_SECRET_KEY"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["ENCRYPTION_SECRET_KEY"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "credit_card_stripe_api_key" {
-  name  = "CREDIT_CARD_STRIPE_API_KEY"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["CREDIT_CARD_STRIPE_API_KEY"]
-  provider = aws.deployment-ap
-}
 
 
-resource "aws_ssm_parameter" "amplify_id" {
-  name  = "AMPLIFY_APP_ID"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["AMPLIFY_APP_ID"]
-  provider = aws.deployment-ap
-}
+
+
 resource "aws_ssm_parameter" "amplify_branch" {
   name  = "AMPLIFY_BRANCH"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["AMPLIFY_BRANCH"]
+  value = data.external.env.result["BITBUCKET_BRANCH"]
   provider = aws.deployment-ap
 }
 resource "aws_ssm_parameter" "stripe_endpoint_secret" {
@@ -401,20 +315,6 @@ resource "aws_ssm_parameter" "stripe_endpoint_secret" {
   provider = aws.deployment-ap
 }
 
-resource "aws_ssm_parameter" "buyer_recaptcha_url" {
-  name  = "BUYER_RECAPTCHA_URL"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["BUYER_RECAPTCHA_URL"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "buyer_recaptcha_key" {
-  name  = "BUYER_RECAPTCHA_KEY"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["BUYER_RECAPTCHA_KEY"]
-  provider = aws.deployment-ap
-}
 resource "aws_ssm_parameter" "facebook_client_id" {
   name  = "FACEBOOK_CLIENT_ID"
   overwrite = true
@@ -443,47 +343,5 @@ resource "aws_ssm_parameter" "google_client_secret" {
   value = data.external.env.result["GOOGLE_CLIENT_SECRET"]
   provider = aws.deployment-ap
 }
-resource "aws_ssm_parameter" "sales_csv_file" {
-  name  = "SALES_CSV_FILE"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["SALES_CSV_FILE"]
-  provider = aws.deployment-ap
-}
 
-resource "aws_ssm_parameter" "socket_url" {
-  name  = "SOCKET_URL"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["SOCKET_URL"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "region" {
-  name  = "REGION"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["REGION"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "sender_email" {
-  name  = "SENDER_EMAIL"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["SENDER_EMAIL"]
-  provider = aws.deployment-ap
-}
-resource "aws_ssm_parameter" "registered_buyer" {
-  name  = "REGISTRED_BUYER"
-  overwrite = true
-  type  = "String"
-  value = "${data.external.env.result["STAGE"]}-register-auction"
-  provider = aws.deployment-ap
-}
 
-resource "aws_ssm_parameter" "domain_url_reset" {
-  name  = "DOMAIN_URL"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["DOMAIN_URL"]
-  provider = aws.deployment-ap
-}

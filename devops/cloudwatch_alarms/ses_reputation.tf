@@ -7,7 +7,7 @@ data "external" "env" {
 provider "aws" {
   region  = data.external.env.result["REGION"]
   alias   = "deployment-eu" # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 
@@ -44,7 +44,7 @@ resource "aws_iam_role_policy_attachment" "ses_reputation_policy_attachment" {
 resource "aws_cloudwatch_metric_alarm" "ses_reputation_alarm" {
   provider = aws.deployment-eu
   count          = 5
-  alarm_name     = "SESReputationAlarm-${element([1, 2, 3, 4, 5], count.index)}-indyauction-${data.external.env.result["STAGE"]}"
+  alarm_name     = "SESReputationAlarm-${element([1, 2, 3, 4, 5], count.index)}-indyauction-${var.STAGE}"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "Reputation.BounceRate"

@@ -8,12 +8,12 @@ provider "aws" {
 provider "aws" {
   region  = data.external.env.result["REGION"]
   alias   = "deployment-eu" # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 resource "aws_budgets_budget" "budgets" {
   count   = 15
-  name    = format("indyauction ${data.external.env.result["STAGE"]} Budget - $%d", 50 * (count.index + 1)) 
+  name    = format("indyauction ${var.STAGE} Budget - $%d", 50 * (count.index + 1)) 
   limit_amount = 50 * (count.index + 1)
   limit_unit = "USD"
   budget_type = "COST"

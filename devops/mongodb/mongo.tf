@@ -16,7 +16,7 @@ provider "aws" {
 provider "aws" {
   region = data.external.env.result["REGION"]
   alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 # Create a subnet within the VPC
@@ -39,14 +39,14 @@ resource "tls_private_key" "rsa"{
 }
 resource "local_file" "tf-key"{
     content  = tls_private_key.rsa.private_key_pem
-    filename = "tf-key-pair-${data.external.env.result["STAGE"]}.pem"
+    filename = "tf-key-pair-${var.STAGE}.pem"
 }
 
 ########################
 
 
 resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
-  name        = "${data.external.env.result["STAGE"]}-parameter-group"
+  name        = "${var.STAGE}-parameter-group"
   family      = "docdb5.0" # Adjust the family to match your DocumentDB version
   description = "My DocumentDB Parameter Group"
   parameter {
@@ -111,7 +111,7 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
 
 # Create the DocumentDB instance
 resource "aws_docdb_cluster" "my_documentdb_cluster" {
-  cluster_identifier        = "${data.external.env.result["STAGE"]}"
+  cluster_identifier        = "${var.STAGE}"
   engine                    = "docdb"
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
@@ -256,7 +256,7 @@ resource "aws_eip" "example" {
 resource "aws_ssm_parameter" "documentdb" {
   name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
-  value = "mongodb://${data.external.env.result["MONGO_USERNAME"]}:${data.external.env.result["MONGO_PASSWORD"]}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${data.external.env.result["STAGE"]}?authMechanism=SCRAM-SHA-1&authSource=${data.external.env.result["STAGE"]}&retryWrites=false"
+  value = "mongodb://${data.external.env.result["MONGO_USERNAME"]}:${data.external.env.result["MONGO_PASSWORD"]}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -307,6 +307,6 @@ output "connection_details" {
     endpoint = aws_docdb_cluster.my_documentdb_cluster.endpoint
     port     = "27017"
     ec2_public_ip = aws_instance.ssh_tunnel.public_ip
-    shh_tunnel = "ssh -i tf-key-pair-${data.external.env.result["STAGE"]}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
+    shh_tunnel = "ssh -i tf-key-pair-${var.STAGE}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
   }
 }

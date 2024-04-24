@@ -20,7 +20,7 @@ provider:
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     DATABASE: ${opt:stage, self:provider.stage}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -31,7 +31,7 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: no-reply@indy.auction
     BUCKET_NAME: ${ssm:BUCKET_NAME}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
     CDN_LINK: ${ssm:CDN_URL}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -43,7 +43,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${ssm:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
         audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
 
@@ -133,7 +133,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /buyer/{lot_id}
           method: GET
-          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
             
 
   bid-listing:

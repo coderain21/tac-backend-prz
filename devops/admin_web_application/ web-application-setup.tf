@@ -4,12 +4,12 @@ data "external" "env" {
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
@@ -23,11 +23,11 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "b" {
-  bucket = "${data.external.env.result["ADMIN_APPLICATION"]}-${data.external.env.result["STAGE"]}"
+  bucket = "${data.external.env.result["ADMIN_APPLICATION"]}-${var.STAGE}"
   force_destroy = true
 
   tags = {
-    Name = "${data.external.env.result["STAGE"]}"
+    Name = "${var.STAGE}"
   }
 }
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
@@ -63,7 +63,7 @@ locals {
   s3_origin_id = "myS3Origin"
 }
 locals {
-  computed_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "admin.${data.external.env.result["DOMAIN"]}" : "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"
+  computed_variable = "${var.STAGE}" == "prod" ? "admin.${data.external.env.result["DOMAIN"]}" : "${var.STAGE}-admin.${data.external.env.result["DOMAIN"]}"
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
@@ -107,7 +107,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   tags = {
-    Environment = "${data.external.env.result["STAGE"]}"
+    Environment = "${var.STAGE}"
   }
   restrictions {
     geo_restriction {
@@ -138,7 +138,7 @@ resource "aws_route53_record" "my_cname" {
 resource "aws_ssm_parameter" "s3_bucket" {
   name  = "ADMIN_S3_BUCKET"
   type  = "String"
-  value = "${data.external.env.result["ADMIN_APPLICATION"]}-${data.external.env.result["STAGE"]}"
+  value = "${data.external.env.result["ADMIN_APPLICATION"]}-${var.STAGE}"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -155,6 +155,13 @@ resource "aws_ssm_parameter" "application_url" {
   name  = "ADMIN_APPLICATION_URL"
   type  = "String"
   value = local.computed_variable
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "base_url_admin" {
+  name  = "BASE_URL_ADMIN"
+  type  = "String"
+  value = "https://${local.computed_variable}"
   provider = aws.deployment-eu
   overwrite = true
 }

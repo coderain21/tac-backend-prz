@@ -16,7 +16,7 @@ provider "aws" {
 provider "aws" {
   region = data.external.env.result["REGION"]
   alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 
@@ -315,7 +315,7 @@ data "aws_route53_zone" "domain_zone" {
 }
 
 resource "aws_route53_record" "my_cname" {
-  name    = "${data.external.env.result["STAGE"]}-websocket.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
+  name    = "${var.STAGE}-websocket.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id  # Replace with your Route 53 hosted zone ID
   alias {
@@ -399,6 +399,12 @@ resource "aws_appautoscaling_policy" "cpu" {
     target_value = 70
   }
 }
-
+resource "aws_ssm_parameter" "api_gateway_certificate" {
+  name  = "SOCKET_URL"
+  type  = "String"
+  value = "${var.STAGE}-websocket.${data.external.env.result["DOMAIN"]}"
+  provider = aws.deployment-us
+  overwrite = true
+}
 
 

@@ -19,7 +19,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: { Ref: SellerUsers }
     COGNITO_SELLER_CLIENT_ID: { Ref: SellerUsersClient } 
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
@@ -47,7 +47,7 @@ provider:
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
+    SES_SENDER_EMAIL_ID: no-reply@indy.auction
     JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
     DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
@@ -63,7 +63,7 @@ provider:
       #     - EMAIL
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    LEVEL_NAME: ${ssm:LEVEL_NAME}
+    LEVEL_NAME:  basic-kyc-level
     SUMSUB_SECRET_KEY_WEBHOOK: ${ssm:SUMSUB_SECRET_KEY_WEBHOOK}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     DASHBOARD_URL: ${ssm:SELLER_DASHBOARD_APPLICATION_URL}

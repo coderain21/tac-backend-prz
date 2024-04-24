@@ -6,7 +6,7 @@ data "external" "env" {
 provider "aws" {
   region  = data.external.env.result["REGION"]
   alias   = "deployment-eu" # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 locals {

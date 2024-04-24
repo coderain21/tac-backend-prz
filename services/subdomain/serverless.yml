@@ -19,7 +19,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -30,7 +30,7 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
@@ -50,12 +50,12 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
        
-    ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
+    ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
-    RECAPTCHA_URL: ${ssm:RECAPTCHA_URL}
+    RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
+    SES_SENDER_EMAIL_ID: no-reply@indy.auction
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}    
     JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  

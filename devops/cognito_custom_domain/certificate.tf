@@ -11,13 +11,13 @@ provider "aws" {
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-ap"   
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 provider "aws" {
@@ -28,7 +28,7 @@ data "aws_route53_zone" "domain_zone" {
   provider = aws.main
 }
 locals {
-  computed_domain = "${data.external.env.result["STAGE"]}" == "prod" ? "seller" : "${data.external.env.result["STAGE"]}-seller"
+  computed_domain = "${var.STAGE}" == "prod" ? "seller" : "${var.STAGE}-seller"
 }
 resource "aws_acm_certificate" "cert_cognito_us_east_1" {
   domain_name ="*.${local.computed_domain}.${data.external.env.result["DOMAIN"]}"
@@ -57,9 +57,9 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   provider = aws.main
 }
 locals {
- a= "${data.external.env.result["STAGE"] == "dev" ? "www-develop" : ""}"
- b = "${data.external.env.result["STAGE"] == "prod" ? "bid" : ""}"
- c = "www-${data.external.env.result["STAGE"]}"
+ a= "${var.STAGE == "dev" ? "www-develop" : ""}"
+ b = "${var.STAGE == "prod" ? "bid" : ""}"
+ c = "www-${var.STAGE}"
  computed_variable = "${coalesce(local.a,local.b, local.c)}"
 }
 

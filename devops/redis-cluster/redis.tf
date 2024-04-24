@@ -16,7 +16,7 @@ provider "aws" {
 provider "aws" {
   region = data.external.env.result["REGION"]
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 data "aws_vpc" "default" {
   default = true
