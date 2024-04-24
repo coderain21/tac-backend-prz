@@ -335,7 +335,7 @@ def update_auction(event, context):
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
-           
+
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
                 print('inside update323323', listLots)
                 for item in listLots:
@@ -432,7 +432,7 @@ def update_auction(event, context):
                     )
                     print('cc', cc)
                 # update in the mongodb database
-                # Modify start_date and end_date before sending SQS 
+                # Modify start_date and end_date before sending SQS
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
