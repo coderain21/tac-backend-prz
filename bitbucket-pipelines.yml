@@ -273,7 +273,7 @@ pipelines:
             - step: *runcommands
     RunBookExecutionDev:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
@@ -283,7 +283,7 @@ pipelines:
             - step: *runcommands
     RunBookExecutionPreProd:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
@@ -293,7 +293,7 @@ pipelines:
             - step: *runcommands
     RunBookExecutionProd:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
