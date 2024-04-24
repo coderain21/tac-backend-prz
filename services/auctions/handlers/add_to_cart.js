@@ -54,6 +54,18 @@ module.exports.handler = async (event) => {
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
+        const query = {
+            auction_id: event.auction_id,
+            seller_email: event.seller_email,
+            winning_user: { $exists: true },
+        }
+
+        const getTotalActiveSales = await mongodbHelper.getTotalActiveSales(query, Lot)
+        const auctionData = await mongodbHelper.getAuction(event, Auction)
+        if (getTotalActiveSales === 0) {
+            await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
+            return true
+        }
         const getLotInfo = await getLot(rediskey, client, event._id)
         const get_lot = []
         for (let i = 0; i < getLotInfo.length; i++) {
@@ -61,7 +73,6 @@ module.exports.handler = async (event) => {
         }
         const lotInformation = get_lot[0]
         if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
-            const auctionData = await mongodbHelper.getAuction(event, Auction)
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
             lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
             lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
