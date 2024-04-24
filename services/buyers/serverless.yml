@@ -63,7 +63,7 @@ provider:
       - "sesTemplate"
       - "Arn"
     
-    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
+    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
         - ":"

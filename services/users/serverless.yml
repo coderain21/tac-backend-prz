@@ -48,7 +48,7 @@ provider:
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SES_SENDER_EMAIL_ID: no-reply@indy.auction
-    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
+    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
     FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${self:provider.stage}-forgot-password

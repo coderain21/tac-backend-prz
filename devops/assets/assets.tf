@@ -20,7 +20,7 @@ locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 resource "aws_route53_zone" "dev" {
@@ -69,78 +69,46 @@ resource "aws_acm_certificate" "cert_ap_south_1" {
 }
 
 resource "aws_route53_record" "route_53_certificate_records_ap_south_1_dev" {
-  count = var.STAGE != "prod" ? 1 : 0
-  for_each = {
-    for dvo in aws_acm_certificate.cert_ap_south_1.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
+  count = var.STAGE != "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
+  name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
+  records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
   ttl             = 60
-  type            = each.value.type
+  type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
   zone_id         = local.zone_id
   provider = aws.deployment-us
 }
 
 
 resource "aws_route53_record" "route_53_certificate_records_ap_south_1_prod" {
-  count = var.STAGE == "prod" ? 1 : 0
-  for_each = {
-    for dvo in aws_acm_certificate.cert_ap_south_1.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
+  count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
+  name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
+  records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
   ttl             = 60
-  type            = each.value.type
+  type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
   zone_id         = local.zone_id
   provider = aws.main
 }
 
 resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
-  count = var.STAGE != "prod" ? 1 : 0
-  for_each = {
-    for dvo in aws_acm_certificate.cert_us_east_1.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
+  count = var.STAGE != "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
+  name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
+  records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
   ttl             = 60
-  type            = each.value.type
+  type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
   zone_id         = local.zone_id
   provider = aws.deployment-us
 }
 
 resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
-  count = var.STAGE == "prod" ? 1 : 0
-  for_each = {
-    for dvo in aws_acm_certificate.cert_us_east_1.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
+  count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
+  name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
   allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
+  records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
   ttl             = 60
-  type            = each.value.type
+  type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
   zone_id         = local.zone_id
   provider = aws.main
 }
@@ -302,7 +270,9 @@ resource "aws_ssm_parameter" "assets_bucket" {
 resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
-  value = "https://cdn.${locals.sub_domain}/public/"
+  value = <<-EOT
+    https://cdn.${locals.sub_domain}/public/
+  EOT
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -334,28 +304,22 @@ resource "aws_ssm_parameter" "sumsub_secret_key_webhook" {
   name  = "SUMSUB_SECRET_KEY_WEBHOOK"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["SUMSUB_SECRET_KEY_WEBHOOK"]
+  value = var.SUMSUB_SECRET_KEY_WEBHOOK
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "jwt_secret_key" {
-  name  = "JWT_SECRET_KEY"
-  overwrite = true
-  type  = "String"
-  value = data.external.env.result["JWT_SECRET_KEY"]
-  provider = aws.deployment-eu
-}
+
 resource "aws_ssm_parameter" "sumsub_secret_key" {
   name  = "SUMSUB_SECRET_KEY"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["SUMSUB_SECRET_KEY"]
+  value = var.SUMSUB_SECRET_KEY
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "sumsub_app_token" {
   name  = "SUMSUB_APP_TOKEN"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["SUMSUB_APP_TOKEN"]
+  value = var.SUMSUB_APP_TOKEN
   provider = aws.deployment-eu
 }
 
@@ -364,7 +328,7 @@ resource "aws_ssm_parameter" "stripe_api_key" {
   name  = "STRIPE_API_KEY"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["STRIPE_API_KEY"]
+  value = var.STRIPE_API_KEY
   provider = aws.deployment-eu
 }
 
@@ -375,14 +339,14 @@ resource "aws_ssm_parameter" "amplify_branch" {
   name  = "AMPLIFY_BRANCH"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["BITBUCKET_BRANCH"]
+  value = var.AMPLIFY_BRANCH
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "stripe_endpoint_secret" {
   name  = "STRIPE_ENDPOINT_SECRET"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["STRIPE_ENDPOINT_SECRET"]
+  value = var.STRIPE_ENDPOINT_SECRET
   provider = aws.deployment-eu
 }
 
@@ -390,28 +354,28 @@ resource "aws_ssm_parameter" "facebook_client_id" {
   name  = "FACEBOOK_CLIENT_ID"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["FACEBOOK_CLIENT_ID"]
+  value = var.FACEBOOK_CLIENT_ID
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "facebook_client_secret" {
   name  = "FACEBOOK_CLIENT_SECRET"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["FACEBOOK_CLIENT_SECRET"]
+  value = var.FACEBOOK_CLIENT_SECRET
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "google_client_id" {
   name  = "GOOGLE_CLIENT_ID"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["GOOGLE_CLIENT_ID"]
+  value = var.GOOGLE_CLIENT_ID
   provider = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "google_client_secret" {
   name  = "GOOGLE_CLIENT_SECRET"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["GOOGLE_CLIENT_SECRET"]
+  value = var.GOOGLE_CLIENT_SECRET
   provider = aws.deployment-eu
 }
 
