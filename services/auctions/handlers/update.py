@@ -99,7 +99,9 @@ def update_auction(event, context):
     """
     try:
         try:
+            print('eventtttttttttttttttttt', event)
             seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('seller_email', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
@@ -151,7 +153,7 @@ def update_auction(event, context):
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
         print('collection_seller', collection_seller)
-        # seller_data = collection_seller.find_one(  {"email_address": seller_email}, {"_id": 0})
+        seller_data = collection_seller.find_one(  {"email_address": seller_email}, {"_id": 0})
         # print('seller data', seller_data)
         # if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
         #     return {
@@ -167,7 +169,7 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
         if published_status == 'true':
-            # kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
+            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             # if kyc_kyb_review is not True:
             #     return {
             #             "statusCode": 400,
@@ -211,9 +213,8 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
-            seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
-            print('seller data', seller_data)
-            if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
+            print('seller data', seller_data['stripe_status'])
+            if seller_data['stripe_status'] == 'disconnected':
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -334,6 +335,7 @@ def update_auction(event, context):
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
+           
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
                 print('inside update323323', listLots)
                 for item in listLots:
@@ -430,7 +432,7 @@ def update_auction(event, context):
                     )
                     print('cc', cc)
                 # update in the mongodb database
-                # Modify start_date and end_date before sending SQS
+                # Modify start_date and end_date before sending SQS 
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
