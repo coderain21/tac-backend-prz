@@ -2,9 +2,7 @@ data "external" "token" {
   program = ["/bin/bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${data.external.env.result["BITBUCKET_SECRET]}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
 }
 
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
 output "oauth_token" {
   value = data.external.token.result.token

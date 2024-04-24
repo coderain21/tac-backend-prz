@@ -1,6 +1,4 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
 provider "aws" {
   region = "eu-west-2"  # Change this to your desired region

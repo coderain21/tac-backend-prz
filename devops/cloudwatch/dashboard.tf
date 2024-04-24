@@ -1,6 +1,4 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
 #AWS Provider with profile main account
 provider "aws" {
