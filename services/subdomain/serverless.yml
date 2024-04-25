@@ -37,9 +37,6 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    AWS_MAIN_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID_MAIN}
-    AWS_MAIN_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY_MAIN}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -69,7 +66,7 @@ provider:
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
         
    
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     AMPLIFY_APP_ID: ${ssm:AMPLIFY_APP_ID}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     DEFAULT_INDENTITY_POOL_ID: ${ssm:BUYER_COGNITO_IDENTITY_POOL_ID}

@@ -67,7 +67,7 @@ provider:
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
      
    
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
@@ -151,7 +151,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /address
           method: post
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   view_address:
     handler: handlers/view_address.view_address
     runtime: python3.8
@@ -177,7 +177,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /address
           method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   update_address:
     handler: handlers/update_address.update_address
     runtime: python3.8
@@ -203,7 +203,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /address
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:

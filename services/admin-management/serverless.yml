@@ -70,7 +70,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
 
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER

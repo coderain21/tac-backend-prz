@@ -67,7 +67,7 @@ provider:
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
       
    
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     AMPLIFY_APP_ID: ${ssm:AMPLIFY_APP_ID}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     DEFAULT_INDENTITY_POOL_ID: ${ssm:BUYER_COGNITO_IDENTITY_POOL_ID}
@@ -162,7 +162,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /stripe
           method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   stripe_payments_webhook:
     handler: handlers/stripe_webhook.update
     runtime: python3.8
