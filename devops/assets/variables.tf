@@ -73,3 +73,21 @@ variable "GOOGLE_CLIENT_SECRET" {
   type        = string
   description = "Description of the variable"
 }
+variable "SITEKEY" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "STRIPE_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "GOOGLE_API_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "LOCATION_API" {
+  type        = string
+  description = "Description of the variable"
+}
+
+
