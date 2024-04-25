@@ -68,7 +68,7 @@ provider:
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
          
    
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     
   http:
@@ -170,7 +170,7 @@ functions:
           cors: true
           path: /update
           method: patch
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
 resources:

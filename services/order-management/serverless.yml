@@ -67,7 +67,7 @@ provider:
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
        
    
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
@@ -150,7 +150,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
   order_detail:
     handler: handlers/order_detail.order_detail
@@ -177,7 +177,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${env:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   sales_details:
     handler: handlers/sales_details.sales_details
     runtime: python3.8
