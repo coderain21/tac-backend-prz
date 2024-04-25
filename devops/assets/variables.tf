@@ -93,5 +93,9 @@ variable "WEB_PUSH_SECRET_KEY" {
   type        = string
   description = "Description of the variable"
 }
+variable "STRIPE_PAYMENT_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
 
 

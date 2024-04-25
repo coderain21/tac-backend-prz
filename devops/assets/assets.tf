@@ -459,3 +459,10 @@ resource "aws_ssm_parameter" "web_push_secret_key" {
   overwrite = true
   provider = aws.deployment-eu
 }
+resource "aws_ssm_parameter" "stripe_payment_key" {
+  name  = "STRIPE_PAYMENT_KEY"
+  type  = "String"
+  value = "eu-wes-2"
+  overwrite = true
+  provider = aws.deployment-eu
+}
