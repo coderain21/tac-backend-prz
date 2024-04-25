@@ -89,5 +89,9 @@ variable "LOCATION_API" {
   type        = string
   description = "Description of the variable"
 }
+variable "WEB_PUSH_SECRET_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
 
 

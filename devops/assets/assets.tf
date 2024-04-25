@@ -437,4 +437,25 @@ resource "aws_ssm_parameter" "location_api" {
   overwrite = true
   provider = aws.deployment-eu
 }
+resource "aws_ssm_parameter" "stage" {
+  name  = "STAGE"
+  type  = "String"
+  value = var.STAGE
+  overwrite = true
+  provider = aws.deployment-eu
+}
 
+resource "aws_ssm_parameter" "region" {
+  name  = "REGION"
+  type  = "String"
+  value = "eu-wes-2"
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "web_push_secret_key" {
+  name  = "WEB_PUSH_SECRET_KEY"
+  type  = "String"
+  value = "eu-wes-2"
+  overwrite = true
+  provider = aws.deployment-eu
+}
