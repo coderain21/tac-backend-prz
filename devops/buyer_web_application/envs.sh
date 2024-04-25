@@ -14,10 +14,10 @@ for param_name in $parameter_names; do
     
     # Append key-value pair to environment object
     if [ "$first_param" = true ]; then
-        env_object="$env_object\"$param_name\": \"$param_value\""
+        env_object="$env_object\"NEXT_PUBLIC_$param_name\": \"$param_value\""
         first_param=false
     else
-        env_object="$env_object, \"$param_name\": \"$param_value\""
+        env_object="$env_object, \"NEXT_PUBLIC_$param_name\": \"$param_value\""
     fi
 done
 

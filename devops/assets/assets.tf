@@ -395,11 +395,9 @@ resource "aws_ssm_parameter" "google_client_secret" {
   provider = aws.deployment-eu
 }
 
-
-resource "aws_ssm_parameter" "buyyer_domain" {
-  name  = "BASE_URL_BUYER"
+resource "aws_ssm_parameter" "bitbucket_secret" {
+  name  = "BITBUCKET_SECRET"
   type  = "String"
-  value = "https://www.${local.sub_domain}"
+  value = "NULL"
   provider = aws.deployment-eu
-  overwrite = true
 }

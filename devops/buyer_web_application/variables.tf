@@ -74,3 +74,20 @@ variable "GOOGLE_CLIENT_SECRET" {
   type        = string
   description = "Description of the variable"
 }
+
+
+variable "BITBUCKET_BRANCH" {
+  type        = string
+  description = "Description of the variable"
+}
+
+variable "REPOSITORY_URL" {
+  type        = string
+  description = "Description of the variable"
+}
+
+variable "BITBUCKET_SECRET" {
+  type        = string
+  description = "Description of the variable"
+}
+

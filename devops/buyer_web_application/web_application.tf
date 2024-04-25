@@ -1,15 +1,8 @@
-data "external" "token" {
-  program = ["/bin/bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${data.external.env.result["BITBUCKET_SECRET"]}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
+data "external" "env" {
+  program = ["./envs.sh"]
 }
-
- 
-
-output "oauth_token" {
-  value = data.external.token.result.token
-}
-
 provider "aws" {
-  region = "eu-central-2"
+  region = var.REGION
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
@@ -19,21 +12,49 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+
 provider "aws" {
   region = "us-east-1"
   alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  profile = "indyauction-${var.STAGE}"
 }
 
-provider "aws" {
-  region = var.REGION
+data "external" "token" {
+  program = ["bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${var.BITBUCKET_SECRET}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
 }
 
+
+data "aws_ssm_parameter" "bitbucket" {
+  name = "BITBUCKET_SECRET"
+  provider = aws.deployment-eu
+}
+
+locals {
+  ssm_value = try(data.aws_ssm_parameter.bitbucket.value, null)
+  external_token = data.external.token.result.token
+  
+  token = local.ssm_value == "NULL" ? local.external_token : local.ssm_value
+}
+
+
+resource "aws_ssm_parameter" "bitbucket_secret" {
+  name  = "BITBUCKET_SECRET"
+  type  = "String"
+  value = local.token
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+locals {
+  environment_variables = {
+    for key, value in data.external.env.result : key => value
+  }
+}
 
 resource "aws_amplify_app" "customer_web_application" {
-  name       = "customer_web_application"
-  repository = ${data.external.env.result["REPOSITORY_URL"]}
-  oauth_token = "${data.external.token.result.token}"
+  name       = "buyer_web_application"
+  repository = var.REPOSITORY_URL
+  oauth_token = "${local.token}"
   platform = "WEB_COMPUTE"
   # The default build_spec added by the Amplify Console for React.
   build_spec = <<-EOT
@@ -63,21 +84,21 @@ resource "aws_amplify_app" "customer_web_application" {
     target = "/index.html"
   }
 
-  environment_variables = {
-    test = "test"
-  }
+  environment_variables = local.environment_variables
+  provider = aws.deployment-eu
 }
 
 locals {
-  computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
 
-output "env_result" {
-  value = data.external.env.result
+locals {
+  computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
+
 resource "aws_amplify_branch" "amplify_branch" {
   app_id      = aws_amplify_app.customer_web_application.id
-  branch_name = "${data.external.env.result["BITBUCKET_BRANCH"]}"
+  branch_name = "${var.BITBUCKET_BRANCH}"
   depends_on = [aws_amplify_app.customer_web_application]
   provider = aws.deployment-eu
 }
@@ -85,8 +106,8 @@ resource "aws_amplify_branch" "amplify_branch" {
 
 resource "aws_amplify_domain_association" "domain_association" {
   app_id      = aws_amplify_app.customer_web_application.id
-  domain_name = var.DOMAIN
-  wait_for_verification = false
+  domain_name = local.sub_domain
+  wait_for_verification = true
 
   
   sub_domain {
@@ -100,6 +121,16 @@ resource "aws_ssm_parameter" "amplify_id" {
   name  = "AMPLIFY_APP_ID"
   overwrite = true
   type  = "String"
-  value = data.external.env.result["AMPLIFY_APP_ID"]
-  provider = aws.deployment-ap
+  value = aws_amplify_app.customer_web_application.id
+  provider = aws.deployment-eu
+}
+
+
+
+resource "aws_ssm_parameter" "buyyer_domain" {
+  name  = "BASE_URL_BUYER"
+  type  = "String"
+  value = "https://${local.computed_variable}.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
 }
