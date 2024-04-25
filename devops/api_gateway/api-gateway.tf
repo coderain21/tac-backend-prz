@@ -9,6 +9,11 @@ provider "aws" {
 }
 
 
+provider "aws" {
+  region = var.REGION
+  alias = "route53-domain"   # Specify a default AWS region here
+  profile = "indyauction-${var.DOMAIN_ACCOUNT}"
+}
 
 #AWS Provider with profile Stage account
 provider "aws" {
@@ -25,7 +30,7 @@ locals {
 #Fetches the data from Main Domain Hosted Zones
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
-  provider = aws.deployment-us
+  provider = aws.route53-domain
 }
 
 data "aws_acm_certificate" "existing_certificate" {
@@ -54,7 +59,7 @@ resource "aws_route53_record" "record_updater" {
   name    = "apis.${local.sub_domain}"
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
-  provider = aws.main
+  provider = aws.route53-domain
   
   #configures the domain name and Cname which will be added in hosted zone
   alias {
