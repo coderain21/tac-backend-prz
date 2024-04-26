@@ -11,7 +11,7 @@
     },
     "servers": [
       {
-        "url": "https://apis-dev.indyauction.net/v1/seller-bidder-management"
+        "url": "https://apis.dev.indyauction.net/v1/seller-bidder-management"
       }
     ],
     "tags": [
