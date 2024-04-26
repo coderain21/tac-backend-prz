@@ -337,7 +337,7 @@ module.exports.handler = async (event, context, callback) => {
                     // Start a new execution
                     startExecutionsPromise.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
                     // Update the end date of the lot in MongoDB
-                    mongodbPromise.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
+                    // mongodbPromise.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
                 }
             }
             // Run all the promises in parallel

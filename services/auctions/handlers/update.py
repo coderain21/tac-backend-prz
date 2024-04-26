@@ -99,7 +99,9 @@ def update_auction(event, context):
     """
     try:
         try:
+            print('eventtttttttttttttttttt', event)
             seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('seller_email', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
@@ -150,7 +152,15 @@ def update_auction(event, context):
 
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
-        seller_data = collection_seller.find_one(  {"seller_email": seller_email}, {"_id": 0})
+        print('collection_seller', collection_seller)
+        seller_data = collection_seller.find_one(  {"email_address": seller_email}, {"_id": 0})
+        # print('seller data', seller_data)
+        # if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
+        #     return {
+        #         "statusCode": 400,
+        #         'headers': headers,
+        #         "body": json.dumps({"message": "Stripe account not linked."})
+        #     }
 
         if auction_record is None:
             return {
@@ -160,12 +170,12 @@ def update_auction(event, context):
             }
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            if kyc_kyb_review is not True:
-                return {
-                        "statusCode": 400,
-                        'headers': headers,
-                        "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
-                    }
+            # if kyc_kyb_review is not True:
+            #     return {
+            #             "statusCode": 400,
+            #             'headers': headers,
+            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
+            #         }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
@@ -202,6 +212,13 @@ def update_auction(event, context):
                     "statusCode": 400,
                     'headers': headers,
                     "body": json.dumps({"message": "Some lots are missing lot images"})
+                }
+            print('seller data', seller_data['stripe_status'])
+            if seller_data['stripe_status'] == 'disconnected':
+                return {
+                    "statusCode": 400,
+                    'headers': headers,
+                    "body": json.dumps({"message": "Stripe account not linked."})
                 }
             if total_lots < 1:
                 return {
@@ -317,7 +334,10 @@ def update_auction(event, context):
 
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
+            # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
+
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
+                print('inside update323323', listLots)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
                         if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:

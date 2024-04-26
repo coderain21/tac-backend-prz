@@ -448,6 +448,7 @@ functions:
   process-cart:
     handler: handlers/add_to_cart.handler
     timeout: 120
+    memorySize: 5120
     layers:
       - ${ssm:COMMON_LIB_ARN}
 
