@@ -20,24 +20,10 @@ aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
-
-parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
-
-# # Loop through each parameter
-for param_name in "${parameter_names[@]}"; do
-    echo "$param_name"
-    # Get parameter value
-    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
-
-    # Set environment variable
-    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
-
-    echo "Set $param_name as environment variable with value: $param_value"
-done <<< "$parameter_names"
-
-
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
+terraform -chdir=devops/ses init
+terraform -chdir=devops/ses apply -auto-approve
 terraform -chdir=devops/admin_web_application init
 terraform -chdir=devops/admin_web_application apply -auto-approve
 terraform -chdir=devops/seller_web_application init
@@ -69,20 +55,6 @@ if [ "${STAGE}" = "prod" ]; then
     terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
-
-parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
-
-# Loop through each parameter
-for param_name in "${parameter_names[@]}"; do
-    echo "$param_name"
-    # Get parameter value
-    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
-
-    # Set environment variable
-    export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
-
-    echo "Set $param_name as environment variable with value: $param_value"
-done <<< "$parameter_names"
 npm i -g serverless@3.15.2
 npm i -g @serverless/compose
 npm i serverless-aws-documentation
@@ -111,6 +83,22 @@ sls deploy --region $REGION --stage $STAGE
 cd ../..
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+terraform -chdir=devops/seller_web_application init
+STATE_FILE="devops/seller_web_application/terraform.tfstate"
+# Check if the state file exists
+if [ -f "$STATE_FILE" ]; then
+  # Extract the DOMAIN_ASSOCIATION_ID only if the state file exists
+  DOMAIN_ASSOCIATION_ID=$(terraform state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
+  
+  # Use the extracted ID (if any) in your subsequent commands
+  echo "Extracted DOMAIN_ASSOCIATION_ID: $DOMAIN_ASSOCIATION_ID"
+  terraform -chdir=devops/seller_web_application state rm aws_amplify_domain_association.domain_association
+  terraform import aws_amplify_domain_association.domain_association $DOMAIN_ASSOCIATION_ID
+  # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
+else
+  echo "Terraform state file '$STATE_FILE' not found. Skipping..."
+fi
+terraform -chdir=devops/seller_web_application apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 sls deploy --stage ${STAGE} --max-concurrency 5
 
