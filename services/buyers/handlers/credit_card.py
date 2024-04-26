@@ -39,7 +39,7 @@ def credit_card(event, context):
     auction_id = data['auction_id']
     auction_id =ObjectId(auction_id)
     # Set your Stripe API key
-    stripe.api_key = os.environ['CREDIT_CARD_STRIPE_API_KEY']
+    stripe.api_key = os.environ['STRIPE_API_KEY']
     try:
         # Create a SetupIntent to confirm the PaymentMethod
         client = MongoClient(os.environ['MONGO_CLIENT'])

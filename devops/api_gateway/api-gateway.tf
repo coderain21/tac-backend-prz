@@ -1,41 +1,47 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 
   
 #AWS Provider with profile main account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  profile = "indyauction-${var.STAGE}"
 }
 
 
+# provider "aws" {
+#   region = var.REGION
+#   alias = "route53-domain"   # Specify a default AWS region here
+#   profile = "indyauction-${var.DOMAIN_ACCOUNT}"
+# }
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 ########
+locals {
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
+}
 
 #Fetches the data from Main Domain Hosted Zones
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
-  provider = aws.main
+  name = local.sub_domain # Replace with your domain name
+  provider = aws.
 }
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
+  domain   = "*.${local.sub_domain}"
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
 
 #creates a API DOMAIN NAME with ACM certificate generated for regional configuration
 resource "aws_api_gateway_domain_name" "dev_api" {
-  domain_name              = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
+  domain_name              = "apis.${local.sub_domain}"
   regional_certificate_arn = data.aws_acm_certificate.existing_certificate.arn
 
   endpoint_configuration {
@@ -50,10 +56,10 @@ resource "aws_api_gateway_domain_name" "dev_api" {
 
 # Adds DNS record of newly created API domain name to Hosted Zone in main acc using Route53.
 resource "aws_route53_record" "record_updater" {
-  name    = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
+  name    = "apis.${local.sub_domain}"
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
-  provider = aws.main
+  provider = aws.
   
   #configures the domain name and Cname which will be added in hosted zone
   alias {
@@ -67,21 +73,21 @@ resource "aws_route53_record" "record_updater" {
 resource "aws_ssm_parameter" "api_gateway_domain_name" {
   name  = "DOMAIN_NAME"
   type  = "String"
-  value = "apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
+  value = "apis.${local.sub_domain}"
   provider = aws.deployment-us
   overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_domain_name_frontend" {
   name  = "DOMAIN_NAME_FRONT_END"
   type  = "String"
-  value = "https://apis-${data.external.env.result["STAGE"]}.${data.external.env.result["DOMAIN"]}"
+  value = "https://apis.${local.sub_domain}"
   provider = aws.deployment-us
   overwrite = true
 }
 resource "aws_ssm_parameter" "api_gateway_certificate" {
   name  = "DOMAIN_CERTIFICATE"
   type  = "String"
-  value = "*.${data.external.env.result["DOMAIN"]}"
+  value = "*.${local.sub_domain}"
   provider = aws.deployment-us
   overwrite = true
 }

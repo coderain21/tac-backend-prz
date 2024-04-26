@@ -11,7 +11,7 @@
     },
     "servers": [
       {
-        "url": "https://apis-dev.indyauction.net/v1/lot-bid-history"
+        "url": "https://apis.dev.indyauction.net/v1/lot-bid-history"
       }
     ],
     "tags": [

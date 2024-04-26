@@ -1,55 +1,51 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
+ 
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
-provider "aws" {
-  region = "us-east-1"
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
-}
-
-provider "aws" {
-  region = data.external.env.result["REGION"]
-}
-
-resource "aws_s3_bucket" "b" {
-  bucket = "${data.external.env.result["ADMIN_APPLICATION"]}-${data.external.env.result["STAGE"]}"
+resource "aws_s3_bucket" "bucket" {
+  bucket = "indy-auction-admin-web-application-${var.STAGE}"
+  force_destroy = true
 
   tags = {
-    Name = "${data.external.env.result["STAGE"]}"
+    Name = "${var.STAGE}"
   }
+  provider = aws.deployment-eu
 }
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
-  bucket = aws_s3_bucket.b.id
-
+  bucket = aws_s3_bucket.bucket.id
   rule {
     object_ownership = "ObjectWriter"
   }
+  provider = aws.deployment-eu
 }
 
 
+
 resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
-  bucket = aws_s3_bucket.b.id
+  bucket = aws_s3_bucket.bucket.id
 
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
+  provider = aws.deployment-eu
 }
 
 
+locals {
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
+}
+
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
+  domain   = "*.${local.sub_domain}"
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-us
 }
@@ -62,15 +58,26 @@ locals {
   s3_origin_id = "myS3Origin"
 }
 locals {
-  computed_variable = "${data.external.env.result["STAGE"]}" == "prod" ? "admin.${data.external.env.result["DOMAIN"]}" : "${data.external.env.result["STAGE"]}-admin.${data.external.env.result["DOMAIN"]}"
+  computed_variable = "${var.STAGE}" == "prod" ? "admin.${local.sub_domain}" : "admin.${local.sub_domain}"
 }
+
+resource "aws_cloudfront_origin_access_control" "cdn" {
+  name                              = "admin-web-application-${var.STAGE}"
+  description                       = "admin-web-application-${var.STAGE}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+  provider = aws.deployment-eu
+}
+
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
-    domain_name = aws_s3_bucket.b.bucket_regional_domain_name
+    domain_name = aws_s3_bucket.bucket.bucket_regional_domain_name
     origin_id = local.s3_origin_id
+    origin_access_control_id = aws_cloudfront_origin_access_control.cdn.id
   }
-  provider = aws.deployment-eu
+  provider = aws.deployment-us
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "Some comment"
@@ -106,7 +113,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
   tags = {
-    Environment = "${data.external.env.result["STAGE"]}"
+    Environment = "${var.STAGE}"
   }
   restrictions {
     geo_restriction {
@@ -121,8 +128,37 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
-  provider = aws.main
+  name = local.sub_domain
+  provider = aws.deployment-us
+}
+
+
+resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
+  bucket = aws_s3_bucket.bucket.id
+  policy = data.aws_iam_policy_document.allow_access_from_another_account.json
+  provider = aws.deployment-eu
+}
+data "aws_iam_policy_document" "allow_access_from_another_account" {
+  provider = aws.deployment-eu
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    actions = [
+      "s3:GetObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.bucket.arn}/*",
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [
+        aws_cloudfront_distribution.s3_distribution.arn
+      ]
+    }
+  }
 }
 
 resource "aws_route53_record" "my_cname" {
@@ -130,14 +166,14 @@ resource "aws_route53_record" "my_cname" {
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
-  provider = aws.main
+  provider = aws.deployment-us
   ttl     = 300
 }
 
 resource "aws_ssm_parameter" "s3_bucket" {
   name  = "ADMIN_S3_BUCKET"
   type  = "String"
-  value = "${data.external.env.result["ADMIN_APPLICATION"]}-${data.external.env.result["STAGE"]}"
+  value = "indy-auction-admin-web-application-${var.STAGE}"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -154,6 +190,13 @@ resource "aws_ssm_parameter" "application_url" {
   name  = "ADMIN_APPLICATION_URL"
   type  = "String"
   value = local.computed_variable
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "base_url_admin" {
+  name  = "BASE_URL_ADMIN"
+  type  = "String"
+  value = "https://${local.computed_variable}"
   provider = aws.deployment-eu
   overwrite = true
 }

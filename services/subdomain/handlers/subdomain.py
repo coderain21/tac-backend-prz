@@ -3,9 +3,8 @@ import json
 import os
 from pymongo import MongoClient
 import boto3
-access_key=os.environ.get('AWS_MAIN_ACCESS_KEY_ID')
-secret_key=os.environ.get('AWS_MAIN_SECRET_ACCESS_KEY')
-amplify_client = boto3.client('amplify',region_name= 'eu-west-2', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+
+amplify_client = boto3.client('amplify',region_name= 'eu-west-2')
 
 cognito_client = boto3.client('cognito-idp')
 

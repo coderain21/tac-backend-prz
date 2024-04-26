@@ -37,7 +37,7 @@ def verify_buyer_recaptcha(token, hostname):
     try:
         recaptcha_url = os.environ['BUYER_RECAPTCHA_URL']  # Replace with the actual ReCaptcha URL for buyers
         payload = {
-            'secret': os.environ['BUYER_RECAPTCHA_KEY'],  # Replace with the actual ReCaptcha key for buyers
+            'secret': os.environ['RECAPTCHA_KEY'],  # Replace with the actual ReCaptcha key for buyers
             'response': token,
             'hostname': hostname
         }

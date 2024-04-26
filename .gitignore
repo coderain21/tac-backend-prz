@@ -69,3 +69,6 @@ env
 .env
 login.sh
 services/**/package-lock.json
+devops/ecs/ecs_task.env
+devops/mongodb/tf-key-pair-dev.pem
+.serverless/*
