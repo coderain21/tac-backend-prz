@@ -524,347 +524,347 @@ resources:
 
 
 
-    AdminUsers:
-      Type: "AWS::Cognito::UserPool"
-      Properties:
-        UserPoolName: ${self:provider.stage}-indyauction-admin
-        Policies:
-          PasswordPolicy:
-            MinimumLength: 8
-            RequireUppercase: true
-            RequireLowercase: true
-            RequireNumbers: true
-            RequireSymbols: true
-            TemporaryPasswordValidityDays: 7
-        # DeletionProtection: ACTIVE
-        Schema:
-          - Name: sub
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: false
-            Required: true
-            StringAttributeConstraints:
-              MinLength: "1"
-              MaxLength: "2048"
-          - Name: name
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: given_name
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: family_name
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: middle_name
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: nickname
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: preferred_username
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: profile
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: picture
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: website
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: email
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: true
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: email_verified
-            AttributeDataType: Boolean
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-          - Name: gender
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: birthdate
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "10"
-              MaxLength: "10"
-          - Name: zoneinfo
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: locale
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: phone_number
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          # - Name: phonenumber_verified
-          #   AttributeDataType: Boolean
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          - Name: address
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-              MaxLength: "2048"
-          - Name: updated_at
-            AttributeDataType: Number
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            NumberAttributeConstraints:
-              MinValue: "0"
-          - Name: email_address
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-          - Name: user_type
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-          - Name: user_name
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-          - Name: first_time_login
-            AttributeDataType: Number
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MinLength: "0"
-          # - Name: identities
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MaxLength: "2048"
-          - Name: is_first_time_login
-            AttributeDataType: String
-            DeveloperOnlyAttribute: false
-            Mutable: true
-            Required: false
-            StringAttributeConstraints:
-              MaxLength: "2048"
-        AliasAttributes:
-          - preferred_username
-        # UsernameAttributes: 
-        #   - email
-        VerificationMessageTemplate:
-          DefaultEmailOption: CONFIRM_WITH_CODE
-        UserAttributeUpdateSettings:
-          AttributesRequireVerificationBeforeUpdate: []
-        MfaConfiguration: "OFF"
-        # EnabledMfas:
-        #   - SOFTWARE_TOKEN_MFA
-        EmailConfiguration:
-          EmailSendingAccount: COGNITO_DEFAULT
-        UsernameConfiguration:
-          CaseSensitive: true
-        AccountRecoverySetting:
-          RecoveryMechanisms:
-            - Priority: 1
-              Name: admin_only
+    # AdminUsers:
+    #   Type: "AWS::Cognito::UserPool"
+    #   Properties:
+    #     UserPoolName: ${self:provider.stage}-indyauction-admin
+    #     Policies:
+    #       PasswordPolicy:
+    #         MinimumLength: 8
+    #         RequireUppercase: true
+    #         RequireLowercase: true
+    #         RequireNumbers: true
+    #         RequireSymbols: true
+    #         TemporaryPasswordValidityDays: 7
+    #     # DeletionProtection: ACTIVE
+    #     Schema:
+    #       - Name: sub
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: false
+    #         Required: true
+    #         StringAttributeConstraints:
+    #           MinLength: "1"
+    #           MaxLength: "2048"
+    #       - Name: name
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: given_name
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: family_name
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: middle_name
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: nickname
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: preferred_username
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: profile
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: picture
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: website
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: email
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: true
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: email_verified
+    #         AttributeDataType: Boolean
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #       - Name: gender
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: birthdate
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "10"
+    #           MaxLength: "10"
+    #       - Name: zoneinfo
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: locale
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: phone_number
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       # - Name: phonenumber_verified
+    #       #   AttributeDataType: Boolean
+    #       #   DeveloperOnlyAttribute: false
+    #       #   Mutable: true
+    #       #   Required: false
+    #       - Name: address
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #           MaxLength: "2048"
+    #       - Name: updated_at
+    #         AttributeDataType: Number
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         NumberAttributeConstraints:
+    #           MinValue: "0"
+    #       - Name: email_address
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MaxLength: "2048"
+    #       - Name: user_type
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MaxLength: "2048"
+    #       - Name: user_name
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MaxLength: "2048"
+    #       - Name: first_time_login
+    #         AttributeDataType: Number
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MinLength: "0"
+    #       # - Name: identities
+    #       #   AttributeDataType: String
+    #       #   DeveloperOnlyAttribute: false
+    #       #   Mutable: true
+    #       #   Required: false
+    #       #   StringAttributeConstraints:
+    #       #     MaxLength: "2048"
+    #       - Name: is_first_time_login
+    #         AttributeDataType: String
+    #         DeveloperOnlyAttribute: false
+    #         Mutable: true
+    #         Required: false
+    #         StringAttributeConstraints:
+    #           MaxLength: "2048"
+    #     AliasAttributes:
+    #       - preferred_username
+    #     # UsernameAttributes: 
+    #     #   - email
+    #     VerificationMessageTemplate:
+    #       DefaultEmailOption: CONFIRM_WITH_CODE
+    #     UserAttributeUpdateSettings:
+    #       AttributesRequireVerificationBeforeUpdate: []
+    #     MfaConfiguration: "OFF"
+    #     # EnabledMfas:
+    #     #   - SOFTWARE_TOKEN_MFA
+    #     EmailConfiguration:
+    #       EmailSendingAccount: COGNITO_DEFAULT
+    #     UsernameConfiguration:
+    #       CaseSensitive: true
+    #     AccountRecoverySetting:
+    #       RecoveryMechanisms:
+    #         - Priority: 1
+    #           Name: admin_only
 
-    AdminUsersClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        AccessTokenValidity: 1
-        AllowedOAuthFlowsUserPoolClient: false
-        AuthSessionValidity: 10
-        ClientName: admin
-        UserPoolId: { Ref: AdminUsers }
-        EnablePropagateAdditionalUserContextData: false
-        EnableTokenRevocation: true
-        ExplicitAuthFlows:
-          - ALLOW_CUSTOM_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-          - ALLOW_USER_SRP_AUTH
-          - ALLOW_ADMIN_USER_PASSWORD_AUTH
-          - ALLOW_USER_PASSWORD_AUTH
-        IdTokenValidity: 1
-        PreventUserExistenceErrors: ENABLED
-        RefreshTokenValidity: 360
-        TokenValidityUnits:
-          AccessToken: days
-          IdToken: days
-          RefreshToken: days
+    # AdminUsersClient:
+    #   Type: AWS::Cognito::UserPoolClient
+    #   Properties:
+    #     AccessTokenValidity: 1
+    #     AllowedOAuthFlowsUserPoolClient: false
+    #     AuthSessionValidity: 10
+    #     ClientName: admin
+    #     UserPoolId: { Ref: AdminUsers }
+    #     EnablePropagateAdditionalUserContextData: false
+    #     EnableTokenRevocation: true
+    #     ExplicitAuthFlows:
+    #       - ALLOW_CUSTOM_AUTH
+    #       - ALLOW_REFRESH_TOKEN_AUTH
+    #       - ALLOW_USER_SRP_AUTH
+    #       - ALLOW_ADMIN_USER_PASSWORD_AUTH
+    #       - ALLOW_USER_PASSWORD_AUTH
+    #     IdTokenValidity: 1
+    #     PreventUserExistenceErrors: ENABLED
+    #     RefreshTokenValidity: 360
+    #     TokenValidityUnits:
+    #       AccessToken: days
+    #       IdToken: days
+    #       RefreshToken: days
 
-    AdminCognitoIdentityPool:
-      Type: AWS::Cognito::IdentityPool
-      Properties:
-        IdentityPoolName: indyauction-admin-${self:provider.stage}
-        AllowUnauthenticatedIdentities: true
-        AllowClassicFlow: true
-        CognitoIdentityProviders: 
-          - ClientId: !Ref AdminUsersClient
-            ProviderName: !GetAtt AdminUsers.ProviderName
-            ServerSideTokenCheck: false
-        # Define more configuration properties as needed
+    # AdminCognitoIdentityPool:
+    #   Type: AWS::Cognito::IdentityPool
+    #   Properties:
+    #     IdentityPoolName: indyauction-admin-${self:provider.stage}
+    #     AllowUnauthenticatedIdentities: true
+    #     AllowClassicFlow: true
+    #     CognitoIdentityProviders: 
+    #       - ClientId: !Ref AdminUsersClient
+    #         ProviderName: !GetAtt AdminUsers.ProviderName
+    #         ServerSideTokenCheck: false
+    #     # Define more configuration properties as needed
     
         
    
-    AdminCognitoIdentityPoolRole:
-      Type: AWS::Cognito::IdentityPoolRoleAttachment
-      Properties:
-        IdentityPoolId:
-          Ref: AdminCognitoIdentityPool
-        Roles:
-          authenticated:
-            Fn::GetAtt: [AdminRoleLogicalName, Arn] # Replace with your IAM role
+    # AdminCognitoIdentityPoolRole:
+    #   Type: AWS::Cognito::IdentityPoolRoleAttachment
+    #   Properties:
+    #     IdentityPoolId:
+    #       Ref: AdminCognitoIdentityPool
+    #     Roles:
+    #       authenticated:
+    #         Fn::GetAtt: [AdminRoleLogicalName, Arn] # Replace with your IAM role
     
-    AdminRoleLogicalName: # Define your IAM role here
-      Type: AWS::IAM::Role
-      Properties:
-        AssumeRolePolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Principal:
-                Federated: "cognito-identity.amazonaws.com"
-              Action: "sts:AssumeRoleWithWebIdentity"
-              Condition:
-                StringEquals:
-                  "cognito-identity.amazonaws.com:aud": 
-                    Ref: AdminCognitoIdentityPool
-                "ForAnyValue:StringLike":
-                  "cognito-identity.amazonaws.com:amr": "authenticated"
+    # AdminRoleLogicalName: # Define your IAM role here
+    #   Type: AWS::IAM::Role
+    #   Properties:
+    #     AssumeRolePolicyDocument:
+    #       Version: "2012-10-17"
+    #       Statement:
+    #         - Effect: "Allow"
+    #           Principal:
+    #             Federated: "cognito-identity.amazonaws.com"
+    #           Action: "sts:AssumeRoleWithWebIdentity"
+    #           Condition:
+    #             StringEquals:
+    #               "cognito-identity.amazonaws.com:aud": 
+    #                 Ref: AdminCognitoIdentityPool
+    #             "ForAnyValue:StringLike":
+    #               "cognito-identity.amazonaws.com:amr": "authenticated"
 
-        Policies:
-          - PolicyName: S3AccessPolicy
-            PolicyDocument:
-              Version: "2012-10-17"
-              Statement:
-                - Effect: "Allow"
-                  Action:
-                    - "s3:*" # Adjust permissions as needed
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+    #     Policies:
+    #       - PolicyName: S3AccessPolicy
+    #         PolicyDocument:
+    #           Version: "2012-10-17"
+    #           Statement:
+    #             - Effect: "Allow"
+    #               Action:
+    #                 - "s3:*" # Adjust permissions as needed
+    #               Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
   
 
-    AdminCognitoIdentityPoolIDStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: ADMIN_COGNITO_IDENTITY_POOL_ID
-          Type: String
-          Value: { Ref: AdminCognitoIdentityPool }
+    # AdminCognitoIdentityPoolIDStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: ADMIN_COGNITO_IDENTITY_POOL_ID
+    #       Type: String
+    #       Value: { Ref: AdminCognitoIdentityPool }
 
-    AdminCognitoPoolIDStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: ADMIN_COGNITO_USERPOOL_ID
-          Type: String
-          Value: { Ref: AdminUsers }
+    # AdminCognitoPoolIDStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: ADMIN_COGNITO_USERPOOL_ID
+    #       Type: String
+    #       Value: { Ref: AdminUsers }
 
-    AdminCognitoPoolNameStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: ADMIN_COGNITO_USERPOOL_NAME
-          Type: String
-          Value: indyauction-admin-${self:provider.stage}
-    AdminCognitoClientIDStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: ADMIN_COGNITO_CLIENT_ID
-          Type: String
-          Value: { Ref: AdminUsersClient }
+    # AdminCognitoPoolNameStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: ADMIN_COGNITO_USERPOOL_NAME
+    #       Type: String
+    #       Value: indyauction-admin-${self:provider.stage}
+    # AdminCognitoClientIDStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: ADMIN_COGNITO_CLIENT_ID
+    #       Type: String
+    #       Value: { Ref: AdminUsersClient }
   
     
-    AdminCognitoPoolARNStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: ADMIN_COGNITO_AUTH_ARN
-          Type: String
-          Value:
-            Fn::GetAtt:
-              - AdminUsers
-              - Arn     
+    # AdminCognitoPoolARNStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: ADMIN_COGNITO_AUTH_ARN
+    #       Type: String
+    #       Value:
+    #         Fn::GetAtt:
+    #           - AdminUsers
+    #           - Arn     
     
     BuyerEmailOtp:
       Type: AWS::Pinpoint::EmailTemplate

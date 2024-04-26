@@ -39,7 +39,7 @@ def generate_token(user_type):
             print(user_pool_id,client_id, username, password)
         if user_type == 'ADMIN':
             user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
-            client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
+            client_id = os.environ['ADMIN_COGNITO_CLIENT_ID']
             username = os.environ['ADMIN_USERNAME']
             password = os.environ['ADMIN_PASSWORD']
             print(user_pool_id,client_id, username, password)

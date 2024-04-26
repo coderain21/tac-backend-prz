@@ -797,7 +797,49 @@ resources:
           RefreshToken: days
 
 
-   
+    AdminUsersClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        AccessTokenValidity: 60
+        AllowedOAuthFlowsUserPoolClient: true
+        AuthSessionValidity: 10
+        ClientName: admin
+        UserPoolId: { Ref: SellerUsers }
+        EnablePropagateAdditionalUserContextData: false
+        EnableTokenRevocation: true
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        SupportedIdentityProviders:
+          - "COGNITO"
+        AllowedOAuthFlows:
+          - implicit
+          - code
+        AllowedOAuthScopes:
+          - openid
+          - profile
+          - email
+          - aws.cognito.signin.user.admin
+        CallbackURLs:
+          - "${ssm:BASE_URL_ADMIN}/"
+          - "${ssm:BASE_URL_ADMIN}/"
+          - "http://localhost:3000/"
+          - "http://localhost:3001/"
+        LogoutURLs:
+          - "${ssm:BASE_URL_ADMIN}/"
+          - "http://localhost:3000/"
+        IdTokenValidity: 60
+        PreventUserExistenceErrors: LEGACY
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+
+ 
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
@@ -808,8 +850,10 @@ resources:
           - ClientId: !Ref SellerUsersClient
             ProviderName: !GetAtt SellerUsers.ProviderName
             ServerSideTokenCheck: false
+          - ClientId: !Ref AdminUsersClient
+            ProviderName: !GetAtt SellerUsers.ProviderName
+            ServerSideTokenCheck: false
         # Define more configuration properties as needed
-    
     MyApiGatewayAuthorizer: 
       Type: AWS::ApiGateway::Authorizer
       Properties: 
@@ -885,7 +929,12 @@ resources:
           Type: String
           Value: { Ref: SellerUsersClient }
     
-    
+    AdminCognitoClientIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_CLIENT_ID
+          Type: String
+          Value: { Ref: AdminUsersClient }
     
     SellerCognitoPoolARNStore:
         Type: AWS::SSM::Parameter
@@ -895,7 +944,7 @@ resources:
           Value:
             Fn::GetAtt:
               - SellerUsers
-              - Arn     
+              - Arn         
     # SellerDomainStore:
     #     Type: AWS::SSM::Parameter
     #     Properties:
