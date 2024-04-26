@@ -154,7 +154,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /
           method: post
-          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   remove_wishlist:
     handler: handlers/remove_wishlist.remove
@@ -182,7 +182,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /remove
           method: delete
-          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   wishlist-listing:
     handler: handlers/wishlist_list.wishlist_list
     runtime: python3.8
@@ -209,7 +209,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /wishlist
           method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:

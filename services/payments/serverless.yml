@@ -162,7 +162,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /stripe
           method: get
-          authorizer: arn:aws:lambda:${env:REGION}:${env:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   stripe_payments_webhook:
     handler: handlers/stripe_webhook.update
     runtime: python3.8
