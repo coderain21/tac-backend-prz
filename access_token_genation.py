@@ -46,7 +46,6 @@ def generate_token(user_type):
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
-
         response = client.admin_initiate_auth(
             UserPoolId=user_pool_id,
             ClientId=client_id,
