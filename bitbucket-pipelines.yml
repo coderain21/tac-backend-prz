@@ -22,6 +22,8 @@ definitions:
           - ./envs.sh
           - npm install
           - echo "Build"
+        artifacts:
+          - .env
 
     - step: &CodeQuality
         name: Code Quality
