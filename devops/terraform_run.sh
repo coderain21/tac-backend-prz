@@ -15,7 +15,7 @@ aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_
 
 log_bucket="s3://indyauction-pipeline-states/$STAGE/"
 echo "$log_bucket"
-aws s3 sync $log_bucket . --profile $PROFILE_ENV
+aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
@@ -60,15 +60,15 @@ terraform -chdir=devops/redis-cluster init
 terraform -chdir=devops/redis-cluster apply -auto-approve
 terraform -chdir=devops/budgets init
 terraform -chdir=devops/budgets apply -auto-approve
-if [ "${STAGE}" = "qa" ]; then
-    terraform -chdir=devops/dependency/bitbucket-layer-node init
-    terraform -chdir=devops/dependency/bitbucket-layer-node apply -auto-approve
-fi
+terraform -chdir=devops/buyer_web_application init
+terraform -chdir=devops/buyer_web_application apply -auto-approve
+terraform -chdir=devops/ses init
+terraform -chdir=devops/ses apply -auto-approve
 if [ "${STAGE}" = "prod" ]; then
     terraform -chdir=devops/cloudwatch init
     terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 
 parameter_names=($(aws ssm describe-parameters --query "Parameters[*].Name" --output text --profile $PROFILE_ENV))
 
@@ -111,6 +111,6 @@ sls deploy --region $REGION --stage $STAGE
 cd ../..
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 sls deploy --stage ${STAGE} --max-concurrency 5
 
