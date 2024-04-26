@@ -21,12 +21,12 @@ resource "aws_s3_bucket" "bucket" {
 }
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
   bucket = aws_s3_bucket.bucket.id
-
   rule {
     object_ownership = "ObjectWriter"
   }
   provider = aws.deployment-eu
 }
+
 
 
 resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
@@ -61,10 +61,21 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "admin.${local.sub_domain}" : "admin.${local.sub_domain}"
 }
 
+resource "aws_cloudfront_origin_access_control" "cdn" {
+  name                              = "admin-web-application-${var.STAGE}"
+  description                       = "admin-web-application-${var.STAGE}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+  provider = aws.deployment-eu
+}
+
+
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = aws_s3_bucket.bucket.bucket_regional_domain_name
     origin_id = local.s3_origin_id
+    origin_access_control_id = aws_cloudfront_origin_access_control.cdn.id
   }
   provider = aws.deployment-us
   enabled             = true
@@ -119,6 +130,35 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain
   provider = aws.deployment-us
+}
+
+
+resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
+  bucket = aws_s3_bucket.bucket.id
+  policy = data.aws_iam_policy_document.allow_access_from_another_account.json
+  provider = aws.deployment-eu
+}
+data "aws_iam_policy_document" "allow_access_from_another_account" {
+  provider = aws.deployment-eu
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    actions = [
+      "s3:GetObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.bucket.arn}/*",
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [
+        aws_cloudfront_distribution.s3_distribution.arn
+      ]
+    }
+  }
 }
 
 resource "aws_route53_record" "my_cname" {

@@ -395,13 +395,13 @@ resource "aws_ssm_parameter" "google_client_secret" {
   provider = aws.deployment-eu
 }
 
-resource "aws_ssm_parameter" "bitbucket_secret" {
-  name  = "BITBUCKET_SECRET"
-  type  = "String"
-  value = "NULL"
-  overwrite = true
-  provider = aws.deployment-eu
-}
+# resource "aws_ssm_parameter" "bitbucket_secret" {
+#   name  = "BITBUCKET_SECRET"
+#   type  = "String"
+#   value = "NULL"
+#   overwrite = true
+#   provider = aws.deployment-eu
+# }
 resource "aws_ssm_parameter" "sitekey" {
   name  = "SITEKEY"
   type  = "String"

@@ -5,24 +5,28 @@
 provider "aws" {
   region  = var.REGION
   alias   = "main" # Specify a default AWS region here
-  profile = "paymaart-main"
+  profile = "indyauction-${var.STAGE}"
 }
 
 #AWS Provider with profile Stage account
 provider "aws" {
   region  = var.REGION
   alias   = "deployment-eu" # Specify a default AWS region here
-  profile = "paymaart-${var.STAGE}"
+  profile = "indyauction-${var.STAGE}"
+}
+
+locals {
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
 
 resource "aws_ses_domain_identity" "domain_identity" {
   provider = aws.deployment-eu                  # Use the "dev" alias for SES resources
-  domain   = var.DOMAIN # Replace with your domain
+  domain   = local.sub_domain # Replace with your domain
 }
 
 data "aws_route53_zone" "hosted_zone" {
   provider = aws.main
-  name     = var.DOMAIN # Replace with your existing domain
+  name     = local.sub_domain # Replace with your existing domain
 }
 
 
@@ -45,7 +49,7 @@ resource "aws_route53_record" "dkim_record" {
 
 resource "aws_pinpoint_app" "pinpoint_app" {
   provider = aws.deployment-eu
-  name = "paymaart"
+  name = "indyauction"
 }
 
 
@@ -60,7 +64,7 @@ resource "aws_pinpoint_email_channel" "email_channel" {
   provider = aws.deployment-eu
   application_id = aws_pinpoint_app.pinpoint_app.id
   enabled        = true
-  from_address = "no-reply@${var.DOMAIN}"
+  from_address = "no-reply@${local.sub_domain}"
   identity     = aws_ses_domain_identity.domain_identity.arn # Replace with SES identity ARN
 }
 
@@ -69,7 +73,7 @@ resource "aws_ssm_parameter" "sender_email" {
   provider = aws.deployment-eu
   name     = "SENDER_EMAIL_ADDRESS"
   type     = "String"
-  value    = "no-reply@${var.DOMAIN}"
+  value    = "no-reply@${local.sub_domain}"
 }
 
 resource "aws_ssm_parameter" "pinpoint_app_id" {

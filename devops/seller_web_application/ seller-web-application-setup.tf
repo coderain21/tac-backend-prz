@@ -80,10 +80,20 @@ locals {
   computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
 }
 
+resource "aws_cloudfront_origin_access_control" "cdn" {
+  name                              = "seller-web-application-${var.STAGE}"
+  description                       = "seller-web-application-${var.STAGE}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+  provider = aws.deployment-eu
+}
+
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = aws_s3_bucket.b.bucket_regional_domain_name
     origin_id = local.s3_origin_id
+    origin_access_control_id = aws_cloudfront_origin_access_control.cdn.id
   }
   provider = aws.deployment-eu
   enabled             = true
@@ -135,6 +145,36 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 
 }
+
+resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
+  bucket = aws_s3_bucket.b.id
+  policy = data.aws_iam_policy_document.allow_access_from_another_account.json
+  provider = aws.deployment-eu
+}
+data "aws_iam_policy_document" "allow_access_from_another_account" {
+  provider = aws.deployment-eu
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    actions = [
+      "s3:GetObject",
+    ]
+    resources = [
+      "${aws_s3_bucket.b.arn}/*",
+    ]
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [
+        aws_cloudfront_distribution.s3_distribution.arn
+      ]
+    }
+  }
+}
+
+
 
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name

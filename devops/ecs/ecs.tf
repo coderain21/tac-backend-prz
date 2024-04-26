@@ -311,6 +311,7 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   memory                   = "8192"
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
   container_definitions = local.definitions
+  skip_destroy = true
   provider = aws.deployment-eu
 }
 
