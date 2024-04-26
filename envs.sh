@@ -7,5 +7,4 @@ for param_name in "${parameter_names[@]}"; do
 
     # Append to .env file
     echo "${param_name##*/}=$param_value" >> .env  # Write key-value pair to .env file # Write key-value pair to .env file
-    echo "Added $param_name to .env file with value: $param_value"
 done
