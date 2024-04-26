@@ -399,5 +399,70 @@ resource "aws_ssm_parameter" "google_client_secret" {
 #   name  = "BITBUCKET_SECRET"
 #   type  = "String"
 #   value = "NULL"
+#   overwrite = true
 #   provider = aws.deployment-eu
 # }
+resource "aws_ssm_parameter" "sitekey" {
+  name  = "SITEKEY"
+  type  = "String"
+  value = var.SITEKEY
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "stripe_key" {
+  name  = "STRIPE_KEY"
+  type  = "String"
+  value = var.STRIPE_KEY
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "google_api_key" {
+  name  = "GOOGLE_API_KEY"
+  type  = "String"
+  value = var.GOOGLE_API_KEY
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "admin_user_authentication_type" {
+  name  = "ADMIN_USER_AUTHENTICATION_TYPE"
+  type  = "String"
+  value = "AMAZON_COGNITO_USER_POOLS"
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "location_api" {
+  name  = "LOCATION_API"
+  type  = "String"
+  value = var.LOCATION_API
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "stage" {
+  name  = "STAGE"
+  type  = "String"
+  value = var.STAGE
+  overwrite = true
+  provider = aws.deployment-eu
+}
+
+resource "aws_ssm_parameter" "region" {
+  name  = "REGION"
+  type  = "String"
+  value = "eu-wes-2"
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "web_push_secret_key" {
+  name  = "WEB_PUSH_SECRET_KEY"
+  type  = "String"
+  value = "eu-wes-2"
+  overwrite = true
+  provider = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "stripe_payment_key" {
+  name  = "STRIPE_PAYMENT_KEY"
+  type  = "String"
+  value = "eu-wes-2"
+  overwrite = true
+  provider = aws.deployment-eu
+}

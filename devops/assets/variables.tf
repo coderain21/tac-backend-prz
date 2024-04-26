@@ -74,7 +74,33 @@ variable "GOOGLE_CLIENT_SECRET" {
   description = "Description of the variable"
 }
 
-variable "DOMAIN_ACCOUNT" {
+# variable "DOMAIN_ACCOUNT" {
+#   type        = string
+#   description = "Description of the variable"
+# }
+variable "SITEKEY" {
   type        = string
   description = "Description of the variable"
 }
+variable "STRIPE_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "GOOGLE_API_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "LOCATION_API" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "WEB_PUSH_SECRET_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+variable "STRIPE_PAYMENT_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+
+
