@@ -69,16 +69,13 @@ resource "aws_pinpoint_email_channel" "email_channel" {
 }
 
 
-resource "aws_ssm_parameter" "sender_email" {
-  provider = aws.deployment-eu
-  name     = "SENDER_EMAIL_ADDRESS"
-  type     = "String"
-  value    = "no-reply@${local.sub_domain}"
-}
+
 
 resource "aws_ssm_parameter" "pinpoint_app_id" {
   provider = aws.deployment-eu
   name     = "PINPOINT_APPLICATION_ID"
   type     = "String"
   value    = aws_pinpoint_app.pinpoint_app.id
+  overwrite = true
 }
+

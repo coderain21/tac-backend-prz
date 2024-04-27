@@ -128,21 +128,7 @@ resource "aws_route53_record" "auth-cognito-buyer-A" {
    provider = aws.deployment-us
 }
 
-resource "aws_ssm_parameter" "seller_cognito_custom_domain" {
-  name  = "SELLER_COGNITO_USERPOOL_DOMAIN"
-  type  = "String"
-  value = "auth.seller.${local.sub_domain}"
-  provider = aws.deployment-eu
-  overwrite = true
-}
 
-resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
-  name  = "BUYER_COGNITO_USERPOOL_DOMAIN"
-  type  = "String"
-  value = "auth.${local.computed_variable}.${local.sub_domain}"
-  provider = aws.deployment-eu
-  overwrite = true
-}
 
 output "instance_ip_addr" {
   value = aws_acm_certificate.cert_cognito_us_east_2.arn

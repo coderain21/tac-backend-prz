@@ -19,6 +19,10 @@ provider "aws" {
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
+locals {
+  computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
+}
+
 data "aws_route53_zone" "domain_zone" {
   name = var.DOMAIN # Replace with your domain name
   provider = aws.main
@@ -470,3 +474,26 @@ resource "aws_ssm_parameter" "stripe_payment_key" {
   overwrite = true
   provider = aws.deployment-eu
 }
+resource "aws_ssm_parameter" "buyyer_domain" {
+  name  = "BASE_URL_BUYER"
+  type  = "String"
+  value = "https://${local.computed_variable}.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "seller_cognito_custom_domain" {
+  name  = "SELLER_COGNITO_USERPOOL_DOMAIN"
+  type  = "String"
+  value = "auth.seller.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
+  name  = "BUYER_COGNITO_USERPOOL_DOMAIN"
+  type  = "String"
+  value = "auth.${local.computed_variable}.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
