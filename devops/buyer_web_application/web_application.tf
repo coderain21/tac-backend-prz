@@ -127,10 +127,3 @@ resource "aws_ssm_parameter" "amplify_id" {
 
 
 
-resource "aws_ssm_parameter" "buyyer_domain" {
-  name  = "BASE_URL_BUYER"
-  type  = "String"
-  value = "https://${local.computed_variable}.${local.sub_domain}"
-  provider = aws.deployment-eu
-  overwrite = true
-}
