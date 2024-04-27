@@ -497,3 +497,10 @@ resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
+  name  = "BUYER_COGNITO_USERPOOL_DOMAIN"
+  type  = "String"
+  value = "no-reply@${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}

@@ -41,7 +41,7 @@ provider:
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: no-reply@indy.auction
+    SES_SENDER_EMAIL_ID: ${ssm:SES_SENDER_EMAIL_ID}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
@@ -461,7 +461,7 @@ resources:
                   Action:
                     - "s3:*" # Adjust permissions as needed
                     
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment

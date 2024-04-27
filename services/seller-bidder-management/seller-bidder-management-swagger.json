@@ -4,8 +4,8 @@
       "title": "Seller | List Bidders",
       "description": "Seller list the bidders",
       "contact": {
-        "name": "no-reply@indy.auction",
-        "email": "no-reply@indy.auction"
+        "name": "no-reply@dev.indyauction.net",
+        "email": "no-reply@dev.indyauction.net"
       },
       "version": "1.0.0"
     },
