@@ -34,7 +34,7 @@ provider:
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-bid-informations
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
-    SENDER_EMAIL_ADDRESS: ${ssm:SES_SENDER_EMAIL_ADDRESS}
+    SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL_ADDRESS}
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
