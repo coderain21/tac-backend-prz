@@ -1,4 +1,4 @@
-service: lot-bid-history
+service: bdd-api
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -20,7 +20,7 @@ provider:
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    REGION: ${env:REGION}
+    REGION: ${ssm:REGION}
     DATABASE: ${opt:stage, self:provider.stage}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -31,7 +31,7 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: ${ssm:SES_SENDER_EMAIL_ID}
     BUCKET_NAME: ${ssm:BUCKET_NAME}
-    CSV_FILE:  /tmp/Auctions.csv
+    # CSV_FILE: ${ssm:CSV_FILE}
     S3_BUCKET: ${ssm:BUCKET_NAME}
     CDN_LINK: ${ssm:CDN_URL}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -43,7 +43,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        issuerUrl: https://cognito-idp.${ssm:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
         audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
 
@@ -92,79 +92,30 @@ custom:
 
 
 functions: 
-  list-bids:
-    handler: handlers/list.handler
+  create_lots:
+    handler: handlers/create_lots.lambda_handler
+    runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
       - http:
           cors: true
-          path: /{lot_id}
-          method: GET
-          authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
-  buyer-list-bids:
-    handler: handlers/list.handler
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /buyer/{lot_id}
-          method: GET
-          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
-            
-
-  bid-listing:
-    handler: handlers/bid_list.list_bids
-    timeout: 60
-    runtime: python3.8
-    layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-      - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /seller/bids
-          method: get
+          path: /lots
+          method: post
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-  
+            
+  create:
+    handler: handlers/create.create_auction
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /
+          method: post
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 plugins:
   - serverless-offline
   - serverless-package-external
