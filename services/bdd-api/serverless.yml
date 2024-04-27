@@ -1,0 +1,123 @@
+service: bdd-api
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  versionFunctions: false
+  layers: ${ssm:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    REGION: ${ssm:REGION}
+    DATABASE: ${opt:stage, self:provider.stage}
+    STAGE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-bid-informations
+    UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SENDER_EMAIL_ADDRESS: no-reply@indy.auction
+    BUCKET_NAME: ${ssm:BUCKET_NAME}
+    # CSV_FILE: ${ssm:CSV_FILE}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
+    CDN_LINK: ${ssm:CDN_URL}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${ssm:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+            - mobiletargeting:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+  serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
+                
+
+
+functions: 
+  create_lots:
+    handler: handlers/create_lots.lambda_handler
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: post
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            
+  create:
+    handler: handlers/create.create_auction
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /
+          method: post
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
+  - serverless-plugin-ifelse
