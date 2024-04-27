@@ -82,12 +82,12 @@ STATE_FILE="devops/buyer_web_application/terraform.tfstate"
 # Check if the state file exists
 if [ -f "$STATE_FILE" ]; then
   # Extract the DOMAIN_ASSOCIATION_ID only if the state file exists
-  DOMAIN_ASSOCIATION_ID=$(terraform state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
+  DOMAIN_ASSOCIATION_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
   
   # Use the extracted ID (if any) in your subsequent commands
   echo "Extracted DOMAIN_ASSOCIATION_ID: $DOMAIN_ASSOCIATION_ID"
   terraform -chdir=devops/buyer_web_application state rm aws_amplify_domain_association.domain_association
-  terraform import aws_amplify_domain_association.domain_association $DOMAIN_ASSOCIATION_ID
+  terraform -chdir=devops/buyer_web_application import aws_amplify_domain_association.domain_association $DOMAIN_ASSOCIATION_ID
   # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
 else
   echo "Terraform state file '$STATE_FILE' not found. Skipping..."
