@@ -30,7 +30,7 @@ locals {
 #Fetches the data from Main Domain Hosted Zones
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
-  provider = aws.
+  provider = aws.main
 }
 
 data "aws_acm_certificate" "existing_certificate" {
@@ -59,7 +59,7 @@ resource "aws_route53_record" "record_updater" {
   name    = "apis.${local.sub_domain}"
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
-  provider = aws.
+  provider = aws.main
   
   #configures the domain name and Cname which will be added in hosted zone
   alias {
