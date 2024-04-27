@@ -77,8 +77,6 @@ cd ../..
 cd services/auctions
 sls deploy --region $REGION --stage $STAGE
 cd ../..
-terraform -chdir=devops/cognito_custom_domain init
-terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 terraform -chdir=devops/buyer_web_application init
 STATE_FILE="devops/buyer_web_application/terraform.tfstate"
 # Check if the state file exists
@@ -95,6 +93,8 @@ else
   echo "Terraform state file '$STATE_FILE' not found. Skipping..."
 fi
 terraform -chdir=devops/buyer_web_application apply -auto-approve
+terraform -chdir=devops/cognito_custom_domain init
+terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 sls deploy --stage ${STAGE} --max-concurrency 5
 
