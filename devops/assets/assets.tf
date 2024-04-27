@@ -181,6 +181,10 @@ resource "aws_cloudfront_origin_access_control" "cdn" {
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
+  depends_on = [
+   aws_acm_certificate.cert_us_east_1,
+   aws_route53_record.route_53_certificate_records_us_east_1_dev
+  ]
   origin {
     domain_name              = aws_s3_bucket.assets.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.cdn.id

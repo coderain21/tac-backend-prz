@@ -45,10 +45,10 @@ variable "ENCRYPTION_SECRET_KEY" {
   type        = string
   description = "Description of the variable"
 }
-variable "AMPLIFY_APP_ID" {
-  type        = string
-  description = "Description of the variable"
-}
+# variable "AMPLIFY_APP_ID" {
+#   type        = string
+#   description = "Description of the variable"
+# }
 variable "AMPLIFY_BRANCH" {
   type        = string
   description = "Description of the variable"
