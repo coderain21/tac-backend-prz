@@ -355,6 +355,13 @@ resource "aws_ssm_parameter" "stripe_api_key" {
   value = var.STRIPE_API_KEY
   provider = aws.deployment-eu
 }
+resource "aws_ssm_parameter" "stripe_credit_api_key" {
+  name  = "CREDIT_CARD_STRIPE_API_KEY"
+  overwrite = true
+  type  = "String"
+  value = var.CREDIT_CARD_STRIPE_API_KEY
+  provider = aws.deployment-eu
+}
 
 
 
@@ -366,13 +373,7 @@ resource "aws_ssm_parameter" "amplify_branch" {
   value = var.AMPLIFY_BRANCH
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "stripe_endpoint_secret" {
-  name  = "STRIPE_ENDPOINT_SECRET"
-  overwrite = true
-  type  = "String"
-  value = var.STRIPE_ENDPOINT_SECRET
-  provider = aws.deployment-eu
-}
+
 
 resource "aws_ssm_parameter" "facebook_client_id" {
   name  = "FACEBOOK_CLIENT_ID"

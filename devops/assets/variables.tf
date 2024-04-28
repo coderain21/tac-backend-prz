@@ -50,7 +50,7 @@ variable "AMPLIFY_BRANCH" {
   type        = string
   description = "Description of the variable"
 }
-variable "STRIPE_ENDPOINT_SECRET" {
+variable "CREDIT_CARD_STRIPE_API_KEY" {
   type        = string
   description = "Description of the variable"
 }

@@ -781,12 +781,12 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "${ssm:BASE_URL_SELLER}/"
-          - "${ssm:BASE_URL_SELLER}/"
+          - "${ssm:BASE_URL_SELLER}"
+          - "${ssm:BASE_URL_SELLER}"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
         LogoutURLs:
-          - "${ssm:BASE_URL_SELLER}/"
+          - "${ssm:BASE_URL_SELLER}"
           - "http://localhost:3000/"
         IdTokenValidity: 60
         PreventUserExistenceErrors: LEGACY

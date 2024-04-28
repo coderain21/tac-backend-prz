@@ -95,6 +95,8 @@ fi
 terraform -chdir=devops/buyer_web_application apply -auto-approve
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+terraform -chdir=devops/stripe_webhook init
+terraform -chdir=devops/stripe_webhook apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 sls deploy --stage ${STAGE} --max-concurrency 5
 
