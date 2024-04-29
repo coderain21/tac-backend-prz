@@ -32,8 +32,8 @@ data "aws_ssm_parameter" "bitbucket" {
 locals {
   ssm_value = try(data.aws_ssm_parameter.bitbucket.value, null)
   external_token = data.external.token.result.token
-  
   token = local.ssm_value == "NULL" ? local.external_token : local.ssm_value
+  subdomains_json = jsondecode(file("subdomains.json"))
 }
 
 
@@ -96,6 +96,15 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
 
+# data "file" "subdomains" {
+#   filename = "subdomains.json"
+# }
+
+# variable "subdomain_list" {
+#   type = list(string)
+#   default = jsondecode(data.file.subdomains.content).subdomains
+# }
+
 resource "aws_amplify_branch" "amplify_branch" {
   app_id      = aws_amplify_app.customer_web_application.id
   branch_name = "${var.BITBUCKET_BRANCH}"
@@ -108,8 +117,6 @@ resource "aws_amplify_domain_association" "domain_association" {
   app_id      = aws_amplify_app.customer_web_application.id
   domain_name = local.sub_domain
   wait_for_verification = true
-
-  
   sub_domain {
     branch_name = aws_amplify_branch.amplify_branch.branch_name
     prefix      = local.computed_variable
