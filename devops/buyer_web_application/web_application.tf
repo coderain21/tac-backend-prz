@@ -96,6 +96,15 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
 
+# data "file" "subdomains" {
+#   filename = "subdomains.json"
+# }
+
+# variable "subdomain_list" {
+#   type = list(string)
+#   default = jsondecode(data.file.subdomains.content).subdomains
+# }
+
 resource "aws_amplify_branch" "amplify_branch" {
   app_id      = aws_amplify_app.customer_web_application.id
   branch_name = "${var.BITBUCKET_BRANCH}"
@@ -105,15 +114,12 @@ resource "aws_amplify_branch" "amplify_branch" {
 
 
 resource "aws_amplify_domain_association" "domain_association" {
-  for_each = { for subdomain in local.subdomains_json.subdomains : subdomain => subdomain }
   app_id      = aws_amplify_app.customer_web_application.id
   domain_name = local.sub_domain
   wait_for_verification = true
-
-  
   sub_domain {
     branch_name = aws_amplify_branch.amplify_branch.branch_name
-    prefix      = each.value
+    prefix      = local.computed_variable
   }
   provider = aws.deployment-eu
 }
