@@ -83,21 +83,28 @@ STATE_FILE="devops/buyer_web_application/terraform.tfstate"
 # Check if the state file exists
 if [ -f "$STATE_FILE" ]; then
   # Extract the DOMAIN_ASSOCIATION_ID only if the state file exists
-  DOMAIN_ASSOCIATION_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
-  APP_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*app_id\s*=\s*"\K[^"]+')
-  AMPLIFY_DOMAIN_NAME=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*domain_name\s*=\s*"\K[^"]+')
+#   DOMAIN_ASSOCIATION_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
+#   APP_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*app_id\s*=\s*"\K[^"]+')
+#   AMPLIFY_DOMAIN_NAME=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*domain_name\s*=\s*"\K[^"]+')
   
-  # Use the extracted ID (if any) in your subsequent commands
-  echo "Extracted DOMAIN_ASSOCIATION_ID: $DOMAIN_ASSOCIATION_ID"
-  terraform -chdir=devops/buyer_web_application state rm aws_amplify_domain_association.domain_association
-  terraform -chdir=devops/buyer_web_application import aws_amplify_domain_association.domain_association $DOMAIN_ASSOCIATION_ID
-  domain=$(aws amplify get-domain-association --app-id $APP_ID --domain-name $AMPLIFY_DOMAIN_NAME --profile $PROFILE_ENV --region $REGION --query 'domainAssociation.subDomains[*].subDomainSetting.prefix')
-  echo "{\"subdomains\": $domain}" > devops/buyer_web_application/subdomains.json
+#   # Use the extracted ID (if any) in your subsequent commands
+#   echo "Extracted DOMAIN_ASSOCIATION_ID: $DOMAIN_ASSOCIATION_ID"
+#   terraform -chdir=devops/buyer_web_application state rm aws_amplify_domain_association.domain_association
+#   terraform -chdir=devops/buyer_web_application import aws_amplify_domain_association.domain_association $DOMAIN_ASSOCIATION_ID
+#   domain=$(aws amplify get-domain-association --app-id $APP_ID --domain-name $AMPLIFY_DOMAIN_NAME --profile $PROFILE_ENV --region $REGION --query 'domainAssociation.subDomains[*].subDomainSetting.prefix')
+#   echo "{\"subdomains\": $domain}" > devops/buyer_web_application/subdomains.json
   # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
+  terraform -chdir=devops/buyer_web_application -auto-approve apply -target=aws_amplify_app.customer_web_application \
+               -target=aws_amplify_branch.amplify_branch \
+               -target=aws_ssm_parameter.amplify_id \
+               -target=aws_ssm_parameter.bitbucket_secret \
+               -target=aws_ssm_parameter.buyyer_domain \
+               -target=data.aws_ssm_parameter.bitbucket \
+               -target=data.external.env \
+               -target=data.external.token
 else
-  echo "Terraform state file '$STATE_FILE' not found. Skipping..."
+  terraform -chdir=devops/buyer_web_application apply -auto-approve
 fi
-terraform -chdir=devops/buyer_web_application apply -auto-approve
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
