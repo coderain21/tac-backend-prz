@@ -154,6 +154,23 @@ functions:
           method: get
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  admin-view:
+    handler: handlers/admin_view.view_bidder
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /admin/{id}
+          method: get
+          authorizer:
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   add-to-group:
     handler: handlers/update.update_user
