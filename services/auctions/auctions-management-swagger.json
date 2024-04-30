@@ -1498,7 +1498,7 @@
                 ],
                 "additionalProperties": false,
                 "example": {
-                  "csv_url": "https://indyauction-assets-dev.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
+                  "csv_url": "https://indyauction-assets-dev-v1.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
                   "auction_id": "A0172"
                 }
               }
