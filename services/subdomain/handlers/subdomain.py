@@ -263,7 +263,7 @@ def subdomain(event, context):
                     }
                 ]
             }
-            if (remove_old == True): 
+            if remove_old is True:
                 change_batch['Changes'].append(
                     {
                         'Action': 'DELETE',
