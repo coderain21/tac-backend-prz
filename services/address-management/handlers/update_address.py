@@ -32,7 +32,7 @@ def update_address(event, context):
             cognito_data = json.loads(
                 event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
-            if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+            if "cognito:groups" not in cognito_data :
                 return {
                     "statusCode": 403,
                     "headers": headers,
