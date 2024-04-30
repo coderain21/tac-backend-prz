@@ -99,7 +99,10 @@ variable "STRIPE_PAYMENT_KEY" {
   type        = string
   description = "Description of the variable"
 }
-
+variable "MAILCHIMP_SECRET_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
 
 variable "ROUTE53_ACCOUNT" {
   type        = string
