@@ -43,19 +43,19 @@ resource "aws_route53_zone" "dev" {
 }
 
 resource "aws_route53_record" "dev-ns" {
-  count = var.STAGE != "prod" ? 1 : 0
-  zone_id = data.aws_route53_zone.domain_zone.zone_id
-  name    = local.sub_domain
-  type    = "NS"
-  ttl     = "30"
-  records = aws_route53_zone.dev.name_servers
-  provider =  aws.main
+  count    = var.STAGE != "prod" ? 1 : 0
+  zone_id  = data.aws_route53_zone.domain_zone.zone_id
+  name     = local.sub_domain
+  type     = "NS"
+  ttl      = "30"
+  records  = aws_route53_zone.dev[count.index].name_servers
+  provider = aws.main
 }
 
 
 
 locals {
-  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : try(aws_route53_zone.dev.zone_id, null)
+  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : try(aws_route53_zone.dev[0].zone_id, null)
 }
 
 
