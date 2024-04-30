@@ -43,7 +43,7 @@ resource "aws_route53_zone" "dev" {
 }
 
 resource "aws_route53_record" "dev-ns" {
-  count    = var.STAGE != "prod" ? 1 : 0
+  count    = var.STAGE == "prod" ? 1 : 0
   zone_id  = data.aws_route53_zone.domain_zone.zone_id
   name     = local.sub_domain
   type     = "NS"
