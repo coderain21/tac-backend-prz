@@ -225,7 +225,7 @@ def subdomain(event, context):
             enableAutoSubDomain=True,
             subDomainSettings=update_mapping
         )
-        if(os.environ.get('STAGE') == 'prod'):
+        if(os.environ.get('STAGE')) == 'prod':
             #add cname to main account
             sts_client = boto3.client('sts')
             assumed_role_object = sts_client.assume_role(
@@ -263,7 +263,7 @@ def subdomain(event, context):
                     }
                 ]
             }
-            if (remove_old == True): 
+            if remove_old is True:
                 change_batch['Changes'].append(
                     {
                         'Action': 'DELETE',
