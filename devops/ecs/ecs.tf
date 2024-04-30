@@ -15,6 +15,13 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "indyauction-${var.ROUTE53_ACCOUNT}"
+}
+
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
@@ -343,7 +350,7 @@ resource "aws_lb" "load-balancer" {
 
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 resource "aws_route53_record" "my_cname" {
@@ -355,7 +362,7 @@ resource "aws_route53_record" "my_cname" {
     zone_id                = aws_lb.load-balancer.zone_id
     evaluate_target_health = true
   }
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 # Target Group

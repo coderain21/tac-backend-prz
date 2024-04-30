@@ -101,3 +101,8 @@ variable "STRIPE_PAYMENT_KEY" {
 }
 
 
+variable "ROUTE53_ACCOUNT" {
+  type        = string
+  default = var.STAGE == "prod" ? "indyauction-main": "indyauction-${var.STAGE}"
+  description = "Description of the variable"
+}
