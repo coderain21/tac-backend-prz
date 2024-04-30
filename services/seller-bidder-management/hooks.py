@@ -30,7 +30,7 @@ def skip_404_test_results(transaction):
 
 @before_each
 def set_authorization(transaction):
-    token = str(os.environ.get('ADMIN'))
+    token = str(os.environ.get('USER'))
 
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])

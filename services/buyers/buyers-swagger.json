@@ -2166,7 +2166,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65363ffe6ecaedfb6ffef6eb"
+            "example": "65ddbd2836a5bb9ede942b6c"
           }
         ],
         "responses": {

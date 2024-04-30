@@ -160,12 +160,12 @@ def update_auction(event, context):
             }
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            if kyc_kyb_review is not True:
-                return {
-                        "statusCode": 400,
-                        'headers': headers,
-                        "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
-                    }
+            # if kyc_kyb_review is not True:
+            #     return {
+            #             "statusCode": 400,
+            #             'headers': headers,
+            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
+            #         }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
