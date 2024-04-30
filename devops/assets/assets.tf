@@ -497,3 +497,11 @@ resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "mailchimp_secret_key" {
+  name  = "MAILCHIMP_SECRET_KEY"
+  type  = "String"
+  value = var.MAILCHIMP_SECRET_KEY
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
