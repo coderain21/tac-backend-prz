@@ -22,8 +22,8 @@ provider:
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
-    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     REGION: ${env:REGION}
     DATABASE: ${opt:stage, self:provider.stage}
@@ -49,8 +49,8 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
-        audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:ADMIN_COGNITO_USERPOOL_ID}
+        audience: ${ssm:ADMIN_COGNITO_CLIENT_ID}
 
 
   iam:
@@ -111,7 +111,7 @@ functions:
           path: /admin/{buyer_id}
           method: PATCH
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   list-bids:
     handler: handlers/list.handler
@@ -123,7 +123,7 @@ functions:
           path: /admin/buyer/{email_address}
           method: GET
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   list:
     handler: handlers/list_of_buyers.handler
@@ -136,7 +136,7 @@ functions:
           path: /list/{seller_email}/{auction_id}
           method: GET
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bids:
     handler: handlers/bid_list.list_bids
     timeout: 60
@@ -164,7 +164,7 @@ functions:
           path: /bids
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bid-info:
     handler: handlers/bid_info.handler
     timeout: 60
@@ -181,7 +181,7 @@ functions:
           path: /admin/lots
           method: GET
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   
 plugins:
