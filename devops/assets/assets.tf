@@ -55,7 +55,7 @@ resource "aws_route53_record" "dev-ns" {
 
 
 locals {
-  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : aws_route53_zone.dev[0].zone_id
+  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : try(aws_route53_zone.dev.zone_id, null)
 }
 
 
