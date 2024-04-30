@@ -30,7 +30,7 @@ locals {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
+  name = local.sub_domain # Replace with your domain name
   provider = aws.route53-account
 }
 resource "aws_route53_zone" "dev" {
