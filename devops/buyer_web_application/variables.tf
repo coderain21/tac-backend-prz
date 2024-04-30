@@ -90,8 +90,8 @@ variable "BITBUCKET_SECRET" {
   type        = string
   description = "Description of the variable"
 }
-# variable "DOMAIN_ACCOUNT" {
-#   type        = string
-#   description = "Description of the variable"
-# }
 
+variable "ROUTE53_ACCOUNT" {
+  type        = string
+  description = "Description of the variable"
+}

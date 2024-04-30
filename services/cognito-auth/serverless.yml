@@ -21,7 +21,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     REGION: ${env:REGION}
-    ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
+    ADMIN_COGNITO_CLIENT_ID: { Ref: AdminUsersClient } 
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -859,7 +859,7 @@ resources:
                 - Effect: "Allow"
                   Action:
                     - "s3:*" # Adjust permissions as needed
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
 
     AdminCognitoIdentityPoolIDStore:

@@ -12,12 +12,17 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
-  provider =  aws.deployment-us
+  provider =  aws.route53-account
 }
 
 locals {
@@ -47,7 +52,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1" {
   ttl             = 60
   type            = each.value.type
   zone_id         = data.aws_route53_zone.domain_zone.zone_id
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 locals {
@@ -79,7 +84,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_2" {
   ttl             = 60
   type            = each.value.type
   zone_id         = data.aws_route53_zone.domain_zone.zone_id
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 data "aws_ssm_parameter" "seller_cognito_id" {
   name = "SELLER_COGNITO_USERPOOL_ID"
@@ -101,7 +106,7 @@ resource "aws_route53_record" "auth_cognito_seller_A" {
     name    = aws_cognito_user_pool_domain.seller.cloudfront_distribution
     zone_id = aws_cognito_user_pool_domain.seller.cloudfront_distribution_zone_id
   }
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 data "aws_ssm_parameter" "buyer_cognito_id" {
@@ -125,7 +130,7 @@ resource "aws_route53_record" "auth-cognito-buyer-A" {
     name    = aws_cognito_user_pool_domain.buyer.cloudfront_distribution
     zone_id = aws_cognito_user_pool_domain.buyer.cloudfront_distribution_zone_id
   }
-   provider = aws.deployment-us
+   provider = aws.route53-account
 }
 
 

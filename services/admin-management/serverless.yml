@@ -16,8 +16,8 @@ provider:
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
-    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
@@ -25,7 +25,7 @@ provider:
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
-    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
+    COGNITO_USER_POOL: ${ssm:ADMIN_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -80,7 +80,7 @@ provider:
     COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_AUTH_ARN: ${ssm:ADMIN_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
-    COGNITO_ADMIN_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
 
     SQS_QUEUE_ARN:  
@@ -148,7 +148,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:ADMIN_COGNITO_USERPOOL_ID}
         audience: ${ssm:ADMIN_COGNITO_CLIENT_ID}
 
   iam:
