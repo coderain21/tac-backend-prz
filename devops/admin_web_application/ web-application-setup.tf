@@ -13,7 +13,7 @@ provider "aws" {
 provider "aws" {
   region = "us-east-1"
   alias = "route53-account"   # Specify a default AWS region here
-  profile = "indyauction-${var.ROUTE53_ACCOUNT}"
+  profile = "${var.ROUTE53_ACCOUNT}"
 }
 
 resource "aws_s3_bucket" "bucket" {

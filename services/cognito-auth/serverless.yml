@@ -131,7 +131,7 @@ functions:
   cognito-create-auth-challenge:
     handler: handlers/cognito_create_auth_challenge.handler
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN}
     events:
       - cognitoUserPool:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
@@ -142,7 +142,7 @@ functions:
   cognito-define-auth-challenge:
     handler: handlers/cognito_define_auth_challenge.handler
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN}
     events:
       - cognitoUserPool:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
@@ -153,7 +153,7 @@ functions:
   cognito-verify-auth-challenge:
     handler: handlers/cognito_verify_auth_challenge.handler
     layers:
-      - ${env:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN}
     events:
       - cognitoUserPool:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
@@ -859,7 +859,7 @@ resources:
                 - Effect: "Allow"
                   Action:
                     - "s3:*" # Adjust permissions as needed
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
 
     AdminCognitoIdentityPoolIDStore:
