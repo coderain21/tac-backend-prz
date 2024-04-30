@@ -104,3 +104,8 @@ variable "MAILCHIMP_SECRET_KEY" {
   description = "Description of the variable"
 }
 
+variable "ROUTE53_ACCOUNT" {
+  type        = string
+  default = var.STAGE == "prod" ? "indyauction-main": "indyauction-${var.STAGE}"
+  description = "Description of the variable"
+}

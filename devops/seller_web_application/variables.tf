@@ -75,7 +75,8 @@ variable "GOOGLE_CLIENT_SECRET" {
   description = "Description of the variable"
 }
 
-# variable "DOMAIN_ACCOUNT" {
-#   type        = string
-#   description = "Description of the variable"
-# }
+variable "ROUTE53_ACCOUNT" {
+  type        = string
+  default = var.STAGE == "prod" ? "indyauction-main": "indyauction-${var.STAGE}"
+  description = "Description of the variable"
+}

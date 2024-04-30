@@ -16,6 +16,12 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "indyauction-${var.ROUTE53_ACCOUNT}"
+}
+
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
@@ -25,7 +31,7 @@ locals {
 
 data "aws_route53_zone" "domain_zone" {
   name = var.DOMAIN # Replace with your domain name
-  provider = aws.main
+  provider = aws.route53-account
 }
 resource "aws_route53_zone" "dev" {
   count = var.STAGE != "prod" ? 1 : 0
@@ -42,7 +48,7 @@ resource "aws_route53_record" "dev-ns" {
   name    = local.sub_domain
   type    = "NS"
   ttl     = "30"
-  records = aws_route53_zone.dev[0].name_servers
+  records = aws_route53_zone.dev.name_servers
   provider =  aws.main
 }
 
@@ -89,7 +95,7 @@ resource "aws_route53_record" "route_53_certificate_records_ap_south_1_dev" {
   ttl             = 60
   type            = each.value.type
   zone_id         = local.zone_id
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 
@@ -118,7 +124,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
   ttl             = 60
   type            = each.value.type
   zone_id         = local.zone_id
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 # resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
@@ -264,25 +270,14 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 resource "aws_route53_record" "assets_cname_dev" {
-  count = var.STAGE != "prod" ? 1 : 0
   name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = local.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
   ttl = 300
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
-resource "aws_route53_record" "assets_cname_prod" {
-  count = var.STAGE == "prod" ? 1 : 0
-  name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
-  type    = "CNAME"
-  zone_id = local.zone_id
-  records = [aws_cloudfront_distribution.s3_distribution.domain_name]
-  ttl = 300
-  provider = aws.main
-
-}
 
 resource "aws_ssm_parameter" "assets_bucket" {
   name  = "BUCKET_NAME"
