@@ -36,6 +36,8 @@ def skip_404_test_results(transaction):
 @before_each
 def set_authorization(transaction):
     token = str(os.environ.get('USER'))
+    if transaction['request']['uri'].startswith('/admin'):
+        token = str(os.environ.get('ADMIN'))
     print('Expected Status Code:', transaction['expected']['statusCode'])
     print('Request Method:', transaction['request']['method'])
     print('Request URI:', transaction['request']['uri'])

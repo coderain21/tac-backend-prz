@@ -317,7 +317,7 @@ functions:
           path: /admin/lots
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   delete_lot:
       handler: handlers/delete_lot.delete_lot
