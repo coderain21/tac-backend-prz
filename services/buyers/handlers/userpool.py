@@ -10,14 +10,13 @@ The code provides functionality to create user pools in Amazon Cognito, fetch da
 
 Note that this code assumes specific environment variables are set for configuration, such as 'REGION', 'KMS_KEY_ID', 'SUB_DOMAIN_TABLE', 'MONGO_CLIENT', 'DATABASE', 'USERPOOLS_MONGO', and others as required.
 """
-import boto3
 from pymongo import MongoClient
 import json
 import os
 from bson import ObjectId
-import base64
 from botocore.exceptions import ClientError
-from lib.common_helper import Encoder
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
 
 headers = {
     'Content-Type': 'application/json',
@@ -27,47 +26,47 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-def encrypt_data(data):
-    """Encrypt data using AWS Key Management Service (KMS).
+# def encrypt_data(data):
+#     """Encrypt data using AWS Key Management Service (KMS).
 
-    Args:
-        data (str): The data to be encrypted.
+#     Args:
+#         data (str): The data to be encrypted.
 
-    Returns:
-        str: The encrypted data as a base64-encoded string.
-    """
-    kms_client = boto3.client('kms', region_name=os.environ['REGION'])
+#     Returns:
+#         str: The encrypted data as a base64-encoded string.
+#     """
+#     kms_client = boto3.client('kms', region_name=os.environ['REGION'])
 
-    # Encrypt the data using AWS KMS
-    response = kms_client.encrypt(
-        KeyId=os.environ['KMS_KEY_ID'],
-        Plaintext=data.encode('utf-8')
-    )
+#     # Encrypt the data using AWS KMS
+#     response = kms_client.encrypt(
+#         KeyId=os.environ['KMS_KEY_ID'],
+#         Plaintext=data.encode('utf-8')
+#     )
 
-    # Encode the ciphertext in base64
-    encrypted_data = base64.b64encode(response['CiphertextBlob']).decode('utf-8')
+#     # Encode the ciphertext in base64
+#     encrypted_data = base64.b64encode(response['CiphertextBlob']).decode('utf-8')
 
-    return encrypted_data
+#     return encrypted_data
 
-def create_user_pool(username):
-    """Create a Cognito User Pool with a specified subdomain and associated configurations.
+# def create_user_pool(username):
+#     """Create a Cognito User Pool with a specified subdomain and associated configurations.
 
-    Args:
-        sub_domain_name (str): The subdomain name used for creating the user pool.
+#     Args:
+#         sub_domain_name (str): The subdomain name used for creating the user pool.
 
-    Returns:
-        str: The user pool ID and client ID associated with the created user pool.
-    """
-    # Initialize AWS Cognito client
-    cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
+#     Returns:
+#         str: The user pool ID and client ID associated with the created user pool.
+#     """
+#     # Initialize AWS Cognito client
+#     cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
-    # Define the password policy
-    password_policy = {
-        'MinimumLength': 6,  # Minimum password length
-        'RequireUppercase': True,  # Requires at least one uppercase letter
-        'RequireLowercase': True,  # Requires at least one lowercase letter
-        'RequireNumbers': True,    # Requires at least one number
-    }
+#     # Define the password policy
+#     password_policy = {
+#         'MinimumLength': 6,  # Minimum password length
+#         'RequireUppercase': True,  # Requires at least one uppercase letter
+#         'RequireLowercase': True,  # Requires at least one lowercase letter
+#         'RequireNumbers': True,    # Requires at least one number
+#     }
 
     # Create a Cognito User Pool with the password policy
     # response = cognito_client.create_user_pool(
@@ -88,31 +87,31 @@ def create_user_pool(username):
     #         'AllowAdminCreateUserOnly': True
     #     }
     # )
-    user_pool_id = os.environ["DEFAULT_USERPOOL_ID"]
+    # user_pool_id = os.environ["DEFAULT_USERPOOL_ID"]
 
-    # Create a Cognito User Pool Client
-    response = cognito_client.create_user_pool_client(
-        UserPoolId=user_pool_id,
-        ClientName=f'Client_{username}',
-        GenerateSecret=False,
-        TokenValidityUnits={
-        'AccessToken': 'minutes',
-        'IdToken': 'minutes',
-        'RefreshToken': 'days'
-        },
-        ExplicitAuthFlows=[
-        'ALLOW_ADMIN_USER_PASSWORD_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_PASSWORD_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_REFRESH_TOKEN_AUTH'
-        ],
-        AccessTokenValidity=5,
-        IdTokenValidity=5,
-        RefreshTokenValidity=3650
-    )
-    client_id = response['UserPoolClient']['ClientId']
-    group_response = cognito_client.create_group(
-        GroupName=f'{username}',
-        UserPoolId=user_pool_id
-    )
-    return user_pool_id, client_id
+    # # Create a Cognito User Pool Client
+    # response = cognito_client.create_user_pool_client(
+    #     UserPoolId=user_pool_id,
+    #     ClientName=f'Client_{username}',
+    #     GenerateSecret=False,
+    #     TokenValidityUnits={
+    #     'AccessToken': 'minutes',
+    #     'IdToken': 'minutes',
+    #     'RefreshToken': 'days'
+    #     },
+    #     ExplicitAuthFlows=[
+    #     'ALLOW_ADMIN_USER_PASSWORD_AUTH','ALLOW_CUSTOM_AUTH','ALLOW_USER_PASSWORD_AUTH','ALLOW_USER_SRP_AUTH','ALLOW_REFRESH_TOKEN_AUTH'
+    #     ],
+    #     AccessTokenValidity=5,
+    #     IdTokenValidity=5,
+    #     RefreshTokenValidity=3650
+    # )
+    # client_id = response['UserPoolClient']['ClientId']
+    # group_response = cognito_client.create_group(
+    #     GroupName=f'{username}',
+    #     UserPoolId=user_pool_id
+    # )
+    # return user_pool_id, client_id
 
 def fetch_item_from_dynamodb(sub_domain_name, default,id):
     """Fetch data from DynamoDB based on a subdomain name and query MongoDB for user pool data.
@@ -154,59 +153,31 @@ def fetch_item_from_dynamodb(sub_domain_name, default,id):
         print(username)
         # Check if user pool data already exists for the seller email and domain
         user_pool_data = get_user_pool_data(email_data, sub_domain_name)
-
-        # if not user_pool_data:
-        #     # Create the user pool with the seller email
-        #     user_pool_id, client_id = create_user_pool(username)
-
-        #     # Store user pool data in MongoDB
-        #     user_pool_data = {
-        #         'sub_domain_name': sub_domain_name,
-        #         'email_address': email_data,
-        #         'user_pool_id': user_pool_id,
-        #         'client_id': client_id,
-        #     }
-
-        #     # Store user pool data in MongoDB
-        #     store_user_pool_data_in_mongodb(user_pool_data)
-        print(user_pool_data)
         return user_pool_data
     except ClientError as e:
         print("Error:", e)
         return None
 
 def fetch_seller_email_from_auction(auction_id):
-    """
-    Fetch the seller's email from the auction collection in MongoDB.
-
-    Args:
-        auction_id (str): The unique identifier of the auction.
-
-    Returns:
-        str: The seller's email associated with the given auction_id or None if not found.
-    """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
     auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-    email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
-    client.close()
+    email = auction_collection.find_one(
+            {"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
     return email
 
-def store_user_pool_data_in_mongodb(user_pool_data):
-    """
-    Store user pool data in a MongoDB collection.
+# def store_user_pool_data_in_mongodb(user_pool_data):
+#     """
+#     Store user pool data in a MongoDB collection.
 
-    Args:
-        user_pool_data (dict): User pool data to be stored, including user pool ID, client ID, email, and subdomain.
-
-    Returns:
-        None
-    """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-    user_pools_collection.insert_one(user_pool_data)
-    client.close()
+#     Args:
+#         user_pool_data (dict): User pool data to be stored, including user pool ID, client ID, email, and subdomain.
+#     Returns:
+#         None
+#     """
+#     client = MongoClient(os.environ['MONGO_CLIENT'])
+#     db = client[os.environ['DATABASE']]
+#     user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+#     user_pools_collection.insert_one(user_pool_data)
+#     client.close()
 
 def get_user_pool_data(username, sub_domain_name):
     """
@@ -219,8 +190,6 @@ def get_user_pool_data(username, sub_domain_name):
     Returns:
         dict: User pool data, excluding email and subdomain, or None if not found.
     """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
     user_pools_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
     user_pool_data = user_pools_collection.find_one({
         'seller_email': username,
@@ -243,18 +212,18 @@ def create(event, context):
     try:
         sub_domain_name = event['queryStringParameters'].get('domain')
         auction_id = event['queryStringParameters'].get('auction_id')
-        default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
-        data = fetch_item_from_dynamodb(sub_domain_name, default, auction_id)
+        # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
+        data = fetch_seller_email_from_auction(auction_id)
         # Encrypt the data using AWS KMS
-        if data is not None:
-            data["auth_domain"] = os.environ["DEFAULT_COGNITO_DOMAIN"]
-            data["user_pool_id"] = os.environ["DEFAULT_USERPOOL_ID"]
-        encrypted_data = encrypt_data(json.dumps(data, cls=Encoder))
+        # if data is not None:
+        #     data["auth_domain"] = os.environ["DEFAULT_COGNITO_DOMAIN"]
+        #     data["user_pool_id"] = os.environ["DEFAULT_USERPOOL_ID"]
+        # encrypted_data = encrypt_data(json.dumps(data, cls=Encoder))
 
         return {
             "statusCode": 201,
             "headers": headers,
-            "body": json.dumps({"data": encrypted_data})
+            "body": json.dumps({"seller_email": data})
         }
     except Exception as err:
         print(err)

@@ -100,7 +100,9 @@ def update_auction(event, context):
     try:
         try:
             print('eventtttttttttttttttttt', event)
+            print('eventtttttttttttttttttt', event)
             seller_email = event['requestContext']['authorizer']['claims']['email']
+            print('seller_email', seller_email)
             print('seller_email', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
@@ -161,6 +163,15 @@ def update_auction(event, context):
         #         'headers': headers,
         #         "body": json.dumps({"message": "Stripe account not linked."})
         #     }
+        print('collection_seller', collection_seller)
+        seller_data = collection_seller.find_one(  {"email_address": seller_email}, {"_id": 0})
+        # print('seller data', seller_data)
+        # if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
+        #     return {
+        #         "statusCode": 400,
+        #         'headers': headers,
+        #         "body": json.dumps({"message": "Stripe account not linked."})
+        #     }
 
         if auction_record is None:
             return {
@@ -171,6 +182,12 @@ def update_auction(event, context):
         
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
+            # if kyc_kyb_review is not True:
+            #     return {
+            #             "statusCode": 400,
+            #             'headers': headers,
+            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
+            #         }
             # if kyc_kyb_review is not True:
             #     return {
             #             "statusCode": 400,
@@ -337,7 +354,10 @@ def update_auction(event, context):
             epoch_time_milliseconds = epoch_time_seconds * 1000
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
 
+            # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
+
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
+                print('inside update323323', listLots)
                 print('inside update323323', listLots)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:

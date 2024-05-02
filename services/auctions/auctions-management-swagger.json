@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis-dev.indyauction.net/v1/auctions"
+      "url": "https://apis.dev.indyauction.net/v1/auctions"
     }
   ],
   "tags": [
@@ -30,8 +30,8 @@
                 "$ref": "#/components/schemas/Auction"
             },
             "example": {
-              "template_name": "Auction Template 1",
-              "extension_time_between_lots": "2m",
+              "template_name": "Classic",
+              "extension_time_between_lots": "",
               "menu_links": [
                 {
                   "title": "Home",
@@ -57,10 +57,10 @@
                 "start_date": 1669966800,
                 "end_date": 1669966800,
               "note": "asda",
-              "extension_type": "Automatic",
-              "extension_time": "5 minutes",
-              "registration_type": "Open",
-              "add_buyer_fees": "10%",
+              "extension_type": "All Lots",
+              "extension_time": "5",
+              "registration_type": "Email only",
+              "add_buyer_fees": "No additional fees (default)",
               "faq": [
                 {
                   "question": "How do I participate?",
@@ -71,7 +71,7 @@
                   "answer": "We accept credit cards and PayPal."
                 }
               ],
-              "time_zone": "UTC+5:30",
+              "time_zone": "",
               "terms_and_condition": "By participating, you agree to our terms.",
               "publish_auction_results": true,
               "show_bidder_location_in_bidder_history": true, 
@@ -101,7 +101,7 @@
                 "background_color": "#FFD700",
                 "text_color": "#333333"
               },
-              "status": "Active"
+              "status": "Draft"
             }
             
           }
@@ -1498,7 +1498,7 @@
                 ],
                 "additionalProperties": false,
                 "example": {
-                  "csv_url": "https://indyauction-assets-dev.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
+                  "csv_url": "https://indyauction-assets-dev-v1.s3.eu-west-2.amazonaws.com/public/DomainName/Auctions/lots/Importlots.csv",
                   "auction_id": "A0172"
                 }
               }

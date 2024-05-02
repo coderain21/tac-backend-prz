@@ -24,7 +24,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     DATABASE: ${opt:stage, self:provider.stage}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -34,7 +34,7 @@ provider:
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     CDN_LINK: ${ssm:CDN_URL}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
@@ -51,7 +51,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${ssm:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
         audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
 

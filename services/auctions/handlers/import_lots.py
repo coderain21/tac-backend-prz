@@ -113,7 +113,7 @@ def import_lots(event, context):
             'Starting Price',
             'Low Estimate',
             'High Estimate',
-            'Product Shipping Location'
+            'Product Shipping Location',
             # 'Tags'
         ]
         # Initialize the MongoDB client
@@ -131,7 +131,9 @@ def import_lots(event, context):
         csv_buffer = StringIO(csv_data)
         # Parse the CSV data
         csv_reader = csv.DictReader(csv_buffer)
-        if csv_reader.fieldnames != expected_headers:
+        print('csv fieldnames', csv_reader.fieldnames)
+        print('headers', expected_headers)
+        if [header for header in csv_reader.fieldnames if header != 'Tags'] != expected_headers:
             return {
                 "statusCode": 400,
                 "headers": headers,
@@ -225,7 +227,10 @@ def import_lots(event, context):
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
-                # dict1["tags"] = tags
+                if 'Tags' in row:
+                    dict1["tags"] = row['Tags'].split(',') if row['Tags'] else []
+                else:
+                    dict1["tags"] = []
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number
