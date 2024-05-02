@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis-dev.indyauction.net/v1/buyers"
+      "url": "https://apis.dev.indyauction.net/v1/buyers"
     }
   ],
   "tags": [
@@ -2166,7 +2166,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65363ffe6ecaedfb6ffef6eb"
+            "example": "65faa94a10547dace8fe1c2b"
           }
         ],
         "responses": {
@@ -2189,7 +2189,7 @@
                 },
                 "example": {
                   "data": {
-                    "paddle": "22"
+                    "paddle": "1"
                   }
                 }
               }

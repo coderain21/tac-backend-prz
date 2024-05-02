@@ -1,24 +1,30 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
 
-  
+data "external" "env" {
+  program = ["./envs.sh"]
+}
 #AWS Provider with profile main account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  profile = "indyauction-${var.STAGE}"
 }
-
-
-
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
+
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
+
+locals {
+  sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
+}
 
 data "aws_vpc" "default" {
   default = true
@@ -65,7 +71,7 @@ resource "aws_default_subnet" "default_az1" {
 
 
 data "aws_acm_certificate" "existing_certificate" {
-  domain   = data.external.env.result["CERTIFICATE_DOMAIN"]
+  domain   = "*.${local.sub_domain}"
   statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
   provider = aws.deployment-eu
 }
@@ -103,6 +109,7 @@ EOF
 resource "aws_iam_role_policy_attachment" "stepfunctions_full_access" {
   role      = "${aws_iam_role.ecs_task_execution_role.name}"
   policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
+  provider = aws.deployment-eu
 }
 
 
@@ -258,17 +265,47 @@ resource "aws_ecr_repository" "repo1" {
 
 ########################
 
-data "aws_s3_bucket_object" "my_objects" {
-  bucket = data.external.env.result["ECS_S3_BUCKET"]
-  key = "ecr-credential/task-definition.json"
-  provider = aws.deployment-eu
-}
+# data "aws_s3_bucket_object" "my_objects" {
+#   bucket = "ecs-deployment-bucket"
+#   key = "ecr-credential/task-definition.json"
+#   provider = aws.deployment-eu
+# }
 
 locals {
-  datafile       = jsondecode(data.aws_s3_bucket_object.my_objects.body)["containerDefinitions"]
+  definitions = jsonencode([
+    {
+      name      = "websocket-container"
+      image     = "${resource.aws_ecr_repository.repo1.repository_url}:latest"
+      cpu       = 0
+      memory    = 512
+      essential = true
+      portMappings = [
+        {
+          containerPort = 5000
+          protocol= "tcp"
+          hostPort = 5000
+        }
+      ]
+      environment = [
+        # Loop over each key in the parsed JSON and create environment variables
+        for key, value in data.external.env.result :
+        {
+          name  = key
+          value = value
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-create-group = "true"
+          awslogs-group= "/ecs/task"
+          awslogs-region= "${var.REGION}"
+          awslogs-stream-prefix= "ecs"
+        }
+      }
+    }
+  ])
 }
-
-#######################
 
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
@@ -277,10 +314,11 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
   execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = data.external.env.result["CPU"]
-  memory                   = data.external.env.result["MEMORY"]
+  cpu                      = "4096"
+  memory                   = "8192"
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
-  container_definitions = jsonencode(local.datafile)
+  container_definitions = local.definitions
+  skip_destroy = true
   provider = aws.deployment-eu
 }
 
@@ -309,13 +347,14 @@ resource "aws_lb" "load-balancer" {
   provider = aws.deployment-eu
 }
 
+
 data "aws_route53_zone" "domain_zone" {
-  name = data.external.env.result["DOMAIN"] # Replace with your domain name
-  provider = aws.main
+  name = local.sub_domain # Replace with your domain name
+  provider = aws.route53-account
 }
 
 resource "aws_route53_record" "my_cname" {
-  name    = "${data.external.env.result["STAGE"]}-websocket.${data.external.env.result["DOMAIN"]}" # Replace with your desired CNAME
+  name    = "websocket.${local.sub_domain}" # Replace with your desired CNAME
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id  # Replace with your Route 53 hosted zone ID
   alias {
@@ -323,7 +362,7 @@ resource "aws_route53_record" "my_cname" {
     zone_id                = aws_lb.load-balancer.zone_id
     evaluate_target_health = true
   }
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 # Target Group
@@ -381,6 +420,7 @@ resource "aws_appautoscaling_target" "target" {
   resource_id =  "service/${aws_ecs_cluster.websocket-cluster.name}/${aws_ecs_service.ecs_service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace = "ecs"
+  provider = aws.deployment-eu
 }
 
 
@@ -398,7 +438,14 @@ resource "aws_appautoscaling_policy" "cpu" {
 
     target_value = 70
   }
+  provider = aws.deployment-eu
 }
-
+resource "aws_ssm_parameter" "socket" {
+  name  = "SOCKET_URL"
+  type  = "String"
+  value = "websocket.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 

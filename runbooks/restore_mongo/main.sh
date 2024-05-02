@@ -1,5 +1,5 @@
 sudo apt-get install -y awscli
-aws s3 sync s3://indyauction-runbooks/backups/ . --include "*backup.zip"
+aws s3 sync s3://indyauction-runbooks/backups/ . --include "*backup.zip" --acl public-read
 unzip backup.zip
 cd dump/qa/
 

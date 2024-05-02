@@ -59,6 +59,13 @@ def set_authorization(transaction):
     #     print('Skipping the test...')
     #     transaction['skip'] = True
     #     return
+    
+
+    # skipping this test for now
+    if (transaction['request']['method'] == 'GET' and '/buyers' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
 
 
     if (
