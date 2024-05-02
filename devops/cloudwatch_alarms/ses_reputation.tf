@@ -62,7 +62,7 @@ resource "aws_cloudwatch_metric_alarm" "ses_reputation_alarm" {
 resource "aws_cloudwatch_metric_alarm" "ses_reputation_alarm_complaint" {
   provider = aws.deployment-eu
   count          = 5
-  alarm_name     = "SESReputationAlarm-${element([1, 2, 3, 4, 5], count.index)}-indyauction-${var.STAGE}"
+  alarm_name     = "SESComplaintAlarm-${element([1, 2, 3, 4, 5], count.index)}-indyauction-${var.STAGE}"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "Reputation.ComplaintRate"
