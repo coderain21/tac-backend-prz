@@ -306,7 +306,12 @@ locals {
     }
   ])
 }
-
+data "aws_ssm_parameter" "cpu" {
+  name = "CPU"
+}
+data "aws_ssm_parameter" "memory" {
+  name = "MEMORY"
+}
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
   family                   = "websocket-task-definition"
@@ -314,8 +319,8 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
   execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = "4096"
-  memory                   = "8192"
+  cpu                      = data.aws_ssm_parameter.cpu.value
+  memory                   = data.aws_ssm_parameter.memory.value
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
   container_definitions = local.definitions
   skip_destroy = true
