@@ -60,16 +60,24 @@ resource "aws_security_group" "security_groups" {
   provider = aws.deployment-us
 }
 
-
+data "aws_ssm_parameter" "redis_node_type" {
+  name = "REDIS_NODE_TYPE"
+}
+data "aws_ssm_parameter" "redis_node_groups" {
+  name = "REDIS_NODE_GROUPS"
+}
+data "aws_ssm_parameter" "redis_node_replica_groups" {
+  name = "REDIS_NODE_REPLICA_GROUPS"
+}
 
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
   replication_group_id        = "websocket-redis-cluster-enabled"
   description                 = "websocket description with cluster enabled"
-  node_type                   = "cache.t3.medium"
-  num_node_groups         = 1
-  replicas_per_node_group = 1
+  node_type                   = data.aws_ssm_parameter.redis_node_type.value
+  num_node_groups         = data.aws_ssm_parameter.redis_node_groups.value
+  replicas_per_node_group = data.aws_ssm_parameter.redis_node_replica_groups.value
   parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
