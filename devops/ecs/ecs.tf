@@ -448,7 +448,7 @@ resource "aws_appautoscaling_policy" "cpu" {
 resource "aws_ssm_parameter" "socket" {
   name  = "SOCKET_URL"
   type  = "String"
-  value = "websocket.${local.sub_domain}"
+  value = "https://websocket.${local.sub_domain}"
   provider = aws.deployment-eu
   overwrite = true
 }
