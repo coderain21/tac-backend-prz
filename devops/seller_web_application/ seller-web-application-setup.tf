@@ -71,7 +71,7 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "seller.${local.sub_domain}" : "seller.${local.sub_domain}"
 }
 locals {
-  computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
+  computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
 
 resource "aws_cloudfront_origin_access_control" "cdn" {

@@ -289,9 +289,7 @@ resource "aws_ssm_parameter" "assets_bucket" {
 resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
-  value = <<-EOT
-    https://cdn.${local.sub_domain}/public/
-  EOT
+  value = "https://cdn.${local.sub_domain}/public/"
   provider = aws.deployment-eu
   overwrite = true
 }

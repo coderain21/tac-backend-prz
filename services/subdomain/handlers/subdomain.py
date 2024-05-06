@@ -205,7 +205,9 @@ def subdomain(event, context):
         remove_old = False
         update_mapping = []
         for domain in existing_subdomains:
-            if domain['prefix'] == existing_domain_record['subdomain']:
+            print('%%%%%%%%%%%%%', domain['prefix'] , existing_domain_record['subdomain'])
+            if domain['prefix'] != os.environ['DEFAULT_SUB_DOMAIN'] and domain['prefix'] == existing_domain_record['subdomain']:
+                print("insideeeeee ", domain['prefix'], os.environ['DEFAULT_SUB_DOMAIN'] ,domain['prefix'] , existing_domain_record['subdomain'])
                 remove_old = True
             else:
                 update_mapping.append(domain)

@@ -100,11 +100,13 @@ resource "aws_default_subnet" "default_az1" {
   availability_zone = data.aws_availability_zones.available.names[0]
   provider = aws.deployment-eu
 }
-
+data "aws_ssm_parameter" "instance_class" {
+  name = "INSTANCE_CLASS"
+}
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
-  instance_class     = "db.t3.medium"
+  instance_class     = data.aws_ssm_parameter.instance_class.value
   apply_immediately = true
   provider = aws.deployment-eu
 }
