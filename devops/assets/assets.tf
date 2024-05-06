@@ -49,7 +49,7 @@ resource "aws_route53_record" "dev-ns" {
   type     = "NS"
   ttl      = "30"
   records  = aws_route53_zone.dev[count.index].name_servers
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 
