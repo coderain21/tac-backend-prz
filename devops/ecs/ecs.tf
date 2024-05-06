@@ -277,7 +277,6 @@ locals {
       name      = "websocket-container"
       image     = "${resource.aws_ecr_repository.repo1.repository_url}:latest"
       cpu       = 0
-      memory    = 512
       essential = true
       portMappings = [
         {
