@@ -31,7 +31,7 @@ module.exports.create_auction = async (event) => {
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
         request_body.auction_id = sequenceNumber
         request_body.seller_name = `${get_user[0].first_name} ${get_user[0].last_name}`
-        const nowPlus5Minutes = new Date(new Date().getTime() + 5 * 60000) // Add 5 minutes to the current time
+        const nowPlus5Minutes = new Date(new Date().getTime() + 2 * 60000) // Add 5 minutes to the current time
         request_body.end_date = nowPlus5Minutes.getTime()
         const auction = await mongoConnection.save(request_body, Auction)
         if (auction) {

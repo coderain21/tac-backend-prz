@@ -22,14 +22,10 @@ Returns:
 
 import os
 import json
+from bson import ObjectId
 import pymongo
-from lib.invoke_step_function import invoke_state_machine
-from datetime import datetime, timezone
-from lib.common_helper import Encoder
-
-
-
-
+# from lib.invoke_step_function import invoke_state_machine
+from datetime import datetime, timedelta
 
 
 headers = {
@@ -43,8 +39,114 @@ headers = {
 
 client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
+seller_collection = db[os.environ['SELLERS_TABLE']]
+counter_collection = db[os.environ['COUNTER_LOT']]
+auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+lot_collection = db[os.environ['LOT_COLLECTION_NAME']]
 
-def lambda_handler(event, context):
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        return json.JSONEncoder.default(self, obj)
+
+def left_pad(number, target_length):
+    output = str(number)
+    while len(output) < target_length:
+        output = '0' + output
+    return output
+
+
+def create(event, context):
+    try:
+        request_body = json.loads(event["body"])
+        # email = event["requestContext"]["authorizer"]["claims"]["cognito:username"]
+        # request_body["seller_email"] = email
+        # print("request_body", request_body)
+        email = 'sthuthi+test3@7edge.com'
+        request_body["seller_email"] = email
+        get_user = seller_collection.find({"email_address": email})
+        user_count = seller_collection.count_documents({"email_address": email})
+        if user_count > 0:
+            user_data = seller_collection.find_one({"email_address": email})
+            if user_data:
+                # print('get_user', user_data)
+                request_body["seller_name"] = f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}"
+            else:
+                print('No user found with the provided email address')
+                # Handle the case when no user is found
+        else:
+            print('No user found with the provided email address')
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "User not found"})
+            }
+
+        counter = counter_collection.find_one_and_update(
+            {"seller_email": email, "record_type": "Auctions", "status": "Active"},
+            {"$inc": {"starting_sequence": 1}},
+            return_document=pymongo.ReturnDocument.AFTER,
+            upsert=True,
+        )
+        sequence_number = f"A{str(counter['starting_sequence']).zfill(4)}"
+        request_body["auction_id"] = sequence_number
+        request_body["start_date"] = datetime.now().timestamp()
+        now_plus_5_minutes = datetime.now() + timedelta(minutes=5)
+        request_body["end_date"] = now_plus_5_minutes.timestamp()
+
+        request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg'
+        auction_result = auction_collection.insert_one(request_body)
+        # print('auction_result', auction_result)
+
+        if auction_result.acknowledged:
+            # print('Created auction:', auction_result)
+            auction_id = auction_result.inserted_id
+            created_auction = auction_collection.find_one({"_id": auction_id})
+            if created_auction:
+                # print('Created auction:', created_auction)
+                update_value = {"auctions_count": str(counter["starting_sequence"]).zfill(1)}
+                seller_collection.update_one(
+                    {"_id": ObjectId(user_data["_id"])},
+                    {"$set": update_value}
+                )
+
+                create_lots = create_lot(event, sequence_number, email)
+                print('create_lots', create_lots)
+                return {
+                "statusCode": 201,
+                "headers": headers,
+                "body": json.dumps({
+                    "message": "Auction created successfully",
+                    "auctions_id": sequence_number,
+                    "auction_data": created_auction,
+                    "title": request_body["title"],
+                }, cls=JSONEncoder)
+            }
+            else:
+                return {
+                    "statusCode": 400,
+                    "headers": headers,
+                    "message": "Something went wrong. Please try again!",
+                }
+        else:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "message": "Something went wrong. Please try again!",
+            }
+    except Exception as error:
+        print("Error", error)
+        return {
+            "headers": headers,
+            "statusCode": 500,
+            "body": json.dumps({"message": "Internal Server Error"}),
+        }
+
+def create_lot(event, auction_id, seller_email):
     """
     The lambda_handler function is the entry point for a Lambda function in Python.
 
@@ -57,32 +159,11 @@ def lambda_handler(event, context):
     the execution context and to interact with the AWS Lambda service
     """
     try:
-        # Parse the incoming JSON request
-        try:
-            seller_email = event['requestContext']['authorizer']['claims']['email']
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-            print('email', seller_email)
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
         request_body = json.loads(event['body'])
-        auction_id = request_body["auction_id"]
-
-        # Check if the user_type is "Free"
-        user_type = request_body.get('user_type', '')
+        # print('request_body', request_body)
+        print('in create lot', auction_id, seller_email)
 
         # Initialize the MongoDB client
-        collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        lot_collection= db[os.environ["COUNTER_LOT"]]
-        auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction = auction_collection.count_documents({'seller_email':seller_email,
                                                       'auction_id': auction_id })
         if auction == 0:
@@ -90,25 +171,9 @@ def lambda_handler(event, context):
                     "statusCode": 404,
                     "body": json.dumps({"message": "No auction with the id found"})
                 }
-        existing_lots_count = collection.count_documents(
-            {"seller_email": seller_email, "auction_id": request_body["auction_id"]})
-        if user_type == 'Free' and existing_lots_count >= 10:
-            return {
-                    "statusCode": 400,
-                    "body": json.dumps({"message": "Free users are limited to 10 lots."})
-                }
-        if user_type == 'Starter'and existing_lots_count >= 500:
-            # Check if the user has already added 10 lots
-            return {
-                    "statusCode": 400,
-                    "body": json.dumps({"message": "Starter users are limited to 500 lots."})
-                }
-
-        # Remove the "user_type" field from the request
-        request_body.pop("user_type", None)
 
         # Get the next lot number for the seller
-        counter = lot_collection.find_one_and_update({"auction_id": auction_id,
+        counter = counter_collection.find_one_and_update({"auction_id": auction_id,
                                                       "seller_email": seller_email,
                                                       'record_type': 'Lots'},
                                                      {'$inc': {
@@ -118,84 +183,99 @@ def lambda_handler(event, context):
         auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
         # Get the extension type from the auction record
         extension_type = auction_record.get('extension_type', '')
-        auction_status = auction_record.get('status', '')
-        if extension_type in ['All Lots']:
-            request_body['start_date'] = auction_record['start_date']
-            request_body['end_date'] = auction_record['end_date']
-        elif  extension_type in ['Cascade', 'Individual Lots']:
-            print('inside cascaded')
-            auction_record.get('')
-            time_between_lots = auction_record.get('time_between_lots', 0)
-            latest = collection.find(
-                    {"seller_email": seller_email, "auction_id": auction_id},
-                    sort=[("lot_number", pymongo.DESCENDING)]
-                )
-            latest_lot = list(latest)
-            print('latest', latest_lot, auction_record)
-            extension_time_str = auction_record.get('extension_time_between_lots', '0')
-            extension_time = 2  # Convert the string to an integer
-            if extension_time_str != '':
-                extension_time = int(extension_time_str)  # Convert the string to an integer
-            if len(latest_lot) > 0:
-                latest_end_date = latest_lot[0]['end_date']
-                request_body['start_date'] = latest_lot[0]['start_date']
-                request_body['end_date'] = latest_end_date + extension_time*60*1000
-            else:
-                # If no previous lots, use auction start_date and add time_between_lots
-                request_body['start_date'] = auction_record.get('start_date', 0)
-                end_date = auction_record.get('end_date', 0)  # Assuming a default value of current datetime if 'end_date' is not available
-                enddate=end_date + extension_time*60*1000
-                request_body['end_date'] = enddate
-                updateCheck = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': enddate}})
+        # auction_status = auction_record.get('status', '')
+        common_lot_info = {
+            "seller_email": seller_email,
+            "auction_id": auction_id,
+            "extension_type": extension_type
+        }
 
-        # request_body['end_date'] = auction_record['end_date']
-        request_body["lot_number"] = counter["starting_sequence"]
-        request_body["seller_email"] = seller_email
-        # Insert the lot data into the MongoDB collection
-        inserting = collection.insert_one(request_body)
-        if  auction_status in ['Published', 'Accepting bids']:
-            inserted_id = inserting.inserted_id
-            start_date_timestamp = auction_record['start_date'] / 1000
-            date_time = datetime.utcfromtimestamp(start_date_timestamp)
-            iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
-            request_body['start_date'] = iso_date_with_offset
-            itemData = json.loads(json.dumps(request_body, cls= Encoder))
-            invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
-            collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
-            step_request={}
-            step_request['arn'] = invoking['executionArn']
-            id_value = str(inserted_id)
-            step_request['lot_id'] = id_value
-            step_request['auction_id'] = auction_record['auction_id']
-            step_request['seller_email'] = auction_record['seller_email']
-            inserted = collection.insert_one(step_request)
+        # Create two lots based on extension type
+        for i in range(2):  # Create two lots
+            lot_number = get_next_lot_number(auction_id, seller_email)
+            lot_info = prepare_lot_info(request_body, auction_record, lot_number, extension_type,time_between_lots=2)
+            common_lot_info.update(lot_info)
+            lot_collection.insert_one(common_lot_info.copy())  # Insert the lot into the collection
 
+        update_total_lots(auction_id, seller_email)
 
-        # After inserting the lot, update the total_lots count for the associated auction
-        auction_id = request_body["auction_id"]
-        if auction_record and "total_lots" in auction_record:
-            # Increment the existing "total_lots" count
-            auction_collection.update_one(
-                {"auction_id": auction_id, "seller_email": seller_email},
-                {"$inc": {"total_lots": 1}}
-            )
-        else:
-            # Calculate the total lots count and update the auction record
-            total_lots_count = collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
-            print(total_lots_count)
-            auction_collection.update_one(
-                {"auction_id": auction_id, "seller_email": seller_email},
-                {"$set": {"total_lots": total_lots_count}}
-            )
         return {
             "statusCode": 200,
-            'headers': headers,
-            "body": json.dumps({"message": "Lot added successfully."})
+            "headers": headers,
+            "body": json.dumps({"message": "Two lots added successfully."})
         }
+
     except Exception as e:
-        print(e)
+        print('Error', e)
         return {
             "statusCode": 500,
-            'headers': headers,
+            "headers": headers,
             "body": json.dumps({"error": str(e)})
         }
+
+def get_next_lot_number(auction_id, seller_email):
+    print('get next number')
+    counter = counter_collection.find_one_and_update(
+        {"auction_id": auction_id, "seller_email": seller_email, 'record_type': 'Lots'},
+        {'$inc': {'starting_sequence': 1}},
+        return_document=pymongo.ReturnDocument.AFTER,
+        upsert=True
+    )
+    return counter["starting_sequence"]
+
+def update_total_lots(auction_id, seller_email):
+    print('in update total lot')
+    total_lots_count = lot_collection.count_documents({"seller_email": seller_email, "auction_id": auction_id})
+    auction_collection.update_one(
+        {"auction_id": auction_id, "seller_email": seller_email},
+        {"$set": {"total_lots": total_lots_count}}
+    )
+
+
+
+def prepare_lot_info(request_body, auction, lot_number, extension_type,time_between_lots):
+    print('Starting prepare_lot_info')
+    print('Extension Type:', extension_type)
+
+    # Fetch the latest lot based on the current auction to determine the new lot's start and end dates
+    latest_cursor = lot_collection.find(
+        {"seller_email": auction["seller_email"], "auction_id": auction["auction_id"]},
+        sort=[("lot_number", pymongo.DESCENDING)]
+    ).limit(1)
+
+    latest_lot = next(latest_cursor, None)  # Attempt to get the first result from the cursor
+
+    if latest_lot is None:
+        print('No previous lots found, setting initial times based on auction record')
+        start_date = auction.get('start_date', datetime.now().timestamp() * 1000)  # Default to current time if missing
+        # print('Start Date:', start_date)
+        end_date = auction.get('end_date', start_date + timedelta(minutes=5).total_seconds() * 1000)
+        # print('end Date:', end_date)
+        print('Start Date:', start_date, 'End Date:', end_date)
+    else:
+        print('Latest lot found:', latest_lot)
+        if 'end_date' not in latest_lot or latest_lot['end_date'] is None:
+            print('Error: Latest lot does not contain a valid end_date')
+            raise ValueError('Latest lot does not contain a valid end_date')
+
+        last_end_date = latest_lot['end_date']
+        if not isinstance(last_end_date, (int, float)):
+            print('Error: end_date of latest lot is not an integer or float:', type(last_end_date))
+            raise TypeError('end_date of latest lot is expected to be a timestamp (int or float)')
+
+        if extension_type in ['Cascade', 'Individual Lots']:
+            start_date = last_end_date
+            end_date = last_end_date + time_between_lots * 60 * 1000
+        elif extension_type == 'All Lots':
+            start_date = auction.get('start_date', datetime.now().timestamp() * 1000) 
+            end_date = auction['end_date']
+
+        print('Calculated Start Date:', start_date, 'End Date:', end_date)
+
+    return {
+        "start_date": start_date,
+        "end_date": end_date,
+        "lot_number": lot_number,
+        "seller_email": auction["seller_email"],
+        "auction_id": auction["auction_id"]
+    }

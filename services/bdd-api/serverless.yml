@@ -26,7 +26,7 @@ provider:
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
-    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-bid-informations
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: no-reply@indy.auction
@@ -37,6 +37,8 @@ provider:
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
 
   http:
     cors: true
@@ -93,7 +95,7 @@ custom:
 
 functions: 
   create_lots:
-    handler: handlers/create_lots.lambda_handler
+    handler: handlers/create_lots.create
     runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
