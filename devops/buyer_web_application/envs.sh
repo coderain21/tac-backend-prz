@@ -1,14 +1,34 @@
-#!/bin/sh
+#!/bin/bash
 
 # Initialize an empty object for environment variables
 env_object="{"
 
 # Fetch parameter names
-parameter_names=$(aws ssm describe-parameters --query "Parameters[*].Name" --output text --region "$REGION" --profile "$PROFILE_ENV")
+parameter_names=(
+    "REGION"
+    "AMPLIFY_DOMAIN_NAME"
+    "BUCKET_NAME"
+    "BUYER_STATIC_AUCTION_URL"
+    "DOMAIN_NAME_FRONT_END"
+    "SITEKEY"
+    "GOOGLE_API_KEY"
+    "GOOGLE_API"
+    "CDN_URL"
+    "STRIPE_KEY"
+    "STRIPE_PAYMENT_KEY"
+    "STAGE"
+    "LOCATION_API"
+    "SOCKET_URL"
+    "BUYER_COGNITO_USERPOOL_ID"
+    "BUYER_COGNITO_CLIENT_ID"
+    "BUYER_COGNITO_IDENTITY_POOL_ID"
+    "BUYER_COGNITO_USERPOOL_DOMAIN"
+    "NOTIFY_KEY"
+)
 
 # Loop through each parameter
 first_param=true
-for param_name in $parameter_names; do
+for param_name in "${parameter_names[@]}"; do
     # Get parameter value
     param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --region "$REGION" --profile "$PROFILE_ENV")
     
