@@ -96,6 +96,7 @@ custom:
 functions: 
   create_lots:
     handler: handlers/create_lots.create
+    timeout: 30
     runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -104,20 +105,20 @@ functions:
           cors: true
           path: /lots
           method: post
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+          # authorizer:
+          #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
             
-  create:
-    handler: handlers/create.create_auction
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /
-          method: post
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  # create:
+  #   handler: handlers/create.create_auction
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - http:
+  #         cors: true
+  #         path: /
+  #         method: post
+  #         authorizer:
+  #             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 plugins:
   - serverless-offline
   - serverless-package-external

@@ -24,6 +24,7 @@ import os
 import json
 from bson import ObjectId
 import pymongo
+import boto3
 # from lib.invoke_step_function import invoke_state_machine
 from datetime import datetime, timedelta
 
@@ -43,6 +44,42 @@ seller_collection = db[os.environ['SELLERS_TABLE']]
 counter_collection = db[os.environ['COUNTER_LOT']]
 auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 lot_collection = db[os.environ['LOT_COLLECTION_NAME']]
+
+
+def publish_auction(seller_email, auction_id):
+    # Define the ARN of the Lambda function to be invoked
+    target_lambda_arn = 'arn:aws:lambda:eu-west-2:339712957347:function:auctions-dev-update_auction' #static
+
+    # Create a Lambda client
+    lambda_client = boto3.client('lambda')
+
+    # Prepare the payload with the necessary information
+    payload = {
+        "seller_email": seller_email,
+        "auction_id": auction_id,
+        # "jwt_token": jwt_token, # Pass the JWT token for authorization
+        "queryStringParameters": {
+            "published": "true" # Assuming you want to publish the auction
+        }
+    }
+
+    # Invoke the Lambda function
+    response = lambda_client.invoke(
+        FunctionName=target_lambda_arn,
+        InvocationType='RequestResponse', # Use 'Event' for asynchronous invocation
+        Payload=json.dumps(payload) # Pass the payload as a JSON string
+    )
+
+    # Handle the response from the invoked Lambda function
+    if response['StatusCode'] == 200:
+        # Extract and process response data if needed
+        invoked_function_result = response['Payload'].read()
+        print(invoked_function_result)
+        return True
+    else:
+        print('Invocation failed')
+        return False
+
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -94,11 +131,32 @@ def create(event, context):
         )
         sequence_number = f"A{str(counter['starting_sequence']).zfill(4)}"
         request_body["auction_id"] = sequence_number
-        request_body["start_date"] = datetime.now().timestamp()
+        request_body["start_date"] = int(datetime.now().timestamp())
         now_plus_5_minutes = datetime.now() + timedelta(minutes=5)
-        request_body["end_date"] = now_plus_5_minutes.timestamp()
+        request_body["end_date"] = int(now_plus_5_minutes.timestamp())
 
-        request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg'
+        request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg' #static
+        request_body['template_name'] = 'Classic'
+        request_body['title'] = 'test title'
+        request_body['currency'] = 'USD'
+        request_body['time_zone'] = 'IST - India Standard Time'
+        request_body['status'] = 'Draft'
+        request_body['logo_image'] = ''
+        request_body['logo_redirection_url'] = ''
+        request_body['description'] = 'test description'
+        request_body["registration_type"] = 'Email only'
+        request_body["add_buyer_fees"] = 'No additional fees'
+        request_body['faq']=[]
+        request_body['percentage'] = ''
+        request_body['fees'] = ''
+        request_body['terms_and_condition'] = ''
+        request_body['publish_auction_results'] = False
+        request_body['show_bidder_location_in_bidder_history'] = False
+        request_body['make_your_auction_private'] = False
+
+
+
+
         auction_result = auction_collection.insert_one(request_body)
         # print('auction_result', auction_result)
 
@@ -116,6 +174,8 @@ def create(event, context):
 
                 create_lots = create_lot(event, sequence_number, email)
                 print('create_lots', create_lots)
+                if create_lots:
+                    publish = publish_auction(email, sequence_number)
                 return {
                 "statusCode": 201,
                 "headers": headers,
@@ -187,11 +247,26 @@ def create_lot(event, auction_id, seller_email):
         common_lot_info = {
             "seller_email": seller_email,
             "auction_id": auction_id,
-            "extension_type": extension_type
+            "extension_type": extension_type,
+            "title1": 'Lot 1',
+            "title2": '',
+            "description": "<p>lot description</p>",
+            "starting_price": 100,
+            "low_estimate": 0,
+            "high_estimate": 0,
+            "shipping_details": "",
+            "current_bid": 0,
+            "tags": [],
+            "images": [
+                {
+                    "url": "DomainName/Auctions/lots/images/71968ee0-6bef-5186-410c-00b18f32a132/panting2.jpg", #static
+                    "featured": True
+                }
+            ]
         }
 
         # Create two lots based on extension type
-        for i in range(2):  # Create two lots
+        for _ in range(2):  # Create two lots
             lot_number = get_next_lot_number(auction_id, seller_email)
             lot_info = prepare_lot_info(request_body, auction_record, lot_number, extension_type,time_between_lots=2)
             common_lot_info.update(lot_info)
@@ -267,7 +342,7 @@ def prepare_lot_info(request_body, auction, lot_number, extension_type,time_betw
             start_date = last_end_date
             end_date = last_end_date + time_between_lots * 60 * 1000
         elif extension_type == 'All Lots':
-            start_date = auction.get('start_date', datetime.now().timestamp() * 1000) 
+            start_date = auction.get('start_date', datetime.now().timestamp() * 1000)
             end_date = auction['end_date']
 
         print('Calculated Start Date:', start_date, 'End Date:', end_date)
