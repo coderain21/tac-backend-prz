@@ -46,13 +46,13 @@ resource "aws_route53_zone" "dev" {
 }
 
 resource "aws_route53_record" "dev-ns" {
-  count    = var.STAGE == "prod" ? 1 : 0
-  zone_id  = data.aws_route53_zone.domain_zone_main.zone_id
+  count    = var.STAGE != "prod" ? 1 : 0
+  zone_id  = data.aws_route53_zone.domain_zone.zone_id
   name     = local.sub_domain
   type     = "NS"
   ttl      = "30"
   records  = aws_route53_zone.dev[count.index].name_servers
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 
