@@ -9,6 +9,7 @@ from bson import ObjectId
 from lib.get import get_by_email
 from lib.common_helper import Encoder
 from datetime import datetime
+
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
 sqs = boto3.client('sqs')
@@ -338,18 +339,19 @@ def update_auction(event, context):
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
 
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
-                print('inside update323323', listLots)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
                         if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                             item['start_date'] = start_date
-                            item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
-                            count_import += 1
+                            if item['lot_number'] == 1:
+                                item['end_date'] = end_date
+                            else:
+                                item['end_date'] = end_date + extension_time*60*1000
+                                count_import += 1
                         elif auction_record['extension_type'] == "All Lots":
                             item['start_date'] = start_date
                             item['end_date'] = end_date
                         documents.append(item)
-                print('documents',documents)
                 bulk_operations = []
                 for item in documents:
                     filter_criteria = {
@@ -386,20 +388,9 @@ def update_auction(event, context):
                         'seller_email': item.get('seller_email'),
                         # Add more required fields as needed
                     }
+
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
-                # Modify start_date and end_date before sending SQS
-                for item in json_serializable_list:
-                    if not item['end_date'] < epoch_time_milliseconds:
-                        if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
-                            item['start_date'] = start_date
-                            item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
-                            count_import += 1
-                        elif auction_record['extension_type'] == "All Lots":
-                            item['start_date'] = start_date
-                            item['end_date'] = end_date
-
-                # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
@@ -434,6 +425,8 @@ def update_auction(event, context):
                     print('cc', cc)
                 # update in the mongodb database
                 # Modify start_date and end_date before sending SQS
+        additional_time_ms = end_date + existing_lots_count * extension_time * 60 * 1000
+        update_data ['end_date'] = additional_time_ms
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
