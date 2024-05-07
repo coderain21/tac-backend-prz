@@ -16,8 +16,8 @@ provider:
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
-    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
-    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
@@ -25,7 +25,7 @@ provider:
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
-    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
+    COGNITO_USER_POOL: ${ssm:ADMIN_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -57,7 +57,7 @@ provider:
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: no-reply@indy.auction
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:
@@ -78,8 +78,9 @@ provider:
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
+    ADMIN_COGNITO_AUTH_ARN: ${ssm:ADMIN_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
-    COGNITO_ADMIN_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
 
     SQS_QUEUE_ARN:  
@@ -108,7 +109,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL: ${ssm:CDN_URL}
-    SENDER_EMAIL: no-reply@indy.auction
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
     STATE_MACHINE_LOT_ARN:  
       Fn::Join:
           - ":"
@@ -147,7 +148,7 @@ provider:
     authorizers:
       cognito-auth:
         identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:ADMIN_COGNITO_USERPOOL_ID}
         audience: ${ssm:ADMIN_COGNITO_CLIENT_ID}
 
   iam:
@@ -224,7 +225,7 @@ functions:
           path: /auctions
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   list-buyers:
     handler: handlers/list_buyers.list_buyers
     runtime: python3.8
@@ -251,7 +252,7 @@ functions:
           path: /buyers
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   buyer-details:
     handler: handlers/buyer_detail.buyer_detail
     runtime: python3.8
@@ -278,7 +279,7 @@ functions:
           path: /buyer-details
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   buyer-view-auction:
     handler: handlers/buyer_list_auction.buyer_list_auction
     runtime: python3.8
@@ -305,7 +306,7 @@ functions:
           path: /buyer-auctions
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   purchase-list:
     handler: handlers/list_purchases.list_purchases
     runtime: python3.8
@@ -332,7 +333,7 @@ functions:
           path: /{id}
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   clone_auction:
     handler: handlers/clone_auction.clone_auction
     runtime: python3.8
@@ -359,7 +360,7 @@ functions:
           path: /clone-auction
           method: post
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   order-details:
     handler: handlers/order_details.order_detail
     runtime: python3.8
@@ -386,7 +387,7 @@ functions:
           path: /order-details
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   auction-purchases:
     handler: handlers/auction_purchases.list_purchases
@@ -414,7 +415,7 @@ functions:
           path: /auction-purchases
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   auction-details:
     handler: handlers/auction_details.auction_details
     runtime: python3.8
@@ -441,7 +442,7 @@ functions:
           path: /auction-details
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   all-purchases:
     handler: handlers/all_accounting.list_all_purchases
@@ -469,7 +470,7 @@ functions:
           path: /accountings
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   list-sellers:
     handler: handlers/list_sellers.list_sellers
     runtime: python3.8
@@ -496,7 +497,7 @@ functions:
           path: /sellers
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   seller-details:
     handler: handlers/seller_details.seller_details
     runtime: python3.8
@@ -523,7 +524,7 @@ functions:
           path: /seller-details
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   update-seller-status:
     handler: handlers/update_seller_status.update_seller_status
     runtime: python3.8
@@ -550,7 +551,7 @@ functions:
           path: /update-seller-status
           method: post
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
             
   unpublish_auction:
     handler: handlers/unpublish_auction.handler
@@ -578,7 +579,7 @@ functions:
           path: /unpublish-auction
           method: patch
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bdd_admin_update_status:
     handler: handlers/bdd_api.handler
     vpc:
@@ -605,7 +606,7 @@ functions:
           path: /admin_bdd-update/{auction_id}
           method: patch
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   update_auction:
       handler: handlers/publish_auction.update_auction
       runtime: python3.8
@@ -624,7 +625,7 @@ functions:
             path: /publish-auction/{auction_id}
             method: patch
             authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   admin-sub-domain:
     handler: handlers/subdomain.subdomain
     runtime: python3.8
@@ -642,7 +643,7 @@ functions:
           path: /admin-subdomain
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   
   edit_auction:
       handler: handlers/update_auction.update_auction
@@ -662,7 +663,7 @@ functions:
             path: /edit-auction/{auction_id}
             method: patch
             authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   admin_update_lot:
       handler: handlers/admin_update_lot.update
@@ -682,7 +683,7 @@ functions:
             path: /update-lot
             method: patch
             authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
 resources:
   Resources:

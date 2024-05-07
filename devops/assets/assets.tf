@@ -16,6 +16,12 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
+
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
@@ -24,8 +30,8 @@ locals {
 }
 
 data "aws_route53_zone" "domain_zone" {
-  name = var.DOMAIN # Replace with your domain name
-  provider = aws.main
+  name = local.sub_domain # Replace with your domain name
+  provider = aws.route53-account
 }
 resource "aws_route53_zone" "dev" {
   count = var.STAGE != "prod" ? 1 : 0
@@ -37,19 +43,19 @@ resource "aws_route53_zone" "dev" {
 }
 
 resource "aws_route53_record" "dev-ns" {
-  count = var.STAGE != "prod" ? 1 : 0
-  zone_id = data.aws_route53_zone.domain_zone.zone_id
-  name    = local.sub_domain
-  type    = "NS"
-  ttl     = "30"
-  records = aws_route53_zone.dev[0].name_servers
-  provider =  aws.main
+  count    = var.STAGE != "prod" ? 1 : 0
+  zone_id  = data.aws_route53_zone.domain_zone.zone_id
+  name     = local.sub_domain
+  type     = "NS"
+  ttl      = "30"
+  records  = aws_route53_zone.dev[count.index].name_servers
+  provider = aws.route53-account
 }
 
 
 
 locals {
-  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : aws_route53_zone.dev[0].zone_id
+  zone_id = "${var.STAGE}" == "prod" ? data.aws_route53_zone.domain_zone.zone_id : try(aws_route53_zone.dev[0].zone_id, null)
 }
 
 
@@ -89,7 +95,7 @@ resource "aws_route53_record" "route_53_certificate_records_ap_south_1_dev" {
   ttl             = 60
   type            = each.value.type
   zone_id         = local.zone_id
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 
@@ -118,7 +124,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
   ttl             = 60
   type            = each.value.type
   zone_id         = local.zone_id
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 # resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
@@ -264,25 +270,14 @@ data "aws_iam_policy_document" "s3_policy" {
 }
 
 resource "aws_route53_record" "assets_cname_dev" {
-  count = var.STAGE != "prod" ? 1 : 0
   name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
   type    = "CNAME"
   zone_id = local.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
   ttl = 300
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
-resource "aws_route53_record" "assets_cname_prod" {
-  count = var.STAGE == "prod" ? 1 : 0
-  name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
-  type    = "CNAME"
-  zone_id = local.zone_id
-  records = [aws_cloudfront_distribution.s3_distribution.domain_name]
-  ttl = 300
-  provider = aws.main
-
-}
 
 resource "aws_ssm_parameter" "assets_bucket" {
   name  = "BUCKET_NAME"
@@ -294,9 +289,7 @@ resource "aws_ssm_parameter" "assets_bucket" {
 resource "aws_ssm_parameter" "application_url" {
   name  = "CDN_URL"
   type  = "String"
-  value = <<-EOT
-    https://cdn.${local.sub_domain}/public/
-  EOT
+  value = "https://cdn.${local.sub_domain}/public/"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -355,6 +348,13 @@ resource "aws_ssm_parameter" "stripe_api_key" {
   value = var.STRIPE_API_KEY
   provider = aws.deployment-eu
 }
+resource "aws_ssm_parameter" "stripe_credit_api_key" {
+  name  = "CREDIT_CARD_STRIPE_API_KEY"
+  overwrite = true
+  type  = "String"
+  value = var.CREDIT_CARD_STRIPE_API_KEY
+  provider = aws.deployment-eu
+}
 
 
 
@@ -366,13 +366,7 @@ resource "aws_ssm_parameter" "amplify_branch" {
   value = var.AMPLIFY_BRANCH
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "stripe_endpoint_secret" {
-  name  = "STRIPE_ENDPOINT_SECRET"
-  overwrite = true
-  type  = "String"
-  value = var.STRIPE_ENDPOINT_SECRET
-  provider = aws.deployment-eu
-}
+
 
 resource "aws_ssm_parameter" "facebook_client_id" {
   name  = "FACEBOOK_CLIENT_ID"
@@ -493,6 +487,13 @@ resource "aws_ssm_parameter" "buyer_cognito_custom_domain" {
   name  = "BUYER_COGNITO_USERPOOL_DOMAIN"
   type  = "String"
   value = "auth.${local.computed_variable}.${local.sub_domain}"
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "mailchimp_secret_key" {
+  name  = "MAILCHIMP_SECRET_KEY"
+  type  = "String"
+  value = var.MAILCHIMP_SECRET_KEY
   provider = aws.deployment-eu
   overwrite = true
 }

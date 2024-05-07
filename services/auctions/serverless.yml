@@ -72,7 +72,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL:  ${ssm:CDN_URL}
-    SENDER_EMAIL: no-reply@indy.auction
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
     STATE_MACHINE_LOT_ARN:  
       Fn::Join:
           - ":"
@@ -317,7 +317,7 @@ functions:
           path: /admin/lots
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   delete_lot:
       handler: handlers/delete_lot.delete_lot

@@ -4,8 +4,8 @@
       "title": "Seller | List Bidders",
       "description": "Seller list the bidders",
       "contact": {
-        "name": "no-reply@indy.auction",
-        "email": "no-reply@indy.auction"
+        "name": "no-reply@dev.indyauction.net",
+        "email": "no-reply@dev.indyauction.net"
       },
       "version": "1.0.0"
     },
@@ -117,99 +117,27 @@
                   {
                     "buyers": [
                       {
-                        "_id": "653b41cbd3c3ab4f70f53b80",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+100@7edge.com",
-                        "created_at": "2023-10-27 04:51:23.632000",
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
+                        "_id": "6540c17d9cc11ec0bf466b84",
+                        "auction_id": "6540c0beca765df3f80d2275",
+                        "email_address": "anusha.k+buyer0@7edge.com",
+                        "created_at": "2023-10-31 08:57:33.279000",
+                        "marketing": false,
+                        "time_zone": "BST - British Summer Time"
                       },
                       {
-                        "_id": "653b4bbe77a9163ca253edf7",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+1211113@7edge.com",
-                        "created_at": "2023-10-27 05:33:50.272000",
+                        "_id": "662c8892a5579605ea2a4c81",
+                        "name": "Sthuthi ",
+                        "auction_id": "65faa94a10547dace8fe1c2b",
+                        "email_address": "sthuthi+test@7edge.com",
+                        "created_at": "2024-04-25 12:34:55.949000",
                         "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b4d9f4eca834abff1991a",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+99@7edge.com",
-                        "created_at": "2023-10-27 05:41:51.406000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b4d9f4eca834abff1991c",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+99@7edge.com",
-                        "created_at": "2023-10-27 05:41:51.979000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b4f484d75c9dbce1663da",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+119@7edge.com",
-                        "created_at": "2023-10-27 05:48:56.514000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b51a8515c5d963e4a59a9",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+120@7edge.com",
-                        "created_at": "2023-10-27 05:59:04.475000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b5275515c5d963e4a59b1",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+393@7edge.com",
-                        "created_at": "2023-10-27 06:02:29.478000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b5276515c5d963e4a59b4",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+393@7edge.com",
-                        "created_at": "2023-10-27 06:02:30.059000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b8170b770beab9d2489ed",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "shrinit.poojary+69@7edge.com",
-                        "created_at": "2023-10-27 09:22:56.925000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
-                      },
-                      {
-                        "_id": "653b851cec52c6dd8e6fe282",
-                        "auction_id": "65363ffe6ecaedfb6ffef6eb",
-                        "email_address": "sthuthi+test1@7edge.com",
-                        "created_at": "2023-10-27 09:38:36.775000",
-                        "marketing": false,
-                        "name": "Shri ",
-                        "time_zone": "CET - Central European Time"
+                        "time_zone": "UTC+5:30"
                       }
                     ],
-                    "total_buyers": 16,
+                    "total_buyers": 2,
                     "page_size": 10,
                     "page_number": 1,
-                    "time_zone": "CET - Central European Time",
+                    "time_zone": "UTC+5:30",
                     "csv_url": ""
                   }
                 }

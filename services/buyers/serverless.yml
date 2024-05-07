@@ -55,7 +55,7 @@ provider:
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: no-reply@indy.auction
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     BUYER_AUCTION_REGISTER_TEMPLATE: 
       Fn::GetAtt:
@@ -93,6 +93,7 @@ provider:
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
     
   http:
     cors: true

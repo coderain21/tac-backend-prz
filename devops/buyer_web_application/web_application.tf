@@ -12,6 +12,11 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
 
 provider "aws" {
   region = "us-east-1"
@@ -32,8 +37,8 @@ data "aws_ssm_parameter" "bitbucket" {
 locals {
   ssm_value = try(data.aws_ssm_parameter.bitbucket.value, null)
   external_token = data.external.token.result.token
-  
   token = local.ssm_value == "NULL" ? local.external_token : local.ssm_value
+  subdomains_json = jsondecode(file("subdomains.json"))
 }
 
 
@@ -96,6 +101,21 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
 
+# data "file" "subdomains" {
+#   filename = "subdomains.json"
+# }
+
+# variable "subdomain_list" {
+#   type = list(string)
+#   default = jsondecode(data.file.subdomains.content).subdomains
+# }
+
+#Fetches the data from Main Domain Hosted Zones
+# data "aws_route53_zone" "domain_zone" {
+#   name = local.sub_domain # Replace with your domain name
+#   provider = aws.main
+# }
+
 resource "aws_amplify_branch" "amplify_branch" {
   app_id      = aws_amplify_app.customer_web_application.id
   branch_name = "${var.BITBUCKET_BRANCH}"
@@ -108,8 +128,6 @@ resource "aws_amplify_domain_association" "domain_association" {
   app_id      = aws_amplify_app.customer_web_application.id
   domain_name = local.sub_domain
   wait_for_verification = true
-
-  
   sub_domain {
     branch_name = aws_amplify_branch.amplify_branch.branch_name
     prefix      = local.computed_variable
@@ -125,5 +143,21 @@ resource "aws_ssm_parameter" "amplify_id" {
   provider = aws.deployment-eu
 }
 
+# resource "aws_route53_record" "record_updater" {
+#   name    = "www.${local.sub_domain}"
+#   type    = "CNAME"
+#   zone_id = data.aws_route53_zone.domain_zone.zone_id
+#   provider = aws.main
+#   records = [aws_amplify_domain_association.domain_association.dns_record]
+  
+# }
+
+# resource "aws_route53_record" "record_updater_certificate" {
+#   name    = aws_amplify_domain_association.domain_association.certificate_verification_dns_record
+#   type    = "CNAME"
+#   zone_id = data.aws_route53_zone.domain_zone.zone_id
+#   provider = aws.main
+#   records = [aws_amplify_domain_association.domain_association.certificate_verification_dns_record]
+# }
 
 

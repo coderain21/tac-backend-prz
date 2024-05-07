@@ -185,6 +185,10 @@ def subdomain(event, context):
             appId=os.environ['AMPLIFY_APP_ID'],
             domainName=os.environ['AMPLIFY_DOMAIN_NAME']
         )
+        dns_record = None
+        if len(response['domainAssociation']['subDomains'])>0:
+            dns_record = response['domainAssociation']['subDomains'][0]['dnsRecord'].split(' ')[2]
+
         existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
         subdomain_exists = new_subdomain in [domain['prefix'] for domain in existing_subdomains]
 
@@ -198,7 +202,17 @@ def subdomain(event, context):
         userpoolid = os.environ['DEFAULT_BUYER_USERPOOL_ID']
         userclientid = os.environ['BUYER_COGNITO_CLIENT_ID']
         userclientname = 'default-client'
-        update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
+        remove_old = False
+        update_mapping = []
+        for domain in existing_subdomains:
+            print('%%%%%%%%%%%%%', domain['prefix'] , existing_domain_record['subdomain'])
+            if domain['prefix'] != os.environ['DEFAULT_SUB_DOMAIN'] and domain['prefix'] == existing_domain_record['subdomain']:
+                print("insideeeeee ", domain['prefix'], os.environ['DEFAULT_SUB_DOMAIN'] ,domain['prefix'] , existing_domain_record['subdomain'])
+                remove_old = True
+            else:
+                update_mapping.append(domain)
+
+        # update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
         print('update_mapping', update_mapping)
         update_mapping.append({'prefix': new_subdomain, 'branchName': os.environ["AMPLIFY_BRANCH"]})
         subdomain_collection.update_one(
@@ -213,6 +227,73 @@ def subdomain(event, context):
             enableAutoSubDomain=True,
             subDomainSettings=update_mapping
         )
+        if(os.environ.get('STAGE')) == 'prod':
+            #add cname to main account
+            sts_client = boto3.client('sts')
+            assumed_role_object = sts_client.assume_role(
+                RoleArn=os.environ.get('CROSS_ACCOUNT_ARN'),
+                RoleSessionName="AssumeRoleSession1"
+            )
+            credentials = assumed_role_object['Credentials']
+            route53_client = boto3.client(
+                'route53',
+                aws_access_key_id=credentials['AccessKeyId'],
+                aws_secret_access_key=credentials['SecretAccessKey'],
+                aws_session_token=credentials['SessionToken']
+            )
+            # Create Route 53 client using assumed credentials
+            hosted_zone_id = os.environ.get('HOSTED_ZONE_ID')
+            record_name = f"{new_subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"
+            record_type = 'CNAME'
+            record_value = dns_record
+
+            # Create a change batch to add the record
+            change_batch = {
+                'Changes': [
+                    {
+                        'Action': 'UPSERT',
+                        'ResourceRecordSet': {
+                            'Name': record_name,
+                            'Type': record_type,
+                            'TTL': 300,
+                            'ResourceRecords': [
+                                {
+                                    'Value': record_value
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+            if remove_old is True:
+                change_batch['Changes'].append(
+                    {
+                        'Action': 'DELETE',
+                        'ResourceRecordSet': {
+                            'Name': f"{existing_domain_record['subdomain']}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}",
+                            'Type': record_type,
+                            'TTL': 300,
+                            'ResourceRecords': [
+                                {
+                                    'Value': record_value
+                                }
+                            ]
+                        }
+                    }
+                )
+            try:
+            # Make the change to the hosted zone
+                response1 = route53_client.change_resource_record_sets(
+                    HostedZoneId=hosted_zone_id,
+                    ChangeBatch=change_batch
+                )
+            except Exception as err:
+                print(err)
+                return {
+                    'statusCode': 500,
+                    'headers': headers,
+                    'body': json.dumps({'message': "Internal server error"})
+                }
         return {
             'statusCode': 200,
             'headers': headers,

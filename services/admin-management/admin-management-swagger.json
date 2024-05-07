@@ -348,6 +348,21 @@
                 "example": {
                   "buyers": [
                     {
+                      "_id": "6628f469deb4ba6493d75000",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX19AMNqyiXAuxP9QzVezN/i4Pticbfmf+uE=",
+                      "email_address": "ibrahimkhaleel0399@gmail.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "IBRAHIM",
+                      "last_name": "KHALEEL",
+                      "registered_through": "federated",
+                      "created_at": "2024-04-24 12:00:37.422000",
+                      "buyer_id": "B0192",
+                      "__v": 0,
+                      "seller_email": "namratha.shettigar+dev@7edge.com"
+                    },
+                    {
                       "_id": "65ddc527cca2efbf6a77a199",
                       "user_type": "buyer",
                       "password": "U2FsdGVkX19T9rOlvYoOIeH95VeoyRoUk02KAahrpM4=",
@@ -371,20 +386,6 @@
                       }
                     },
                     {
-                      "_id": "662644514434bce4ccf53c1b",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19soFAwgo2AQKvnseThYPRRV6axRVrad48=",
-                      "email_address": "sthuthi@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Sthuthi",
-                      "last_name": "B",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-22 11:04:49.532000",
-                      "buyer_id": "B0190",
-                      "__v": 0
-                    },
-                    {
                       "_id": "65dc375df646dea4687b61e4",
                       "user_type": "buyer",
                       "password": "U2FsdGVkX1+wPyyaXGcE8sfyoJlODekKNW53SR3CV9g=",
@@ -398,21 +399,6 @@
                       "buyer_id": "B0157",
                       "__v": 0,
                       "seller_email": "sthuthi+stripe@7edge.com"
-                    },
-                    {
-                      "_id": "6628f469deb4ba6493d75000",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19AMNqyiXAuxP9QzVezN/i4Pticbfmf+uE=",
-                      "email_address": "ibrahimkhaleel0399@gmail.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "IBRAHIM",
-                      "last_name": "KHALEEL",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-24 12:00:37.422000",
-                      "buyer_id": "B0192",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com"
                     },
                     {
                       "_id": "6628fa73161dfe72936def73",
@@ -442,6 +428,20 @@
                       "buyer_id": "B0201",
                       "__v": 0,
                       "seller_email": "namratha.shettigar+dev@7edge.com"
+                    },
+                    {
+                      "_id": "662644514434bce4ccf53c1b",
+                      "user_type": "buyer",
+                      "password": "U2FsdGVkX19soFAwgo2AQKvnseThYPRRV6axRVrad48=",
+                      "email_address": "sthuthi@7edge.com",
+                      "newsletter_notification": false,
+                      "terms_and_condition": true,
+                      "first_name": "Sthuthi",
+                      "last_name": "B",
+                      "registered_through": "federated",
+                      "created_at": "2024-04-22 11:04:49.532000",
+                      "buyer_id": "B0190",
+                      "__v": 0
                     },
                     {
                       "_id": "65d861d7f46ef6bed548dacd",
@@ -494,10 +494,11 @@
                       "full_name": "Aishwarya K"
                     }
                   ],
-                  "total_buyers": 57,
+                  "total_buyers": 65,
                   "page_size": 10,
                   "page_number": 1
                 }
+                
               }
             }
           },

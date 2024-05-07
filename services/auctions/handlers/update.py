@@ -99,9 +99,7 @@ def update_auction(event, context):
     """
     try:
         try:
-            print('eventtttttttttttttttttt', event)
             seller_email = event['requestContext']['authorizer']['claims']['email']
-            print('seller_email', seller_email)
             if ("cognito:groups" in event['requestContext']['authorizer']['claims'] and not
                     'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]):
                 return {
@@ -168,6 +166,7 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             # if kyc_kyb_review is not True:
@@ -213,8 +212,8 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
-            print('seller data', seller_data['stripe_status'])
-            if seller_data['stripe_status'] == 'disconnected':
+            # print('seller data', seller_data['stripe_status'])
+            if 'stripe_status' not in seller_data or seller_data['stripe_status'] == 'disconnected':
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -334,6 +333,8 @@ def update_auction(event, context):
 
             # Convert epoch time to epoch milliseconds
             epoch_time_milliseconds = epoch_time_seconds * 1000
+            # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
+
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
 
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:

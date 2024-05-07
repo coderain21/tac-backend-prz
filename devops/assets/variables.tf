@@ -50,7 +50,7 @@ variable "AMPLIFY_BRANCH" {
   type        = string
   description = "Description of the variable"
 }
-variable "STRIPE_ENDPOINT_SECRET" {
+variable "CREDIT_CARD_STRIPE_API_KEY" {
   type        = string
   description = "Description of the variable"
 }
@@ -99,5 +99,12 @@ variable "STRIPE_PAYMENT_KEY" {
   type        = string
   description = "Description of the variable"
 }
+variable "MAILCHIMP_SECRET_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
 
-
+variable "ROUTE53_ACCOUNT" {
+  type        = string
+  description = "Description of the variable"
+}

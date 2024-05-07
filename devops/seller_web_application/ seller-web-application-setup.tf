@@ -1,10 +1,6 @@
  
 
-variable "certificate_domain" {
-  type        = string
-  description = "Domain name for ACM certificate"
-  default     = "*.indyauction.net"
-}
+
 provider "aws" {
   region = "eu-west-2"
   alias = "deployment-eu"   # Specify a default AWS region here
@@ -16,14 +12,11 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
-provider "aws" {
-  region = "us-east-1"
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
-}
 
 provider "aws" {
-  region = var.REGION
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
 }
 
 resource "aws_s3_bucket" "b" {
@@ -60,6 +53,7 @@ locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
 
+
 data "aws_acm_certificate" "existing_certificate" {
   domain   = "*.${local.sub_domain}"
   statuses = ["ISSUED"] # Specify certificate statuses you want to consider as "existing"
@@ -77,7 +71,7 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "seller.${local.sub_domain}" : "seller.${local.sub_domain}"
 }
 locals {
-  computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www-${var.STAGE}"
+  computed_domain_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
 
 resource "aws_cloudfront_origin_access_control" "cdn" {
@@ -178,7 +172,7 @@ data "aws_iam_policy_document" "allow_access_from_another_account" {
 
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 resource "aws_route53_record" "my_cname" {
@@ -186,7 +180,7 @@ resource "aws_route53_record" "my_cname" {
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
-  provider = aws.main
+  provider = aws.route53-account
   ttl     = 300
 }
 

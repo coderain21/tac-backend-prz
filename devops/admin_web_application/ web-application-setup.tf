@@ -10,6 +10,12 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
+
 resource "aws_s3_bucket" "bucket" {
   bucket = "indy-auction-admin-web-application-${var.STAGE}"
   force_destroy = true
@@ -129,7 +135,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain
-  provider = aws.deployment-us
+  provider = aws.route53-account
 }
 
 
@@ -166,7 +172,7 @@ resource "aws_route53_record" "my_cname" {
   type    = "CNAME"
   zone_id = data.aws_route53_zone.domain_zone.zone_id
   records = [aws_cloudfront_distribution.s3_distribution.domain_name]
-  provider = aws.deployment-us
+  provider = aws.route53-account
   ttl     = 300
 }
 

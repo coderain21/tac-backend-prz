@@ -10,18 +10,9 @@ from dotenv import load_dotenv  # Import the library
 # Load environment variables from .env file
 load_dotenv()
 
-aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
-aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
-aws_region = os.environ['AWS_REGION']
 
-# Configure AWS SDK
-session = boto3.Session(
-    aws_access_key_id= aws_access_key_id,
-    aws_secret_access_key= aws_secret_access_key,
-    region_name=aws_region
-)
 
-client = session.client('cognito-idp',region_name='eu-west-2')
+client = boto3.client('cognito-idp',region_name='eu-west-2')
 
 def generate_token(user_type):
     try:
@@ -38,7 +29,7 @@ def generate_token(user_type):
             password = os.environ['BUYER_PASSWORD']
             print(user_pool_id,client_id, username, password)
         if user_type == 'ADMIN':
-            user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
+            user_pool_id = os.environ['ADMIN_COGNITO_USERPOOL_ID']
             client_id = os.environ['ADMIN_COGNITO_CLIENT_ID']
             username = os.environ['ADMIN_USERNAME']
             password = os.environ['ADMIN_PASSWORD']

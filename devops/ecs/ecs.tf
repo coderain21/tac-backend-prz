@@ -15,6 +15,13 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
+
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
@@ -270,7 +277,6 @@ locals {
       name      = "websocket-container"
       image     = "${resource.aws_ecr_repository.repo1.repository_url}:latest"
       cpu       = 0
-      memory    = 512
       essential = true
       portMappings = [
         {
@@ -299,7 +305,12 @@ locals {
     }
   ])
 }
-
+data "aws_ssm_parameter" "cpu" {
+  name = "CPU"
+}
+data "aws_ssm_parameter" "memory" {
+  name = "MEMORY"
+}
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
   family                   = "websocket-task-definition"
@@ -307,8 +318,8 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
   execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
-  cpu                      = "4096"
-  memory                   = "8192"
+  cpu                      = data.aws_ssm_parameter.cpu.value
+  memory                   = data.aws_ssm_parameter.memory.value
   depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
   container_definitions = local.definitions
   skip_destroy = true
@@ -343,7 +354,7 @@ resource "aws_lb" "load-balancer" {
 
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 resource "aws_route53_record" "my_cname" {
@@ -355,7 +366,7 @@ resource "aws_route53_record" "my_cname" {
     zone_id                = aws_lb.load-balancer.zone_id
     evaluate_target_health = true
   }
-  provider = aws.main
+  provider = aws.route53-account
 }
 
 # Target Group
@@ -436,7 +447,7 @@ resource "aws_appautoscaling_policy" "cpu" {
 resource "aws_ssm_parameter" "socket" {
   name  = "SOCKET_URL"
   type  = "String"
-  value = "websocket.${local.sub_domain}"
+  value = "https://websocket.${local.sub_domain}"
   provider = aws.deployment-eu
   overwrite = true
 }

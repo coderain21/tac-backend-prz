@@ -52,7 +52,7 @@ provider:
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: no-reply@indy.auction
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}    
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
@@ -76,6 +76,8 @@ provider:
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     AMPLIFY_BRANCH: ${ssm:AMPLIFY_BRANCH}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    HOSTED_ZONE_ID: ${ssm:HOSTED_ZONE_ID}
+    CROSS_ACCOUNT_ARN: ${ssm:CROSS_ACCOUNT_ARN}
 
 
     
@@ -135,6 +137,7 @@ functions:
     handler: handlers/subdomain.subdomain
     runtime: python3.8
     timeout: 100
+    role: ${ssm:LAMBDA_EXECTION_ARN}
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -151,17 +154,17 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
-resources:
-   Resources:
-    GatewayResponseDefault4XX:
-       Type: 'AWS::ApiGateway::GatewayResponse'
-       Properties:
-         ResponseParameters:
-           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-         ResponseType: DEFAULT_4XX
-         RestApiId:
-           Ref: 'ApiGatewayRestApi'
+# resources:
+#    Resources:
+#     GatewayResponseDefault4XX:
+#        Type: 'AWS::ApiGateway::GatewayResponse'
+#        Properties:
+#          ResponseParameters:
+#            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#          ResponseType: DEFAULT_4XX
+#          RestApiId:
+#            Ref: 'ApiGatewayRestApi'
     # BuyerEmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate
     #   Properties: 

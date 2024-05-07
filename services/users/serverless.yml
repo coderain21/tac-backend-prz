@@ -47,7 +47,7 @@ provider:
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SES_SENDER_EMAIL_ID: no-reply@indy.auction
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     DATABASE: ${opt:stage, self:provider.stage}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
@@ -781,12 +781,12 @@ resources:
           - email
           - aws.cognito.signin.user.admin
         CallbackURLs:
-          - "${ssm:BASE_URL_SELLER}/"
-          - "${ssm:BASE_URL_SELLER}/"
+          - "${ssm:BASE_URL_SELLER}"
+          - "${ssm:BASE_URL_SELLER}"
           - "http://localhost:3000/"
           - "http://localhost:3001/"
         LogoutURLs:
-          - "${ssm:BASE_URL_SELLER}/"
+          - "${ssm:BASE_URL_SELLER}"
           - "http://localhost:3000/"
         IdTokenValidity: 60
         PreventUserExistenceErrors: LEGACY
@@ -797,47 +797,47 @@ resources:
           RefreshToken: days
 
 
-    AdminUsersClient:
-      Type: AWS::Cognito::UserPoolClient
-      Properties:
-        AccessTokenValidity: 60
-        AllowedOAuthFlowsUserPoolClient: true
-        AuthSessionValidity: 10
-        ClientName: admin
-        UserPoolId: { Ref: SellerUsers }
-        EnablePropagateAdditionalUserContextData: false
-        EnableTokenRevocation: true
-        ExplicitAuthFlows:
-          - ALLOW_CUSTOM_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-          - ALLOW_USER_SRP_AUTH
-          - ALLOW_ADMIN_USER_PASSWORD_AUTH
-          - ALLOW_USER_PASSWORD_AUTH
-        SupportedIdentityProviders:
-          - "COGNITO"
-        AllowedOAuthFlows:
-          - implicit
-          - code
-        AllowedOAuthScopes:
-          - openid
-          - profile
-          - email
-          - aws.cognito.signin.user.admin
-        CallbackURLs:
-          - "${ssm:BASE_URL_ADMIN}/"
-          - "${ssm:BASE_URL_ADMIN}/"
-          - "http://localhost:3000/"
-          - "http://localhost:3001/"
-        LogoutURLs:
-          - "${ssm:BASE_URL_ADMIN}/"
-          - "http://localhost:3000/"
-        IdTokenValidity: 60
-        PreventUserExistenceErrors: LEGACY
-        RefreshTokenValidity: 30
-        TokenValidityUnits:
-          AccessToken: minutes
-          IdToken: minutes
-          RefreshToken: days
+    # AdminUsersClient:
+    #   Type: AWS::Cognito::UserPoolClient
+    #   Properties:
+    #     AccessTokenValidity: 60
+    #     AllowedOAuthFlowsUserPoolClient: true
+    #     AuthSessionValidity: 10
+    #     ClientName: admin
+    #     UserPoolId: { Ref: SellerUsers }
+    #     EnablePropagateAdditionalUserContextData: false
+    #     EnableTokenRevocation: true
+    #     ExplicitAuthFlows:
+    #       - ALLOW_CUSTOM_AUTH
+    #       - ALLOW_REFRESH_TOKEN_AUTH
+    #       - ALLOW_USER_SRP_AUTH
+    #       - ALLOW_ADMIN_USER_PASSWORD_AUTH
+    #       - ALLOW_USER_PASSWORD_AUTH
+    #     SupportedIdentityProviders:
+    #       - "COGNITO"
+    #     AllowedOAuthFlows:
+    #       - implicit
+    #       - code
+    #     AllowedOAuthScopes:
+    #       - openid
+    #       - profile
+    #       - email
+    #       - aws.cognito.signin.user.admin
+    #     CallbackURLs:
+    #       - "${ssm:BASE_URL_ADMIN}/"
+    #       - "${ssm:BASE_URL_ADMIN}/"
+    #       - "http://localhost:3000/"
+    #       - "http://localhost:3001/"
+    #     LogoutURLs:
+    #       - "${ssm:BASE_URL_ADMIN}/"
+    #       - "http://localhost:3000/"
+    #     IdTokenValidity: 60
+    #     PreventUserExistenceErrors: LEGACY
+    #     RefreshTokenValidity: 30
+    #     TokenValidityUnits:
+    #       AccessToken: minutes
+    #       IdToken: minutes
+    #       RefreshToken: days
 
  
     CognitoIdentityPool:
@@ -850,9 +850,9 @@ resources:
           - ClientId: !Ref SellerUsersClient
             ProviderName: !GetAtt SellerUsers.ProviderName
             ServerSideTokenCheck: false
-          - ClientId: !Ref AdminUsersClient
-            ProviderName: !GetAtt SellerUsers.ProviderName
-            ServerSideTokenCheck: false
+          # - ClientId: !Ref AdminUsersClient
+          #   ProviderName: !GetAtt SellerUsers.ProviderName
+          #   ServerSideTokenCheck: false
         # Define more configuration properties as needed
     MyApiGatewayAuthorizer: 
       Type: AWS::ApiGateway::Authorizer
@@ -900,7 +900,7 @@ resources:
                 - Effect: "Allow"
                   Action:
                     - "s3:*" # Adjust permissions as needed
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     SellerCognitoIdentityPoolIDStore:
         Type: AWS::SSM::Parameter
@@ -929,12 +929,12 @@ resources:
           Type: String
           Value: { Ref: SellerUsersClient }
     
-    AdminCognitoClientIDStore:
-        Type: AWS::SSM::Parameter
-        Properties:
-          Name: ADMIN_COGNITO_CLIENT_ID
-          Type: String
-          Value: { Ref: AdminUsersClient }
+    # AdminCognitoClientIDStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: ADMIN_COGNITO_CLIENT_ID
+    #       Type: String
+    #       Value: { Ref: AdminUsersClient }
     
     SellerCognitoPoolARNStore:
         Type: AWS::SSM::Parameter

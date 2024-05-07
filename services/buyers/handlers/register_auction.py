@@ -48,7 +48,7 @@ def register_auction(event, context):
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
-            # if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
+            # if "cognito:groups" not in cognito_data :
             #     return {
             #     "statusCode": 403,
             #     "headers": headers,
@@ -131,6 +131,7 @@ def register_auction(event, context):
             title = registeration_type['title']
             seller_name= seller['first_name']
             if registeration_type["logo_image"] == "":
+
                 logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
