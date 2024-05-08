@@ -46,42 +46,6 @@ auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 lot_collection = db[os.environ['LOT_COLLECTION_NAME']]
 
 
-def publish_auction(seller_email, auction_id):
-    # Define the ARN of the Lambda function to be invoked
-    target_lambda_arn = 'arn:aws:lambda:eu-west-2:339712957347:function:auctions-dev-update_auction' #static
-
-    # Create a Lambda client
-    lambda_client = boto3.client('lambda')
-
-    # Prepare the payload with the necessary information
-    payload = {
-        "seller_email": seller_email,
-        "auction_id": auction_id,
-        # "jwt_token": jwt_token, # Pass the JWT token for authorization
-        "queryStringParameters": {
-            "published": "true" # Assuming you want to publish the auction
-        }
-    }
-
-    # Invoke the Lambda function
-    response = lambda_client.invoke(
-        FunctionName=target_lambda_arn,
-        InvocationType='RequestResponse', # Use 'Event' for asynchronous invocation
-        Payload=json.dumps(payload) # Pass the payload as a JSON string
-    )
-
-    # Handle the response from the invoked Lambda function
-    if response['StatusCode'] == 200:
-        # Extract and process response data if needed
-        invoked_function_result = response['Payload'].read()
-        print(invoked_function_result)
-        return True
-    else:
-        print('Invocation failed')
-        return False
-
-
-
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, ObjectId):
@@ -104,6 +68,7 @@ def create(event, context):
         # request_body["seller_email"] = email
         # print("request_body", request_body)
         email = 'sthuthi+test3@7edge.com'
+        # email = request_body['seller_email']
         request_body["seller_email"] = email
         get_user = seller_collection.find({"email_address": email})
         user_count = seller_collection.count_documents({"email_address": email})
@@ -131,10 +96,17 @@ def create(event, context):
         )
         sequence_number = f"A{str(counter['starting_sequence']).zfill(4)}"
         request_body["auction_id"] = sequence_number
-        request_body["start_date"] = int(datetime.now().timestamp())
-        now_plus_5_minutes = datetime.now() + timedelta(minutes=5)
-        request_body["end_date"] = int(now_plus_5_minutes.timestamp())
+        # Get the current time as a timestamp in milliseconds
+        current_timestamp_ms = int(datetime.now().timestamp() * 1000)
 
+        # Calculate the time 5 minutes from now in milliseconds
+        now_plus_5_minutes_ms = int((datetime.now() + timedelta(minutes=5)).timestamp() * 1000)
+
+        # Assign these values to the request body
+        request_body["start_date"] = current_timestamp_ms
+        request_body["end_date"] = now_plus_5_minutes_ms
+        
+        # Giving static values to create a new auction
         request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg' #static
         request_body['template_name'] = 'Classic'
         request_body['title'] = 'test title'
@@ -153,6 +125,32 @@ def create(event, context):
         request_body['publish_auction_results'] = False
         request_body['show_bidder_location_in_bidder_history'] = False
         request_body['make_your_auction_private'] = False
+        request_body['passcode'] = ''
+        request_body['font'] = {
+            'header_font': '',
+            'body_font': ''
+        }
+        request_body['buttons'] = {
+            'background_color': '',
+            'text_color': ''
+        }
+        request_body['header'] = {
+            'background_color': '',
+            'text_color': ''
+        }
+        request_body['content_area'] = {
+            'background_color': '',
+            'text_color': ''
+        }
+        request_body['footer'] = {
+            'background_color': '',
+            'text_color': ''
+        }
+        request_body['paddle'] = {
+            'background_color': '',
+            'text_color': ''
+        }
+        request_body['menu_links'] = []
 
 
 
@@ -174,8 +172,6 @@ def create(event, context):
 
                 create_lots = create_lot(event, sequence_number, email)
                 print('create_lots', create_lots)
-                if create_lots:
-                    publish = publish_auction(email, sequence_number)
                 return {
                 "statusCode": 201,
                 "headers": headers,
@@ -244,6 +240,8 @@ def create_lot(event, auction_id, seller_email):
         # Get the extension type from the auction record
         extension_type = auction_record.get('extension_type', '')
         # auction_status = auction_record.get('status', '')
+
+        #giving static values to create lots
         common_lot_info = {
             "seller_email": seller_email,
             "auction_id": auction_id,
