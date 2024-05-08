@@ -127,5 +127,6 @@ def update_lot_data(item, lot_id):
             "images": item.get('images', []),
                
         }
+        update_request["winning_user"] = update_request.get('winning_user', '')
         cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
         print('cache_update', cache_update)
