@@ -34,9 +34,12 @@ def add_address(event, context):
         db = client[os.environ['DATABASE']]
         collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
+        seller_email = data['seller_email']
         update_data={}
         if 'update' in data:
+            print('1')
             if data['update'] == 'True':
+                print('2')
                 body = json.loads(event['body'])
                 if 'address_line1' in body:
                     update_data['address_line1']=body['address_line1']
@@ -50,7 +53,7 @@ def add_address(event, context):
                     update_data['address_line2'] = body['address_line2']
                 if 'postal_code' in body:
                     update_data['postal_code']= body['postal_code']
-                result= collection.find_one_and_update({'email_address':email_address},
+                result= collection.find_one_and_update({'email_address':email_address, 'seller_email': seller_email},
                                                    {"$set": update_data})
         if 'delete' in data:
             if data['delete']== 'True':
@@ -61,9 +64,9 @@ def add_address(event, context):
                 update_data['county']= ""
                 update_data['address_line2'] = ""
                 update_data['is_manual'] = ""
-                result= collection.find_one_and_update({'email_address':email_address},
+                result= collection.find_one_and_update({'email_address':email_address, 'seller_email': seller_email},
                                                    {"$set": update_data})
-        result= collection.find_one({'email_address':email_address},
+        result= collection.find_one({'email_address':email_address, 'seller_email': seller_email},
                       { "password": 0,
                       "terms_and_condition": 0})
         client.close()
