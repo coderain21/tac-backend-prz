@@ -108,3 +108,13 @@ variable "ROUTE53_ACCOUNT" {
   type        = string
   description = "Description of the variable"
 }
+
+variable "NOTIFY_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+
+variable "GOOGLE_API" {
+  type        = string
+  description = "Description of the variable"
+}

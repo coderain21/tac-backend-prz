@@ -28,7 +28,10 @@ locals {
 locals {
   computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
-
+data "aws_route53_zone" "domain_zone_main" {
+  name = local.sub_domain # Replace with your domain name
+  provider = aws.main
+}
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
   provider = aws.route53-account
@@ -494,6 +497,20 @@ resource "aws_ssm_parameter" "mailchimp_secret_key" {
   name  = "MAILCHIMP_SECRET_KEY"
   type  = "String"
   value = var.MAILCHIMP_SECRET_KEY
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "notify_key" {
+  name  = "NOTIFY_KEY"
+  type  = "String"
+  value = var.NOTIFY_KEY
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "google_api" {
+  name  = "GOOGLE_API"
+  type  = "String"
+  value = var.GOOGLE_API
   provider = aws.deployment-eu
   overwrite = true
 }

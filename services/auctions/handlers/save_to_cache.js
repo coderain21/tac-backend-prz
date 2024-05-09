@@ -31,6 +31,7 @@ module.exports.handler = async (event, context, callback) => {
             data.extended = false
             data.lot_extended = false
         } else {
+            redisPayload.winning_user = redisPayload.winning_user || ''
             endDateISO = new Date(data.end_date).toISOString()
             data.extended = true
             data.lot_extended = true
