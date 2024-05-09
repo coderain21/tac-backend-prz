@@ -1912,7 +1912,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "sthuthi+test3@7edge.com"
+            "example": "sthuthi+testing@7edge.com"
           },
           {
             "name": "delete",
