@@ -146,7 +146,7 @@ def lambda_handler(event, context):
                 end_date = auction_record.get('end_date', 0)  # Assuming a default value of current datetime if 'end_date' is not available
                 enddate= end_date
                 request_body['end_date'] = enddate
-                updateCheck = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': enddate}})
+            updateCheck = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': request_body['end_date']}})
 
         # request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]

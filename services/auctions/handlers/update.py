@@ -315,17 +315,29 @@ def update_auction(event, context):
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
         documents = []
+        print('auction_record', auction_record)
+        extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        print('extension time', extension_time_str)
+        if extension_time_str != '':
+            print('111')
+            extension_time = int(extension_time_str[:1])
+        else:
+            print('22')
+            extension_time=0
+        existing_lots_count = collection_lot.count_documents(
+            {"seller_email": seller_email, "auction_id": auction_id})
+        print('existing_lots_count', existing_lots_count)
         if end_date != None:
             print('inisdeeeee updateeeee')
-            existing_lots_count = collection.count_documents(
-            {"seller_email": seller_email, "auction_id": auction_id})
-            extension_time_str = auction_record.get('extension_time_between_lots', '0')
-            if extension_time_str != '':
-                extension_time = int(extension_time_str[:1])
-            else:
-                extension_time=0
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
+            print('end date', end_date)
+
+            if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                additional_time_ms = end_date + (existing_lots_count -1 ) * extension_time * 60 * 1000
+                print('additional_time_ms', additional_time_ms, existing_lots_count, extension_time)
+                update_data ['end_date'] = additional_time_ms
+                print('updateeeedata', update_data)
             count_import=0
             # Get the current datetime object
             current_datetime = datetime.utcnow()
@@ -346,7 +358,7 @@ def update_auction(event, context):
                             if item['lot_number'] == 1:
                                 item['end_date'] = end_date
                             else:
-                                item['end_date'] = end_date + extension_time*60*1000
+                                item['end_date'] = end_date + extension_time * 60 * 1000
                                 count_import += 1
                         elif auction_record['extension_type'] == "All Lots":
                             item['start_date'] = start_date
@@ -386,6 +398,8 @@ def update_auction(event, context):
                         'end_date': item.get('end_date'),
                         'auction_id': item.get('auction_id'),
                         'seller_email': item.get('seller_email'),
+                        'winning_user': item.get('winning_user', ''),
+                        'bid_amount': item.get('current_bid', 0 )
                         # Add more required fields as needed
                     }
 
@@ -425,8 +439,9 @@ def update_auction(event, context):
                     print('cc', cc)
                 # update in the mongodb database
                 # Modify start_date and end_date before sending SQS
-        additional_time_ms = end_date + existing_lots_count * extension_time * 60 * 1000
-        update_data ['end_date'] = additional_time_ms
+        # additional_time_ms = end_date + existing_lots_count * extension_time * 60 * 1000
+        # update_data ['end_date'] = additional_time_ms
+        print('update_data', update_data)
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},

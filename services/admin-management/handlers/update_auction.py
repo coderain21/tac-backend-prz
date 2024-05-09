@@ -329,6 +329,9 @@ def update_auction(event, context):
                         'end_date': item.get('end_date'),
                         'auction_id': item.get('auction_id'),
                         'seller_email': item.get('seller_email'),
+                        'winning_user': item.get('winning_user', ''),
+                        'bid_amount': item.get('current_bid', 0 )
+                        
                         # Add more required fields as needed
                     }
                     allLots.append(required_fields)
