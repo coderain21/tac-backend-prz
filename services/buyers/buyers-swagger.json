@@ -1906,6 +1906,14 @@
             "example": "False"
           },
           {
+            "in": "query",
+            "description": "seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi+test@7edge.com"
+          },
+          {
             "name": "delete",
             "in": "query",
             "description": "to delete the address",
