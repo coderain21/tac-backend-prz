@@ -202,6 +202,7 @@ async function updateRedisData(lotInformation, client) {
             lot_end_date: lotInformation.lot_end_time,
             end_date: lotInformation.lot_end_time,
         }
+        updateRequest.winning_user = updateRequest.winning_user || ''
         const updatePromise = client
             .multi()
             .hset('lot', bidKey, JSON.stringify(updateRequest))
