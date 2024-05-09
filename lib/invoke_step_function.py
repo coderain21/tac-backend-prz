@@ -34,6 +34,8 @@ def invoke_state_machine(invocation_params, step_function_arn=None):
         print(f"Error invoking state machine: {e}")
         return {'status': False}
 
+
+
 def invoke_state_machine_for_auction_end(invocation_params, step_function_arn=None):
     client = boto3.client('stepfunctions')
 

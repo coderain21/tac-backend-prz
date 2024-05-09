@@ -44,6 +44,8 @@ provider:
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
+
     STATE_MACHINE_LOT_ARN:  
       Fn::Join:
           - ":"
@@ -177,18 +179,18 @@ functions:
             # authorizer:
             #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  sqs-lot-update:
-    handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-              - updateLotsQueue
-              - Arn
+  # sqs-lot-update:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: 6400
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #             - updateLotsQueue
+  #             - Arn
 
 
 stepFunctions:
