@@ -1905,7 +1905,8 @@
             },
             "example": "False"
           },
-          {
+          { 
+            "name": "seller_email",
             "in": "query",
             "description": "seller email",
             "schema": {
