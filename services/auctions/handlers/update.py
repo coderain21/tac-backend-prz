@@ -316,14 +316,10 @@ def update_auction(event, context):
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
         documents = []
-        print('auction_record', auction_record)
         extension_time_str = auction_record.get('extension_time_between_lots', '0')
-        print('extension time', extension_time_str)
         if extension_time_str != '':
-            print('111')
             extension_time = int(extension_time_str[:1])
         else:
-            print('22')
             extension_time=0
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
