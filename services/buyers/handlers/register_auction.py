@@ -168,12 +168,12 @@ def register_auction(event, context):
             # time_zone = TIMEZONE_MAPPING.get(common_time_zone, common_time_zone)  # Fallback to the common name if not found in mapping
             # print('time zone', time_zone)
             # tz = pytz.timezone(time_zone)
-    
+
             # start_date_time_in_milliseconds = registration_type['start_date']
             # # Convert timestamp in milliseconds to datetime object in the specified time zone
             # start_date_time_utc = datetime.utcfromtimestamp(start_date_time_in_milliseconds / 1000)
             # start_date_time = start_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
-    
+
             # # Extract date and time
             # start_date = start_date_time.date()
             # start_time = start_date_time.time().strftime('%H:%M:%S')
