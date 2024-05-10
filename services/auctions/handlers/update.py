@@ -7,6 +7,7 @@ import uuid
 from pymongo import MongoClient, UpdateOne
 from bson import ObjectId
 from lib.get import get_by_email
+from lib.helper_python import get_Lot
 from lib.common_helper import Encoder
 from datetime import datetime
 
@@ -388,15 +389,24 @@ def update_auction(event, context):
                 auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
                 allLots = []
                 for item in listLots:
+                    print('item', item)
+                    winningUser = item.get('winning_user')
+                    print('winning_user', winningUser)
+                    lot_id = str(item['_id'])
+                    print("lot_id", lot_id)
+                    getExistingLot = get_Lot(item, lot_id)
+                    print("getExistingLot", getExistingLot)
+
                     # Create a new dictionary with only the required fields
                     required_fields = {
+                        **getExistingLot,
                         '_id': item.get('_id'),
                         'start_date': item.get('start_date'),
                         'end_date': item.get('end_date'),
-                        'auction_id': item.get('auction_id'),
-                        'seller_email': item.get('seller_email'),
-                        'winning_user': item.get('winning_user', ''),
-                        'bid_amount': item.get('current_bid', 0 )
+                        # 'auction_id': item.get('auction_id'),
+                        # 'seller_email': item.get('seller_email'),
+                        'winning_user': getExistingLot.get('winning_user', winningUser) if getExistingLot.get('winning_user', winningUser) != '' else winningUser,
+                        'bid_amount': getExistingLot.get('bid_amount', item.get('current_bid') )
                         # Add more required fields as needed
                     }
 
@@ -417,6 +427,7 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
+                        print('item3333333333333333333', item)
                         message_body = 'update status'
                         message_attributes = {
                         'lots': {'DataType': 'String',  'StringValue': json.dumps(item)},
