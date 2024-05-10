@@ -48,9 +48,9 @@ def auction_details(event, context):
         result= auction_collection.find_one({"_id":ObjectId(auction_id)})
         if result is None:
             return {
-                "statusCode": 403,
+                "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
+                "body": json.dumps({"message": "Auction not found"})
             }
         return {
             "statusCode": 200,
