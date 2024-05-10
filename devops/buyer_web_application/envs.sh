@@ -8,7 +8,7 @@ parameter_names=(
     "REGION"
     "AMPLIFY_DOMAIN_NAME"
     "BUCKET_NAME"
-    "BUYER_STATIC_AUCTION_URL"
+    "BASE_URL_BUYER"
     "DOMAIN_NAME_FRONT_END"
     "SITEKEY"
     "GOOGLE_API_KEY"
