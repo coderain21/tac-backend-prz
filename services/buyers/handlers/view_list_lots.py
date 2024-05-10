@@ -29,7 +29,13 @@ db = client[os.environ['DATABASE']]
 lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
+def wishlist_enabled_and_relevant(buyer_id):
+    if not os.environ.get('BUYER_WISHLIST_TABLE_NAME'):
+        return False
+    # Check if there is any entry for the buyer in the wishlist collection
+    return wishlist_collection.count_documents({'buyer_id': ObjectId(buyer_id)}) > 0
 
 # Function to get lots based on search criteria and sorting
 def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
@@ -57,7 +63,7 @@ def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
         {"$addFields": {"is_wishlisted": False}}  # Default value for is_wishlisted when buyer_id is not provided
     ]
 
-    if buyer_id:
+    if buyer_id and wishlist_enabled_and_relevant(buyer_id):
         buyer_details = buyer_collection.find_one({'_id': ObjectId(buyer_id)})
         buyer_email = buyer_details['email_address']
 
@@ -74,6 +80,8 @@ def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
                 }
             }},
         ])
+    else:
+        aggregation_pipeline.append({"$addFields": {"is_wishlisted": False}})
 
     sort_stage = {"$sort": {sort_field: sort_order}}
     aggregation_pipeline.append(sort_stage)

@@ -29,7 +29,7 @@ locals {
   computed_variable = "${var.STAGE}" == "prod" ? "bid" : "www"
 }
 data "aws_route53_zone" "domain_zone_main" {
-  name = local.sub_domain # Replace with your domain name
+  name = var.DOMAIN # Replace with your domain name
   provider = aws.main
 }
 data "aws_route53_zone" "domain_zone" {
@@ -47,12 +47,12 @@ resource "aws_route53_zone" "dev" {
 
 resource "aws_route53_record" "dev-ns" {
   count    = var.STAGE != "prod" ? 1 : 0
-  zone_id  = data.aws_route53_zone.domain_zone.zone_id
+  zone_id  = data.aws_route53_zone.domain_zone_main.zone_id
   name     = local.sub_domain
   type     = "NS"
   ttl      = "30"
   records  = aws_route53_zone.dev[count.index].name_servers
-  provider = aws.route53-account
+  provider = aws.main
 }
 
 
