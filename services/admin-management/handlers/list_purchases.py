@@ -67,13 +67,13 @@ def list_purchases(event, context):
             }
         # Connect to MongoDB
         # print('Event:', json.dumps(event, indent=2))
-        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        if result is None:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        # if result is None:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
 
         # Extract buyer ID from path parameters
         id = event['pathParameters'].get('id', '')
