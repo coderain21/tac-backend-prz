@@ -145,7 +145,7 @@ def update_auction(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
-        
+
         if published_status == 'true':
             kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
             # if kyc_kyb_review is not True:
@@ -395,8 +395,8 @@ def update_auction(event, context):
                         'type': {'DataType': 'String', 'StringValue': 'update'},
                         }
                         entries.append({'Id': str(uuid.uuid4()),
-                                        'DelaySeconds': i, 
-                                        'MessageBody': message_body, 
+                                        'DelaySeconds': i,
+                                        'MessageBody': message_body,
                                         'MessageAttributes': message_attributes
                                         })
                     # Send the batch of entries to the queue
