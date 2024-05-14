@@ -44,13 +44,13 @@ def buyer_list_auction(event, context):
         user_collection = db[os.environ["SELLERS_TABLE"]]
         auction_collection = os.environ['AUCTION_MONGODB_COLLECTION_NAME']
         print(1,dev_auction_register)
-        result= user_collection.find_one({"user_type":"admin","email_address":seller_email})
-        if result is None:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # result= user_collection.find_one({"user_type":"admin","email_address":seller_email})
+        # if result is None:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         query_parameters = event.get('queryStringParameters')
         page_number = query_parameters.get('page_number','1')
         page_number= int(page_number)

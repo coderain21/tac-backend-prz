@@ -1905,6 +1905,24 @@
             },
             "example": "False"
           },
+          { 
+            "name": "seller_email",
+            "in": "query",
+            "description": "seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi+testing@7edge.com"
+          },
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "seller email to match the buyer",
+            "schema": {
+              "type": "string"
+            },
+            "example":"sthuthi+testing@7edge.com"
+          },
           {
             "name": "delete",
             "in": "query",
