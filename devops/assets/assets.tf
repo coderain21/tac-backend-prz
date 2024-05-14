@@ -35,6 +35,7 @@ data "aws_route53_zone" "domain_zone_main" {
 data "aws_route53_zone" "domain_zone" {
   name = local.sub_domain # Replace with your domain name
   provider = aws.route53-account
+  depends_on = [resource.aws_route53_zone.domain_zone_main]
 }
 resource "aws_route53_zone" "dev" {
   count = var.STAGE != "prod" ? 1 : 0

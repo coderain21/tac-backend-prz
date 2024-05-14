@@ -46,6 +46,8 @@ terraform -chdir=devops/redis-cluster init
 terraform -chdir=devops/redis-cluster apply -auto-approve
 terraform -chdir=devops/budgets init
 terraform -chdir=devops/budgets apply -auto-approve
+terraform -chdir=devops/stripe_webhook init
+terraform -chdir=devops/stripe_webhook apply -auto-approve
 if [ "${STAGE}" = "prod" ]; then
     terraform -chdir=devops/cloudwatch init
     terraform -chdir=devops/cloudwatch apply -auto-approve
@@ -106,8 +108,6 @@ else
 fi
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-terraform -chdir=devops/stripe_webhook init
-terraform -chdir=devops/stripe_webhook apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 sls deploy --stage ${STAGE} --max-concurrency 5
 
