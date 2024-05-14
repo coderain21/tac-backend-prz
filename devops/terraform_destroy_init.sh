@@ -70,11 +70,11 @@ sls remove --region $REGION --stage $STAGE
 cd ../..
 
 
-
-terraform -chdir=devops/budgets init && terraform -chdir=devops/budgets destroy -auto-approve & terraform -chdir=devops/redis-cluster init && terraform -chdir=devops/redis-cluster destroy -auto-approve
-terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve & terraform -chdir=devops/cloudwatch_alarms init && terraform -chdir=devops/cloudwatch_alarms destroy -auto-approve
-terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/kms init && terraform -chdir=devops/kms destroy -auto-approve 
-terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve & terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve 
-terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
+terraform -chdir=devops/stripe_webhook init && terraform -chdir=devops/stripe_webhook destroy -auto-approve & terraform -chdir=devops/cognito_custom_domain init && terraform -chdir=devops/cognito_custom_domain destroy -auto-approve 
+terraform -chdir=devops/buyer_web_application init && terraform -chdir=devops/buyer_web_application destroy -auto-approve & terraform -chdir=devops/budgets init && terraform -chdir=devops/budgets destroy -auto-approve 
+terraform -chdir=devops/redis-cluster init && terraform -chdir=devops/redis-cluster destroy -auto-approve & terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve 
+terraform -chdir=devops/cloudwatch_alarms init && terraform -chdir=devops/cloudwatch_alarms destroy -auto-approve
+terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve 
+terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve & terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
 
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
