@@ -46,13 +46,13 @@ def order_detail(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # buyer_email_address= 'anusha.k+newacc1@7edge.com'
-        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        if result is None:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        # if result is None:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         projection={
             'order_number':1,
             'created_at':1,

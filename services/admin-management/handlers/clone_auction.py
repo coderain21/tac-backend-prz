@@ -45,13 +45,13 @@ def clone_auction(event, context):
         counter_collection = db[os.environ["COUNTER_LOT"]]
         user_collection = db[os.environ['SELLERS_TABLE']]
 
-        result= user_collection.find_one({"user_type":"admin","email_address":email_address})
-        if result is None:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        # if result is None:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
 
         auction = auction_collection.find_one({'_id': ObjectId(_id)},{'_id': 0})
         if not auction:
