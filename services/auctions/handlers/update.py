@@ -141,16 +141,13 @@ def update_auction(event, context):
         # collection_seller = db[os.environ["SELLERS_TABLE"]]
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
-
-
         listLots = list(collection_lot.find({"seller_email": seller_email,
-                                                     "auction_id": auction_id}))
+                                                "auction_id": auction_id}))
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
-
         auction_record = collection.find_one(
-            {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
-        print('collection_seller', collection_seller)
-        seller_data = collection_seller.find_one(  {"email_address": seller_email}, {"_id": 0})
+            {"auction_id": auction_id, "seller_email": seller_email},{"_id": 0}
+        )
+        seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
         # print('seller data', seller_data)
         # if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
         #     return {
@@ -158,7 +155,6 @@ def update_auction(event, context):
         #         'headers': headers,
         #         "body": json.dumps({"message": "Stripe account not linked."})
         #     }
-
         if auction_record is None:
             return {
                 "statusCode": 404,
@@ -312,7 +308,6 @@ def update_auction(event, context):
         # Filter the request body to keep only updatable fields
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
-                       
         documents = []
         extension_time_str = auction_record.get('extension_time_between_lots', '0')
         if extension_time_str != '':
@@ -380,7 +375,6 @@ def update_auction(event, context):
                 print('Hellooo')
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
-                        
                         if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                             item['start_date'] = start_date
                             if item['lot_number'] == 1:
@@ -411,7 +405,6 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
-            
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_data_sqs = {
                     'extension_time': auction_record.get('extension_time'),

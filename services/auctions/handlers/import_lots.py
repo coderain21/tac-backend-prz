@@ -266,7 +266,6 @@ def import_lots(event, context):
             "$set": update_data})
         if result.inserted_ids:
             auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": email_address})
-            
             if auction_record and "total_lots" in auction_record and auction_record["total_lots"] >= 0:
                 # Increment the existing "total_lots" count
                 if  auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
