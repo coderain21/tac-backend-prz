@@ -1,3 +1,4 @@
+'''This is hooks file for auction service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
@@ -25,9 +26,9 @@ def skip_404_test_results(transaction):
         '/reorder-lots' in transaction['request']['uri'] or
         ('/lots' in transaction['request']['uri'] and
          transaction['request']['method'] == 'DELETE') or
-        'del=' in transaction['request']['uri'] or 
+        'del=' in transaction['request']['uri'] or
         '/stripe'  in transaction['request']['uri']
-        
+
 
     ):
         transaction['skip'] = True
@@ -41,7 +42,7 @@ def set_authorization(transaction):
     print('Expected Status Code:', transaction['expected']['statusCode'])
     print('Request Method:', transaction['request']['method'])
     print('Request URI:', transaction['request']['uri'])
-    
+
     if transaction['expected']['statusCode'] != '401':
         transaction['request']['headers']['Authorization'] = f'Bearer {token}'
 

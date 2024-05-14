@@ -1,3 +1,4 @@
+'''This is hooks file for buyers service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
@@ -20,11 +21,11 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '400' or
         '/verify-captcha' in transaction['request']['uri'] or
         '/otp-validation' in transaction['request']['uri'] or
-        '/www-dev' in transaction['request']['uri'] or 
-        '/auction-register' in transaction['request']['uri'] or 
-        '/update-password' in transaction['request']['uri'] or 
+        '/www-dev' in transaction['request']['uri'] or
+        '/auction-register' in transaction['request']['uri'] or
+        '/update-password' in transaction['request']['uri'] or
         '/reset_password' in transaction['request']['uri'] or
-        '/verify-card' in transaction['request']['uri'] or 
+        '/verify-card' in transaction['request']['uri'] or
         '/forgot_password' in transaction['request']['uri']
     ):
         transaction['skip'] = True
@@ -66,7 +67,7 @@ def set_authorization(transaction):
         print('Skipping the test...')
         transaction['skip'] = True
         return
-    
+
     if (
         transaction['request']['method'] == 'PATCH' and
         '/approval' in transaction['request']['uri']

@@ -1,3 +1,4 @@
+'''This is hooks file for payments service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
@@ -17,7 +18,7 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '500' or
         transaction['expected']['statusCode'] == '404' or
         transaction['expected']['statusCode'] == '403' or
-        transaction['expected']['statusCode'] == '400' 
+        transaction['expected']['statusCode'] == '400'
     ):
         transaction['skip'] = True
 
