@@ -100,11 +100,11 @@ def create(event, context):
         current_timestamp_ms = int(datetime.now().timestamp() * 1000)
 
         # Calculate the time 5 minutes from now in milliseconds
-        now_plus_5_minutes_ms = int((datetime.now() + timedelta(minutes=5)).timestamp() * 1000)
+        now_plus_2_minutes_ms = int((datetime.now() + timedelta(minutes=2)).timestamp() * 1000)
 
         # Assign these values to the request body
         request_body["start_date"] = current_timestamp_ms
-        request_body["end_date"] = now_plus_5_minutes_ms
+        request_body["end_date"] = now_plus_2_minutes_ms
         
         # Giving static values to create a new auction
         request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg' #static
