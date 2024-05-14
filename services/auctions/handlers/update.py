@@ -116,6 +116,7 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
+        print('request_body', request_body)
         end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
@@ -320,7 +321,6 @@ def update_auction(event, context):
             print('inside end date')
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
-
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                 additional_time_ms = end_date + (existing_lots_count -1 ) * extension_time * 60 * 1000
                 update_data ['end_date'] = additional_time_ms
@@ -336,7 +336,7 @@ def update_auction(event, context):
 
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
-                print('Hellooo')
+                print('Hellooo', end_date, count_import)
                 for item in listLots:
                     if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                         print('insideeee')
@@ -371,8 +371,8 @@ def update_auction(event, context):
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
 
-            if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
-                print('Hellooo')
+            if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
+                print('Hellooo', end_date, count_import)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
                         if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
