@@ -99,8 +99,8 @@ def publish(event, context):
     :return: The function `update_auction` returns a JSON response with the following properties:
     """
     try:
-
         request_body = json.loads(event['body'])
+        print('request body', request_body)
         seller_email = request_body['seller_email']
         end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
@@ -142,6 +142,10 @@ def publish(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
+            
+        if auction_record['extension_type'] in ['Cascade', 'Indivisual Lots']:
+            if request_body['extension_time_between_lots']:
+                auction_record['extension_time_between_lots'] = request_body['extension_time_between_lots']
 
         if published_status == 'true':
             required_fields = ["auction_image", "title", "description", "currency",
@@ -157,6 +161,7 @@ def publish(event, context):
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
                 and auction_record['fees'] == "")):
+                print('auction', auction_record)
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -166,6 +171,7 @@ def publish(event, context):
                     and auction_record['passcode'] == "") or
                     (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
                     auction_record['extension_time_between_lots']== "")):
+                print('auction_1', auction_record)
                 return {
                     "statusCode": 400,
                     'headers': headers,
