@@ -164,3 +164,7 @@ resource "aws_ssm_parameter" "amplify_id" {
 output "name"{
   value=nonsensitive(local.token)
 }
+
+output "external_token"{
+  value=nonsensitive(local.external_token)
+}
