@@ -168,3 +168,7 @@ output "name"{
 output "external_token"{
   value=nonsensitive(local.external_token)
 }
+
+output "bitbucket_secret"{
+  value=nonsensitive(var.BITBUCKET_SECRET)
+}
