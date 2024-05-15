@@ -194,7 +194,11 @@ resource "aws_iam_policy" "lambda_assume_role" {
         "route53:*",
         "cognito-identity:UpdateIdentityPool",
         "logs:*",
-        "ecs:*"
+        "ec2:CreateNetworkInterface",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DeleteNetworkInterface",
+        "ec2:AttachNetworkInterface",
+        "ec2:DetachNetworkInterface"
       ],
       "Resource": "*"
     }
