@@ -246,7 +246,7 @@ def create_lot(event, auction_id, seller_email):
             "seller_email": seller_email,
             "auction_id": auction_id,
             "extension_type": extension_type,
-            "title1": 'Lot 1',
+            "title1": 'Lot',
             "title2": '',
             "description": "<p>lot description</p>",
             "starting_price": 100,
@@ -264,7 +264,7 @@ def create_lot(event, auction_id, seller_email):
         }
 
         # Create two lots based on extension type
-        for _ in range(2):  # Create two lots
+        for _ in range(4):  # Create two lots
             lot_number = get_next_lot_number(auction_id, seller_email)
             lot_info = prepare_lot_info(request_body, auction_record, lot_number, extension_type,time_between_lots=2)
             common_lot_info.update(lot_info)
@@ -336,7 +336,7 @@ def prepare_lot_info(request_body, auction, lot_number, extension_type,time_betw
             print('Error: end_date of latest lot is not an integer or float:', type(last_end_date))
             raise TypeError('end_date of latest lot is expected to be a timestamp (int or float)')
 
-        if extension_type in ['Cascade', 'Individual Lots']:
+        if extension_type in ['Cascade', 'Indivisual Lots']:
             start_date = last_end_date
             end_date = last_end_date + time_between_lots * 60 * 1000
         elif extension_type == 'All Lots':
