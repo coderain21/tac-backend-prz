@@ -130,3 +130,37 @@ def update_lot_data(item, lot_id):
         update_request["winning_user"] = update_request.get('winning_user', '')
         cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
         print('cache_update', cache_update)
+
+
+def get_Lot(item, lot_id):
+    redis_client = createRedisClient()
+    bid_key = f'lot:{lot_id}'
+    print('redis', redis_client)
+    existing_record =  redis_client.hget('lot', bid_key)
+    print('existing_record', existing_record)
+    if existing_record is None:
+        print("No record found for the specified key.")
+    else:
+        get_lot = json.loads(existing_record)
+        print('get_lot', get_lot)
+        if existing_record:
+                get_lot = json.loads(existing_record)
+                
+        else:
+                get_lot = {}
+                
+        update_request = {
+            **get_lot,
+            "title1": item.get('title1', ''),
+            "title2": item.get('title2', ''),
+            "description": item.get('description', ''),
+            "starting_price": item.get('starting_price', 0),
+            "low_estimate": item.get('low_estimate', 0),
+            "high_estimate": item.get('high_estimate', 0),
+            "shipping_details": item.get('shipping_details', ''),
+            "tags": item.get('tags', []),
+            "images": item.get('images', []),
+               
+        }
+        update_request["winning_user"] = update_request.get('winning_user', '')
+        return update_request

@@ -1,7 +1,7 @@
+'''This is hooks file for admin-buyer-management service'''
 from dredd_hooks import before_each, after_each
 import os
 import json
-import random
 import logging
 import urllib.parse
 
@@ -19,7 +19,7 @@ def skip_404_test_results(transaction):
         transaction['expected']['statusCode'] == '500' or
         transaction['expected']['statusCode'] == '404' or
         transaction['expected']['statusCode'] == '403' or
-        '/659cf1def0d3374201bac434'  in transaction['request']['uri'] 
+        '/659cf1def0d3374201bac434'  in transaction['request']['uri']
 
 
 
