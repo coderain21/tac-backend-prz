@@ -116,7 +116,6 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        print('request_body', request_body)
         end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
@@ -259,6 +258,7 @@ def update_auction(event, context):
                         entries.append(
                             {'Id': str(uuid.uuid4()),
                              'MessageBody': message_body,
+                             'DelaySeconds': i,
                             'MessageAttributes': message_attributes
                             })
                     # Send the batch of entries to the queue
@@ -336,7 +336,6 @@ def update_auction(event, context):
 
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
-                print('Hellooo', end_date, count_import)
                 for item in listLots:
                     if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                         print('insideeee')
@@ -351,7 +350,6 @@ def update_auction(event, context):
                         item['start_date'] = start_date
                         item['end_date'] = end_date
                     documents.append(item)
-                    print('documents', documents)
                 bulk_operations = []
                 for item in documents:
                     filter_criteria = {

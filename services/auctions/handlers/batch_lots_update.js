@@ -63,6 +63,7 @@ async function startExecutionAfterPublish(executionARN, lots) {
                         auction_id: lots.auction_id,
                         seller_email: lots.seller_email,
                     }
+                    console.log('re', requestPayload)
                     await mongodbHelper.save(requestPayload, StepFunctionArn)
                     resolve(data)
                 }
@@ -223,6 +224,7 @@ async function updateRedisData(lotInformation, client) {
                 headers: headersList,
                 body: JSON.stringify(payload),
             }
+            
 
             request(options, (error, response) => {
                 if (error) {
@@ -310,10 +312,11 @@ module.exports.handler = async (event, context, callback) => {
         const type = firstRecord.messageAttributes.type.stringValue
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
+        console.log('type', type)
 
         // Create a Redis client
         const client = await redisHelper.createRedisClient()
-
+        console.log('client', client)
         // Calculate the extension time in ms
         const extend_time = parseInt(auctionDetails.extension_time.replace('m', ''), 10) * 60 * 1000
 
