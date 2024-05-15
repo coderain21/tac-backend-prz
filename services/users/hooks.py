@@ -1,7 +1,7 @@
+'''This is hooks file for lot-bid-history service'''
 from dredd_hooks import before_each, after_each
 import os
 import json
-import random
 import logging
 import urllib.parse
 
@@ -25,8 +25,8 @@ def skip_404_test_results(transaction):
         '/otp-validation' in transaction['request']['uri'] or
         '/reset_password' in transaction['request']['uri'] or
         '/forgot_password' in transaction['request']['uri'] or
-        '/generate' in transaction['request']['uri'] or 
-        '/kyb-generate'  in transaction['request']['uri'] 
+        '/generate' in transaction['request']['uri'] or
+        '/kyb-generate'  in transaction['request']['uri']
 
 
     ):
