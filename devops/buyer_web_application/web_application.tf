@@ -162,5 +162,5 @@ resource "aws_ssm_parameter" "amplify_id" {
 
 
 output "name"{
-  value=${var.BITBUCKET_SECRET}
+  value=var.BITBUCKET_SECRET
 }
