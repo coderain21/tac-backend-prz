@@ -193,7 +193,7 @@ resource "aws_iam_policy" "lambda_assume_role" {
         "amplify:*",
         "route53:*",
         "cognito-identity:UpdateIdentityPool",
-        "logs:*"
+        "logs:*",
         "ecs:*"
       ],
       "Resource": "*"
