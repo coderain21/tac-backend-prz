@@ -5,8 +5,6 @@ import os
 from lib.common_helper import Encoder
 import requests
 from datetime import datetime, timezone
-from lib.invoke_step_function import invoke_state_machine
-
 
 
 
