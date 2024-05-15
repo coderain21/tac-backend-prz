@@ -48,7 +48,7 @@ def clone_auction(event, context):
         counter_collection = db[os.environ["COUNTER_LOT"]]
 
         auction = auction_collection.find_one(
-            {"_id": ObjectId(auction_id), "seller_email": email_address}, {"_id": 0})
+            {"_id": ObjectId(auction_id),"seller_email": email_address},{"_id": 0})
         if not auction:
             return {
                 "statusCode": 404,
