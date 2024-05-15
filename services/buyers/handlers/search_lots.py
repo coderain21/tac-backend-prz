@@ -45,7 +45,6 @@ def lot_search(event, context):
         print(auction_id, search_keyword)
         if auction_id is not None:
             _id = ObjectId(auction_id)
-        print(type(_id))
         projection = {
             "_id": 0,
             "auction_id": 1,

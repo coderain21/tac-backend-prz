@@ -260,7 +260,10 @@ def export_as_csv(auctions):
 
             # Format the created_at field as dd-mm-year
             try:
+                
                 for auction in auctions:
+                    time_zone = ""
+                    timezone_str = ""
                     if auction["start_date"] is not None:
                         start_date_epoch = auction["start_date"]/1000
                     else:
