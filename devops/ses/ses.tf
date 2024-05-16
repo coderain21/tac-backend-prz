@@ -68,6 +68,13 @@ resource "aws_pinpoint_email_channel" "email_channel" {
   identity     = aws_ses_domain_identity.domain_identity.arn # Replace with SES identity ARN
 }
 
+resource "aws_ssm_parameter" "sender_email_address" {
+  provider = aws.deployment-eu
+  name     = "SENDER_EMAIL_ADDRESS"
+  type     = "String"
+  value    = "no-reply@${local.sub_domain}"
+  overwrite = true
+}
 
 
 

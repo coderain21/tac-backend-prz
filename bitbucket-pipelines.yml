@@ -33,7 +33,7 @@ definitions:
            - npm run eslint
            - apt-get update   # Update package manager (for Debian/Ubuntu-based images)
            - apt-get install -y python3-pip   # Install pip (for Debian/Ubuntu-based images)
-           - pip install pylint
+           - pip install pylint==3.1.1
            - pylint services/**/**/*.py
 
            

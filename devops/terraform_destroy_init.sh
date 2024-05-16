@@ -13,9 +13,9 @@ aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS
 aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 
-log_bucket="s3://indyauction-$STAGE-pipeline-logs/"
+log_bucket="s3://indyauction-pipeline-states/$STAGE/"
 echo "$log_bucket"
-aws s3 sync $log_bucket . --profile $PROFILE_ENV
+aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
@@ -49,11 +49,8 @@ npm i serverless-appsync-plugin
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 aws s3 sync $log_bucket . --profile $PROFILE_ENV
-
-terraform -chdir=devops/cognito_custom_domain init && terraform -chdir=devops/cognito_custom_domain destroy -auto-approve 
-
 sls remove --stage ${STAGE} --max-concurrency 5
-
+terraform -chdir=devops/cognito_custom_domain init && terraform -chdir=devops/cognito_custom_domain destroy -auto-approve  &  terraform -chdir=devops/buyer_web_application init && terraform -chdir=devops/buyer_web_application destroy -auto-approve
 # Deploy the service located in the services folder
 cd services/auctions
 sls remove --region $REGION --stage $STAGE
@@ -70,11 +67,10 @@ sls remove --region $REGION --stage $STAGE
 cd ../..
 
 
+terraform -chdir=devops/stripe_webhook init && terraform -chdir=devops/stripe_webhook destroy -auto-approve & terraform -chdir=devops/budgets init && terraform -chdir=devops/budgets destroy -auto-approve 
+terraform -chdir=devops/redis-cluster init && terraform -chdir=devops/redis-cluster destroy -auto-approve & terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve 
+terraform -chdir=devops/cloudwatch_alarms init && terraform -chdir=devops/cloudwatch_alarms destroy -auto-approve
+terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve 
+terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve & terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
 
-terraform -chdir=devops/budgets init && terraform -chdir=devops/budgets destroy -auto-approve & terraform -chdir=devops/redis-cluster init && terraform -chdir=devops/redis-cluster destroy -auto-approve
-terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve & terraform -chdir=devops/cloudwatch_alarms init && terraform -chdir=devops/cloudwatch_alarms destroy -auto-approve
-terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/kms init && terraform -chdir=devops/kms destroy -auto-approve 
-terraform -chdir=devops/api_gateway init && terraform -chdir=devops/api_gateway destroy -auto-approve & terraform -chdir=devops/seller_web_application init && terraform -chdir=devops/seller_web_application destroy -auto-approve 
-terraform -chdir=devops/mongodb init && terraform -chdir=devops/mongodb destroy -auto-approve & terraform -chdir=devops/assets init && terraform -chdir=devops/assets destroy -auto-approve
-
-aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_ENV
+aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
