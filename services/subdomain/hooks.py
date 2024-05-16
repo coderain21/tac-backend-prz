@@ -1,3 +1,4 @@
+'''This is hooks file for subdomain service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
