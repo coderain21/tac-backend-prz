@@ -448,7 +448,7 @@ functions:
   process-cart:
     handler: handlers/add_to_cart.handler
     timeout: 120
-    memorySize: 5120
+    memorySize: ${ssm:PROCESS_LAMBDA_MEMORY}
     layers:
       - ${ssm:COMMON_LIB_ARN}
 
@@ -470,143 +470,143 @@ functions:
                     - updateLotsQueue
                     - Arn
 
-  sqs-lot-update_1:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_1:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
-  sqs-lot-update_2:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_2:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
-  sqs-lot-update_3:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_3:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
-  sqs-lot-update_4:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_5:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_6:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-
-
-  sqs-lot-update_7:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_8:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_9:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_10:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_4:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_5:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_6:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
 
-  sqs-lot-update_11:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_7:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_8:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_9:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_10:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+
+
+  # sqs-lot-update_11:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
   save-to-cache:
     handler: handlers/save_to_cache.handler
