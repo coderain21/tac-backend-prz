@@ -74,8 +74,8 @@ def update_seller_status(event, context):
             seller_collection.update_one(query, new_values)
 
             return {
-                "statusCode":200,       
-                "headers": headers,    
+                "statusCode":200,
+                "headers": headers,
                 "body":json.dumps( {"message":"Seller status updated successfully"})
             }
         except:
