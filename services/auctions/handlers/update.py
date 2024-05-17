@@ -254,7 +254,7 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
-                        message_body = 'update status'
+                        message_body = 'published'
                         message_attributes = {
                         'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                         'auction': {'DataType': 'String', 'StringValue': auction_record_str},
