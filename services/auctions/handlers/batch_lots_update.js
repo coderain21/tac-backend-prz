@@ -224,8 +224,6 @@ async function updateRedisData(lotInformation, client) {
                 headers: headersList,
                 body: JSON.stringify(payload),
             }
-            
-
             request(options, (error, response) => {
                 if (error) {
                     console.error('Error:', error)
@@ -302,17 +300,19 @@ async function findAndUpdateTime(auctionLots, client, extend_time) {
  */
 module.exports.handler = async (event, context, callback) => {
     try {
+        console.log('event', event)
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
         const firstRecord = event.Records[0]
+        console.log('firstRecord', firstRecord)
+        const type = firstRecord.messageAttributes.type.stringValue
+        console.log('type', type)
         // Get the lots, auction details and type from the event message
         const lotsString = firstRecord.messageAttributes.lots.stringValue
         const auctionString = firstRecord.messageAttributes.auction.stringValue
-        const type = firstRecord.messageAttributes.type.stringValue
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
-        console.log('type', type)
 
         // Create a Redis client
         const client = await redisHelper.createRedisClient()
@@ -357,16 +357,9 @@ module.exports.handler = async (event, context, callback) => {
             }
             await Promise.all(startExecutions)
         }
+        return true
     } catch (error) {
         console.error('Error:', error)
-        // Return an object with status false and error message
-        return callback(null, {
-            status: false,
-            message: 'Authentication Failed',
-        })
+        return false
     }
-    // Return an object with status true
-    return callback(null, {
-        status: true,
-    })
 }
