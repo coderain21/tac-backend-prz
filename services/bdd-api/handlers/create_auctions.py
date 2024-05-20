@@ -64,9 +64,9 @@ def create(event, context):
         # email = event["requestContext"]["authorizer"]["claims"]["cognito:username"]
         # request_body["seller_email"] = email
         # print("request_body", request_body)
-        email = 'sthuthi+test3@7edge.com'
-        # email = request_body['seller_email']
-        request_body["seller_email"] = email
+        # email = 'sthuthi+test3@7edge.com'
+        email = request_body['seller_email']
+        # request_body["seller_email"] = email
         get_user = seller_collection.find({"email_address": email})
         user_count = seller_collection.count_documents({"email_address": email})
         if user_count > 0:
