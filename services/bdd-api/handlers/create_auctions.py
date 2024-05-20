@@ -45,13 +45,11 @@ auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 lot_collection = db[os.environ['LOT_COLLECTION_NAME']]
 
 
-class JSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, ObjectId):
-            return str(obj)
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        return json.JSONEncoder.default(self, obj)
+class Encoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, (ObjectId, datetime)):
+            return str(o)
+        return super().default(o)
 
 def left_pad(number, target_length):
     output = str(number)
