@@ -24,7 +24,6 @@ import os
 import json
 from bson import ObjectId
 import pymongo
-import boto3
 # from lib.invoke_step_function import invoke_state_machine
 from datetime import datetime, timedelta
 
@@ -105,7 +104,7 @@ def create(event, context):
         # Assign these values to the request body
         request_body["start_date"] = current_timestamp_ms
         request_body["end_date"] = now_plus_2_minutes_ms
-        
+
         # Giving static values to create a new auction
         request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg' #static
         request_body['template_name'] = 'Classic'
