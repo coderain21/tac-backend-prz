@@ -290,7 +290,7 @@ def publish(event, context):
                 print('inside update323323', listLots)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
-                        if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                        if auction_record['extension_type'] in ["Cascade", "Indivisual Lots"]:
                             item['start_date'] = start_date
                             item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
                             count_import += 1
@@ -340,7 +340,7 @@ def publish(event, context):
                 # Modify start_date and end_date before sending SQS
                 for item in json_serializable_list:
                     if not item['end_date'] < epoch_time_milliseconds:
-                        if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                        if auction_record['extension_type'] in ["Cascade", "Indivisual Lots"]:
                             item['start_date'] = start_date
                             item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
                             count_import += 1
