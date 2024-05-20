@@ -177,7 +177,7 @@ def create(event, context):
                     "auctions_id": sequence_number,
                     "auction_data": created_auction,
                     "title": request_body["title"],
-                }, cls=JSONEncoder)
+                }, cls=Encoder)
             }
             else:
                 return {
