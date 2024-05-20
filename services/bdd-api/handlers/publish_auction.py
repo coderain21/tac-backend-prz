@@ -30,10 +30,11 @@ collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
 
 class Encoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, (ObjectId, datetime)):
-            return str(obj)
-        return super().default(obj)
+    def default(self, o):
+        if isinstance(o, (ObjectId, datetime)):
+            return str(o)
+        return super().default(o)
+
 
 # Convert ObjectId to str for JSON serialization
 def convert_object_id(obj):
@@ -142,7 +143,7 @@ def publish(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
-  
+
         if auction_record['extension_type'] in ['Cascade', 'Indivisual Lots']:
             if request_body['extension_time_between_lots']:
                 auction_record['extension_time_between_lots'] = request_body['extension_time_between_lots']
