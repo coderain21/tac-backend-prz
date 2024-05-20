@@ -35,7 +35,7 @@ data "aws_ssm_parameter" "bitbucket" {
 }
 
 locals {
-  ssm_value = try(data.aws_ssm_parameter.bitbucket.value, null)
+  ssm_value = try(data.aws_ssm_parameter.bitbucket.value)
   external_token = data.external.token.result.token
   token = local.ssm_value == "NULL" ? local.external_token : local.ssm_value
   subdomains_json = jsondecode(file("subdomains.json"))
@@ -161,3 +161,14 @@ resource "aws_ssm_parameter" "amplify_id" {
 # }
 
 
+output "name"{
+  value=nonsensitive(local.token)
+}
+
+output "external_token"{
+  value=nonsensitive(local.external_token)
+}
+
+output "bitbucket_secret"{
+  value=nonsensitive(var.BITBUCKET_SECRET)
+}

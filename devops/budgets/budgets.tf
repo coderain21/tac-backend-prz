@@ -10,7 +10,7 @@ provider "aws" {
 }
 
 resource "aws_budgets_budget" "budgets" {
-  count   = 15
+  count   = 60
   name    = format("indyauction ${var.STAGE} Budget - $%d", 50 * (count.index + 1)) 
   limit_amount = 50 * (count.index + 1)
   limit_unit = "USD"
