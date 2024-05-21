@@ -48,7 +48,6 @@ def list_all_purchases(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -110,8 +109,6 @@ def list_all_purchases(event, context):
             payment_status_condition = {"payment_status": payment_status}
             query.update(payment_status_condition)
 
-        print('query', query)
-
         # Query the MongoDB collection
         orders_list = orders_collection.find(
             query,
@@ -129,7 +126,6 @@ def list_all_purchases(event, context):
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
 
         total_records = orders_collection.count_documents(query)
-        print('Number of documents fetched:', total_records)
 
         # Check if orders_list is None or empty
         if not orders_list:

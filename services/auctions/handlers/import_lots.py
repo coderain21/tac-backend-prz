@@ -186,11 +186,16 @@ def import_lots(event, context):
             for row in csv_reader:
                 dict1 = {}
                 tags = row.get('Tags', '')
+                last_lot_number += 1
+                dict1["lot_number"] = last_lot_number
                 if end_date is not None:
                     if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
                         dict1['start_date'] = start_date
-                        dict1['end_date'] = end_date + count_import * extension_time * 60 * 1000
-                        count_import += 1
+                        if dict1['lot_number'] == 1:
+                            dict1['end_date'] = end_date
+                        else:
+                            dict1['end_date'] = end_date + count_import * extension_time * 60 * 1000
+                            count_import += 1
                     elif auction_record['extension_type']== "All Lots":
                         dict1['start_date'] = start_date
                         dict1['end_date'] = end_date
@@ -227,11 +232,9 @@ def import_lots(event, context):
                 else:
                     dict1["tags"] = []
                 dict1.update(additional_fields)
-                last_lot_number += 1
-                dict1["lot_number"] = last_lot_number
-                static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
-                static_image_data = {"url": static_image_url, "featured": True}
-                dict1['images']=[static_image_data]
+                # static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+                # static_image_data = {"url": static_image_url, "featured": True}
+                # dict1['images']=[static_image_data]
                 documents.append(dict1)
         except Exception as err:
             print(err)

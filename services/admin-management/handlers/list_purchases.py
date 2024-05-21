@@ -87,7 +87,6 @@ def list_purchases(event, context):
 
         # Fetch buyer details from MongoDB
         buyer_details = buyer_collection.find_one({"_id": ObjectId(id)})
-        print('buyer_details', buyer_details)
 
         if buyer_details is None:
             return {
