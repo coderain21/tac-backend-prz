@@ -229,6 +229,9 @@ def import_lots(event, context):
                 dict1.update(additional_fields)
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number
+                static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+                static_image_data = {"url": static_image_url, "featured": True}
+                dict1['images']=[static_image_data]
                 documents.append(dict1)
         except Exception as err:
             print(err)

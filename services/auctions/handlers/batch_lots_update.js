@@ -113,6 +113,7 @@ async function startExecution(executionARN, lots) {
         return new Promise((resolve, reject) => {
             // Start the state machine execution
             stepfunctions.startExecution(params, async (error, data) => {
+                console.log('startexec', data)
                 // If there is an error, reject the promise with that error
                 if (error) {
                     reject(error)
@@ -163,6 +164,7 @@ async function stopExecutions(executionArn) {
         return new Promise((resolve, reject) => {
             // Stop the state machine execution
             stepFunctions.stopExecution(params, async (error, data) => {
+                console.log('dtaa stopExecution', data)
                 // If there is an error, reject the promise with that error
                 if (error) {
                     reject(error)
@@ -345,16 +347,30 @@ module.exports.handler = async (event, context, callback) => {
                     // Get the execution ARN from MongoDB
                     const getAllArns = await mongodbHelper.singleGetAllExecutionArn(item, StepFunctionArn)
                     const executionArn = getAllArns.arn
-                    // Stop the execution
-                    stopExecutionsPromise.push(stopExecutions(executionArn))
-                    // Start a new execution
-                    startExecutionsPromise.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
+                    const stoppingStepFunction = await stopExecutions(executionArn)
+                    const startingStepFunction = await startExecution(process.env.STATE_MACHINE_LOT_ARN, item)
+                    // // Stop the execution
+                    // stopExecutionsPromise.push(stopExecutions(executionArn))
+                    // // Start a new execution
+                    // startExecutionsPromise.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
                     // Update the end date of the lot in MongoDB
                     // mongodbPromise.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
                 }
             }
             // Run all the promises in parallel
-            await Promise.all([redisUpdate, startExecutionsPromise, stopExecutionsPromise, mongodbPromise])
+            await Promise.all(redisUpdate)
+
+            // for (const item of auctionLots) {
+            //     item.lot_end_time = item.end_date + extend_time
+            //     // If the lot end date is greater than the current date
+            //     if (item.end_date > currentTimeEpoch) {
+            //         startExecutionsPromise.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
+            //         // Update the end date of the lot in MongoDB
+            //         // mongodbPromise.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
+            //     }
+            // }
+            // // Run all the promises in parallel
+            // await Promise.all(startExecutionsPromise)
         }
 
         // If the event type is 'published', start new executions for all the lots
@@ -370,9 +386,5 @@ module.exports.handler = async (event, context, callback) => {
     } catch (error) {
         console.error('Error:', error)
         // Return an object with status false and error message
-        return callback(null, {
-            status: false,
-            message: 'Authentication Failed',
-        })
     }
 }

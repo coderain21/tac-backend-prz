@@ -5,10 +5,11 @@ import pymongo
 import boto3
 import uuid
 from pymongo import MongoClient, UpdateOne
+from lib.invoke_step_function import invoke_state_machine
 from bson import ObjectId
 from lib.get import get_by_email
 from lib.common_helper import Encoder
-from datetime import datetime
+from datetime import datetime, timezone
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
 sqs = boto3.client('sqs')
@@ -174,7 +175,7 @@ def update_auction(event, context):
                 }
             if ((auction_record['make_your_auction_private'] is True
                     and auction_record['passcode'] == "") or
-                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
+                    (auction_record['extension_type'] in ['Cascade','Individual Lots'] and
                     auction_record['extension_time_between_lots']== "")):
                 return {
                     "statusCode": 400,
@@ -210,46 +211,61 @@ def update_auction(event, context):
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published"}}
                 )
-                auction_data_sqs = {
-                    'extension_time': auction_record.get('extension_time'),
-                    'seller_email': auction_record.get('seller_email'),
-                    'auction_id': auction_record.get('auction_id'),
-                }
-                auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
-                json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
+                for item in listLots:
+                    start_date_timestamp = auction_record['start_date'] / 1000
+                    date_time = datetime.utcfromtimestamp(start_date_timestamp)
+                    iso_date_with_offset = date_time.astimezone(timezone.utc).isoformat()
+                    item['start_date'] = iso_date_with_offset
+                    itemData = json.loads(json.dumps(item, cls= Encoder))
+                    invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
+                    collectionArn = db[os.environ['STEP_FUNCTION_ARN_TABLE']]
+                    step_request={}
+                    step_request['arn'] = invoking['executionArn']
+                    id_value = item['_id']
+                    step_request['lot_id'] = str(id_value)
+                    step_request['auction_id'] = auction_id
+                    step_request['seller_email'] = seller_email
+                    inserted = collectionArn.insert_one(step_request)
+                # auction_data_sqs = {
+                #     'extension_time': auction_record.get('extension_time'),
+                #     'seller_email': auction_record.get('seller_email'),
+                #     'auction_id': auction_record.get('auction_id'),
+                # }
+                # auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
+                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
+                # # total_lots = len(json_serializable_list)
+                # batch_size_lots = 50  # Batch size for lots
+                # batch_size_queue = 3  # Number of batches to send at once
                 # total_lots = len(json_serializable_list)
-                batch_size_lots = 50  # Batch size for lots
-                batch_size_queue = 3  # Number of batches to send at once
-                total_lots = len(json_serializable_list)
-                user_batches = []
-                # Batch lots by 30
-                for i in range(0, total_lots, batch_size_lots):
-                    batch_end = min(i + batch_size_lots, total_lots)
-                    user_batches.append(json_serializable_list[i:batch_end])
-                # Send batches of 3 to the queue
-                for i in range(0, len(user_batches), batch_size_queue):
-                    # Get a sublist containing at most 3 batches
-                    send_batches = user_batches[i:i+batch_size_queue]
-                    # Prepare entries for each batch in send_batches
-                    entries = []
-                    for item in send_batches:
-                        message_body = 'update status'
-                        message_attributes = {
-                        'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
-                        'auction': {'DataType': 'String', 'StringValue': auction_record_str},
-                        'type': {'DataType': 'String', 'StringValue': 'published'},
-                        }
-                        entries.append(
-                            {'Id': str(uuid.uuid4()),
-                             'MessageBody': message_body,
-                            'MessageAttributes': message_attributes
-                            })
-                    # Send the batch of entries to the queue
-                    cc = sqs.send_message_batch(
-                        QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
-                        Entries=entries
-                    )
-                    print('cc', cc)
+                # user_batches = []
+                # # Batch lots by 30
+                # for i in range(0, total_lots, batch_size_lots):
+                #     batch_end = min(i + batch_size_lots, total_lots)
+                #     user_batches.append(json_serializable_list[i:batch_end])
+                # # Send batches of 3 to the queue
+                # for i in range(0, len(user_batches), batch_size_queue):
+                #     # Get a sublist containing at most 3 batches
+                #     send_batches = user_batches[i:i+batch_size_queue]
+                #     # Prepare entries for each batch in send_batches
+                #     entries = []
+                #     for item in send_batches:
+                #         message_body = 'update status'
+                #         message_attributes = {
+                #         'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
+                #         'auction': {'DataType': 'String', 'StringValue': auction_record_str},
+                #         'type': {'DataType': 'String', 'StringValue': 'published'},
+                #         }
+                #         entries.append(
+                #             {'Id': str(uuid.uuid4()),
+                #              'MessageBody': message_body,
+                #             'MessageAttributes': message_attributes
+                #             })
+                #     # Send the batch of entries to the queue
+                #     cc = sqs.send_message_batch(
+                #         QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+                #         Entries=entries
+                #     )
+                #     print('cc', cc)
 
                 return {
                     "statusCode": 204,
