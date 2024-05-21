@@ -321,9 +321,7 @@ def prepare_lot_info(request_body, auction, lot_number, extension_type,time_betw
         # print('Start Date:', start_date)
         end_date = auction.get('end_date', start_date + timedelta(minutes=5).total_seconds() * 1000)
         # print('end Date:', end_date)
-        print('Start Date:', start_date, 'End Date:', end_date)
     else:
-        print('Latest lot found:', latest_lot)
         if 'end_date' not in latest_lot or latest_lot['end_date'] is None:
             print('Error: Latest lot does not contain a valid end_date')
             raise ValueError('Latest lot does not contain a valid end_date')

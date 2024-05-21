@@ -115,7 +115,6 @@ def buyer_list_auction(event, context):
         #         "body": json.dumps({"message":  "Not Found"})
         #     }
 
-        print('data', result_list)
 
         print(34566)
         return {

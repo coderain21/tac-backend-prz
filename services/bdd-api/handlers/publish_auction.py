@@ -162,7 +162,6 @@ def publish(event, context):
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
                 and auction_record['fees'] == "")):
-                print('auction', auction_record)
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -288,7 +287,6 @@ def publish(event, context):
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
 
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
-                print('inside update323323', listLots)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
                         if auction_record['extension_type'] in ["Cascade", "Indivisual Lots"]:
@@ -299,7 +297,6 @@ def publish(event, context):
                             item['start_date'] = start_date
                             item['end_date'] = end_date
                         documents.append(item)
-                print('documents',documents)
                 bulk_operations = []
                 for item in documents:
                     filter_criteria = {

@@ -84,7 +84,6 @@ def update_user(event, context):
         group = data.get("group")
         new = data.get("new",False)
         seller_email = fetch_seller_email_from_auction(auction_id)
-        print('seller_email', seller_email, group)
         # Add user to the specified Cognito group
         x = cognito_client.admin_add_user_to_group(
             GroupName= group.split('@')[0],

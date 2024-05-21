@@ -21,7 +21,6 @@ def handler(event, context):
         request_body = json.loads(event['body'])
         seller_email = request_body.get('seller_email')
         auction_id = event['queryStringParameters']['auction_id']
-        print('aud', collection)
         # Query Auction collection to fetch auction details and StepFunctionArn collection to fetch all ARNs
         auction_details = collection.find_one({"seller_email": seller_email, "auction_id": auction_id})
         print('######################')
@@ -91,6 +90,6 @@ def stop_executions(execution_arns):
         # Stop all executions in batch
         for arn in execution_arns:
             response = step_functions.stop_execution(executionArn=arn, cause='User initiated stop')
-            print('Execution stopped successfully:', response)
+            print('Execution stopped successfully:')
     except Exception as e:
         print('Error stopping executions:', e)
