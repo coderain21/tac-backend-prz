@@ -188,7 +188,6 @@ def export_as_csv(sales):
         Exception: If an error occurs during the export and upload process.
     """
     try:
-        print('sales', sales)
         # Export QR codes as CSV and upload to S3
         csv_file = os.environ["SALES_CSV_FILE"]
         s3_key = f"exports/{csv_file}"

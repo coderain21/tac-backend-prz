@@ -238,12 +238,10 @@ def update_auction(event, context):
                 for i in range(0, total_lots, batch_size_lots):
                     batch_end = min(i + batch_size_lots, total_lots)
                     user_batches.append(json_serializable_list[i:batch_end])
-                print('user_batches', user_batches)
                 # Send batches of 3 to the queue
                 for i in range(0, len(user_batches), batch_size_queue):
                     # Get a sublist containing at most 3 batches
                     send_batches = user_batches[i:i+batch_size_queue]
-                    print('send_batches', send_batches)
 
                     # Prepare entries for each batch in send_batches
                     entries = []
