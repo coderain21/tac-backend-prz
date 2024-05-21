@@ -333,7 +333,7 @@ def prepare_lot_info(request_body, auction, lot_number, extension_type,time_betw
             print('Error: end_date of latest lot is not an integer or float:', type(last_end_date))
             raise TypeError('end_date of latest lot is expected to be a timestamp (int or float)')
 
-        if extension_type in ['Cascade', 'Indivisual Lots']:
+        if extension_type in ['Cascade', 'Individual Lots']:
             start_date = last_end_date
             end_date = last_end_date + time_between_lots * 60 * 1000
         elif extension_type == 'All Lots':
