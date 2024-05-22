@@ -126,9 +126,9 @@ def update_app_client(userpoolid, client_id, client_name, subdomain, existing_do
             'ALLOW_ADMIN_USER_PASSWORD_AUTH', 'ALLOW_CUSTOM_AUTH', 'ALLOW_USER_PASSWORD_AUTH', 'ALLOW_USER_SRP_AUTH',
             'ALLOW_REFRESH_TOKEN_AUTH'
         ],
-        AccessTokenValidity=5,
-        IdTokenValidity=5,
-        RefreshTokenValidity=3650,
+        AccessTokenValidity=60,
+        IdTokenValidity=60,
+        RefreshTokenValidity=30,
         CallbackURLs=callbackUrlArray,  # Use the modified callback_url list
         LogoutURLs=callbackUrlArray,  # Use the modified callback_url list
         SupportedIdentityProviders=[
