@@ -757,7 +757,7 @@ resources:
       Properties:
         AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: true
-        AuthSessionValidity: 10
+        AuthSessionValidity: 3
         ClientName: seller
         UserPoolId: { Ref: SellerUsers }
         EnablePropagateAdditionalUserContextData: false
@@ -789,7 +789,7 @@ resources:
           - "${ssm:BASE_URL_SELLER}"
           - "http://localhost:3000/"
         IdTokenValidity: 60
-        PreventUserExistenceErrors: LEGACY
+        PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
           AccessToken: minutes
@@ -951,6 +951,40 @@ resources:
     #       Name: SELLER_COGNITO_USERPOOL_DOMAIN
     #       Type: String
     #       Value: indyauction-seller-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
+
+    # BuyerUpdateCallbackLogoutURLs:
+    #   Type: AWS::CloudFormation::CustomResource
+    #   Properties:
+    #     ServiceToken: ${ssm:LAMBDA_ARN}
+    #     UserPoolId: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    #     ClientId: ${ssm:BUYER_COGNITO_CLIENT_ID}
+    #     CallbackURLs:
+    #       - "${ssm:BASE_URL_BUYER}/"
+    #       - "${ssm:BASE_URL_BUYER}/login"
+    #       - "${ssm:BASE_URL_BUYER}/register"
+    #       - "http://localhost:3000/"
+    #       - "http://localhost:3001/"
+    #       - "http://localhost:3000/login"
+    #       - "http://localhost:3000/register"
+    #       - "http://localhost:3001/login"
+    #       - "http://localhost:3001/register"
+    #     LogoutURLs:
+    #       - "${ssm:BASE_URL_BUYER}/"
+    #       - "${ssm:BASE_URL_BUYER}/login"
+    #       - "${ssm:BASE_URL_BUYER}/register"
+    #       - "http://localhost:3000/"
+    #       - "http://localhost:3001/"
+    #       - "http://localhost:3000/login"
+    #       - "http://localhost:3000/register"
+    #     AllowedOAuthFlowsUserPoolClient: true
+    #     AllowedOAuthFlows:
+    #       - implicit
+    #       - code
+    #     AllowedOAuthScopes:
+    #       - openid
+    #       - profile
+    #       - email
+    #       - aws.cognito.signin.user.admin
 
     
 
