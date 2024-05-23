@@ -48,9 +48,8 @@ def order_update(event, context):
         order_id = event['order_id']
         payment_status = event['payment_status']
         payment_method = event['payment_method']
-        email_address = event['email_address']
 
-        if (not order_id or not payment_status or not payment_method or not email_address):
+        if (not order_id or not payment_status or not payment_method):
             return {
                 'statusCode': 400,
                 'headers': headers,
