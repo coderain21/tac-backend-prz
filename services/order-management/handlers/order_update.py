@@ -1,4 +1,4 @@
-'''this api will list all the lots'''
+'''this api will update a order'''
 import json
 import os
 from pymongo import MongoClient
@@ -26,23 +26,7 @@ def order_update(event, context):
     with the data of the order detail.
     '''
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
-            print('email', email_address)
-            if 'cognito:groups' in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']['cognito:groups']:
-                print('first unauthorized')
-                return {
-                    'statusCode': 403,
-                    'headers': headers,
-                    'body': json.dumps({'message': 'You do not have access to perform this API action'})
-                }
-        except:
-            print('second unauthorized')
-            return {
-                'statusCode': 403,
-                'headers': headers,
-                'body': json.dumps({'message': 'You do not have access to perform this API action'})
-            }
+        # TODO: Add Authorization check
         projection = {
             'order_number':1,
             'created_at':1,
@@ -61,29 +45,30 @@ def order_update(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['ORDERS_COLLECTION']]
-        body = json.loads(event['body'])
-        order_id = body['order_id']
-        payment_status = body['payment_status']
-        payment_method = body['payment_method']
+        order_id = event['order_id']
+        payment_status = event['payment_status']
+        payment_method = event['payment_method']
+        email_address = event['email_address']
 
-        if (payment_status == 'Paid'):
-            return {
-                'statusCode': 403,
-                'headers': headers,
-                'body': json.dumps({'message': 'Can not update paid order'})
-            }
-        if (not order_id or not payment_status or not payment_method):
+        if (not order_id or not payment_status or not payment_method or not email_address):
             return {
                 'statusCode': 400,
                 'headers': headers,
                 'body': json.dumps({'message': 'Bad reqeust'})
             }
-        order_data = collection.find_one({'_id':ObjectId(order_id),'email_address':email_address},projection)
+        order_data = collection.find_one({'_id': ObjectId(order_id)},projection)
+        print('order_data', order_data)
         if order_data is None:
             return {
                 'statusCode': 404,
                 'headers': headers,
                 'body': json.dumps({'message': 'No orders found'})
+            }
+        if (order_data['payment_status'] == 'Paid'):
+            return {
+                'statusCode': 403,
+                'headers': headers,
+                'body': json.dumps({'message': 'Can not update paid order'})
             }
         update_data = {
             'payment_status': payment_status,
