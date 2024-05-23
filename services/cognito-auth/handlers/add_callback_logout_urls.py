@@ -1,5 +1,5 @@
+'''This is for adding urls for callback and logout'''
 import os
-import json
 import boto3
 import cfnresponse
 
@@ -25,9 +25,6 @@ def add_callback_logout_urls(event, context):
         allowed_oauth_flows_user_pool_client = resource_properties.get('AllowedOAuthFlowsUserPoolClient', 'false')
         if isinstance(allowed_oauth_flows_user_pool_client, str):
             allowed_oauth_flows_user_pool_client = allowed_oauth_flows_user_pool_client.lower() == 'true'
-        
-        print("supported_identity_providers",supported_identity_providers)
-
         # Get current configuration of the user pool client
         existing_config = get_user_pool_client_config(user_pool_id, client_id)
 
