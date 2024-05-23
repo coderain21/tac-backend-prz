@@ -49,10 +49,11 @@ resource "aws_route53_record" "dev-ns" {
   type     = "NS"
   ttl      = "30"
   records  = aws_route53_zone.dev[count.index].name_servers
-   depends_on = [resource.aws_route53_zone.dev]
+  depends_on = [resource.aws_route53_zone.dev]
   provider = aws.main
 }
 data "aws_route53_zone" "domain_zone" {
+  count = var.STAGE != "prod" ? 1 : 0
   name = local.sub_domain # Replace with your domain name
   provider = aws.route53-account
   depends_on = [resource.aws_route53_record.dev-ns]
