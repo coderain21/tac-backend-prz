@@ -25,7 +25,7 @@ provider "aws" {
 }
 
 data "external" "token" {
-  program = ["bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${var.BITBUCKET_SECRET}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
+  program = ["/bin/bash", "-c", "echo \"{\\\"token\\\":\\\"$(curl -s -X POST -u '${var.BITBUCKET_SECRET}' https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials -d code=420 | jq -r '.access_token')\\\"}\""]
 }
 
 
