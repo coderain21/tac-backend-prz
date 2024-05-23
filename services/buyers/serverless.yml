@@ -316,7 +316,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
           path: /update-password
           method: post
   
@@ -347,7 +347,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}          #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
 
   view_profile:
     handler: handlers/view_profile.view_profile
@@ -374,7 +374,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /profile
           method: patch
-          authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}           #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
   
   add_address:
     handler: handlers/add_address.add_address
@@ -401,7 +401,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /add-address
           method: patch
-          authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}              #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number
@@ -428,7 +428,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /paddle
           method: get
-          authorizer: "arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
 
 
   send-reset-link:
