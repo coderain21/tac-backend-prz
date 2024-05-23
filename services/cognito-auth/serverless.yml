@@ -72,6 +72,8 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-welcome_email_template/EMAIL"
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    BUYER_COGNITO_USERPOOL_ID: { Ref: Buyers }
+    BUYER_COGNITO_CLIENT_ID: { Ref: BuyersClient } 
   http:
     cors: true
      
