@@ -38,7 +38,6 @@ def view_address(event, context):
     """
     try:
         try:
-            
             print('event', event['requestContext'])
             # cognito_data = json.loads(event['requestContext']['authorizer']['data'])
         #     email_address = cognito_data['email']
