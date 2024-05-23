@@ -27,15 +27,17 @@ def order_update(event, context):
     '''
     try:
         try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            email_address = cognito_data['email']
-            if 'cognito:groups' not in cognito_data :
+            email_address = event['requestContext']['authorizer']['claims']['email']
+            print('email', email_address)
+            if 'cognito:groups' in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']['cognito:groups']:
+                print('first unauthorized')
                 return {
-                'statusCode': 403,
-                'headers': headers,
-                'body': json.dumps({'message': 'You do not have access to perform this API action'})
-            }
+                    'statusCode': 403,
+                    'headers': headers,
+                    'body': json.dumps({'message': 'You do not have access to perform this API action'})
+                }
         except:
+            print('second unauthorized')
             return {
                 'statusCode': 403,
                 'headers': headers,
@@ -63,7 +65,7 @@ def order_update(event, context):
         order_id = body['order_id']
         payment_status = body['payment_status']
         payment_method = body['payment_method']
-        
+
         if (payment_status == 'Paid'):
             return {
                 'statusCode': 403,
