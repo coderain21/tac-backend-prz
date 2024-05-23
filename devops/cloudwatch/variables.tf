@@ -30,10 +30,6 @@ variable "SUMSUB_SECRET_KEY_WEBHOOK" {
   type        = string
   description = "Description of the variable"
 }
-variable "PASSWORD_SECRET_KEY" {
-  type        = string
-  description = "Description of the variable"
-}
 variable "SUMSUB_SECRET_KEY" {
   type        = string
   description = "Description of the variable"
