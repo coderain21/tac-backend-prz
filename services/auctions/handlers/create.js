@@ -43,6 +43,7 @@ module.exports.create_auction = async (event) => {
                     message: 'Auction created successfully',
                     auctions_id: sequenceNumber,
                     _id: auction._id,
+                    title: auction.title,
                 }),
             }
         }

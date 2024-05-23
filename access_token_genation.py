@@ -10,18 +10,9 @@ from dotenv import load_dotenv  # Import the library
 # Load environment variables from .env file
 load_dotenv()
 
-aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
-aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
-aws_region = os.environ['AWS_REGION']
 
-# Configure AWS SDK
-session = boto3.Session(
-    aws_access_key_id= aws_access_key_id,
-    aws_secret_access_key= aws_secret_access_key,
-    region_name=aws_region
-)
 
-client = session.client('cognito-idp',region_name='eu-west-2')
+client = boto3.client('cognito-idp',region_name='eu-west-2')
 
 def generate_token(user_type):
     try:
@@ -46,7 +37,6 @@ def generate_token(user_type):
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
-
         response = client.admin_initiate_auth(
             UserPoolId=user_pool_id,
             ClientId=client_id,

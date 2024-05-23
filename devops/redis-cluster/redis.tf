@@ -1,22 +1,8 @@
-data "external" "env" {
-  program = ["../envs.sh"]
-}
-
-  
-#AWS Provider with profile main account
-provider "aws" {
-  region = data.external.env.result["REGION"]
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
-}
-
-
-
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 data "aws_vpc" "default" {
   default = true
@@ -25,6 +11,7 @@ data "aws_vpc" "default" {
 
 resource "aws_default_subnet" "default_az1" {
   availability_zone = "eu-west-2c"
+  provider = aws.deployment-us
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
@@ -73,16 +60,24 @@ resource "aws_security_group" "security_groups" {
   provider = aws.deployment-us
 }
 
-
+data "aws_ssm_parameter" "redis_node_type" {
+  name = "REDIS_NODE_TYPE"
+}
+data "aws_ssm_parameter" "redis_node_groups" {
+  name = "REDIS_NODE_GROUPS"
+}
+data "aws_ssm_parameter" "redis_node_replica_groups" {
+  name = "REDIS_NODE_REPLICA_GROUPS"
+}
 
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
   replication_group_id        = "websocket-redis-cluster-enabled"
   description                 = "websocket description with cluster enabled"
-  node_type                   = "${data.external.env.result["REDIS_NODE_TYPE"]}"
-  num_node_groups         = data.external.env.result["REDIS_NODES"]
-  replicas_per_node_group = data.external.env.result["REDIS_REPLICAS"]
+  node_type                   = data.aws_ssm_parameter.redis_node_type.value
+  num_node_groups         = data.aws_ssm_parameter.redis_node_groups.value
+  replicas_per_node_group = data.aws_ssm_parameter.redis_node_replica_groups.value
   parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
@@ -104,4 +99,5 @@ resource "aws_ssm_parameter" "redis_host_parameter" {
   type  = "String"
   value = "redis://${local.redis_host}:6379"
   overwrite = true 
+  provider = aws.deployment-us
 }

@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from bson import ObjectId
 from lib.helper_python import send_pinpoint_email
 from datetime import datetime
+import pytz
 #from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
@@ -24,6 +25,29 @@ auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
+
+
+
+TIMEZONE_MAPPING = {
+        'UTC - Coordinated Universal Time': 'Etc/UTC',
+        'GMT - Greenwich Mean Time': 'Etc/GMT',
+        'BST - British Summer Time': 'Europe/London',
+        'CET - Central European Time': 'Europe/Paris',
+        'IST - India Standard Time': 'Asia/Kolkata',  # Updated key to match received timezone information
+        'CST - China Standard Time': 'Asia/Shanghai',
+        'JST - Japan Standard Time': 'Asia/Tokyo',
+        'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
+        'NZST - New Zealand Standard Time': 'Pacific/Auckland',
+        'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
+        'MST - Mountain Standard Time (US)': 'America/Denver',
+        'CST - Central Standard Time (US)': 'America/Chicago',
+        'EST - Eastern Standard Time (US)': 'America/New_York',
+    }
+
+
+
+
+
 
 def register_auction(event, context):
     """
@@ -48,12 +72,6 @@ def register_auction(event, context):
         try:
             cognito_data = json.loads(event['requestContext']['authorizer']['data'])
             email_address = cognito_data['email']
-            # if "cognito:groups" in cognito_data and not 'buyer' in cognito_data["cognito:groups"]:
-            #     return {
-            #     "statusCode": 403,
-            #     "headers": headers,
-            #     "body": json.dumps({"message": "You do not have access to perform this API action"})
-            # }
         except Exception as e:
             print(e)
             return {
@@ -62,8 +80,8 @@ def register_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         data = event['queryStringParameters']
-        auction_id= data.get('auction_id')
-        auction_id= ObjectId(auction_id)
+        auction_id = data.get('auction_id')
+        auction_id = ObjectId(auction_id)
         if data is None or "auction_id" not in data:
             return {
                 "statusCode": 400,
@@ -71,32 +89,56 @@ def register_auction(event, context):
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
         if 'status' in data and data['status'] == 'True':
-            result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
+            result = auction_register.find_one({"auction_id": auction_id, 'email_address': email_address})
             if result is None:
                 return {
-                "statusCode": 404,
-                "headers": headers,
-                "body": json.dumps({'message':'not found'})
-            }
-            status=result['status']
+                    "statusCode": 404,
+                    "headers": headers,
+                    "body": json.dumps({'message': 'not found'})
+                }
+            status = result['status']
             return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({'status':status})
+                "body": json.dumps({'status': status})
             }
-        registeration_type=auction.find_one({'_id':ObjectId(auction_id)})
-        print('regs', registeration_type)
-        paddle_color= registeration_type['paddle']
-        paddle_text_color= paddle_color["text_color"]
-        paddle_background_color= paddle_color["background_color"]
-        if paddle_text_color== "":
-            paddle_text_color="#FFFFFF"
+        registration_type = auction.find_one({'_id': ObjectId(auction_id)})
+        if registration_type is None:
+            # Handle the case where the auction is not found
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Auction not found"})
+            }
+
+        common_time_zone = registration_type.get('time_zone', 'UTC')
+        time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')  # Default to UTC if not mapped
+        try:
+            tz = pytz.timezone(time_zone)
+        except pytz.UnknownTimeZoneError:
+            print("Unknown timezone encountered:", time_zone)
+            tz = pytz.utc  # Default to UTC if timezone is unknown
+
+        # Handling date and time conversion
+        start_date_time_in_milliseconds = registration_type.get('start_date', datetime.utcnow().timestamp() * 1000)
+        start_date_time_utc = datetime.utcfromtimestamp(start_date_time_in_milliseconds / 1000)
+        start_date_time_local = start_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
+        start_date = start_date_time_local.date()
+        start_time = start_date_time_local.time().strftime('%H:%M:%S')
+
+        print('Start date:', start_date, 'Start time:', start_time)
+
+        paddle_color = registration_type['paddle']
+        paddle_text_color = paddle_color["text_color"]
+        paddle_background_color = paddle_color["background_color"]
+        if paddle_text_color == "":
+            paddle_text_color = "#FFFFFF"
         if paddle_background_color == "":
             paddle_background_color = "#000000"
-        seller_email= registeration_type['seller_email']
+        seller_email = registration_type['seller_email']
         print('seller email', seller_email, email_address)
-        buyer= buyer_collection.find_one(
-            {'email_address':email_address,"seller_email":seller_email}, {'_id': 0})
+        buyer = buyer_collection.find_one(
+            {'email_address': email_address, "seller_email": seller_email}, {'_id': 0})
         print('buyer', buyer)
         if buyer is None:
             return {
@@ -104,36 +146,44 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "buyer doesnt exist"})
             }
-        first_name=buyer['first_name']
-        last_name=buyer['last_name']
+        first_name = buyer['first_name']
+        last_name = buyer['last_name']
         marketing = buyer['newsletter_notification']
 
-        status= auction_register.find_one(
-            {'email_address':email_address,'auction_id':auction_id}, {'_id': 0})
+        status = auction_register.find_one(
+            {'email_address': email_address, 'auction_id': auction_id}, {'_id': 0})
         if status is not None and status['status'] == 'Pending':
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
-        if registeration_type['registration_type'] == 'Email only' or registeration_type['registration_type'] == 'Credit (bank) card validation' :
-            register_status="Approved"
-            seller= user_collection.find_one({"email_address":seller_email},{'_id': 0})
+        if registration_type['registration_type'] == 'Email only' or registration_type['registration_type'] == 'Credit (bank) card validation':
+            register_status = "Approved"
+            seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
             print('seller 1234', seller)
-            start_date_time_in_milliseconds= registeration_type['start_date']
-            # Convert timestamp in milliseconds to datetime object
-            start_date_time_in_seconds = start_date_time_in_milliseconds / 1000
-            start_date_time = datetime.utcfromtimestamp(start_date_time_in_seconds)
+            # Use mapping to convert common names to pytz names
+            # common_time_zone = registration_type.get('time_zone', 'UTC')  # Default to 'UTC' if not specified
+            # time_zone = TIMEZONE_MAPPING.get(common_time_zone, common_time_zone)  # Fallback to the common name if not found in mapping
+            # print('time zone', time_zone)
+            # tz = pytz.timezone(time_zone)
 
-            # Extract date and time
-            start_date = start_date_time.date()
-            start_time = start_date_time.time().strftime('%H:%M:%S')
-            title = registeration_type['title']
+            # start_date_time_in_milliseconds = registration_type['start_date']
+            # # Convert timestamp in milliseconds to datetime object in the specified time zone
+            # start_date_time_utc = datetime.utcfromtimestamp(start_date_time_in_milliseconds / 1000)
+            # start_date_time = start_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
+
+            # # Extract date and time
+            # start_date = start_date_time.date()
+            # start_time = start_date_time.time().strftime('%H:%M:%S')
+
+            title = registration_type['title']
             seller_name= seller['first_name']
-            if registeration_type["logo_image"] == "":
+            if registration_type["logo_image"] == "":
+
                 logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
-                logo_img= os.environ["CDN_LINK"]+registeration_type["logo_image"]
+                logo_img= os.environ["CDN_LINK"]+registration_type["logo_image"]
             paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
                             "seller_email": seller_email,
                             'record_type': 'Paddle'},

@@ -1,12 +1,9 @@
-data "external" "env" {
-  program = ["../../envs.sh"]
-}
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 
@@ -21,6 +18,7 @@ resource "null_resource" "nodejs" {
 resource "aws_lambda_layer_version" "lambda_node_layer" {
   layer_name          = "node_dependency"
   filename            = data.archive_file.node_layer_code_zip.output_path
+  provider = aws.deployment-us
 }
 
 data "archive_file" "node_layer_code_zip" {

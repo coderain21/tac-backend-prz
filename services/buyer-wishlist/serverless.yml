@@ -21,7 +21,7 @@ provider:
     BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -32,14 +32,14 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
+    #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -50,14 +50,14 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
           
-    ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
+    ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
-    RECAPTCHA_URL: ${ssm:RECAPTCHA_URL}
+    RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
-    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
+    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
         - ":"
@@ -68,13 +68,13 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
      
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
+    SELLER_GOOGLE_PASSWORD: INDY@SELLER
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     
@@ -154,7 +154,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /
           method: post
-          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   remove_wishlist:
     handler: handlers/remove_wishlist.remove
@@ -182,7 +182,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /remove
           method: delete
-          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   wishlist-listing:
     handler: handlers/wishlist_list.wishlist_list
     runtime: python3.8
@@ -209,7 +209,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /wishlist
           method: get
-          authorizer: arn:aws:lambda:${ssm:REGION}:${ssm:ACCOUNT_ID}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 resources:
    Resources:

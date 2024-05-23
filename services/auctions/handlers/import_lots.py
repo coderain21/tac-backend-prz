@@ -113,7 +113,7 @@ def import_lots(event, context):
             'Starting Price',
             'Low Estimate',
             'High Estimate',
-            'Product Shipping Location'
+            'Product Shipping Location',
             # 'Tags'
         ]
         # Initialize the MongoDB client
@@ -131,7 +131,7 @@ def import_lots(event, context):
         csv_buffer = StringIO(csv_data)
         # Parse the CSV data
         csv_reader = csv.DictReader(csv_buffer)
-        if csv_reader.fieldnames != expected_headers:
+        if [header for header in csv_reader.fieldnames if header != 'Tags'] != expected_headers:
             return {
                 "statusCode": 400,
                 "headers": headers,
@@ -160,7 +160,6 @@ def import_lots(event, context):
             "Top_bidder": "",
             "images": [],
         }
-        print("existing_lots_count", existing_lots_count)
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
                                                       "seller_email": email_address,
@@ -182,18 +181,21 @@ def import_lots(event, context):
             extension_time=0
         print(counter_record)
         last_lot_number = counter_record["starting_sequence"]
-        print("last_lot_number", last_lot_number)
         try:
-            count_import=0
-            print(csv_reader)
+            count_import = 1
             for row in csv_reader:
                 dict1 = {}
                 tags = row.get('Tags', '')
+                last_lot_number += 1
+                dict1["lot_number"] = last_lot_number
                 if end_date is not None:
                     if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
                         dict1['start_date'] = start_date
-                        dict1['end_date'] = end_date + (existing_lots_count + count_import)* extension_time*60*1000
-                        count_import= count_import+1
+                        if dict1['lot_number'] == 1:
+                            dict1['end_date'] = end_date
+                        else:
+                            dict1['end_date'] = end_date + count_import * extension_time * 60 * 1000
+                            count_import += 1
                     elif auction_record['extension_type']== "All Lots":
                         dict1['start_date'] = start_date
                         dict1['end_date'] = end_date
@@ -225,10 +227,14 @@ def import_lots(event, context):
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
-                # dict1["tags"] = tags
+                if 'Tags' in row:
+                    dict1["tags"] = row['Tags'].split(',') if row['Tags'] else []
+                else:
+                    dict1["tags"] = []
                 dict1.update(additional_fields)
-                last_lot_number += 1
-                dict1["lot_number"] = last_lot_number
+                # static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+                # static_image_data = {"url": static_image_url, "featured": True}
+                # dict1['images']=[static_image_data]
                 documents.append(dict1)
         except Exception as err:
             print(err)
@@ -266,20 +272,30 @@ def import_lots(event, context):
             "$set": update_data})
         if result.inserted_ids:
             auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": email_address})
-
             if auction_record and "total_lots" in auction_record and auction_record["total_lots"] >= 0:
                 # Increment the existing "total_lots" count
-                auction_collection.update_one(
-                    {"auction_id": auction_id, "seller_email": email_address},
-                    {"$inc": {"total_lots": len(result.inserted_ids)}}
-                )
+                if  auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                    totalLots = len(result.inserted_ids)
+                    additional_time_ms = auction_record['end_date'] + (totalLots -1 ) * extension_time * 60 * 1000
+                    auction_end_date = additional_time_ms
+                    auction_collection.update_one(
+                        {"auction_id": auction_id, "seller_email": email_address},
+                        {
+                            "$inc": {"total_lots": len(result.inserted_ids)},
+                            "$set": {"end_date": auction_end_date}
+                        }
+                    )
+
             else:
                 # Calculate the total lots count (if not already calculated) and update the auction record
                 total_lots_count = collection.count_documents({"seller_email": email_address, "auction_id": auction_id})
-                auction_collection.update_one(
-                    {"auction_id": auction_id, "seller_email": email_address},
-                    {"$set": {"total_lots": total_lots_count}}
-                )
+                if  auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                    additional_time_ms = auction_record['end_date']  + (total_lots_count -1 ) * extension_time * 60 * 1000
+                    auction_end_date = additional_time_ms
+                    auction_collection.update_one(
+                        {"auction_id": auction_id, "seller_email": email_address},
+                        {"$set": {"total_lots": total_lots_count, "end_date": auction_end_date}}
+                    )
 
             client.close()
             return {

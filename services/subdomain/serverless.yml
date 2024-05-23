@@ -19,7 +19,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -30,16 +30,13 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    AWS_MAIN_ACCESS_KEY_ID: ${env:AWS_ACCESS_KEY_ID_MAIN}
-    AWS_MAIN_SECRET_ACCESS_KEY: ${env:AWS_SECRET_ACCESS_KEY_MAIN}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -50,14 +47,14 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
        
-    ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
+    ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
-    RECAPTCHA_URL: ${ssm:RECAPTCHA_URL}
+    RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}    
-    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
+    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
         - ":"
@@ -69,15 +66,18 @@ provider:
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
         
    
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     AMPLIFY_APP_ID: ${ssm:AMPLIFY_APP_ID}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     DEFAULT_INDENTITY_POOL_ID: ${ssm:BUYER_COGNITO_IDENTITY_POOL_ID}
     DEFAULT_IDENTITY_POOL_NAME: ${ssm:BUYER_COGNITO_IDENTITY_POOL_NAME}
     DEFAULT_BUYER_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    BUYER_COGNITO_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     AMPLIFY_BRANCH: ${ssm:AMPLIFY_BRANCH}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    HOSTED_ZONE_ID: ${ssm:HOSTED_ZONE_ID}
+    CROSS_ACCOUNT_ARN: ${ssm:CROSS_ACCOUNT_ARN}
 
 
     
@@ -127,16 +127,17 @@ custom:
       securityPolicy: tls_1_2
       endpointType: REGIONAL
 
-  serverlessIfElse:
-    - If: '${param:offline, "false"} == true'
-      Set:
-        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+  # serverlessIfElse:
+  #   - If: '${param:offline, "false"} == true'
+  #     Set:
+  #       provider.environment.MONGO_CLIENT: ${env:MONGO_CLIENT}
 
 functions: 
   sub-domain:
     handler: handlers/subdomain.subdomain
     runtime: python3.8
     timeout: 100
+    role: ${ssm:LAMBDA_EXECTION_ARN}
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -153,17 +154,17 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
-resources:
-   Resources:
-    GatewayResponseDefault4XX:
-       Type: 'AWS::ApiGateway::GatewayResponse'
-       Properties:
-         ResponseParameters:
-           gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-           gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-         ResponseType: DEFAULT_4XX
-         RestApiId:
-           Ref: 'ApiGatewayRestApi'
+# resources:
+#    Resources:
+#     GatewayResponseDefault4XX:
+#        Type: 'AWS::ApiGateway::GatewayResponse'
+#        Properties:
+#          ResponseParameters:
+#            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+#            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+#          ResponseType: DEFAULT_4XX
+#          RestApiId:
+#            Ref: 'ApiGatewayRestApi'
     # BuyerEmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate
     #   Properties: 

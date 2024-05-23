@@ -127,5 +127,78 @@ def update_lot_data(item, lot_id):
             "images": item.get('images', []),
                
         }
+        update_request["winning_user"] = update_request.get('winning_user', '')
         cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
         print('cache_update', cache_update)
+
+
+def get_Lot(item, lot_id):
+    redis_client = createRedisClient()
+    bid_key = f'lot:{lot_id}'
+    print('redis', redis_client)
+    existing_record =  redis_client.hget('lot', bid_key)
+    print('existing_record', existing_record)
+    if existing_record is None:
+        print("No record found for the specified key.")
+    else:
+        get_lot = json.loads(existing_record)
+        print('get_lot', get_lot)
+        if existing_record:
+                get_lot = json.loads(existing_record)
+                
+        else:
+                get_lot = {}
+                
+        update_request = {
+            **get_lot,
+            "title1": item.get('title1', ''),
+            "title2": item.get('title2', ''),
+            "description": item.get('description', ''),
+            "starting_price": item.get('starting_price', 0),
+            "low_estimate": item.get('low_estimate', 0),
+            "high_estimate": item.get('high_estimate', 0),
+            "shipping_details": item.get('shipping_details', ''),
+            "tags": item.get('tags', []),
+            "images": item.get('images', []),
+               
+        }
+        update_request["winning_user"] = update_request.get('winning_user', '')
+        return update_request
+
+
+
+def sqs_trigger_event(json_serializable_list, action, auction_record_str):
+    batch_size_lots = 50  # Batch size for lots
+    batch_size_queue = 3  # Number of batches to send at once
+    total_lots = len(json_serializable_list)
+    user_batches = []
+    # Batch lots by 30
+    for i in range(0, total_lots, batch_size_lots):
+        batch_end = min(i + batch_size_lots, total_lots)
+        user_batches.append(json_serializable_list[i:batch_end])
+    # Send batches of 3 to the queue
+    for i in range(0, len(user_batches), batch_size_queue):
+        # Get a sublist containing at most 3 batches
+        send_batches = user_batches[i:i+batch_size_queue]
+        # Prepare entries for each batch in send_batches
+        entries = []
+        for item in send_batches:
+            message_body = 'update status'
+            message_attributes = {
+            'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
+            'auction': {'DataType': 'String', 'StringValue': auction_record_str},
+            'type': {'DataType': 'String', 'StringValue': action},
+            }
+            entries.append(
+                {'Id': str(uuid.uuid4()),
+                    'MessageBody': message_body,
+                    'DelaySeconds': i,
+                'MessageAttributes': message_attributes
+                })
+        # Send the batch of entries to the queue
+        cc = sqs.send_message_batch(
+            QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+            Entries=entries
+        )
+        print('cc', cc)
+

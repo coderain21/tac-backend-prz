@@ -4,8 +4,8 @@
       "title": "Admin Buyer Bid History APIs",
       "description": "Admin Buyer Bid History APIs to view list of the bids placed by the buyer",
       "contact": {
-        "name": "no-reply@indy.auction",
-        "email": "no-reply@indy.auction"
+        "name": "no-reply@dev.indyauction.net",
+        "email": "no-reply@dev.indyauction.net"
       },
       "version": "1.0.0"
     },

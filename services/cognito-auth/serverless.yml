@@ -16,11 +16,12 @@ provider:
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
-    BUYER_RECAPTCHA_URL: ${ssm:BUYER_RECAPTCHA_URL}
-    BUYER_RECAPTCHA_KEY: ${ssm:BUYER_RECAPTCHA_KEY}
+    BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
+    RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
+    ADMIN_COGNITO_CLIENT_ID: { Ref: AdminUsersClient } 
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -30,29 +31,26 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    ENCRYPTION_SECRET_KEY: ${ssm:ENCRYPTION_SECRET_KEY}
+    ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
-    RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
-    RECAPTCHA_URL: ${ssm:RECAPTCHA_URL}
+    RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
-    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL}
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
-    JWT_SECRET_KEY: ${ssm:JWT_SECRET_KEY}
-    BASE_URL_BUYER: ${ssm:DEFAULT_SUB_DOMAIN}
+    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     DEFAULT_USERPOOL_ID: { Ref: Buyers }
     DEFAULT_COGNITO_DOMAIN: buyers-indyauction-${self:provider.stage}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
-    CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: ${ssm:SELLER_GOOGLE_PASSWORD}
+    SELLER_GOOGLE_PASSWORD: INDY@SELLER
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
     TEMPLATE_ARN_EMAIL_OTP: 
@@ -74,6 +72,8 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-welcome_email_template/EMAIL"
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    BUYER_COGNITO_USERPOOL_ID: { Ref: Buyers }
+    BUYER_COGNITO_CLIENT_ID: { Ref: BuyersClient } 
   http:
     cors: true
      
@@ -112,8 +112,6 @@ custom:
       - '../../lib'
       - '../../entities'
       
-  
-
 functions: 
   pre-auth:
     handler: handlers/pre_signup.handler
@@ -130,6 +128,50 @@ functions:
             pool: ${opt:stage, self:provider.stage}-indyauction-buyers
             trigger: PreSignUp
             existing: true
+
+  # COGNITO CREATE AUTH CHALLENGE
+  cognito-create-auth-challenge:
+    handler: handlers/cognito_create_auth_challenge.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${opt:stage, self:provider.stage}-indyauction-admin
+          trigger: CreateAuthChallenge
+          existing: true
+  
+  # COGNITO DEFINE AUTH CHALLENGE
+  cognito-define-auth-challenge:
+    handler: handlers/cognito_define_auth_challenge.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${opt:stage, self:provider.stage}-indyauction-admin
+          trigger: DefineAuthChallenge
+          existing: true
+
+  # COGNITO VERIFY AUTH CHALLENGE
+  cognito-verify-auth-challenge:
+    handler: handlers/cognito_verify_auth_challenge.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${opt:stage, self:provider.stage}-indyauction-admin
+          trigger: VerifyAuthChallengeResponse
+          existing: true
+    
+  add_callback_logout_urls:
+    handler: handlers/add_callback_logout_urls.add_callback_logout_urls
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
 resources:
    Resources:
     Buyers:
@@ -357,29 +399,23 @@ resources:
           authorize_scopes: "email"
         UserPoolId: { Ref: Buyers }
     
-    # Group:
-    #   Type: AWS::Cognito::UserPoolGroup
-    #   Properties:
-    #     GroupName: "buyer"
-    #     UserPoolId: { Ref: Buyers }
-
-    BuyersDomain:
-      Type: "AWS::Cognito::UserPoolDomain"
+    Group:
+      Type: AWS::Cognito::UserPoolGroup
       Properties:
-        Domain: buyers-indyauction-${self:provider.stage}
+        GroupName: "buyer"
         UserPoolId: { Ref: Buyers }
 
     BuyersClient:
       Type: AWS::Cognito::UserPoolClient
-      DependsOn: 
+      DependsOn:
         - GoogleAuth
         - FacebookAuth
       Properties:
         AccessTokenValidity: 60
-        AllowedOAuthFlowsUserPoolClient: true
-        AuthSessionValidity: 10
+        AllowedOAuthFlowsUserPoolClient: false
+        AuthSessionValidity: 3
         ClientName: default-client
-        UserPoolId: { Ref: Buyers }
+        UserPoolId: !Ref Buyers
         EnablePropagateAdditionalUserContextData: false
         EnableTokenRevocation: true
         ExplicitAuthFlows:
@@ -389,40 +425,27 @@ resources:
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
           - ALLOW_USER_PASSWORD_AUTH
         SupportedIdentityProviders:
-          - "COGNITO"
-          - "Google"
-          - "Facebook"
-        AllowedOAuthFlows:
-          - implicit
-          - code
-        AllowedOAuthScopes:
-          - openid
-          - profile
-          - email
-          - aws.cognito.signin.user.admin
-        CallbackURLs:
-          - "${ssm:BASE_URL_BUYER}/"
-          - "${ssm:BASE_URL_BUYER}/login"
-          - "${ssm:BASE_URL_BUYER}/register"
-          - "http://localhost:3000/"
-          - "http://localhost:3001/"
-          - "http://localhost:3000/login"
-          - "http://localhost:3000/register"
-        LogoutURLs:
-          - "${ssm:BASE_URL_BUYER}/"
-          - "${ssm:BASE_URL_BUYER}/login"
-          - "${ssm:BASE_URL_BUYER}/register"
-          - "http://localhost:3000/"
-          - "http://localhost:3001/"
-          - "http://localhost:3000/login"
-          - "http://localhost:3000/register"
+          - COGNITO
+          - Google
+          - Facebook
+        # AllowedOAuthFlows:
+        #   - implicit
+        #   - code
+        # AllowedOAuthScopes:
+          # - openid
+          # - profile
+          # - email
+          # - aws.cognito.signin.user.admin
         IdTokenValidity: 60
-        PreventUserExistenceErrors: LEGACY
+        PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
+
+
+    
         
 
     
@@ -466,7 +489,7 @@ resources:
                   Action:
                     - "s3:*" # Adjust permissions as needed
                     
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}" # Replace with your S3 bucket ARN
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -476,34 +499,34 @@ resources:
         Roles:
           authenticated:
             Fn::GetAtt: [MyRoleLogicalName, Arn]
-    AdminCognitoIdentityPoolIDStore:
+    BuyerCognitoIdentityPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
           Name: BUYER_COGNITO_IDENTITY_POOL_ID
           Type: String
           Value: { Ref: CognitoIdentityPool }
 
-    AdminCognitoPoolIDStore:
+    BuyerCognitoPoolIDStore:
         Type: AWS::SSM::Parameter
         Properties:
           Name: BUYER_COGNITO_USERPOOL_ID
           Type: String
           Value: { Ref: Buyers }
 
-    AdminCognitoPoolNameStore:
+    BuyerCognitoPoolNameStore:
         Type: AWS::SSM::Parameter
         Properties:
           Name: BUYER_COGNITO_USERPOOL_NAME
           Type: String
           Value: indyauction-buyers-${self:provider.stage}
-    AdminCognitoClientIDStore:
+    BuyerCognitoClientIDStore:
         Type: AWS::SSM::Parameter
         Properties:
           Name: BUYER_COGNITO_CLIENT_ID
           Type: String
           Value: { Ref: BuyersClient }
     
-    AdminCognitoPoolARNStore:
+    BuyerCognitoPoolARNStore:
         Type: AWS::SSM::Parameter
         Properties:
           Name: BUYER_COGNITO_AUTH_ARN
@@ -513,12 +536,6 @@ resources:
               - Buyers
               - Arn
     
-    # BuyersDomainStore:
-    #     Type: AWS::SSM::Parameter
-    #     Properties:
-    #       Name: BUYER_COGNITO_USERPOOL_DOMAIN
-    #       Type: String
-    #       Value: buyers-indyauction-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
 
     BuyersCognitoIdentityPoolNameStore:
         Type: AWS::SSM::Parameter
@@ -526,6 +543,178 @@ resources:
           Name: BUYER_COGNITO_IDENTITY_POOL_NAME
           Type: String
           Value: indyauction-buyers-${self:provider.stage}
+    # BuyersDomainStore:
+    #     Type: AWS::SSM::Parameter
+    #     Properties:
+    #       Name: BUYER_COGNITO_USERPOOL_DOMAIN
+    #       Type: String
+    #       Value: buyers-indyauction-${self:provider.stage}.auth.eu-west-2.amazoncognito.com
+
+
+
+    AdminUsers:
+      Type: "AWS::Cognito::UserPool"
+      Properties:
+        UserPoolName: ${self:provider.stage}-indyauction-admin
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireUppercase: true
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            TemporaryPasswordValidityDays: 7
+        Schema:
+          - Name: preferred_username
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email
+            AttributeDataType: String
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: true
+            StringAttributeConstraints:
+              MinLength: "0"
+              MaxLength: "2048"
+          - Name: email_verified
+            AttributeDataType: Boolean
+            DeveloperOnlyAttribute: false
+            Mutable: true
+            Required: false
+        AliasAttributes:
+          - preferred_username
+        VerificationMessageTemplate:
+          DefaultEmailOption: CONFIRM_WITH_CODE
+        UserAttributeUpdateSettings:
+          AttributesRequireVerificationBeforeUpdate: []
+        MfaConfiguration: "OFF"
+        EmailConfiguration:
+          EmailSendingAccount: COGNITO_DEFAULT
+        UsernameConfiguration:
+          CaseSensitive: true
+        AccountRecoverySetting:
+          RecoveryMechanisms:
+            - Priority: 1
+              Name: admin_only
+
+    AdminUsersClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        AccessTokenValidity: 60
+        AllowedOAuthFlowsUserPoolClient: false
+        AuthSessionValidity: 3
+        ClientName: admin
+        UserPoolId: { Ref: AdminUsers }
+        EnablePropagateAdditionalUserContextData: false
+        EnableTokenRevocation: true
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
+        IdTokenValidity: 60
+        PreventUserExistenceErrors: ENABLED
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: minutes
+          IdToken: minutes
+          RefreshToken: days
+
+    AdminCognitoIdentityPool:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: indyauction-admin-${self:provider.stage}
+        AllowUnauthenticatedIdentities: true
+        AllowClassicFlow: true
+        CognitoIdentityProviders: 
+          - ClientId: !Ref AdminUsersClient
+            ProviderName: !GetAtt AdminUsers.ProviderName
+            ServerSideTokenCheck: false
+        # Define more configuration properties as needed
+    
+        
+   
+    AdminCognitoIdentityPoolRole:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId:
+          Ref: AdminCognitoIdentityPool
+        Roles:
+          authenticated:
+            Fn::GetAtt: [AdminRoleLogicalName, Arn] # Replace with your IAM role
+    
+    AdminRoleLogicalName: # Define your IAM role here
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Federated: "cognito-identity.amazonaws.com"
+              Action: "sts:AssumeRoleWithWebIdentity"
+              Condition:
+                StringEquals:
+                  "cognito-identity.amazonaws.com:aud": 
+                    Ref: AdminCognitoIdentityPool
+                "ForAnyValue:StringLike":
+                  "cognito-identity.amazonaws.com:amr": "authenticated"
+
+        Policies:
+          - PolicyName: S3AccessPolicy
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "s3:*" # Adjust permissions as needed
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
+  
+
+    AdminCognitoIdentityPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_IDENTITY_POOL_ID
+          Type: String
+          Value: { Ref: AdminCognitoIdentityPool }
+
+    AdminCognitoPoolIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_USERPOOL_ID
+          Type: String
+          Value: { Ref: AdminUsers }
+
+    AdminCognitoPoolNameStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_USERPOOL_NAME
+          Type: String
+          Value: indyauction-admin-${self:provider.stage}
+    AdminCognitoClientIDStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_CLIENT_ID
+          Type: String
+          Value: { Ref: AdminUsersClient }
+  
+    
+    AdminCognitoPoolARNStore:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: ADMIN_COGNITO_AUTH_ARN
+          Type: String
+          Value:
+            Fn::GetAtt:
+              - AdminUsers
+              - Arn     
+    
     BuyerEmailOtp:
       Type: AWS::Pinpoint::EmailTemplate
       Properties: 
@@ -538,6 +727,13 @@ resources:
         HtmlPart: ${file(./templates/buyer_reset_password.html)}
         Subject: Indy.auction- Reset your password
         TemplateName: ${self:provider.stage}-buyer_reset_password
+    BuyerLambdaArn:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: LAMBDA_ARN
+          Type: String
+          Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:cognito-${self:provider.stage}-add_callback_logout_urls
+
 
             
 plugins:
