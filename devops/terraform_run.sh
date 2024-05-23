@@ -109,5 +109,10 @@ fi
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
+if [ "${STAGE}" = "qa" ]; then
+  cd services/bdd-api
+  sls deploy --region $REGION --stage $STAGE
+  cd ../..
+fi
 sls deploy --stage ${STAGE} --max-concurrency 5
 

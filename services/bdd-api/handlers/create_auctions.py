@@ -102,11 +102,12 @@ def create(event, context):
         # Assign these values to the request body
         request_body["start_date"] = current_timestamp_ms
         request_body["end_date"] = now_plus_2_minutes_ms
-
+        auction_image = 'DomainName/BDD/ai-6.jpeg'
+        print('auction image', auction_image)
         # Giving static values to create a new auction
-        request_body['auction_image'] = 'DomainName/Auctions/images/9db90a59-fa5d-c6f8-f741-dda9864a1c3f/ai-6.jpeg' #static
+        request_body['auction_image'] = auction_image
         request_body['template_name'] = 'Classic'
-        request_body['title'] = 'test title'
+        request_body['title'] = 'BDD test'
         request_body['currency'] = 'USD'
         request_body['time_zone'] = 'IST - India Standard Time'
         request_body['status'] = 'Draft'
@@ -237,7 +238,8 @@ def create_lot(event, auction_id, seller_email):
         # Get the extension type from the auction record
         extension_type = auction_record.get('extension_type', '')
         # auction_status = auction_record.get('status', '')
-
+        lot_image = 'DomainName/BDD/panting2.jpg'
+        print('lot image', lot_image)
         #giving static values to create lots
         common_lot_info = {
             "seller_email": seller_email,
@@ -254,7 +256,7 @@ def create_lot(event, auction_id, seller_email):
             "tags": [],
             "images": [
                 {
-                    "url": "DomainName/Auctions/lots/images/71968ee0-6bef-5186-410c-00b18f32a132/panting2.jpg", #static
+                    "url": lot_image, #static
                     "featured": True
                 }
             ]
@@ -321,9 +323,7 @@ def prepare_lot_info(request_body, auction, lot_number, extension_type,time_betw
         # print('Start Date:', start_date)
         end_date = auction.get('end_date', start_date + timedelta(minutes=5).total_seconds() * 1000)
         # print('end Date:', end_date)
-        print('Start Date:', start_date, 'End Date:', end_date)
     else:
-        print('Latest lot found:', latest_lot)
         if 'end_date' not in latest_lot or latest_lot['end_date'] is None:
             print('Error: Latest lot does not contain a valid end_date')
             raise ValueError('Latest lot does not contain a valid end_date')
@@ -333,7 +333,7 @@ def prepare_lot_info(request_body, auction, lot_number, extension_type,time_betw
             print('Error: end_date of latest lot is not an integer or float:', type(last_end_date))
             raise TypeError('end_date of latest lot is expected to be a timestamp (int or float)')
 
-        if extension_type in ['Cascade', 'Indivisual Lots']:
+        if extension_type in ['Cascade', 'Individual Lots']:
             start_date = last_end_date
             end_date = last_end_date + time_between_lots * 60 * 1000
         elif extension_type == 'All Lots':

@@ -150,7 +150,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}        #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
   order_detail:
     handler: handlers/order_detail.order_detail
@@ -177,7 +177,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   
   order_update:
     handler: handlers/order_update.order_update
@@ -204,7 +204,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   sales_details:
     handler: handlers/sales_details.sales_details

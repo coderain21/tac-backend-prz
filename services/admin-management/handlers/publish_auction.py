@@ -138,14 +138,11 @@ def update_auction(event, context):
                                                      "auction_id": auction_id})
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                      "auction_id": auction_id}))
-        print('listLots', listLots)
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
 
         auction_record = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email}, {"_id": 0})
-        print('auction_record', auction_record)
         seller_data = collection_seller.find_one(  {"seller_email": seller_email}, {"_id": 0})
-        print('seller_data', seller_data)
 
         if auction_record is None:
             return {

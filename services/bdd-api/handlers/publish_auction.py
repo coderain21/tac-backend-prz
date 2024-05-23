@@ -144,7 +144,7 @@ def publish(event, context):
                 "body": json.dumps({"message": "Auction doesn't exists."})
             }
 
-        if auction_record['extension_type'] in ['Cascade', 'Indivisual Lots']:
+        if auction_record['extension_type'] in ['Cascade', 'Individual Lots']:
             if request_body['extension_time_between_lots']:
                 auction_record['extension_time_between_lots'] = request_body['extension_time_between_lots']
 
@@ -162,7 +162,6 @@ def publish(event, context):
                  auction_record['percentage'] == "") or
                 (auction_record['add_buyer_fees'] == 'Add fixed fee'
                 and auction_record['fees'] == "")):
-                print('auction', auction_record)
                 return {
                     "statusCode": 400,
                     'headers': headers,
@@ -170,7 +169,7 @@ def publish(event, context):
                 }
             if ((auction_record['make_your_auction_private'] is True
                     and auction_record['passcode'] == "") or
-                    (auction_record['extension_type'] in ['Cascade','Indivisual Lots'] and
+                    (auction_record['extension_type'] in ['Cascade','Individual Lots'] and
                     auction_record['extension_time_between_lots']== "")):
                 print('auction_1', auction_record)
                 return {
@@ -288,10 +287,9 @@ def publish(event, context):
             # lotLists = json.loads(json.dumps(listLots, default=convert_object_id))
 
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published', 'Draft']:
-                print('inside update323323', listLots)
                 for item in listLots:
                     if not item['end_date'] < epoch_time_milliseconds:
-                        if auction_record['extension_type'] in ["Cascade", "Indivisual Lots"]:
+                        if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                             item['start_date'] = start_date
                             item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
                             count_import += 1
@@ -299,7 +297,6 @@ def publish(event, context):
                             item['start_date'] = start_date
                             item['end_date'] = end_date
                         documents.append(item)
-                print('documents',documents)
                 bulk_operations = []
                 for item in documents:
                     filter_criteria = {
@@ -341,7 +338,7 @@ def publish(event, context):
                 # Modify start_date and end_date before sending SQS
                 for item in json_serializable_list:
                     if not item['end_date'] < epoch_time_milliseconds:
-                        if auction_record['extension_type'] in ["Cascade", "Indivisual Lots"]:
+                        if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                             item['start_date'] = start_date
                             item['end_date'] = end_date + (existing_lots_count + count_import) * extension_time * 60 * 1000
                             count_import += 1

@@ -39,9 +39,7 @@ def set_authorization(transaction):
     token = str(os.environ.get('USER'))
     if transaction['request']['uri'].startswith('/admin'):
         token = str(os.environ.get('ADMIN'))
-    print('Expected Status Code:', transaction['expected']['statusCode'])
-    print('Request Method:', transaction['request']['method'])
-    print('Request URI:', transaction['request']['uri'])
+  
 
     if transaction['expected']['statusCode'] != '401':
         transaction['request']['headers']['Authorization'] = f'Bearer {token}'

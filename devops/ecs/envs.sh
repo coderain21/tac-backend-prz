@@ -12,6 +12,7 @@ parameter_names=(
     "REDIS_CLUSTER_ENDPOINT"
     "STATE_MACHINE_LOT_ARN"
     "WEB_PUSH_SECRET_KEY"
+    "CDN_URL"
 )
 
 # Loop through each parameter
