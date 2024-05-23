@@ -145,8 +145,14 @@ def update_user(event, context):
                     if buyer_data_new is not None:
                         buyer_data_new["seller_email"]=seller_email
                         buyer_collection.insert_one(buyer_data_new)
+                        return {
+                            'statusCode': 200,
+                            'headers': headers,
+                            'body': json.dumps({"message": "User logged in successfully"})
+                        }
                     else:
                         buyer_collection.insert_one(new_data)
+                        print('new')
 
                 else:
                     # Check if the user has an existing record without seller_email
