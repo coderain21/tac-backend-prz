@@ -35,16 +35,34 @@ def view_profile(event, context):
     body. The specific content of the response depends on the execution path of the code.
     """
     try:
+        # try:
+        #     cognito_data = json.loads(
+        #         event['requestContext']['authorizer']['data'])
+        #     email_address = cognito_data['email']
+        #     if "cognito:groups" not in cognito_data :
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         try:
-            cognito_data = json.loads(event['requestContext']['authorizer']['data'])
-            email_address = cognito_data['email']
-            if "cognito:groups" not in cognito_data :
+            email_address = event['requestContext']['authorizer']['claims']['email']
+            print('email', email_address)
+            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+                print('here in first')
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         except:
+            print('here in second')
             return {
                 "statusCode": 403,
                 "headers": headers,
