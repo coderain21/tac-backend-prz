@@ -1,12 +1,8 @@
-data "external" "env" {
-  program = ["../../envs.sh"]
-}
-
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = data.external.env.result["REGION"]
+  region = var.REGION
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${data.external.env.result["STAGE"]}"
+  profile = "indyauction-${var.STAGE}"
 }
 
 
@@ -17,7 +13,7 @@ resource "null_resource" "python" {
 }
 
 resource "aws_lambda_layer_version" "lambda_python_layer" {
-  layer_name          = "python-dependency-${data.external.env.result["STAGE"]}"
+  layer_name          = "python-dependency-${var.STAGE}"
   filename            = data.archive_file.python_layer_code_zip.output_path
   provider=aws.deployment-us
 }
@@ -45,7 +41,7 @@ resource "null_resource" "python2" {
 }
 
 resource "aws_lambda_layer_version" "lambda_python_layer_2" {
-  layer_name          = "python-dependency-2-${data.external.env.result["STAGE"]}"
+  layer_name          = "python-dependency-2-${var.STAGE}"
   filename            = data.archive_file.python_layer_code_zip_2.output_path
   provider=aws.deployment-us
 }

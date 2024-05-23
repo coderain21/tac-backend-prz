@@ -1,0 +1,233 @@
+service: bdd
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  versionFunctions: false
+  layers: ${ssm:COMMON_LIB_ARN}
+  vpc:
+    securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+    subnetIds:
+      - ${ssm:SUBNET_ID}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    REGION: ${ssm:REGION}
+    DATABASE: ${opt:stage, self:provider.stage}
+    STAGE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SENDER_EMAIL_ADDRESS: no-reply@indy.auction
+    BUCKET_NAME: ${ssm:BUCKET_NAME}
+    # CSV_FILE: ${ssm:CSV_FILE}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
+    CDN_LINK: ${ssm:CDN_URL}
+    SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
+    SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
+
+    STATE_MACHINE_LOT_ARN:  
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-lot-published"
+    STATE_MACHINE_AUCTION_ARN: 
+       Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-auction-ended"
+    QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "auto-completion-email-${opt:stage}.fifo"
+    LOT_UPDATE_QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "${opt:stage}-bulk-lots-update"
+
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${ssm:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
+        audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - sqs:*
+            - states:*
+            - sts:*
+            - lambda:*
+            - mobiletargeting:*
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+custom:
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+  serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
+                
+
+
+functions: 
+  create_auction:
+    handler: handlers/create_auctions.create
+    timeout: 30
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: post
+          # authorizer:
+          #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            
+  # create:
+  #   handler: handlers/create.create_auction
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - http:
+  #         cors: true
+  #         path: /
+  #         method: post
+  #         authorizer:
+  #             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+
+  
+  publish_auction:
+      handler: handlers/publish_auction.publish
+      runtime: python3.8
+      memorySize: 2048
+      layers:
+        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+      events:
+        - http:
+            cors: true
+            path: /publish/{auction_id}
+            method: patch
+            # authorizer:
+            #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  # sqs-lot-update:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: 6400
+  #   timeout: 120
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #             - updateLotsQueue
+  #             - Arn
+
+
+stepFunctions:
+  stateMachines:
+    lot-published:
+      name: ${opt:stage}-lot-published
+      definition:
+        Comment: "Step function will trigger when lot published"
+        StartAt: wait-for-auction-start
+        States:
+          wait-for-auction-start:
+            Type: Wait
+            TimestampPath: "$.start_date"
+            Next:  process-cache-lots
+          process-cache-lots:
+            Type: Task
+            Resource:
+              Fn::GetAtt: ["save-to-cache", Arn]
+            Next: check-lot-ends
+          check-lot-ends:
+              Type: Wait
+              TimestampPath: "$.end_date"
+              Next:  process-cart
+          process-cart:
+              Type: Task
+              Resource:
+                Fn::GetAtt: ["process-cart", Arn]
+              End: true
+
+
+
+
+
+
+
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
+  - serverless-plugin-ifelse

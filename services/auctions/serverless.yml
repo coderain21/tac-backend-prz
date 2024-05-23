@@ -25,7 +25,7 @@ provider:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
-    REGION: ${ssm:REGION}
+    REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
@@ -36,7 +36,7 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    CSV_FILE: ${ssm:CSV_FILE}
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
@@ -72,7 +72,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL:  ${ssm:CDN_URL}
-    SENDER_EMAIL: ${ssm:SENDER_EMAIL}
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
     STATE_MACHINE_LOT_ARN:  
       Fn::Join:
           - ":"
@@ -317,7 +317,7 @@ functions:
           path: /admin/lots
           method: get
           authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   delete_lot:
       handler: handlers/delete_lot.delete_lot
@@ -406,7 +406,7 @@ functions:
   update_auction:
       handler: handlers/update.update_auction
       runtime: python3.8
-      memorySize: 2048
+      memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -447,7 +447,8 @@ functions:
 
   process-cart:
     handler: handlers/add_to_cart.handler
-    timeout: 120
+    timeout: 60
+    memorySize: ${ssm:PROCESS_LAMBDA_MEMORY}
     layers:
       - ${ssm:COMMON_LIB_ARN}
 
@@ -458,8 +459,9 @@ functions:
 
   sqs-lot-update:
     handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -471,8 +473,9 @@ functions:
 
   sqs-lot-update_1:
     handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -484,8 +487,9 @@ functions:
 
   sqs-lot-update_2:
     handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -497,8 +501,9 @@ functions:
 
   sqs-lot-update_3:
     handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -510,8 +515,9 @@ functions:
 
   sqs-lot-update_4:
     handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -522,8 +528,9 @@ functions:
                     - Arn
   sqs-lot-update_5:
     handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 60
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -532,72 +539,72 @@ functions:
             Fn::GetAtt:
                     - updateLotsQueue
                     - Arn
-  sqs-lot-update_6:
-    handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_6:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
 
-  sqs-lot-update_7:
-    handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_8:
-    handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_9:
-    handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_10:
-    handler: handlers/batch_lots_update.handler
-    memorySize: 6400
-    timeout: 120
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_7:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_8:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_9:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_10:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
 
   # sqs-lot-update_11:
   #   handler: handlers/batch_lots_update.handler
-  #   memorySize: 6400
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   layers:
   #     - ${ssm:COMMON_LIB_ARN}
   #   events:
@@ -690,7 +697,7 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
-        VisibilityTimeout: 3600
+        VisibilityTimeout: 90
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter

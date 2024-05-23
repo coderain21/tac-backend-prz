@@ -35,3 +35,6 @@ services:
   seller-bidder-management:
     path: services/seller-bidder-management
     config: ${env:config}
+  # bdd-api:
+  #   path: services/bdd-api
+  #   config: ${env:config}

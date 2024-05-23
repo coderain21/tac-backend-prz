@@ -33,7 +33,7 @@ definitions:
            - npm run eslint
            - apt-get update   # Update package manager (for Debian/Ubuntu-based images)
            - apt-get install -y python3-pip   # Install pip (for Debian/Ubuntu-based images)
-           - pip install pylint
+           - pip install pylint==3.1.1
            - pylint services/**/**/*.py
 
            
@@ -232,7 +232,8 @@ definitions:
           - echo "Runbook Execution Step!"
           - export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
           - export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-          - aws s3 sync ${RUNBOOK_PATH} s3://${RUNBOOK_BUCKET}/${RUNBOOK_PATH} --acl public-read
+          - echo $RUNBOOK_PATH $RUNBOOK_BUCKET
+          - aws s3 sync ./${RUNBOOK_PATH} s3://${RUNBOOK_BUCKET}/${RUNBOOK_PATH} --acl public-read
           - aws ssm send-command --targets "Key=instanceids,Values=$(aws ssm get-parameter --name 'EC2_INSTANCE_ID' --query 'Parameter.Value' --output text --region ${REGION})" --document-name 'AWS-RunShellScript' --parameters "commands=['if [ ! -d runbook ]; then mkdir runbook; fi && cd runbook && aws s3 sync s3://${RUNBOOK_BUCKET}/ . && chmod +x ${RUNBOOK_PATH}/* && cd ${RUNBOOK_PATH} && sh main.sh && cd ../../ && rm -r ${RUNBOOK_PATH} && cd .. && rm -r runbook']" --region ${REGION} --cloud-watch-output-config CloudWatchLogGroupName="mongo-restore",CloudWatchOutputEnabled=true
 
 
@@ -262,7 +263,7 @@ pipelines:
     
     RunBookExecutionQA:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
@@ -272,7 +273,7 @@ pipelines:
             - step: *runcommands
     RunBookExecutionDev:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
@@ -282,7 +283,7 @@ pipelines:
             - step: *runcommands
     RunBookExecutionPreProd:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks
@@ -292,7 +293,7 @@ pipelines:
             - step: *runcommands
     RunBookExecutionProd:
       - variables:
-        - name: Runbooks
+        - name: RUNBOOK_PATH
           default: 'runbooks/'
       - stage:
           name: Runbooks

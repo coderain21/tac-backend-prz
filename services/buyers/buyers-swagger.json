@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis-dev.indyauction.net/v1/buyers"
+      "url": "https://apis.dev.indyauction.net/v1/buyers"
     }
   ],
   "tags": [
@@ -1689,7 +1689,7 @@
                   }
                 },
                 "example": {
-                  "logo_image": "https://qa-cdn.indyauction.net/public/Logo.png",
+                  "logo_image": "https://cdn.qa.indyauction.net/public/Logo.png",
                   "auction_id": "6520008e74542648a5819807",
                   "email_address": "aishwarya+vt@7edge.com",
                   "domain": "www-dev"
@@ -1904,6 +1904,33 @@
               "type": "string"
             },
             "example": "False"
+          },
+          { 
+            "name": "seller_email",
+            "in": "query",
+            "description": "seller email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi+testing@7edge.com"
+          },
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "seller email to match the buyer",
+            "schema": {
+              "type": "string"
+            },
+            "example":"sthuthi+testing@7edge.com"
+          },
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "to update the address",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi+testing@7edge.com"
           },
           {
             "name": "delete",
@@ -2166,7 +2193,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65ddbd2836a5bb9ede942b6c"
+            "example": "65faa94a10547dace8fe1c2b"
           }
         ],
         "responses": {
@@ -2189,7 +2216,7 @@
                 },
                 "example": {
                   "data": {
-                    "paddle": "22"
+                    "paddle": "1"
                   }
                 }
               }

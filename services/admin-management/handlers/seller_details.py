@@ -70,7 +70,7 @@ def seller_details(event, context):
             "website":1,
             "created_at":1,
             "kyc_status": 1,
-            "kyb_status": 1, 
+            "kyb_status": 1,
             "plan_type": 1,
             "address_line_1": 1,
             "address_line_2": 1,
