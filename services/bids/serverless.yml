@@ -187,7 +187,7 @@ functions:
           cors: true
           path: /update
           method: patch
-          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}        #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
 
 resources:
