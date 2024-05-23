@@ -38,10 +38,6 @@ variable "SUMSUB_SECRET_KEY" {
   type        = string
   description = "Description of the variable"
 }
-variable "SUMSUB_SECRET_KEY" {
-  type        = string
-  description = "Description of the variable"
-}
 variable "SUMSUB_APP_TOKEN" {
   type        = string
   description = "Description of the variable"
@@ -51,10 +47,6 @@ variable "STRIPE_API_KEY" {
   description = "Description of the variable"
 }
 variable "ENCRYPTION_SECRET_KEY" {
-  type        = string
-  description = "Description of the variable"
-}
-variable "STRIPE_API_KEY" {
   type        = string
   description = "Description of the variable"
 }
@@ -79,10 +71,6 @@ variable "FACEBOOK_CLIENT_SECRET" {
   description = "Description of the variable"
 }
 variable "GOOGLE_CLIENT_ID" {
-  type        = string
-  description = "Description of the variable"
-}
-variable "GOOGLE_CLIENT_SECRET" {
   type        = string
   description = "Description of the variable"
 }
