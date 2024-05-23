@@ -205,7 +205,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: ${ssm:SELLER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 
   sales_details:
     handler: handlers/sales_details.sales_details
