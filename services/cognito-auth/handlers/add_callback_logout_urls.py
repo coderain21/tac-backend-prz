@@ -44,7 +44,27 @@ def add_callback_logout_urls(event, context):
             AllowedOAuthFlowsUserPoolClient=allowed_oauth_flows_user_pool_client,
             AllowedOAuthFlows=allowed_oauth_flows,
             AllowedOAuthScopes=allowed_oauth_scopes,
-            SupportedIdentityProviders=supported_identity_providers
+            SupportedIdentityProviders=supported_identity_providers,
+            AccessTokenValidity=60,
+            AuthSessionValidity=3,
+            ClientName='default-client',
+            EnablePropagateAdditionalUserContextData=False,
+            EnableTokenRevocation=True,
+            ExplicitAuthFlows=[
+                'ALLOW_CUSTOM_AUTH',
+                'ALLOW_REFRESH_TOKEN_AUTH',
+                'ALLOW_USER_SRP_AUTH',
+                'ALLOW_ADMIN_USER_PASSWORD_AUTH',
+                'ALLOW_USER_PASSWORD_AUTH'
+            ],
+            IdTokenValidity=60,
+            PreventUserExistenceErrors='ENABLED',
+            RefreshTokenValidity=30,
+            TokenValidityUnits={
+                'AccessToken': 'minutes',
+                'IdToken': 'minutes',
+                'RefreshToken': 'days'
+            }
         )
         # Send success response back to CloudFormation
         cfnresponse.send(event, context, cfnresponse.SUCCESS, {'message': 'User Pool Client updated successfully'})
