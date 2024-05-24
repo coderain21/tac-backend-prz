@@ -134,7 +134,6 @@ resource "aws_route53_record" "auth-cognito-buyer-A" {
 }
 
 
-
 output "instance_ip_addr" {
   value = aws_acm_certificate.cert_cognito_us_east_2.arn
 }

@@ -72,6 +72,8 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-welcome_email_template/EMAIL"
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    BUYER_COGNITO_USERPOOL_ID: { Ref: Buyers }
+    BUYER_COGNITO_CLIENT_ID: { Ref: BuyersClient } 
   http:
     cors: true
      
@@ -159,6 +161,17 @@ functions:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
           trigger: VerifyAuthChallengeResponse
           existing: true
+    
+  add_callback_logout_urls:
+    handler: handlers/add_callback_logout_urls.add_callback_logout_urls
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
 resources:
    Resources:
     Buyers:
@@ -392,23 +405,17 @@ resources:
         GroupName: "buyer"
         UserPoolId: { Ref: Buyers }
 
-    # BuyersDomain:
-    #   Type: "AWS::Cognito::UserPoolDomain"
-    #   Properties:
-    #     Domain: buyers-indyauction-${self:provider.stage}
-    #     UserPoolId: { Ref: Buyers }
-
     BuyersClient:
       Type: AWS::Cognito::UserPoolClient
-      DependsOn: 
+      DependsOn:
         - GoogleAuth
         - FacebookAuth
       Properties:
         AccessTokenValidity: 60
-        AllowedOAuthFlowsUserPoolClient: true
-        AuthSessionValidity: 10
+        AllowedOAuthFlowsUserPoolClient: false
+        AuthSessionValidity: 3
         ClientName: default-client
-        UserPoolId: { Ref: Buyers }
+        UserPoolId: !Ref Buyers
         EnablePropagateAdditionalUserContextData: false
         EnableTokenRevocation: true
         ExplicitAuthFlows:
@@ -418,40 +425,27 @@ resources:
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
           - ALLOW_USER_PASSWORD_AUTH
         SupportedIdentityProviders:
-          - "COGNITO"
-          - "Google"
-          - "Facebook"
-        AllowedOAuthFlows:
-          - implicit
-          - code
-        AllowedOAuthScopes:
-          - openid
-          - profile
-          - email
-          - aws.cognito.signin.user.admin
-        CallbackURLs:
-          - "${ssm:BASE_URL_BUYER}/"
-          - "${ssm:BASE_URL_BUYER}/login"
-          - "${ssm:BASE_URL_BUYER}/register"
-          - "http://localhost:3000/"
-          - "http://localhost:3001/"
-          - "http://localhost:3000/login"
-          - "http://localhost:3000/register"
-        LogoutURLs:
-          - "${ssm:BASE_URL_BUYER}/"
-          - "${ssm:BASE_URL_BUYER}/login"
-          - "${ssm:BASE_URL_BUYER}/register"
-          - "http://localhost:3000/"
-          - "http://localhost:3001/"
-          - "http://localhost:3000/login"
-          - "http://localhost:3000/register"
+          - COGNITO
+          - Google
+          - Facebook
+        # AllowedOAuthFlows:
+        #   - implicit
+        #   - code
+        # AllowedOAuthScopes:
+          # - openid
+          # - profile
+          # - email
+          # - aws.cognito.signin.user.admin
         IdTokenValidity: 60
-        PreventUserExistenceErrors: LEGACY
+        PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
           AccessToken: minutes
           IdToken: minutes
           RefreshToken: days
+
+
+    
         
 
     
@@ -570,56 +564,7 @@ resources:
             RequireNumbers: true
             RequireSymbols: true
             TemporaryPasswordValidityDays: 7
-        # DeletionProtection: ACTIVE
         Schema:
-          # - Name: sub
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: false
-          #   Required: true
-          #   StringAttributeConstraints:
-          #     MinLength: "1"
-          #     MaxLength: "2048"
-          # - Name: name
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: given_name
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: family_name
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: middle_name
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: nickname
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
           - Name: preferred_username
             AttributeDataType: String
             DeveloperOnlyAttribute: false
@@ -628,30 +573,6 @@ resources:
             StringAttributeConstraints:
               MinLength: "0"
               MaxLength: "2048"
-          # - Name: profile
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: picture
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: website
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
           - Name: email
             AttributeDataType: String
             DeveloperOnlyAttribute: false
@@ -665,119 +586,13 @@ resources:
             DeveloperOnlyAttribute: false
             Mutable: true
             Required: false
-          # - Name: gender
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: birthdate
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "10"
-          #     MaxLength: "10"
-          # - Name: zoneinfo
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: locale
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: phone_number
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: phonenumber_verified
-          #   AttributeDataType: Boolean
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          # - Name: address
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          #     MaxLength: "2048"
-          # - Name: updated_at
-          #   AttributeDataType: Number
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   NumberAttributeConstraints:
-          #     MinValue: "0"
-          # - Name: email_address
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MaxLength: "2048"
-          # - Name: user_type
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MaxLength: "2048"
-          # - Name: user_name
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MaxLength: "2048"
-          # - Name: first_time_login
-          #   AttributeDataType: Number
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MinLength: "0"
-          # - Name: identities
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MaxLength: "2048"
-          # - Name: is_first_time_login
-          #   AttributeDataType: String
-          #   DeveloperOnlyAttribute: false
-          #   Mutable: true
-          #   Required: false
-          #   StringAttributeConstraints:
-          #     MaxLength: "2048"
         AliasAttributes:
           - preferred_username
-        # UsernameAttributes: 
-        #   - email
         VerificationMessageTemplate:
           DefaultEmailOption: CONFIRM_WITH_CODE
         UserAttributeUpdateSettings:
           AttributesRequireVerificationBeforeUpdate: []
         MfaConfiguration: "OFF"
-        # EnabledMfas:
-        #   - SOFTWARE_TOKEN_MFA
         EmailConfiguration:
           EmailSendingAccount: COGNITO_DEFAULT
         UsernameConfiguration:
@@ -790,9 +605,9 @@ resources:
     AdminUsersClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
-        AccessTokenValidity: 1
+        AccessTokenValidity: 60
         AllowedOAuthFlowsUserPoolClient: false
-        AuthSessionValidity: 10
+        AuthSessionValidity: 3
         ClientName: admin
         UserPoolId: { Ref: AdminUsers }
         EnablePropagateAdditionalUserContextData: false
@@ -803,12 +618,12 @@ resources:
           - ALLOW_USER_SRP_AUTH
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
           - ALLOW_USER_PASSWORD_AUTH
-        IdTokenValidity: 1
+        IdTokenValidity: 60
         PreventUserExistenceErrors: ENABLED
-        RefreshTokenValidity: 360
+        RefreshTokenValidity: 30
         TokenValidityUnits:
-          AccessToken: days
-          IdToken: days
+          AccessToken: minutes
+          IdToken: minutes
           RefreshToken: days
 
     AdminCognitoIdentityPool:
@@ -912,6 +727,13 @@ resources:
         HtmlPart: ${file(./templates/buyer_reset_password.html)}
         Subject: Indy.auction- Reset your password
         TemplateName: ${self:provider.stage}-buyer_reset_password
+    BuyerLambdaArn:
+        Type: AWS::SSM::Parameter
+        Properties:
+          Name: LAMBDA_ARN
+          Type: String
+          Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:cognito-${self:provider.stage}-add_callback_logout_urls
+
 
             
 plugins:
