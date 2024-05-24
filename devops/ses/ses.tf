@@ -15,6 +15,12 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+provider "aws" {
+  region = "us-east-1"
+  alias = "route53-account"   # Specify a default AWS region here
+  profile = "${var.ROUTE53_ACCOUNT}"
+}
+
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
@@ -25,7 +31,7 @@ resource "aws_ses_domain_identity" "domain_identity" {
 }
 
 data "aws_route53_zone" "hosted_zone" {
-  provider = aws.main
+  provider = aws.route53-account
   name     = local.sub_domain # Replace with your existing domain
 }
 
@@ -43,7 +49,7 @@ resource "aws_route53_record" "dkim_record" {
   name     = "${aws_ses_domain_dkim.example.dkim_tokens[count.index]}._domainkey"
   type     = "CNAME"
   ttl      = "600"
-  provider = aws.main
+  provider = aws.route53-account
   records  = ["${aws_ses_domain_dkim.example.dkim_tokens[count.index]}.dkim.amazonses.com"]
 }
 
