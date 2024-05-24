@@ -43,7 +43,6 @@ def cognitoCheck(email_address, encrypt_password):
                 'PASSWORD': encrypt_password
             }
         )
-        print('response:', response)
         return {
                 'success_status': True,
             }
@@ -75,7 +74,6 @@ def admin_set_password(userData, userpool_id):
             'Permanent': True
         }
         response = cognito_client.admin_set_user_password(**password_params)
-
         if response:
             return {
                 'success_status': True,
@@ -109,22 +107,6 @@ def update_password(event, context):
     depends on the conditions and logic within the function.
     """
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
             print('email', email_address)
