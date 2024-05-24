@@ -559,10 +559,6 @@ def update_auction(event, context):
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
 
-
-
-
-
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
