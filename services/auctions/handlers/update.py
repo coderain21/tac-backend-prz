@@ -73,7 +73,7 @@ def  updateAllLot(listLots, extension_type, auction_record, auction_id, extensio
             bulk_operations.append(update_operation)
         if bulk_operations:
             # Execute the bulk operations
-           collection_lot.bulk_write(bulk_operations)
+            collection_lot.bulk_write(bulk_operations)
         return {
             "headers": headers,
             'statusCode': 204,
@@ -365,7 +365,7 @@ def update_auction(event, context):
         documents = []
         extension_time_str = auction_record.get('extension_time_between_lots', '0')
         if extension_time_str != '':
-                extension_time = int(extension_time_str[:1])
+            extension_time = int(extension_time_str[:1])
         else:
             extension_time=0
 
@@ -378,7 +378,6 @@ def update_auction(event, context):
                 extension_time=0
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
-        
         if end_date != None:
             print('inside end date')
             start_date = auction_record['start_date']
