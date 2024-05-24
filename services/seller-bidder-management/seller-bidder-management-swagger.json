@@ -113,8 +113,7 @@
                       }
                     }
                   },
-                  "example": 
-                  {
+                  "example": {
                     "buyers": [
                       {
                         "_id": "6540c17d9cc11ec0bf466b84",
