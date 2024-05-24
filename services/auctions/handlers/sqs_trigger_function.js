@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-undef */
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-console */
@@ -238,5 +239,6 @@ module.exports.sqsTriggerFunction = async (event) => {
         return true
     } catch (err) {
         console.log('err', err)
+        return err
     }
 }
