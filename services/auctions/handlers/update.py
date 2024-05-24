@@ -376,7 +376,6 @@ def update_auction(event, context):
                 extension_time = int(extension_time_str[:1])
             else:
                 extension_time=0
-        print('extension_time', extension_time)         
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         
