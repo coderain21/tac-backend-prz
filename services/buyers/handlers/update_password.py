@@ -33,7 +33,6 @@ cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 
 def cognitoCheck(email_address, encrypt_password):
-    print('uname and password',email_address, encrypt_password)
     try: 
         response = cognito_client.admin_initiate_auth(
             UserPoolId= os.environ['DEFAULT_USERPOOL_ID'],
