@@ -94,6 +94,7 @@ provider:
     CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     CREDIT_CARD_STRIPE_API_KEY: ${ssm:CREDIT_CARD_STRIPE_API_KEY}
+    BUYER_COGNITO_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     
   http:
     cors: true

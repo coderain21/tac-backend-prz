@@ -32,6 +32,28 @@ def hash_password(password):
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 
+def cognitoCheck(email_address, encrypt_password):
+    print('uname and password',email_address, encrypt_password)
+    try: 
+        response = cognito_client.admin_initiate_auth(
+            UserPoolId= os.environ['DEFAULT_USERPOOL_ID'],
+            ClientId= os.environ['BUYER_COGNITO_CLIENT_ID'],
+            AuthFlow='ADMIN_NO_SRP_AUTH',
+            AuthParameters={
+                'USERNAME': email_address,
+                'PASSWORD': encrypt_password
+            }
+        )
+        print('response:', response)
+        return {
+                'success_status': True,
+            }
+    except Exception as e:
+        print('errrrrrrrrrrrr', e)
+        return {
+                'success_status': False,
+            } 
+
 def admin_set_password(userData, userpool_id):
     """
     The `admin_set_password` function updates the password for a user in a user pool using the AWS
@@ -140,14 +162,14 @@ def update_password(event, context):
             {'seller_email': seller_email, 'email_address': email_address})
         password = buyer['password']
         encrypt_password = hash_password(old_password)
-        print(encrypt_password)
-        if password != encrypt_password:
+        checkOldPassword = cognitoCheck(email_address, old_password)
+        if not checkOldPassword['success_status']:
             return {
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({
-                "message": " Current password is incorrect. The password update cannot be completed "
-               })
+                    "message": "Current password is incorrect. The password update cannot be completed"
+                })
             }
         update_password = new_password
         new_password= hash_password(new_password)
@@ -164,20 +186,14 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Current password and new password not matching"})
             }
-        print(4)
         userdata= {'email_address':email_address, 'password': update_password}
-        print(5)
         success_status = admin_set_password(userdata, userpool_id)
-        print(212,success_status)
         if success_status['success_status'] is not True:
             return {
                 "statusCode": 500,
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
-        buyer_collection.update_one(
-            {'seller_email': seller_email, 'email_address': email_address},
-            {'$set':{'password': new_password}})
         return {
                 "statusCode": 204,
                 "headers": headers,
