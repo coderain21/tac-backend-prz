@@ -56,6 +56,11 @@ def set_authorization(transaction):
             "institution_id": "646da9f3146f9d633b7c4830",
             "status": "active",
         })
+    if transaction['expected']['statusCode'] == '400' and '/aishwarya@7edge.com' in transaction['request']['uri'] and transaction['request']['method'] == 'PATCH':
+        transaction['request']['body'] = json.dumps({})
+
+
+
 
     if (
         transaction['expected']['statusCode'] == '200' or
