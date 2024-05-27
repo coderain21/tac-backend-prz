@@ -44,7 +44,6 @@ def  updateAllLot(listLots, extension_type, auction_record, auction_id, extensio
         count_import=1
         for item in listLots:
             if extension_type in ["Cascade", "Individual Lots"]:
-                print('insideeee')
                 item['start_date'] = start_date
                 if item['lot_number'] == 1:
                     item['end_date'] = end_date
@@ -172,7 +171,7 @@ def update_auction(event, context):
             }
         request_body = json.loads(event['body'])
         end_date = request_body.get('end_date', None)
-        start_date = request_body.get('start_date', None)
+        auction_start_date = request_body.get('start_date', None)
         extension_type = request_body.get('extension_type', None)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
@@ -376,7 +375,6 @@ def update_auction(event, context):
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if end_date != None:
-            print('inside end date')
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
@@ -393,7 +391,6 @@ def update_auction(event, context):
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
                 for item in listLots:
                     if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
-                        print('insideeee')
                         item['start_date'] = start_date
                         if item['lot_number'] == 1:
                             item['end_date'] = end_date
@@ -527,10 +524,9 @@ def update_auction(event, context):
                     )
                     print('cc', cc)
         if extension_type != None:
-            print('inside 232323')
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
                 updatingLot = updateAllLot(listLots, extension_type, auction_record, auction_id, extension_time)
-        if start_date != None:
+        if auction_start_date != None:
             start_date =  request_body['start_date']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
                 for item in listLots:
