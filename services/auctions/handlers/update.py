@@ -174,8 +174,6 @@ def update_auction(event, context):
         end_date = request_body.get('end_date', None)
         start_date = request_body.get('start_date', None)
         extension_type = request_body.get('extension_type', None)
-        print('extension_type', extension_type)
-
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
@@ -370,7 +368,6 @@ def update_auction(event, context):
             extension_time=0
 
         if extension_type != None:
-            print('extension bwet check')
             extension_time_str = request_body.get('extension_time_between_lots', auction_record.get('extension_time_between_lots') )
             if extension_time_str != '':
                 extension_time = int(extension_time_str[:1])
