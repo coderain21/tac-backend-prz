@@ -45,10 +45,10 @@ def order_update(event, context):
         client = MongoClient(os.environ['MONGO_CLIENT'])
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['ORDERS_COLLECTION']]
-        order_id = event['order_id']
-        payment_status = event['payment_status']
-        payment_method = event['payment_method']
-
+        body = json.loads(event['body'])
+        order_id = body['order_id']
+        payment_status = body['payment_status']
+        payment_method = body['payment_type']
         if (not order_id or not payment_status or not payment_method):
             return {
                 'statusCode': 400,
