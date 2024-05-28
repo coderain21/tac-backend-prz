@@ -26,7 +26,7 @@ def order_update(event, context):
     with the data of the order detail.
     '''
     try:
-        # TODO: Add Authorization check
+        # TODO_Add Authorization check
         projection = {
             'order_number':1,
             'created_at':1,
@@ -63,7 +63,7 @@ def order_update(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': 'No orders found'})
             }
-        if (order_data['payment_status'] == 'Paid'):
+        if order_data['payment_status'] == 'Paid':
             return {
                 'statusCode': 403,
                 'headers': headers,
