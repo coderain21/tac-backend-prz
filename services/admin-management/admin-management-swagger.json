@@ -535,7 +535,7 @@
         }
       }
     },
-    "/sellers": {
+    "/all-sellers": {
       "get": {
         "tags": [
           "Admin Seller Management"
@@ -569,15 +569,6 @@
               "type": "integer"
             },
             "example": 1
-          },
-          {
-            "name": "search",
-            "in": "query",
-            "description": "search key",
-            "schema": {
-              "type": "string"
-            },
-            "example": "C"
           }
         ],
         "responses": {
@@ -599,123 +590,140 @@
                           "email_address": {
                             "type": "number"
                           },
-                          "first_name": {
+                          "full_name": {
                             "type": "number"
                           },
-                          "last_name": {
+                          "brand_name": {
                             "type": "string"
                           },
-                          "name": {
+                          "city": {
                             "type": "string"
                           },
-                          "created_at": {
+                          "country": {
+                            "type": "string"
+                          },
+                          "kyc_status": {
+                            "type": "string"
+                          },
+                          "kyb_status": {
                             "type": "string"
                           }
                         }
                       }
                     },
-                    "total_buyers": {
+                    "total_pages": {
                       "type": "integer"
                     },
-                    "page_number": {
+                    "total_records": {
                       "type": "integer"
                     },
-                    "page_size": {
+                    "current_page": {
                       "type": "integer"
                     }
                   }
                 },
                 "example": {
-                  "sellers": [
-                    {
-                      "_id": "660e33faec72a0641f3096c7",
-                      "email_address": "sushmitha.j+stripe@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "completed",
-                      "kyb_status": "false"
-                    },
-                    {
-                      "_id": "65f05711477ab501c63d3a8c",
-                      "email_address": "sthuthi+test@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "pending",
-                      "kyb_status": "init"
-                    },
-                    {
-                      "_id": "66017079016a9e1a00b9ca64",
-                      "email_address": "ibrahim.khaleel@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
-                    },
-                    {
-                      "_id": "65e868c86900bfb397baea7d",
-                      "email_address": "vinonithi139@gmail.com",
-                      "status": true,
-                      "brand_name": "XYZ",
-                      "country": "India",
-                      "kyc_status": "completed",
-                      "kyb_status": "true"
-                    },
-                    {
-                      "_id": "65f07e5ad0d3dba1b8dbf4f4",
-                      "email_address": "sthuthi+testp@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "pending"
-                    },
-                    {
-                      "_id": "65f07f10d0d3dba1b8dbf4f8",
-                      "email_address": "sthuthi+tests@7edge.com",
-                      "status": true,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "pending"
-                    },
-                    {
-                      "_id": "65b79dad9c5418096cc1f868",
-                      "email_address": "anusha.k+admin@7edge.com",
-                      "status": false
-                    },
-                    {
-                      "_id": "65fd7219eedad45ad4b77cf2",
-                      "email_address": "namratha.shettigar+newtestdev@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "false",
-                      "kyb_status": "false"
-                    },
-                    {
-                      "_id": "66014fd08729ec6470271e8a",
-                      "email_address": "sandhyashri@7edge.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "false"
-                    },
-                    {
-                      "_id": "660f8edd2e5b718eab3fd34f",
-                      "email_address": "william.pham+2@theauctioncollective.com",
-                      "status": false,
-                      "brand_name": "",
-                      "country": "",
-                      "kyc_status": "false"
-                    }
+                  "data": [
+                      {
+                          "_id": "65ba25a197d810c14774c5f5",
+                          "email_address": "anusha.k+7bgns16z@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65c0b42f450ef7ab82692287",
+                          "email_address": "namratha.shettigar+seller@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65ba23f552b2af5ffae31e81",
+                          "email_address": "anusha.k+7azenmhz@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65ba23604b7bcbcaf824eed5",
+                          "email_address": "anusha.k+7z9ivqr7@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65b79dad9c5418096cc1f868",
+                          "email_address": "anusha.k+admin@7edge.com",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65c4accb5bf403ab7845a2da",
+                          "email_address": "sshhrriinniitt@gmail.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65c4563c4cb46709b3d936e3",
+                          "email_address": "anusha.k+7bnv1abb@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65c457fb4cb46709b3d936e7",
+                          "email_address": "anusha.k+7t3yxide@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65c459e90e6f5cd13cae14ff",
+                          "email_address": "anusha.k+7fggwzzj@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "false",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      },
+                      {
+                          "_id": "65c0b5af03ed5973bf5456c6",
+                          "email_address": "sushiachrya@7edge.com",
+                          "brand_name": "",
+                          "city": "",
+                          "country": "",
+                          "kyc_status": "completed",
+                          "kyb_status": "false",
+                          "full_name": " "
+                      }
                   ],
-                  "total_sellers": 42,
-                  "page_size": 10,
-                  "page_number": 1
-                }
+                  "total_pages": 7,
+                  "total_records": 70,
+                  "current_page": 1
+              }
                 
               }
             }
