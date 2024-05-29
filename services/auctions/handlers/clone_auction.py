@@ -55,6 +55,15 @@ def clone_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Auction with given ID not found"})
             }
+
+        # Check if the auction can be cloned or not
+        if auction['status'] not in ['Draft', 'Published', 'Completed']:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Cannot clone an auction with a current status"})
+            }
+
         counter = counter_collection.find_one_and_update(
             {'seller_email': email_address,
                 'record_type': 'Auctions', 'status': 'Active'},

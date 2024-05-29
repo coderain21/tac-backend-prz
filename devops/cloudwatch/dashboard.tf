@@ -16,5 +16,231 @@ resource "aws_cloudwatch_dashboard" "demo-dashboard" {
   provider = aws.deployment-eu
 
   dashboard_body = local.json_data
+
 }
 
+
+# Create an SNS topic for notifications
+resource "aws_sns_topic" "cloudwatch_rum_topic" {
+  name = "CloudWatchRUMTopic"
+  provider = aws.deployment-eu
+}
+
+# Create an IAM role for CloudWatch Alarms to use
+resource "aws_iam_role" "cloudwatch_rum_role" {
+  name = "CloudWatchRUMRole"
+  provider = aws.deployment-eu
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Action = "sts:AssumeRole",
+      Effect = "Allow",
+      Principal = {
+        Service = "cloudwatch.amazonaws.com"
+      }
+    }]
+  })
+}
+
+# Attach the necessary policy to the IAM role
+resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
+  role       = aws_iam_role.cloudwatch_rum_role.name
+  provider = aws.deployment-eu
+}
+
+# Create CloudWatch Alarms for 5xx status code  metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode 5xx Seller Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http5xxCount"
+  namespace           = "AWS/RUM"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Seller-Web-Application"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode 5xx Buyer Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http5xxCount"
+  namespace           = "AWS/RUM"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Buyer-Web-Application"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode 5xx Admin Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http5xxCount"
+  namespace           = "AWS/RUM"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Admin-Web-Application"
+  }
+}
+
+# Create CloudWatch Alarms for 4xx status code  metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode 4xx Admin Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http4xxCount"
+  namespace           = "AWS/RUM"
+  period              = 300  # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Admin-Web-Application"
+  }
+}
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode 4xx Buyer Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http4xxCount"
+  namespace           = "AWS/RUM"
+  period              = 300  # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Buyer-Web-Application"
+  }
+}
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode 4xx Seller Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http4xxCount"
+  namespace           = "AWS/RUM"
+  period              = 300 # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Seller-Web-Application"
+  }
+}
+# Create CloudWatch Alarms for JS errors  metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode JS error Seller Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "JsErrorCount"
+  namespace           = "AWS/RUM"
+  period              = 300 # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 5
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Seller-Web-Application"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode JS error Buyer Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "JsErrorCount"
+  namespace           = "AWS/RUM"
+  period              = 300 # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 5
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Buyer-Web-Application"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
+  provider = aws.deployment-eu
+  alarm_name     = "Stauscode JS error Admin Web Application"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "JsErrorCount"
+  namespace           = "AWS/RUM"
+  period              = 300 # 1 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 5
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    application_name = "Admin-Web-Application"
+  }
+}
+
+resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
+  provider = aws.deployment-eu
+  topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
+  protocol  = "email"
+  endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
+}
