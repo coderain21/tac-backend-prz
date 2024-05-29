@@ -41,19 +41,20 @@ def prepend_backslash(text):
 
 def list_all_sellers(event, context):
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        except:
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+        # try:
+        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         # Initialize the query
         query = {}
 
         # Extract parameters from the request
         data = event.get('queryStringParameters', {})
+        print('data', data)
 
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'full_name')
@@ -67,6 +68,8 @@ def list_all_sellers(event, context):
         if sort_by and sort_by in ['full_name', 'status']:
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
+        print('sort_criteria', sort_criteria)
+
         # Initialize search query
         search_query = {}
 
@@ -76,7 +79,7 @@ def list_all_sellers(event, context):
                 {"email_address": {"$regex": search_text, "$options": "i"}},
                 {"full_name": {"$regex": search_text, "$options": "i"}}
             ]
-
+        print('search_query', search_query)
         # Merge search query with the existing query
         query.update(search_query)
         # if start_date and end_date:
@@ -88,7 +91,7 @@ def list_all_sellers(event, context):
         #     }
 
         #     query.update(date_range_condition)
-
+        print('query', query)
 
         # Query the MongoDB collection
         seller_list = user_collection.find(
@@ -103,16 +106,19 @@ def list_all_sellers(event, context):
                 "country": 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
+        print('seller_list', seller_list)
 
         total_records = user_collection.count_documents(query)
+        print('total_records', total_records)
 
         # Check if orders_list is None or empty
         if not seller_list:
             print('No seller found matching the criteria')
 
         # Calculate total records and pages
-        total_records = user_collection.count_documents(query)
+        # total_records = user_collection.count_documents(query)
         total_pages = math.ceil(total_records / limit)
+        print('total_pages', total_pages)
 
         if seller_list is None:
             return {
