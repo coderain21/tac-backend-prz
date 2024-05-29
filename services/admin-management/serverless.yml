@@ -684,6 +684,34 @@ functions:
             method: patch
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  
+  list-all-sellers:
+    handler: handlers/all_sellers.list_all_sellers
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Header
+          path: /all-sellers
+          method: get
+          authorizer:
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
 resources:
   Resources:

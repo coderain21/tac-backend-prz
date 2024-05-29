@@ -67,13 +67,20 @@ module.exports.updateUserInformation = async (event) => {
                 if (request_body.first_name && request_body.last_name) {
                     request_body.first_name = request_body.first_name || user.first_name
                     request_body.last_name = request_body.last_name || user.last_name
+                    request_body.full_name = request_body.first_name+' '+request_body.last_name
                 } else if (request_body.first_name) {
                     request_body.last_name = user.last_name
+                    request_body.full_name = request_body.first_name + ' ' + user.last_name
+                    
                 } else if (request_body.last_name) {
                     request_body.first_name = user.first_name
+                    request_body.full_name = user.first_name + ' ' + request_body.last_name
                 }
+                console.log('request_body', request_body)
                 const update = { $set: { seller_name: `${request_body.first_name} ${request_body.last_name}` } }
-                const updateResult = await Auction.updateMany(filter, update)
+                console.log('update', update)
+                console.log('filter', filter)
+                const updateResult = await Auction.updateOne(filter, update)
                 console.log(updateResult, 'updateResult')
             }
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
