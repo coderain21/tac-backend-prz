@@ -153,7 +153,7 @@ module.exports.sqsTriggerFunction = async (event) => {
         const auctionData = await mongodbHelper.getAuction(event, Auction)
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
-
+        const lastLot = get_lot[get_lot.length - 1]
         if (getBidders.length > 0) {
         // Loop through bidders
             for (const user of getBidders) {
@@ -229,12 +229,14 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         // clear the cache
-        for (const lot of get_lot) {
-            const redisKeys = `lot:${lot._id}`
-            const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
-            const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
-            const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
-            console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
+        if (lastLot === event.lot_number) {
+            for (const lot of get_lot) {
+                const redisKeys = `lot:${lot._id}`
+                const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
+                const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
+                const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
+                console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
+            }
         }
         return true
     } catch (err) {
