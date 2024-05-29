@@ -15,6 +15,7 @@ parameter_names=(
     "CDN_URL"
     "MAILCHIMP_SECRET_KEY"
     "SENDER_EMAIL_ADDRESS"
+    "AMPLIFY_DOMAIN_NAME"
 )
 
 # Loop through each parameter
