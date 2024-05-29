@@ -14,6 +14,7 @@ parameter_names=(
     "WEB_PUSH_SECRET_KEY"
     "CDN_URL"
     "MAILCHIMP_SECRET_KEY"
+    "SENDER_EMAIL_ADDRESS"
 )
 
 # Loop through each parameter

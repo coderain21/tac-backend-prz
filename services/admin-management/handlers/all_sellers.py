@@ -98,6 +98,7 @@ def list_all_sellers(event, context):
             query,
             {
                 "email_address": 1,
+                "status": 1,
                 "full_name": 1,
                 "kyb_status": 1,
                 "kyc_status": 1,
