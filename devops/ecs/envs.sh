@@ -13,6 +13,7 @@ parameter_names=(
     "STATE_MACHINE_LOT_ARN"
     "WEB_PUSH_SECRET_KEY"
     "CDN_URL"
+    "MAILCHIMP_SECRET_KEY"
 )
 
 # Loop through each parameter
