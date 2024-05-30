@@ -1,3 +1,4 @@
+'''this script will add the keys to the database'''
 from pymongo import MongoClient
 import os
 
@@ -18,8 +19,7 @@ def add_keys():
         update_fields = {
         'is_deleted': False,
         'status': 'Active'
-    }
-    
+    }   
     # Update the document with the new fields
         collection.update_one({'_id': doc['_id']}, {'$set': update_fields})
 

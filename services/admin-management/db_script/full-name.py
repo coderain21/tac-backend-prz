@@ -1,3 +1,4 @@
+'''this script will add the full_name to the database'''
 from pymongo import MongoClient
 import os
 
