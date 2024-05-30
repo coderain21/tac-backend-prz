@@ -128,7 +128,9 @@ def wishlist_list(event, context):
                 "currency": "$auction_details.currency",
                 "time_zone": "$auction_details.time_zone",
                 "auction_uid": "$auction_details._id",
-                "registration_type": "$auction_details.registration_type"
+                "registration_type": "$auction_details.registration_type",
+                "status": "$auction_details.status",
+                "publish_auction_results": "$auction_details.publish_auction_results"
             }}
         ]
 
