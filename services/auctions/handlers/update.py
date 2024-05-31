@@ -138,6 +138,7 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     result = list(collection_lot.aggregate(pipeline))
     return bool(result)  # True if at least one lot has non-empty images array
 
+
 def update_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction
@@ -169,10 +170,12 @@ def update_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+        authorizationCheck = authorization(seller_email)
         request_body = json.loads(event['body'])
-        end_date = request_body.get('end_date', None)
+        auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
-        extension_type = request_body.get('extension_type', None)
+        auction_extension_type = request_body.get('extension_type', None)
+        auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
@@ -366,15 +369,13 @@ def update_auction(event, context):
         else:
             extension_time=0
 
-        if extension_type != None:
-            extension_time_str = request_body.get('extension_time_between_lots', auction_record.get('extension_time_between_lots') )
-            if extension_time_str != '':
-                extension_time = int(extension_time_str[:1])
-            else:
-                extension_time=0
+        if auction_extension_type is not None or auction_extension_between_lots is not None:
+            extension_time_str = request_body.get('extension_time_between_lots', auction_record.get('extension_time_between_lots'))
+            extension_time = int(extension_time_str[:1]) if extension_time_str else 0
+
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
-        if end_date != None:
+        if auction_end_date != None:
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
@@ -523,9 +524,19 @@ def update_auction(event, context):
                         Entries=entries
                     )
                     print('cc', cc)
-        if extension_type != None:
+        if auction_extension_type is not None or auction_extension_between_lots is not None:
+            if auction_extension_type is None:
+                auction_extension_type = auction_record['extension_type']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
-                updatingLot = updateAllLot(listLots, extension_type, auction_record, auction_id, extension_time)
+                end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
+                auction_record['end_date'] = end_date_update
+                updatingLot = updateAllLot(listLots, auction_extension_type, auction_record, auction_id, extension_time)
+                if  len(listLots) > 0 and auction_extension_type in ["Cascade", "Individual Lots"]:
+                    additional_time_ms = end_date_update + (existing_lots_count -1 ) * extension_time * 60 * 1000
+                    update_data ['end_date'] = additional_time_ms
+                else: 
+                    end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
+                    update_data ['end_date'] = end_date_update
         if auction_start_date != None:
             start_date =  request_body['start_date']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
@@ -549,7 +560,6 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
-
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
