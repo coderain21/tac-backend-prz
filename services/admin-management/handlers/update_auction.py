@@ -23,7 +23,8 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000 )
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -53,9 +54,12 @@ def has_kyb_or_kyc_completed(email_address):
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
 
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
+    # client = MongoClient(
+    #                   os.environ['MONGO_CLIENT'],
+    #                   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+    #                     )
+    # db = client[os.environ['DATABASE']]
+    # collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 
     # Aggregation pipeline to check for non-empty images array
     pipeline = [

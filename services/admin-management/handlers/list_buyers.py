@@ -33,7 +33,10 @@ def list_buyers(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         # user_collection = db[os.environ["SELLERS_TABLE"]]

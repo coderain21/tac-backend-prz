@@ -156,7 +156,10 @@ def subdomain(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
         data = event['queryStringParameters']

@@ -46,7 +46,10 @@ def subdomain(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "seller_email is required"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
         data = event['queryStringParameters']

@@ -17,6 +17,12 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 
@@ -30,12 +36,15 @@ def fetch_seller_email_from_auction(auction_id):
     Returns:
         str: The seller's email associated with the given auction_id or None if not found.
     """
-    client = MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
+    # client = MongoClient(
+    #                   os.environ['MONGO_CLIENT'],
+    #                   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+    #                     )
+    # db = client[os.environ['DATABASE']]
     auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
     email = auction_collection.find_one({"_id": ObjectId(auction_id)}, {
                                         'seller_email': 1}).get('seller_email')
-    client.close()
+    # client.close()
     return email
 
 
@@ -118,8 +127,11 @@ def update_user(event, context):
                 "first_name": "",
                 "last_name": ""
             }
-            client = MongoClient(os.environ['MONGO_CLIENT'])
-            db = client[os.environ['DATABASE']]
+            # client = MongoClient(
+            #           os.environ['MONGO_CLIENT'],
+            #           maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+            #             )
+            # db = client[os.environ['DATABASE']]
             buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
             # Check if the user already has a seller_email associated
@@ -166,7 +178,7 @@ def update_user(event, context):
                     if buyer_data_without_seller == None:
                         buyer_collection.insert_one(buyer_data_to_add)
 
-            client.close()
+            # client.close()
             return {
                 "statusCode": 204,
                 'headers': headers,

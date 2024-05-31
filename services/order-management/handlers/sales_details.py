@@ -59,7 +59,10 @@ def sales_details(event, context):
             'seller_email':1,
             'name': 1
         }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['ORDERS_COLLECTION']]
         data = event['queryStringParameters']

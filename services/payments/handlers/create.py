@@ -45,7 +45,10 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         # MongoDB configuration
         results = []
         lot_numbers = []
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         cart_collection = db[os.environ["CART_COLLECTION"]]
         res = ""
@@ -144,7 +147,10 @@ def create_order(insert_data):
     """
     try:
         # MongoDB configuration
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         insert_result = payments_collection.insert_one(insert_data)
@@ -300,7 +306,10 @@ def create_intent(event, context):
             }
 
         #Block to fetch the counter record , add the order to orders
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
 
         counter_collection = db[os.environ['COUNTER_LOT']]

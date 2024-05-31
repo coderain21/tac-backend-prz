@@ -14,6 +14,18 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["LOT_COLLECTION_NAME"]]
+# buyer_collection = db[os.environ['BUYER_COLLECTION']]
+wishlist_collection = db[os.environ["BUYER_WISHLIST_TABLE_NAME"]]
+auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
+
 def lot_details(event, context):
     try:
         # Parse query parameters from the event
@@ -26,12 +38,15 @@ def lot_details(event, context):
             }
         lot_id = ObjectId(data['lot_id'])
         buyer_id = data.get('buyer_id')  # Check if buyer_email is provided
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
-        wishlist_collection = db[os.environ["BUYER_WISHLIST_TABLE_NAME"]]
-        auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        # # buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        # wishlist_collection = db[os.environ["BUYER_WISHLIST_TABLE_NAME"]]
+        # auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         # buyer_details = buyer_collection.find_one({'_id': ObjectId(buyer_id)})
         # buyer_email = buyer_details['email_address']
         result = collection.find_one({'_id': lot_id})

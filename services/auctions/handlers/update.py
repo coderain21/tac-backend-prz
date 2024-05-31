@@ -108,7 +108,10 @@ def has_kyb_or_kyc_completed(email_address):
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
 
-    client = MongoClient(os.environ['MONGO_CLIENT'])
+    client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
     db = client[os.environ['DATABASE']]
     collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 

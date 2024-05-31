@@ -35,7 +35,10 @@ def update_payment_data(payment_intent_id,update_data):
     """
     try:
         # MongoDB configuration
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         temp_payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         payments_collection = db[os.environ['ORDERS_COLLECTION']]
@@ -112,7 +115,10 @@ def create_order(insert_data):
     """
     try:
         # MongoDB configuration
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         orders_collection = db[os.environ['ORDERS_COLLECTION']]
 

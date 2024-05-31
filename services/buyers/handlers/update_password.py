@@ -130,7 +130,10 @@ def update_password(event, context):
         confirm_password = data.get('confirm_password')
         domain = data.get('domain')
         auction_id = data.get('auction_id')
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]

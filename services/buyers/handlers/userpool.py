@@ -15,7 +15,10 @@ import json
 import os
 from bson import ObjectId
 from botocore.exceptions import ClientError
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 
 headers = {
@@ -173,7 +176,10 @@ def fetch_seller_email_from_auction(auction_id):
 #     Returns:
 #         None
 #     """
-#     client = MongoClient(os.environ['MONGO_CLIENT'])
+#     client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
 #     db = client[os.environ['DATABASE']]
 #     user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
 #     user_pools_collection.insert_one(user_pool_data)
