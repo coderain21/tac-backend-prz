@@ -65,7 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_c
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Seller-Web-Application"
   }
@@ -86,7 +86,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_co
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Buyer-Web-Application"
   }
@@ -107,7 +107,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_co
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Admin-Web-Application"
   }
@@ -129,7 +129,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_co
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Admin-Web-Application"
   }
@@ -149,7 +149,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_co
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Buyer-Web-Application"
   }
@@ -161,7 +161,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_c
   evaluation_periods  = 1
   metric_name         = "Http4xxCount"
   namespace           = "AWS/RUM"
-  period              = 300 # 1 min (adjust based on your desired granularity)
+  period              =  300 # 5 min (adjust based on your desired granularity)
   statistic           = "Sum"
   
   # Set your desired reputation threshold (e.g., 90 for 90%)
@@ -169,7 +169,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_c
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Seller-Web-Application"
   }
@@ -182,7 +182,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
   evaluation_periods  = 1
   metric_name         = "JsErrorCount"
   namespace           = "AWS/RUM"
-  period              = 300 # 1 min (adjust based on your desired granularity)
+  period              =  300 # 5 min (adjust based on your desired granularity)
   statistic           = "Sum"
   
   # Set your desired reputation threshold (e.g., 90 for 90%)
@@ -190,7 +190,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Seller-Web-Application"
   }
@@ -203,7 +203,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
   evaluation_periods  = 1
   metric_name         = "JsErrorCount"
   namespace           = "AWS/RUM"
-  period              = 300 # 1 min (adjust based on your desired granularity)
+  period              =  300 # 5 min (adjust based on your desired granularity)
   statistic           = "Sum"
   
   # Set your desired reputation threshold (e.g., 90 for 90%)
@@ -211,7 +211,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Buyer-Web-Application"
   }
@@ -224,7 +224,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
   evaluation_periods  = 1
   metric_name         = "JsErrorCount"
   namespace           = "AWS/RUM"
-  period              = 300 # 1 min (adjust based on your desired granularity)
+  period              =  300 # 5 min (adjust based on your desired granularity)
   statistic           = "Sum"
   
   # Set your desired reputation threshold (e.g., 90 for 90%)
@@ -232,11 +232,162 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     application_name = "Admin-Web-Application"
   }
 }
+# Create CloudWatch Alarms for DocuementDB maximum connections metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_connections" {
+  provider = aws.deployment-eu
+  alarm_name     = "DocuemntDB Max Connection"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DatabaseConnectionsMax"
+  namespace           = "AWS/DocDB"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 350
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+# Create CloudWatch Alarms for DocuementDB CPU utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "DocuemntDB CPU"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/DocDB"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+# Create CloudWatch Alarms for DocuementDB Memory utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
+  provider = aws.deployment-eu
+  alarm_name     = "DocuemntDB Memory"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "FreeLocalStorage"
+  namespace           = "AWS/DocDB"
+  period              = 3600  # 1 h (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 3221225472
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+
+
+# Create CloudWatch Alarms for ECS Service Memory utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
+  provider = aws.deployment-eu
+  alarm_name     = "ECS Service Memory"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    ClusterName = "websocket-cluster"
+    ServiceName = "websocket-ecs-service"
+  }
+}
+
+# Create CloudWatch Alarms for ECS Service CPU utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "ECS Service CPU"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    ClusterName = "websocket-cluster"
+    ServiceName = "websocket-ecs-service"
+  }
+}
+
+# Create CloudWatch Alarms for Redis  CPU utilization metrics for primary node
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "Redis CPU"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
+  }
+}
+
+# Create CloudWatch Alarms for Redis  CPU utilization metrics for replica node
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
+  provider = aws.deployment-eu
+  alarm_name     = "Redis CPU"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId = "0001"
+  }
+}
+
+
 
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
   provider = aws.deployment-eu
