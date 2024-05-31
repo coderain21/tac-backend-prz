@@ -52,7 +52,7 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
 # Create CloudWatch Alarms for 5xx status code  metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode 5xx Seller Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Seller Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http5xxCount"
@@ -64,7 +64,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_c
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Seller-Web-Application"
@@ -73,7 +73,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_c
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode 5xx Buyer Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Buyer Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http5xxCount"
@@ -85,7 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Buyer-Web-Application"
@@ -94,7 +94,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_co
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode 5xx Admin Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Admin Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http5xxCount"
@@ -106,7 +106,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Admin-Web-Application"
@@ -116,7 +116,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_co
 # Create CloudWatch Alarms for 4xx status code  metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode 4xx Admin Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 4xx Admin Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http4xxCount"
@@ -128,7 +128,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Admin-Web-Application"
@@ -136,7 +136,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_co
 }
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode 4xx Buyer Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 4xx Buyer Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http4xxCount"
@@ -148,7 +148,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Buyer-Web-Application"
@@ -156,7 +156,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_co
 }
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode 4xx Seller Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 4xx Seller Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http4xxCount"
@@ -168,7 +168,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_c
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Seller-Web-Application"
@@ -177,7 +177,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_c
 # Create CloudWatch Alarms for JS errors  metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode JS error Seller Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode JS error Seller Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "JsErrorCount"
@@ -189,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
   threshold = 5
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Seller-Web-Application"
@@ -198,7 +198,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode JS error Buyer Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode JS error Buyer Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "JsErrorCount"
@@ -210,7 +210,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
   threshold = 5
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Buyer-Web-Application"
@@ -219,7 +219,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
   provider = aws.deployment-eu
-  alarm_name     = "Stauscode JS error Admin Web Application"
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode JS error Admin Web Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "JsErrorCount"
@@ -231,7 +231,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
   threshold = 5
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Admin-Web-Application"
@@ -240,7 +240,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
 # Create CloudWatch Alarms for DocuementDB maximum connections metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_connections" {
   provider = aws.deployment-eu
-  alarm_name     = "DocuemntDB Max Connection"
+  alarm_name     = "indyauction-${var.STAGE}-DocuemntDB Max Connection"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "DatabaseConnectionsMax"
@@ -252,7 +252,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_connections" {
   threshold = 350
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
@@ -260,7 +260,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_connections" {
 # Create CloudWatch Alarms for DocuementDB CPU utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
   provider = aws.deployment-eu
-  alarm_name     = "DocuemntDB CPU"
+  alarm_name     = "indyauction-${var.STAGE}-DocuemntDB CPU"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -272,7 +272,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
@@ -280,7 +280,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
 # Create CloudWatch Alarms for DocuementDB Memory utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
   provider = aws.deployment-eu
-  alarm_name     = "DocuemntDB Memory"
+  alarm_name     = "indyauction-${var.STAGE}-DocuemntDB Memory"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "FreeLocalStorage"
@@ -292,7 +292,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
   threshold = 3221225472
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
@@ -302,7 +302,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
 # Create CloudWatch Alarms for ECS Service Memory utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
   provider = aws.deployment-eu
-  alarm_name     = "ECS Service Memory"
+  alarm_name     = "indyauction-${var.STAGE}-ECS Service Memory"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "MemoryUtilization"
@@ -314,7 +314,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     ClusterName = "websocket-cluster"
     ServiceName = "websocket-ecs-service"
@@ -324,7 +324,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
 # Create CloudWatch Alarms for ECS Service CPU utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
   provider = aws.deployment-eu
-  alarm_name     = "ECS Service CPU"
+  alarm_name     = "indyauction-${var.STAGE}-ECS Service CPU"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -336,7 +336,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     ClusterName = "websocket-cluster"
     ServiceName = "websocket-ecs-service"
@@ -346,7 +346,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
 # Create CloudWatch Alarms for Redis  CPU utilization metrics for primary node
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   provider = aws.deployment-eu
-  alarm_name     = "Redis CPU"
+  alarm_name     = "indyauction-${var.STAGE}-Redis CPU"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -358,7 +358,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
     CacheNodeId = "0001"
@@ -368,7 +368,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
 # Create CloudWatch Alarms for Redis  CPU utilization metrics for replica node
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   provider = aws.deployment-eu
-  alarm_name     = "Redis CPU"
+  alarm_name     = "indyauction-${var.STAGE}-Redis CPU"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -380,7 +380,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
     CacheNodeId = "0001"
