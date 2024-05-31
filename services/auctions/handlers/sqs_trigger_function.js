@@ -151,6 +151,8 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Initialize empty array to store promiseList
         const promiseList = []
         const auctionData = await mongodbHelper.getAuction(event, Auction)
+        // Update the auction status to 'Completed' in MongoDB
+        await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
         const lastLot = get_lot[get_lot.length - 1]
@@ -225,9 +227,6 @@ module.exports.sqsTriggerFunction = async (event) => {
             // Run all the promises in parallel
             await Promise.all(promiseList)
         }
-
-        // Update the auction status to 'Completed' in MongoDB
-        await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         // clear the cache
         if (lastLot === event.lot_number) {
             for (const lot of get_lot) {
