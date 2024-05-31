@@ -97,7 +97,7 @@ def add_address(event, context):
         result= collection.find_one({'email_address':email_address, 'seller_email': seller_email},
                       { "password": 0,
                       "terms_and_condition": 0})
-        client.close()
+        # client.close()
         if result is None:
             return {
                 "statusCode": 404,

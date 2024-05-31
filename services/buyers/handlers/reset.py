@@ -83,12 +83,12 @@ def fetch_buyer_data(buyer_email):
         # db = client[os.environ['DATABASE']]
         # auction_collection = db[os.environ["BUYER_COLLECTION"]]
         data = auction_collection.find_one({"email_address": buyer_email})
-        client.close()
+        # client.close()
         if data:
             return data
         return None
     except BaseException as err:
-        client.close()
+        # client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 def password_reset(event, context):
@@ -169,7 +169,7 @@ def password_reset(event, context):
 
             result = buyer_collection.update_many(filter, update)
 
-            client.close()
+            # client.close()
 
             return {
                 "headers": headers,

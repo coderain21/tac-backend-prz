@@ -202,7 +202,7 @@ def get_user_pool_data(username, sub_domain_name):
         'subdomain': sub_domain_name
     },{"_id":0})
 
-    client.close()
+    # client.close()
     return user_pool_data
 
 def create(event, context):
