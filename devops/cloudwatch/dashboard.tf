@@ -64,7 +64,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_c
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Seller-Web-Application"
@@ -85,7 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Buyer-Web-Application"
@@ -106,7 +106,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Admin-Web-Application"
@@ -128,7 +128,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Admin-Web-Application"
@@ -148,7 +148,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_co
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Buyer-Web-Application"
@@ -168,7 +168,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_c
   threshold = 1
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Seller-Web-Application"
@@ -189,7 +189,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
   threshold = 5
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Seller-Web-Application"
@@ -210,7 +210,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
   threshold = 5
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Buyer-Web-Application"
@@ -231,7 +231,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
   threshold = 5
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
    
   dimensions = {
     application_name = "Admin-Web-Application"
@@ -252,7 +252,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_connections" {
   threshold = 350
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
@@ -272,7 +272,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
@@ -292,7 +292,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
   threshold = 3221225472
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
@@ -314,7 +314,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     ClusterName = "websocket-cluster"
     ServiceName = "websocket-ecs-service"
@@ -336,7 +336,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     ClusterName = "websocket-cluster"
     ServiceName = "websocket-ecs-service"
@@ -358,7 +358,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
     CacheNodeId = "0001"
@@ -380,7 +380,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   threshold = 70
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  ok_actions    = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
     CacheNodeId = "0001"
