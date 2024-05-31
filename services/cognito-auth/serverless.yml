@@ -487,9 +487,10 @@ resources:
               Statement:
                 - Effect: "Allow"
                   Action:
-                    - "s3:*" # Adjust permissions as needed
-                    
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
+                    - "s3:PutObject" # Adjust permissions as needed
+                    - "s3:GetObject"
+                    - "s3:PutObjectAcl"
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/public/DomainName/Auctions/*" # Replace with your S3 bucket ARN
   
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -673,8 +674,10 @@ resources:
               Statement:
                 - Effect: "Allow"
                   Action:
-                    - "s3:*" # Adjust permissions as needed
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
+                    - "s3:PutObject" # Adjust permissions as needed
+                    - "s3:GetObject"
+                    - "s3:PutObjectAcl" # Adjust permissions as needed
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/public/DomainName/Auctions/*" # Replace with your S3 bucket ARN
   
 
     AdminCognitoIdentityPoolIDStore:
