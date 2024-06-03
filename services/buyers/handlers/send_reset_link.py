@@ -16,6 +16,12 @@ headers = {
 
 jwt_secret = os.environ.get('JWT_SECRET_KEY')
 dt = datetime.datetime.now() + datetime.timedelta(hours=1)
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+auction_collection = db[os.environ["BUYER_COLLECTION"]]
 
 def fetch_buyer_data(buyer_email):
     """
@@ -28,19 +34,19 @@ def fetch_buyer_data(buyer_email):
         str: The seller's email associated with the given auction_id or None if not found.
     """
     try:
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        auction_collection = db[os.environ["BUYER_COLLECTION"]]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # auction_collection = db[os.environ["BUYER_COLLECTION"]]
         data = auction_collection.find_one({"email_address": buyer_email})
-        client.close()
+        # client.close()
         if data:
             return data
         return None
     except BaseException as err:
-        client.close()
+        # client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 

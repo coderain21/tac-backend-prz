@@ -12,6 +12,18 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+
+client = MongoClient(
+                os.environ['MONGO_CLIENT'],
+                maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ['ORDERS_COLLECTION']]
+
+
+
+
 def sales_details(event, context):
     """
     The `sales_details` function retrieves sales details for a specific order based on the order ID and

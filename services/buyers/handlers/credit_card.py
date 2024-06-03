@@ -18,7 +18,7 @@ client = MongoClient(
                       maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
 db = client[os.environ['DATABASE']]
-collection = db['qa-credit_card']
+collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
 
 
 def credit_card(event, context):

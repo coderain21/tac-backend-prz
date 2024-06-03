@@ -18,6 +18,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+user_collection = db[os.environ["BUYER_COLLECTION"]]
+
+
 def is_valid_password(password):
     """Check if a password meets specific requirements (uppercase, lowercase, digits, length).
 
@@ -92,27 +102,27 @@ def verify(event, context):
         confirm_password = data.get("confirm_password")
         is_password_valid = False
 
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        user_collection = db[os.environ["BUYER_COLLECTION"]]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # user_collection = db[os.environ["BUYER_COLLECTION"]]
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
         user_exist = check_user_in_cognito(data['email_address'])
 
         if user_exist is True:
-            client.close()
+            # client.close()
             return {
                 'statusCode': 409,
                 'headers': headers,
                 'body': json.dumps({'message': 'An account linked to this already exists'})
             }
 
-        client.close()
+        # client.close()
 
         if data['password'] != data['confirm_password']:
             return {
