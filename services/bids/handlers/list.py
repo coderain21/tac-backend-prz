@@ -17,6 +17,13 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+
 
 def list_bidders(event, context):
     """
@@ -68,12 +75,12 @@ def list_bidders(event, context):
         query_conditions = []
         export = event['queryStringParameters'].get('export', False)
         download_link = None
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 
         projection = {
             "_id": 1,
@@ -133,7 +140,7 @@ def list_bidders(event, context):
         total_bidders = collection.count_documents(
                 {"$and": queries})
         paginated_results = list(results)
-        client.close()
+        # client.close()
         body = {
             "data": paginated_results,
             "total_records_found": total_records_count,

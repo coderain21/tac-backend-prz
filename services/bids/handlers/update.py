@@ -24,7 +24,8 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
-
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 def fetch_seller_email_from_auction(auction_id):
     """
@@ -41,7 +42,7 @@ def fetch_seller_email_from_auction(auction_id):
     #                   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
     #                     )
     # db = client[os.environ['DATABASE']]
-    auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+    # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
     email = auction_collection.find_one({"_id": ObjectId(auction_id)}, {
                                         'seller_email': 1}).get('seller_email')
     # client.close()
@@ -132,7 +133,7 @@ def update_user(event, context):
             #           maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
             #             )
             # db = client[os.environ['DATABASE']]
-            buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+            # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
             # Check if the user already has a seller_email associated
             buyer_data = buyer_collection.find_one(
