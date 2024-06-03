@@ -15,6 +15,18 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+
+client = MongoClient(
+                os.environ['MONGO_CLIENT'],
+                maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                )
+db = client[os.environ['DATABASE']]
+subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
+
+
+
+
 def create_app_client(userpoolid,client_name,subdomain):
     callback_url=[f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"]
     if os.environ.get("STAGE")=="dev":
@@ -156,12 +168,12 @@ def subdomain(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
         data = event['queryStringParameters']
         seller_collection = db[os.environ['SELLERS_TABLE']]
         existing_domain_record = subdomain_collection.find_one({"seller_email": seller_email})

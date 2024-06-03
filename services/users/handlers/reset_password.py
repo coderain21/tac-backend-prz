@@ -34,8 +34,8 @@ def password_reset(event, context):
     """
     try:
         mongo_client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = mongo_client[os.environ['DATABASE']]
         data = json.loads(event['body'])
