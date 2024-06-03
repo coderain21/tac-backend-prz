@@ -59,6 +59,7 @@ async function getLot(rediskey, client, auctionData) {
  * @returns {string} The formatted currency string
  */
 function formatCurrency(amount, currencyCode) {
+    console.log('amount', amount)
     try {
         // Convert amount to a string
         const amountString = String(amount)
@@ -180,16 +181,16 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                 // Loop through the lots and add them to the winning or losing lists
                 for (const lot of get_lot) {
-                // Add the CDN link to the image URL
-                    lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
+                    // Add the CDN link to the image URL
+                    const featuredImage = lot.images.find((image) => image.featured)
+                    lot.lot_image = `${process.env.CDN_LINK}${featuredImage.url}`
 
                     // Add the formatted bid amount to the lot
                     if (lot.winning_user === user.buyer_id) {
                         event.lot_number = lot.lot_number
                         event.email_address = user.email_address
-                        // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
-                        // console.log('won', getAmount)
-                        lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
+                        const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                        lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                         winningLot.push(lot)
                     } else {
                         event.lot_number = lot.lot_number
