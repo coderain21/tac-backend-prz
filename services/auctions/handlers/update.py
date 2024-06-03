@@ -467,28 +467,33 @@ def update_auction(event, context):
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
                     if len(getExistingLot) > 0:
+                        print('yes greater than')
                         # Create a new dictionary with only the required fields
                         required_fields = {
                             **getExistingLot,
                             '_id': item.get('_id'),
                             'start_date': item.get('start_date'),
                             'end_date': item.get('end_date'),
+                            'lot_number': item.get('lot_number'),
                             # 'auction_id': item.get('auction_id'),
                             # 'seller_email': item.get('seller_email'),
                             'winning_user': getExistingLot.get('winning_user', winningUser) if getExistingLot.get('winning_user', winningUser) != '' else winningUser,
                             'bid_amount': getExistingLot.get('bid_amount', item.get('current_bid') )
                             # Add more required fields as needed
                         }
-                    required_fields = {
-                            '_id': item.get('_id'),
-                            'start_date': item.get('start_date'),
-                            'end_date': item.get('end_date'),
-                            'auction_id': item.get('auction_id'),
-                            'seller_email': item.get('seller_email'),
-                            'winning_user': item.get('winning_user', ''),
-                            'bid_amount': item.get('bid_amount', '')
-                            # Add more required fields as needed
-                        }
+                    else:
+                        print('no from existing')
+                        required_fields = {
+                                '_id': item.get('_id'),
+                                'start_date': item.get('start_date'),
+                                'end_date': item.get('end_date'),
+                                'auction_id': item.get('auction_id'),
+                                'seller_email': item.get('seller_email'),
+                                'winning_user': item.get('winning_user', ''),
+                                'bid_amount': item.get('bid_amount', ''),
+                                'lot_number': item.get('lot_number'),
+                                # Add more required fields as needed
+                            }
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 batch_size_lots = 50  # Batch size for lots
