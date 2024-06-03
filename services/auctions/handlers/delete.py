@@ -33,6 +33,7 @@ client = MongoClient(
                       maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
 db = client[os.environ['DATABASE']]
+auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 
 def delete_auction(event, context):
@@ -66,7 +67,7 @@ def delete_auction(event, context):
         auction_id = event['pathParameters']['auction_id']
 
         # Set up the MongoDB connection
-        auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
         # Check if the auction with the given ID exists
         auction = auctions_collection.find_one(

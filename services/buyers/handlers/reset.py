@@ -153,11 +153,11 @@ def password_reset(event, context):
 
             user_pool = fetch_user_pool_data(seller_data["seller_email"])
 
-            client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-            db = client[os.environ['DATABASE']]
+            # client = MongoClient(
+            #           os.environ['MONGO_CLIENT'],
+            #           maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+            #             )
+            # db = client[os.environ['DATABASE']]
             buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
             response = reset_password(

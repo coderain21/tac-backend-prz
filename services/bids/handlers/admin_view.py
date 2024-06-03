@@ -13,19 +13,30 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+buyer_collection = db[os.environ['BUYER_COLLECTION']]
+
+
+
 def view_bidder(event, context):
     try:
         # Extract bidder ID from the path parameter
         bidder_id = ObjectId(event['pathParameters']['id'])
 
         # Retrieve bidder details from the database
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        buyer_collection = db[os.environ['BUYER_COLLECTION']]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
         projection = {
             'password': 0
         }
@@ -73,7 +84,7 @@ def view_bidder(event, context):
         }
 
         if buyer_bidder_details:
-            client.close()
+            # client.close()
             # Bidder found, return details
             return {
                 "statusCode": 200,

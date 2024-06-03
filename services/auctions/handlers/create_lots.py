@@ -41,8 +41,11 @@ headers = {
 }
 
 
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
+collection = db[os.environ["LOT_COLLECTION_NAME"]]
+lot_collection= db[os.environ["COUNTER_LOT"]]
+auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 def lambda_handler(event, context):
     """
@@ -80,9 +83,9 @@ def lambda_handler(event, context):
         user_type = request_body.get('user_type', '')
 
         # Initialize the MongoDB client
-        collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        lot_collection= db[os.environ["COUNTER_LOT"]]
-        auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        # lot_collection= db[os.environ["COUNTER_LOT"]]
+        # auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction = auction_collection.count_documents({'seller_email':seller_email,
                                                       'auction_id': auction_id })
         if auction == 0:

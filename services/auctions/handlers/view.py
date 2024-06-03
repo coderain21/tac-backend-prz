@@ -14,6 +14,13 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                os.environ['MONGO_CLIENT'],
+                maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
 
 def view(event, context):
     """
@@ -51,12 +58,12 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data["auction_id"]
         projection = {
             "_id": 1,
@@ -110,7 +117,7 @@ def view(event, context):
         if result['status']=='draft':
             if "paddle" in result and "_id" in result["paddle"]:
                 del result["paddle"]["_id"]
-            client.close()
+            # client.close()
             body = {
                 "data": result,
             }
@@ -142,7 +149,7 @@ def view(event, context):
             }
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
-        client.close()
+        # client.close()
         body = {
             "data": result,
         }

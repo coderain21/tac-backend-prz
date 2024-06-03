@@ -15,6 +15,14 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
+
 def subdomain(event, context):
     """
     The `subdomain` function is a Python function that handles requests related to subdomains, including
@@ -46,12 +54,12 @@ def subdomain(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "seller_email is required"})
             }
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
         data = event['queryStringParameters']
         seller_collection = db[os.environ['SELLERS_TABLE']]
         existing_domain_record= subdomain_collection.find_one({"seller_email":seller_email})

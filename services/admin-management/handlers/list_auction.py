@@ -12,6 +12,15 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
@@ -69,12 +78,12 @@ def list_auction(event, context):
         query_conditions = []
         total_records_count=0
         print(34566)
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         allowed_status = {
         "status": {"$in": ["Draft", "Published", "Completed","Accepting bids", "Cancelled"]}
         }
@@ -185,7 +194,7 @@ def list_auction(event, context):
                 {"$and": queries})
         print(8)
         paginated_results = list(results)
-        client.close()
+        # client.close()
         body = {
             "data": paginated_results,
             "total_records_found": total_records_count,
