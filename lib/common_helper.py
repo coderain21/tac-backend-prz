@@ -181,8 +181,8 @@ def update_by_email(email, update_data,table_name):
     try:
         # MongoDB configuration
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         collection = db[table_name]
