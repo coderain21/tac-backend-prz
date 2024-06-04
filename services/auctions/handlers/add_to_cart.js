@@ -47,6 +47,7 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
+        console.log('even', event)
         if (connection === null || !connection.readyState) {
             console.log('not connected')
             connection = await mongodbHelper.connect()
@@ -62,7 +63,8 @@ module.exports.handler = async (event) => {
 
         const getTotalActiveSales = await mongodbHelper.getTotalActiveSales(query, Lot)
         const auctionData = await mongodbHelper.getAuction(event, Auction)
-        if (getTotalActiveSales === 0) {
+        const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
+        if (getLots.length <= 0 && getTotalActiveSales === 0) {
             await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
             return true
         }
@@ -71,8 +73,9 @@ module.exports.handler = async (event) => {
         for (let i = 0; i < getLotInfo.length; i++) {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
+        console.log('getLot', get_lot)
         const lotInformation = get_lot[0]
-        const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
+        console.log('currentTimestamp', currentTimestamp)
         if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
             lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address

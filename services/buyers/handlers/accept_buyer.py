@@ -16,6 +16,18 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+counter_collection = db[os.environ["COUNTER_LOT"]]
+user_collection = db[os.environ["MONGODB_COLLECTION_NAME"]]
+
 TIMEZONE_MAPPING = {
     'UTC - Coordinated Universal Time': 'Etc/UTC',
     'GMT - Greenwich Mean Time': 'Etc/GMT',
@@ -49,13 +61,16 @@ def accept_buyer(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-        auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        counter_collection = db[os.environ["COUNTER_LOT"]]
-        user_collection = db[os.environ["MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+        # db = client[os.environ['DATABASE']]
+        # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+        # auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+        # auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # counter_collection = db[os.environ["COUNTER_LOT"]]
+        # user_collection = db[os.environ["MONGODB_COLLECTION_NAME"]]
         data = event['queryStringParameters']
         auction_id = data.get('auction_id')
         auction_reg = data.get('buyer_id')

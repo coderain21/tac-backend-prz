@@ -13,6 +13,13 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["BUYER_COLLECTION"]]
+
 def add_address(event, context):
     try:
         # try:
@@ -48,9 +55,12 @@ def add_address(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["BUYER_COLLECTION"]]
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
         seller_email = data['seller_email']
         update_data={}
@@ -87,7 +97,7 @@ def add_address(event, context):
         result= collection.find_one({'email_address':email_address, 'seller_email': seller_email},
                       { "password": 0,
                       "terms_and_condition": 0})
-        client.close()
+        # client.close()
         if result is None:
             return {
                 "statusCode": 404,

@@ -12,6 +12,8 @@ headers = {
 
 client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
+collection = db[os.environ["LOT_COLLECTION_NAME"]]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 def delete_lot(event, context):
     """
@@ -42,8 +44,8 @@ def delete_lot(event, context):
             }
         # Parse the incoming JSON request
         # Initialize the MongoDB client
-        collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         request_body = json.loads(event['body'])
         print(request_body)
 

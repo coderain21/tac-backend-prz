@@ -34,7 +34,10 @@ def kyc_webhook(event, context):
 
         if data['levelName']=='basic-kyc-level':
             applicant_id = data["applicantId"]
-            client = MongoClient(os.environ['MONGO_CLIENT'])
+            client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 
@@ -70,7 +73,10 @@ def kyc_webhook(event, context):
         elif data['levelName']=='basic-kyb-level':
             print('entering kyb')
             company_id =  data["applicantId"]
-            client = MongoClient(os.environ['MONGO_CLIENT'])
+            client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 

@@ -13,6 +13,19 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+dev_auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+user_collection = db[os.environ["SELLERS_TABLE"]]
+auction_collection = os.environ['AUCTION_MONGODB_COLLECTION_NAME']
+
+
+
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
     special_chars_pattern = re.compile(r'([\\.*+?()|[\]{}^$])')
@@ -37,13 +50,16 @@ def buyer_list_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        dev_auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-        user_collection = db[os.environ["SELLERS_TABLE"]]
-        auction_collection = os.environ['AUCTION_MONGODB_COLLECTION_NAME']
-        print(1,dev_auction_register)
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # dev_auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+        # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+        # user_collection = db[os.environ["SELLERS_TABLE"]]
+        # auction_collection = os.environ['AUCTION_MONGODB_COLLECTION_NAME']
+        # print(1,dev_auction_register)
         # result= user_collection.find_one({"user_type":"admin","email_address":seller_email})
         # if result is None:
         #     return {
