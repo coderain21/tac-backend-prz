@@ -381,6 +381,7 @@ def update_auction(event, context):
         print('auction_end_date', auction_end_date)
         print('auction_extension_type', auction_extension_type)
         if auction_end_date != None:
+            print('insid enddate')
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
@@ -429,6 +430,7 @@ def update_auction(event, context):
 
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 for item in listLots:
+                    print('inisde lot update', item['end_date'], epoch_time_milliseconds)
                     if not item['end_date'] < epoch_time_milliseconds:
                         if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                             item['start_date'] = start_date
@@ -460,6 +462,7 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
+                    print('result:', result)
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_data_sqs = {
                     'extension_time': auction_record.get('extension_time'),
@@ -473,7 +476,7 @@ def update_auction(event, context):
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
                     if len(getExistingLot) > 0:
-                        print('yes greater than')
+                        print('yes greater than', getExistingLot)
                         # Create a new dictionary with only the required fields
                         required_fields = {
                             **getExistingLot,
