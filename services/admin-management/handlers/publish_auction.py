@@ -21,7 +21,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'],
+client = MongoClient(os.environ['MONGO_CLIENT'],
                       maxIdleTimeMS=60000  )
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]

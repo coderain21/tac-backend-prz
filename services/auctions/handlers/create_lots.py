@@ -46,6 +46,7 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["LOT_COLLECTION_NAME"]]
 lot_collection= db[os.environ["COUNTER_LOT"]]
 auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+step_collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
 
 def lambda_handler(event, context):
     """
@@ -164,14 +165,14 @@ def lambda_handler(event, context):
             request_body['start_date'] = iso_date_with_offset
             itemData = json.loads(json.dumps(request_body, cls= Encoder))
             invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
-            collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
+            # step_collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
             step_request={}
             step_request['arn'] = invoking['executionArn']
             id_value = str(inserted_id)
             step_request['lot_id'] = id_value
             step_request['auction_id'] = auction_record['auction_id']
             step_request['seller_email'] = auction_record['seller_email']
-            inserted = collection.insert_one(step_request)
+            inserted = step_collection.insert_one(step_request)
 
 
         # After inserting the lot, update the total_lots count for the associated auction
