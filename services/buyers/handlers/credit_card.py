@@ -13,9 +13,9 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
-collection = db['qa-credit_card']
+collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
 
 
 def credit_card(event, context):
@@ -42,9 +42,9 @@ def credit_card(event, context):
     stripe.api_key = os.environ['CREDIT_CARD_STRIPE_API_KEY']
     try:
         # Create a SetupIntent to confirm the PaymentMethod
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
+        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
         if 'set' in data:
             if data['set'] == 'True':
                 result = collection.insert_one({'buyer_id': buyer_id, 'registration_status':'card_pending','auction_id':auction_id})
