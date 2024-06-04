@@ -1,7 +1,6 @@
 """This module is used to update the auction details"""
 import os
 import json
-import pymongo
 import boto3
 import uuid
 from pymongo import MongoClient
