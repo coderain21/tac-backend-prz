@@ -30,14 +30,14 @@ headers = {
 """
 def seller_details(event, context):
     try:
-        try:
-            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        except:
-            return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
+        # try:
+        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        # except:
+        #     return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
 
         # Connecting to mongo db
         client = MongoClient(os.environ['MONGO_CLIENT'])
