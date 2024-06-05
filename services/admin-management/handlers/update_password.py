@@ -34,7 +34,7 @@ cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 def cognitoCheck(email_address, encrypt_password):
     try:
         response = cognito_client.admin_initiate_auth(
-            UserPoolId= 'eu-west-2_qyA18jEtQ',   #os.environ['ADMIN_USERPOOL_ID'],
+            UserPoolId = os.environ['ADMIN_COGNITO_USERPOOL_ID'],
             ClientId= os.environ['ADMIN_COGNITO_CLIENT_ID'],
             AuthFlow='ADMIN_NO_SRP_AUTH',
             AuthParameters={
@@ -128,7 +128,7 @@ def update_password(event, context):
         # # seller_email = auction_collection.find_one({"_id": ObjectId(auction_id)},
         #                                         # {'seller_email': 1}).get('seller_email')
 
-        userpool_id = 'eu-west-2_qyA18jEtQ' #os.environ["ADMIN_USERPOOL_ID"]
+        userpool_id = os.environ["ADMIN_COGNITO_USERPOOL_ID"]
         encrypt_password = hash_password(old_password)
         checkOldPassword = cognitoCheck(email_address, old_password)
         print('checkOldPassword', checkOldPassword)
