@@ -3097,6 +3097,101 @@
           }
         }
       }
+    },
+    "/admin-update-password": {
+      "post": {
+        "tags": ["Admin Management"],
+        "summary": "updating admin password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old_password": {
+                    "type": "string"
+                  },
+                  "new_password": {
+                    "type": "string"
+                  },
+                  "confirm_password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "old_password": "Password@123",
+                "new_password": "Password@123",
+                "confirm_password": "Password@134"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Password updated successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Current password is incorrect. The password update cannot be completed"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "new password is same as old password"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Current password and new password not matching"
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                      "message": "Something went wrong.Please try again"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

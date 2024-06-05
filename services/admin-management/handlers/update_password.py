@@ -106,15 +106,14 @@ def update_password(event, context):
     depends on the conditions and logic within the function.
     """
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        # except:
-        #     return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        email_address = 'anusha.k+testadmin@7edge.com'
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        except:
+            return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         data = json.loads(event['body'])
         print('data', data)
         old_password = data.get('old_password')
