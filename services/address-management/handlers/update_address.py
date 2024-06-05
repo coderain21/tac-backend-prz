@@ -12,6 +12,13 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ['ADDRESS_COLLECTION']]
+
 
 def update_address(event, context):
     """
@@ -62,9 +69,12 @@ def update_address(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # Create a SetupIntent to confirm the PaymentMethod
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ['ADDRESS_COLLECTION']]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ['ADDRESS_COLLECTION']]
         request_body = json.loads(event['body'])
         data = event['queryStringParameters']
         try:
