@@ -546,7 +546,7 @@ def update_auction(event, context):
                 if  len(listLots) > 0 and auction_extension_type in ["Cascade", "Individual Lots"]:
                     additional_time_ms = end_date_update + (existing_lots_count -1 ) * extension_time * 60 * 1000
                     update_data ['end_date'] = additional_time_ms
-                else: 
+                else:
                     end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
                     update_data ['end_date'] = end_date_update
         if auction_start_date != None:
