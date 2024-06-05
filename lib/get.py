@@ -23,8 +23,8 @@ def get_by_email(email,collection):
     try:
         # MongoDB configuration
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         collection_sellers = db[collection]
@@ -51,8 +51,8 @@ def fetch_seller_data_from_auction(auction_id):
     """
     try:
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -75,8 +75,8 @@ def fetch_user_pool_data(email):
     """
     try:
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["USERPOOLS_MONGO"]]
@@ -102,8 +102,8 @@ def fetch_buyer_data(seller_email,buyer_email):
     """
     try:
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["BUYER_COLLECTION"]]
@@ -129,8 +129,8 @@ def fetch_seller_data_from_subdomain(auction_id):
     """
     try:
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["SUB_DOMAIN_TABLE"]]

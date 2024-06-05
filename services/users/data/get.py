@@ -22,8 +22,8 @@ def get_by_email(email):
     try:
         # MongoDB configuration
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
         db = client[os.environ['DATABASE']]
         collection = db[os.environ['SELLERS_TABLE']]

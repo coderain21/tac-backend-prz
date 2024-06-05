@@ -205,7 +205,7 @@ def list_auction(event, context):
         total_auctions = collection.count_documents(
                 {"$and": queries})
         paginated_results = list(results)
-        client.close()
+        # client.close()
         body = {
             "data": paginated_results,
             "total_records_found": total_records_count,
