@@ -3116,7 +3116,7 @@
       }
     },
     "/admin-update-password": {
-      "post": {
+      "patch": {
         "tags": ["Admin Management"],
         "summary": "updating admin password",
         "requestBody": {

@@ -100,49 +100,49 @@ provider:
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
-    # TEMPLATE_ARN_AUCTION_COMPLETION:
-    #   Fn::Join:
-    #     - ":"
-    #     - - "arn"
-    #       - "aws"
-    #       - "mobiletargeting"
-    #       - !Ref "AWS::Region"
-    #       - !Ref "AWS::AccountId"
-    #       - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
-    # S3_BUCKET_URL: ${ssm:CDN_URL}
-    # SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
-    # STATE_MACHINE_LOT_ARN:  
-    #   Fn::Join:
-    #       - ":"
-    #       - - "arn"
-    #         - "aws"
-    #         - "states"
-    #         - !Ref "AWS::Region"
-    #         - !Ref "AWS::AccountId"
-    #         - "stateMachine:${opt:stage}-lot-published"
-    # STATE_MACHINE_AUCTION_ARN: 
-    #   Fn::Join:
-    #       - ":"
-    #       - - "arn"
-    #         - "aws"
-    #         - "states"
-    #         - !Ref "AWS::Region"
-    #         - !Ref "AWS::AccountId"
-    #         - "stateMachine:${opt:stage}-auction-ended"
-    # QUEUE_URL: 
-    #   Fn::Join:
-    #       - "/"
-    #       - - "https:/"
-    #         - "sqs.eu-west-2.amazonaws.com"
-    #         - !Ref "AWS::AccountId"
-    #         - "auto-completion-email-${opt:stage}.fifo"
-    # LOT_UPDATE_QUEUE_URL: 
-    #   Fn::Join:
-    #       - "/"
-    #       - - "https:/"
-    #         - "sqs.eu-west-2.amazonaws.com"
-    #         - !Ref "AWS::AccountId"
-    #         - "${opt:stage}-bulk-lots-update"
+    TEMPLATE_ARN_AUCTION_COMPLETION:
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
+    S3_BUCKET_URL: ${ssm:CDN_URL}
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
+    STATE_MACHINE_LOT_ARN:  
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-lot-published"
+    STATE_MACHINE_AUCTION_ARN: 
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-auction-ended"
+    QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "auto-completion-email-${opt:stage}.fifo"
+    LOT_UPDATE_QUEUE_URL: 
+      Fn::Join:
+          - "/"
+          - - "https:/"
+            - "sqs.eu-west-2.amazonaws.com"
+            - !Ref "AWS::AccountId"
+            - "${opt:stage}-bulk-lots-update"
 
   http:
     cors: true
