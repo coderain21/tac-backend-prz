@@ -2,7 +2,7 @@
 import json
 import os
 import boto3
-from pymongo import MongoClient
+# from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
 
 headers = {
