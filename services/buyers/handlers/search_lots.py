@@ -11,6 +11,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
+
+
 def lot_search(event, context):
     """
     The `lot_search` function searches for lots in an auction based on the provided auction ID and
@@ -36,10 +46,13 @@ def lot_search(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
         auction_id = data.get("auction_id")
         search_keyword = data.get('search')
         print(auction_id, search_keyword)

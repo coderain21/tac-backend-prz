@@ -117,7 +117,10 @@ def import_lots(event, context):
             # 'Tags'
         ]
         # Initialize the MongoDB client
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
 
         collection = db[os.environ["LOT_COLLECTION_NAME"]]

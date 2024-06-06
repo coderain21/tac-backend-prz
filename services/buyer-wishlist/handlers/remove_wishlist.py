@@ -15,7 +15,10 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
@@ -67,7 +70,10 @@ def remove(event, context):
             }
 
         lot_id = ObjectId(lot_id)
-        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
         # db = client[os.environ['DATABASE']]
         # wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 

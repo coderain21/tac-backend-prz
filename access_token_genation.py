@@ -31,8 +31,8 @@ def generate_token(user_type):
         if user_type == 'ADMIN':
             user_pool_id = os.environ['ADMIN_COGNITO_USERPOOL_ID']
             client_id = os.environ['ADMIN_COGNITO_CLIENT_ID']
-            username = os.environ['ADMIN_USERNAME']
-            password = os.environ['ADMIN_PASSWORD']
+            username = 'anusha.k+testadmin@7edge.com'          #os.environ['ADMIN_USERNAME']
+            password = 'Admin@1234'
             print(user_pool_id,client_id, username, password)
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
