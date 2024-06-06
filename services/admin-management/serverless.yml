@@ -685,6 +685,23 @@ functions:
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
+  enable_disable_seller:
+      handler: handlers/seller_enable_disable.handler
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN}
+      events:
+        - http:
+            cors: true
+            path: /enable-disable-seller/{seller_id}
+            method: patch
+            authorizer:
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
 resources:
   Resources:
     GatewayResponseDefault4XX:
