@@ -13,7 +13,10 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
 
@@ -42,7 +45,10 @@ def credit_card(event, context):
     stripe.api_key = os.environ['CREDIT_CARD_STRIPE_API_KEY']
     try:
         # Create a SetupIntent to confirm the PaymentMethod
-        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
         # db = client[os.environ['DATABASE']]
         # collection = db[os.environ['CREDIT_CARD_COLLECTIONS']]
         if 'set' in data:
