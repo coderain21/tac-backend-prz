@@ -121,8 +121,8 @@ stages:
             npm i -g dredd
             ./api-testing.sh
             ./doc.sh
-            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
-            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
+            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
             aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
           displayName: Unit Testing
         - script: |
