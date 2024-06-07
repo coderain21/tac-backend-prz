@@ -3097,7 +3097,7 @@
                     }
                   },
                   "example": {
-                    "message": "User Activated/Deactivated updated successfully"
+                    "message": "User Activated/Deactivated  successfully"
                   }
                 }
               }
@@ -3110,7 +3110,7 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "There was an error processing your request"
+                      "message": "There was an error while updating the status"
                     }
                   },
                   "example2": {
@@ -3139,6 +3139,7 @@
           }
         }
       }
+    }
   },
   "components": {
     "schemas": {
