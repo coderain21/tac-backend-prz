@@ -96,7 +96,6 @@ def admin_create_user(userData, userpool_id,seller_email,default):
                     print(f"Successfully added user {userData['email_address']} to group {role}")
                 except Exception as e:
                     print("errrrrr", e)
-        
             # cognito_client.admin_add_user_to_group(
             #     GroupName= group_name,
             #     UserPoolId=userpool_id,
