@@ -3139,9 +3139,8 @@
           }
         }
       }
-    }
-  },
-  "/seller-view": {
+    },
+    "/view-seller": {
       "get": {
         "tags": [
           "Admin Seller Management"
@@ -3371,8 +3370,8 @@
             }
         }
       }
-      }
-    },
+    }
+  },
   "components": {
     "schemas": {
       "Auction": {
