@@ -13,6 +13,19 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+# Connecting to mongo db
+client = MongoClient(
+                os.environ['MONGO_CLIENT'],
+                maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                )
+db = client[os.environ['DATABASE']]
+seller_collection = db[os.environ["SELLERS_TABLE"]]
+
+
+
+
+
+
 """
     The `seller_details` function retrieves a details of a particular seller
     :param event: The `event` parameter is a dictionary that contains the input data for the function.
@@ -38,10 +51,13 @@ def seller_view(event, context):
                     "body": json.dumps({"message": "You do not have access to perform this API action"})
                 }
 
-        # Connecting to mongo db
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        seller_collection = db[os.environ["SELLERS_TABLE"]]
+        # # Connecting to mongo db
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # seller_collection = db[os.environ["SELLERS_TABLE"]]
 
         # Extracting params from the request
         query_parameters = event.get('queryStringParameters')
@@ -79,7 +95,7 @@ def seller_view(event, context):
             "country_code":1,
             "about":1
         }
-        seller_details = seller_collection.find_one({"_id": seller_id}, projections)
+        seller_details = seller_collection.find_one({"_id": seller_id})#, projections)
         if seller_details is None:
             return {
                 "statusCode": 404,

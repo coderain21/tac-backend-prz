@@ -28,6 +28,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+counter_collection = db[os.environ["COUNTER_LOT"]]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
 
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
@@ -167,11 +177,14 @@ def validate(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': 'Invalid OTP'})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-        counter_collection = db[os.environ["COUNTER_LOT"]]
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+        # db = client[os.environ['DATABASE']]
+        # user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+        # counter_collection = db[os.environ["COUNTER_LOT"]]
+        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         seller_email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
 
         # userpool_id = user_pools_collection.find_one(
@@ -205,7 +218,7 @@ def validate(event, context):
             insert_data["buyer_id"] = f'B{counter["starting_sequence"]:04d}'
             insert_data["full_name"]= decrypted_data["first_name"] + " " + decrypted_data["last_name"]
             collection.insert_one(insert_data)
-            client.close()
+            # client.close()
 
             return {
                 'statusCode': 201,

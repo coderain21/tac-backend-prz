@@ -24,7 +24,14 @@ class MongoEncoder(json.JSONEncoder):
         return super().default(o)
 
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+# client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+client = MongoClient(
+    os.environ['MONGO_CLIENT'],
+    maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+)
 db = client[os.environ['DATABASE']]
 wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 lot_collection = db[os.environ['LOTS_TABLE_NAME']]
@@ -66,7 +73,10 @@ def wishlist_list(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
         # db = client[os.environ['DATABASE']]
         # wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
         # lot_collection = db[os.environ['LOTS_TABLE_NAME']]
@@ -128,7 +138,9 @@ def wishlist_list(event, context):
                 "currency": "$auction_details.currency",
                 "time_zone": "$auction_details.time_zone",
                 "auction_uid": "$auction_details._id",
-                "registration_type": "$auction_details.registration_type"
+                "registration_type": "$auction_details.registration_type",
+                "status": "$auction_details.status",
+                "publish_auction_results": "$auction_details.publish_auction_results"
             }}
         ]
 

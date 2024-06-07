@@ -13,8 +13,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+counter_collection = db[os.environ["COUNTER_LOT"]]
+
+
+
 
 def clone_auction(event, context):
     """
@@ -44,8 +52,8 @@ def clone_auction(event, context):
             }
         request_body = json.loads(event['body'])
         auction_id = request_body.get('auction_id')
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        counter_collection = db[os.environ["COUNTER_LOT"]]
+        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # counter_collection = db[os.environ["COUNTER_LOT"]]
 
         auction = auction_collection.find_one(
             {"_id": ObjectId(auction_id),"seller_email": email_address},{"_id": 0})

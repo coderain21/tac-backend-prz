@@ -21,6 +21,10 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 stripe.api_key = os.environ["STRIPE_API_KEY"]
+client = MongoClient(
+                os.environ['MONGO_CLIENT'],
+                maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                )
 
 def generate_order_code(number):
     if not isinstance(number, int) or number < 1:
@@ -45,7 +49,10 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         # MongoDB configuration
         results = []
         lot_numbers = []
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
         db = client[os.environ['DATABASE']]
         cart_collection = db[os.environ["CART_COLLECTION"]]
         res = ""
@@ -68,12 +75,12 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
             results.append(record)
 
         # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-        client.close()
+        # client.close()
         if cart_data:
             return results,lot_numbers
         return None
     except BaseException as err:
-        client.close()
+        # client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 
@@ -144,16 +151,19 @@ def create_order(insert_data):
     """
     try:
         # MongoDB configuration
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
         db = client[os.environ['DATABASE']]
         payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         insert_result = payments_collection.insert_one(insert_data)
-        client.close()
+        # client.close()
         if insert_result:
             return insert_result
         return None
     except BaseException as err:
-        client.close()
+        # client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 
@@ -300,7 +310,10 @@ def create_intent(event, context):
             }
 
         #Block to fetch the counter record , add the order to orders
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
         db = client[os.environ['DATABASE']]
 
         counter_collection = db[os.environ['COUNTER_LOT']]

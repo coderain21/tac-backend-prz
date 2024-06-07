@@ -6,7 +6,7 @@ import os
 import boto3
 
 # Initialize MongoDB client and collections
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
 collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 StepFunctionArn = db[os.environ['STEP_FUNCTION_COLLECTION']]
