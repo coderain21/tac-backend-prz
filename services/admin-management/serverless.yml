@@ -33,6 +33,7 @@ provider:
     CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    SELLER_COGNITO_USERPOOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     CREDIT_CARD_COLLECTION: ${opt:stage, self:provider.stage}-carts
@@ -776,13 +777,18 @@ functions:
       events:
         - http:
             cors: true
-            path: /enable-disable-seller/{seller_id}
+            path: /enable-disable-seller
             method: patch
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
   manage-seller-deactivation:
     handler: handlers/manage-seller-deactivation.handler
+    vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
     layers:
       - ${ssm:COMMON_LIB_ARN}
 

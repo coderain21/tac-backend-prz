@@ -19,7 +19,7 @@ const AccessLogsSchema = new Schema({
         type: String, trim: true,
     },
     updated_by: { type: Object, trim: true },
-    updated_at: { type: Date, default: Date.now },
+    updated_at: { type: Number, default: () => Date.now() },
     section: { type: Object, trim: true },
     reason: { type: String, default: '' },
 })
