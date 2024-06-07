@@ -76,34 +76,36 @@ module.exports.handler = async (event) => {
         console.log('getLot', get_lot)
         const lotInformation = get_lot[0]
         console.log('currentTimestamp', currentTimestamp)
-        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
-            const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
-            lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
-            lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
-            await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
-            await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
-            // const callSQS = await sqsTriggerFunction(event)
-            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                await sqsTriggerFunction(event)
-            }
-            if (getLots.length <= 0) {
-                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+        if (auctionData.status !== 'Cancelled') {
+            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
+                const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+                lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
+                lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
+                await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+                await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
+                // const callSQS = await sqsTriggerFunction(event)
+                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                     await sqsTriggerFunction(event)
                 }
-            } else {
-                console.log('no match')
+                if (getLots.length <= 0) {
+                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                        await sqsTriggerFunction(event)
+                    }
+                } else {
+                    console.log('no match')
+                }
             }
-        }
-        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) {
-            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                await sqsTriggerFunction(event)
-            }
-            if (getLots.length <= 0) {
-                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) {
+                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                     await sqsTriggerFunction(event)
                 }
-            } else {
-                console.log('no match')
+                if (getLots.length <= 0) {
+                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                        await sqsTriggerFunction(event)
+                    }
+                } else {
+                    console.log('no match')
+                }
             }
         }
         return true
