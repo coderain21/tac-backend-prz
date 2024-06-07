@@ -1,7 +1,6 @@
 """This module is used to get the particular seller detail"""
 import json
 import os
-
 from bson import ObjectId
 from lib.common_helper import Encoder
 from pymongo import MongoClient
@@ -28,7 +27,7 @@ headers = {
     - "headers": a dictionary representing the HTTP headers
     - "body": a JSON string representing the response body
 """
-def seller_details(event, context):
+def seller_view(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -56,7 +55,7 @@ def seller_details(event, context):
             }
         # Fetching seller details
         seller_id = ObjectId(seller_id)
-        out_fields = {
+        projections = {
             "_id": 1,
             "full_name": 1,
             "first_name": 1,
@@ -80,21 +79,22 @@ def seller_details(event, context):
             "country_code":1,
             "about":1
         }
-        seller_details = seller_collection.find_one({"_id": seller_id}, out_fields)
+        seller_details = seller_collection.find_one({"_id": seller_id}, projections)
         if seller_details is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message":"Seller is not found"})
+                "body": json.dumps({"message":"Seller not found"})
             }
         return {
             "statusCode": 200,
             "headers": headers,
             "body": json.dumps(seller_details, cls=Encoder)
         }
-    except:
+    except Exception as err:
+        print("Error",str(err))
         return {
             "statusCode": 500,
             "headers": headers,
-             "body": json.dumps({"message": "There was an error "})
+             "body": json.dumps({"message": "Internal server error"})
         }
