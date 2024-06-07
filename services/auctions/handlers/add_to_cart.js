@@ -73,7 +73,6 @@ module.exports.handler = async (event) => {
         for (let i = 0; i < getLotInfo.length; i++) {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
-        console.log('getLot', get_lot)
         const lotInformation = get_lot[0]
         console.log('currentTimestamp', currentTimestamp)
         if (auctionData.status !== 'Cancelled') {
