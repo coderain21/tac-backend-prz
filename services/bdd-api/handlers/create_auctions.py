@@ -67,6 +67,7 @@ def create(event, context):
         # email = 'sthuthi+test3@7edge.com'
         email = request_body['seller_email']
         # request_body["seller_email"] = email
+        auction_title = request_body["auction_title"] if "auction_title" in request_body else 'BDD test'
         get_user = seller_collection.find({"email_address": email})
         user_count = seller_collection.count_documents({"email_address": email})
         if user_count > 0:
@@ -107,7 +108,7 @@ def create(event, context):
         # Giving static values to create a new auction
         request_body['auction_image'] = auction_image
         request_body['template_name'] = 'Classic'
-        request_body['title'] = 'BDD test'
+        request_body['title'] = auction_title
         request_body['currency'] = 'USD'
         request_body['time_zone'] = 'IST - India Standard Time'
         request_body['status'] = 'Draft'
