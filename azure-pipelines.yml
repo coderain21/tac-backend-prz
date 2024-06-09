@@ -202,8 +202,7 @@ stages:
     - deployment: Deployment
       condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
       displayName: Deployment
-      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          environment: 'Production'
+      environment: 'Testing'
       pool:
         vmImage: 'macos-latest'
       variables:
@@ -240,8 +239,7 @@ stages:
     - deployment: Deployment
       condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
       displayName: Deployment
-      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          environment: 'Production'
+      environment: 'Testing'
       pool:
         vmImage: 'macos-latest'
       variables:
