@@ -124,6 +124,7 @@ stages:
             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
             aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
           displayName: Unit Testing
         - script: |
             if [ $? -ne 0 ]; then
@@ -193,4 +194,76 @@ stages:
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - script: |
                   bash devops/terraform_run.sh
+                displayName: 'Deployment'
+
+
+- stage: DisposableDeploy
+  jobs:
+    - deployment: Deployment
+      condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+      displayName: Deployment
+      pool:
+        vmImage: 'macos-latest'
+      variables:
+        - group: pre-production
+      strategy:
+        # Default deployment strategy, more coming...
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - task: Cache@2
+                inputs:
+                  key: 'npmV2 | "$(Agent.OS)" | package.json'
+                  restoreKeys: |
+                    npmV2 | "$(Agent.OS)"
+                  path: "$(System.DefaultWorkingDirectory)/node_modules"
+                  cacheHitVar: CACHE_RESTORED
+                displayName: Cache npm
+              # - task: DownloadPipelineArtifact@2
+              #   name: environment
+              #   inputs:
+              #     artifact: environment
+              #     targetPath: '$(System.DefaultWorkingDirectory)'
+              - script: |
+                  npm install --cache .npm
+                condition: ne(variables.CACHE_RESTORED, 'true')
+              - script: |
+                  bash devops/terraform_run.sh
+                displayName: 'Deployment'
+
+
+- stage: DeleteDisposable
+  jobs:
+    - deployment: Deployment
+      condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+      displayName: Deployment
+      pool:
+        vmImage: 'macos-latest'
+      variables:
+        - group: pre-production
+      strategy:
+        # Default deployment strategy, more coming...
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - task: Cache@2
+                inputs:
+                  key: 'npmV2 | "$(Agent.OS)" | package.json'
+                  restoreKeys: |
+                    npmV2 | "$(Agent.OS)"
+                  path: "$(System.DefaultWorkingDirectory)/node_modules"
+                  cacheHitVar: CACHE_RESTORED
+                displayName: Cache npm
+              # - task: DownloadPipelineArtifact@2
+              #   name: environment
+              #   inputs:
+              #     artifact: environment
+              #     targetPath: '$(System.DefaultWorkingDirectory)'
+              - script: |
+                  npm install --cache .npm
+                condition: ne(variables.CACHE_RESTORED, 'true')
+              - script: |
+                  bash devops/terraform_destroy_init.sh
                 displayName: 'Deployment'
