@@ -202,6 +202,7 @@ stages:
     - deployment: Deployment
       condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
       displayName: Deployment
+      environment: 'Development'
       pool:
         vmImage: 'macos-latest'
       variables:
@@ -238,6 +239,7 @@ stages:
     - deployment: Deployment
       condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
       displayName: Deployment
+      environment: 'Development'
       pool:
         vmImage: 'macos-latest'
       variables:
