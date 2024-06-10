@@ -523,8 +523,8 @@ functions:
   #         method: get
   #         authorizer:
   #           arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
-  seller-details:
-    handler: handlers/seller_details.seller_details
+  seller-view:
+    handler: handlers/seller_view.seller_view
     runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -546,7 +546,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          path: /seller-details
+          path: /view-seller
           method: get
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
