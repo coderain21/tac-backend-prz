@@ -49,6 +49,7 @@ async function activateDeactivateUser(username, status, UserPoolId) {
             await cognitoIdentityServiceProvider.adminEnableUser(params).promise()
         } else {
             await cognitoIdentityServiceProvider.adminDisableUser(params).promise()
+            // await cognitoIdentityServiceProvider.adminUserGlobalSignOut(params).promise()
         }
         return { success_status: true }
     } catch (error) {
@@ -127,7 +128,7 @@ module.exports.handler = async (event) => {
 
         const emailAddress = event.requestContext.authorizer.claims['cognito:username']
         payload.updated_by.email_address = emailAddress
-        const Status = payload.section.action === 'Active' ? 'adminEnableUser' : 'adminDisableUser'
+        const Status = payload.section.action === 'Activate' ? 'adminEnableUser' : 'adminDisableUser'
         const seller_email = payload.section.user_id
 
         /** ----------------------------------------------chnage status in the documentDB------------------------------------------------------------------------------------------------- */
