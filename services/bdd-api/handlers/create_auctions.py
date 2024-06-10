@@ -93,15 +93,19 @@ def create(event, context):
         )
         sequence_number = f"A{str(counter['starting_sequence']).zfill(4)}"
         request_body["auction_id"] = sequence_number
-        # Get the current time as a timestamp in milliseconds
+        # Calculate the current timestamp in milliseconds
         current_timestamp_ms = int(datetime.now().timestamp() * 1000)
 
-        # Calculate the time 5 minutes from now in milliseconds
-        now_plus_2_minutes_ms = int((datetime.now() + timedelta(minutes=2)).timestamp() * 1000)
+        # Check if end_date is provided in the request body
+        if "end_date" in request_body:
+            end_date_ms = request_body["end_date"]
+        else:
+            # Calculate the time 2 minutes from now in milliseconds if end_date is not provided
+            end_date_ms = int((datetime.now() + timedelta(minutes=2)).timestamp() * 1000)
 
-        # Assign these values to the request body
+        # Assign the calculated values to the request body
         request_body["start_date"] = current_timestamp_ms
-        request_body["end_date"] = now_plus_2_minutes_ms
+        request_body["end_date"] = end_date_ms
         auction_image = 'DomainName/BDD/ai-6.jpeg'
         print('auction image', auction_image)
         # Giving static values to create a new auction
