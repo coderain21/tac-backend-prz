@@ -139,15 +139,16 @@ module.exports.handler = async (event) => {
         await mongodbHelper.commonUpdate(Users, query, updateInformation)
 
         /** ----------------------------------------------COGNITO ACTIVATE/DEACTIVATE----------------------------------------------------------------------------------- */
-        await activateDeactivateUser(seller_email, Status, process.env.SELLER_COGNITO_USERPOOL_ID)
+        const cognitoUpdate = await activateDeactivateUser(seller_email, Status, process.env.SELLER_COGNITO_USERPOOL_ID)
 
         /** ----------------------------------------------STEP FUNCTION START EXECUTION----------------------------------------------------------------------------------- */
-
-        const startingStepFunction = await startExecution(process.env.STATE_MACHINE_DEACTIVATE_SELLER_ARN, payload)
+        if (Status !== 'Activate') {
+            await startExecution(process.env.STATE_MACHINE_DEACTIVATE_SELLER_ARN, payload)
+        }
 
         /** ----------------------------------------------IF SUCCESS----------------------------------------------------------------------------------- */
 
-        if (startingStepFunction) {
+        if (cognitoUpdate) {
             return {
                 statusCode: 201,
                 headers: await helpers.getHeaders(),

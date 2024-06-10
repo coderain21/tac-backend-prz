@@ -26,12 +26,13 @@ module.exports.handler = async (event) => {
             connection = await mongodbHelper.connect()
         }
         const sellerEmail = event.section.user_id
+        // Cancel the all the auctions that belongs to the deactivated user
         const findAndUpdate = await mongodbHelper.cancelAuctions(sellerEmail, Auction)
-        console.log('findAndUpdate', findAndUpdate)
+        console.log(findAndUpdate)
 
         // remove the cancelled the auction in the wishlist screen
         const deleteWishlistAuctions = await mongodbHelper.deleteWishlistedAuction(sellerEmail, Wishlist)
-        console.log('deleteWishlistAuctions', deleteWishlistAuctions)
+        console.log(deleteWishlistAuctions)
 
         await mongodbHelper.save(event, AccessLogs)
         return true
