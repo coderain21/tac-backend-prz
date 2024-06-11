@@ -226,7 +226,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                         }
                     }
                 }
-
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
 
