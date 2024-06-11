@@ -76,6 +76,7 @@ async function lotDetails(rediskey, client) {
  * @returns {string} The formatted currency string
  */
 function formatCurrency(amount, currencyCode) {
+    console.log('amount', amount)
     try {
         // Convert amount to a string
         const amountString = String(amount)

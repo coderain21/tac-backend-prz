@@ -28,6 +28,16 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+counter_collection = db[os.environ["COUNTER_LOT"]]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
 
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
@@ -58,6 +68,7 @@ def admin_create_user(userData, userpool_id,seller_email,default):
             - 'message' (str): A message describing the result of the operation.
     """
     try:
+        group_name = seller_email.split('@')[0]
         attribute_list = [
             {'Name': 'email', 'Value': userData['email_address']}
         ]
@@ -80,17 +91,31 @@ def admin_create_user(userData, userpool_id,seller_email,default):
         }
         cognito_client.admin_set_user_password(**password_params)
         if user:
-
-            cognito_client.admin_add_user_to_group(
-                GroupName= seller_email.split('@')[0],
-                UserPoolId=userpool_id,
-                Username=userData['email_address']
-            )
-            cognito_client.admin_add_user_to_group(
-                GroupName= userData["user_type"],
-                UserPoolId=userpool_id,
-                Username=userData['email_address']
-            )
+            roles = [group_name, userData["user_type"]]
+            for role in roles:
+                print('roles', role)
+                try:
+                    # Define the parameters for the API call
+                    params = {
+                        'GroupName': role,
+                        'UserPoolId': userpool_id,
+                        'Username': userData['email_address']
+                    }
+                    # Call the admin_add_user_to_group API
+                    cognito_client.admin_add_user_to_group(**params)
+                    print(f"Successfully added user {userData['email_address']} to group {role}")
+                except Exception as e:
+                    print("errrrrr", e)
+            # cognito_client.admin_add_user_to_group(
+            #     GroupName= group_name,
+            #     UserPoolId=userpool_id,
+            #     Username=userData['email_address']
+            # )
+            # cognito_client.admin_add_user_to_group(
+            #     GroupName= userData["user_type"],
+            #     UserPoolId=userpool_id,
+            #     Username=userData['email_address']
+            # )
             return {
                 'success_status': True,
                 'message': 'User added successfully'
@@ -167,11 +192,14 @@ def validate(event, context):
                 'headers': headers,
                 'body': json.dumps({'message': 'Invalid OTP'})
             }
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-        counter_collection = db[os.environ["COUNTER_LOT"]]
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
+        # db = client[os.environ['DATABASE']]
+        # user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+        # counter_collection = db[os.environ["COUNTER_LOT"]]
+        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         seller_email = auction_collection.find_one({"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
 
         # userpool_id = user_pools_collection.find_one(
@@ -205,7 +233,7 @@ def validate(event, context):
             insert_data["buyer_id"] = f'B{counter["starting_sequence"]:04d}'
             insert_data["full_name"]= decrypted_data["first_name"] + " " + decrypted_data["last_name"]
             collection.insert_one(insert_data)
-            client.close()
+            # client.close()
 
             return {
                 'statusCode': 201,

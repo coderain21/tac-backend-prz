@@ -61,19 +61,18 @@ module.exports.updateUserInformation = async (event) => {
         }
         if (get_user !== null) {
             const user_id = get_user[0]._id
-            if (request_body.first_name || request_body.last_name) {
+            const user = get_user[0]
+            if (request_body.first_name !== undefined || request_body.last_name !== undefined) {
+                // Update first_name and last_name if they are provided, else retain the existing ones
+                request_body.first_name = request_body.first_name !== undefined ? request_body.first_name : user.first_name
+                request_body.last_name = request_body.last_name !== undefined ? request_body.last_name : user.last_name
+
+                // Construct full_name based on provided first_name and last_name
+                request_body.full_name = [request_body.first_name, request_body.last_name].filter(Boolean).join(' ')
+
                 const filter = { seller_email: email }
-                const user = get_user[0]
-                if (request_body.first_name && request_body.last_name) {
-                    request_body.first_name = request_body.first_name || user.first_name
-                    request_body.last_name = request_body.last_name || user.last_name
-                } else if (request_body.first_name) {
-                    request_body.last_name = user.last_name
-                } else if (request_body.last_name) {
-                    request_body.first_name = user.first_name
-                }
-                const update = { $set: { seller_name: `${request_body.first_name} ${request_body.last_name}` } }
-                const updateResult = await Auction.updateMany(filter, update)
+                const update = { $set: { seller_name: request_body.full_name } }
+                const updateResult = await Auction.updateOne(filter, update)
                 console.log(updateResult, 'updateResult')
             }
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)

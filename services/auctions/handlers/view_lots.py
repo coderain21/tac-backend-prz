@@ -8,6 +8,14 @@ import tempfile
 import boto3
 from lib.common_helper import Encoder
 
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["LOT_COLLECTION_NAME"]]
+collection_bidders = db[os.environ["UNIQUE_BIDDERS_COLLECTIONS"]]
+
+
+
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -165,10 +173,11 @@ def list_lots(event, context):
             "total selling":percentage_bids_gt_zero
         }
         if export:
+            lots = list(collection.find(query).sort(sort_criteria))
             download_link = export_lots_as_csv(lots, db)
         if download_link is not None:
             body["csv_url"] = download_link
-        client.close()
+        # client.close()
         return {
             'headers': headers,
             "statusCode": 200,
