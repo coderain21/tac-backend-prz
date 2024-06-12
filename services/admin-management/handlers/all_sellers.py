@@ -66,7 +66,11 @@ def list_all_sellers(event, context):
         sort_criteria = []
 
         if sort_by and sort_by in ['full_name', 'status']:
-            sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
+            sort_criteria = [
+                (sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING),
+                ('_id', pymongo.ASCENDING)  # Secondary sort for stability
+            ]
+
 
         print('sort_criteria', sort_criteria)
 
