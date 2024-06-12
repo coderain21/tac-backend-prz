@@ -47,6 +47,7 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
+        console.log('even', event)
         if (connection === null || !connection.readyState) {
             console.log('not connected')
             connection = await mongodbHelper.connect()

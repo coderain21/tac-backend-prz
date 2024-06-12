@@ -17,6 +17,14 @@ headers = {
 }
 
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
 def view(event, context):
     """
     The `view` function retrieves auction data based on the provided auction ID and the authenticated
@@ -39,9 +47,12 @@ def view(event, context):
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
         passcode = data.get("passcode")
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # client = MongoClient(
+            # os.environ['MONGO_CLIENT'],
+            # maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+            # )
+        # db = client[os.environ['DATABASE']]
+        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
         domain_data = fetch_seller_data_from_subdomain(auction_id)
         if auction_id is not None:
