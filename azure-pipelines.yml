@@ -1,0 +1,271 @@
+trigger:
+  branches:
+    include:
+      - qa
+      - pre-production
+      - master
+pr:
+  branches:
+    include:
+      - qa
+variables:
+  - group: general
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
+    - group: master
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
+    - group: qa
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-production') }}:
+    - group: pre-production
+  - ${{ if or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')) }}:
+    - group: develop
+
+stages:
+- stage: CodeQuality
+  jobs:
+    - job: "lint"
+      displayName: "Code Quality"
+      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npm | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+          displayName: Cache npm
+        - script: |
+            npm install
+          condition: ne(variables.CACHE_RESTORED, 'true')
+          displayName: 'Dependencies'
+        - script: |
+            npm run eslint
+            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            # sh terraform-linter.sh
+          displayName: 'Lint'
+    - job: "secret"
+      displayName: "Secret Checking"
+      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - script: |
+            pip3 install detect-secrets
+            detect-secrets scan 
+          displayName: 'Lint'
+    - job: "licence_complaiance"
+      displayName: "License Compliance"
+      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - script: |
+            npm install -g license-checker 
+            license-checker --json > licenses.json  
+            node license.js
+          displayName: 'License Compliance'
+    - job: "sast"
+      displayName: 'Static Application Security Testing (SAST)'
+      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - script: |
+            pip3 install njsscan
+            njsscan -w .
+            pip3 install bandit
+            bandit -r services/**/*.py
+          displayName: 'Static Application Security Testing (SAST)'
+- stage: Build
+  jobs:
+    - job: "Download_Environment"
+      displayName: "Build"
+      pool:
+        vmImage: "ubuntu-latest"
+      steps:
+        - script: |
+            ./envs.sh
+          displayName: 'Copy Environment Files'
+        - publish: $(System.DefaultWorkingDirectory)/.env
+          artifact: Environment
+  
+- stage: Test
+  jobs:
+    - job: APITesting
+      displayName: "Unit Testing"
+      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+        vmImage: "ubuntu-latest"
+      steps:
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npm | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+          displayName: Cache npm
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - script: |
+            source .env
+            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
+            npm i -g dredd
+            ./api-testing.sh
+            ./doc.sh
+            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
+            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
+            aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+          displayName: Unit Testing
+        - script: |
+            if [ $? -ne 0 ]; then
+              echo "Unit Testing failed"
+              exit 1
+            fi
+          displayName: Check Unit Testing Status
+  
+    - job: "dast"
+      displayName: 'Dynamic Application Security Testing (DAST)'
+      dependsOn: APITesting
+      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - script: |
+            source .env
+            docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+            cd $(System.DefaultWorkingDirectory)
+            git config --global --add safe.directory $(System.DefaultWorkingDirectory)
+            pip3 install boto3
+            pip3 install PyJWT
+            pip3 install GitPython
+            mkdir test_results
+            python3 dast.py
+          displayName: 'Dynamic Application Security Testing (DAST)'
+    
+- stage: Deploy
+  jobs:
+    - deployment: Deployment
+      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
+      displayName: Deployment
+      pool:
+        vmImage: 'macos-latest'
+      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          environment: 'Production'
+      ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+          environment: 'Testing'
+      ${{ else }}:
+          environment: 'Development'
+      strategy:
+        # Default deployment strategy, more coming...
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - task: Cache@2
+                inputs:
+                  key: 'npmV2 | "$(Agent.OS)" | package.json'
+                  restoreKeys: |
+                    npmV2 | "$(Agent.OS)"
+                  path: "$(System.DefaultWorkingDirectory)/node_modules"
+                  cacheHitVar: CACHE_RESTORED
+                displayName: Cache npm
+              - task: DownloadPipelineArtifact@2
+                name: environment
+                inputs:
+                  artifact: environment
+                  targetPath: '$(System.DefaultWorkingDirectory)'
+              - script: |
+                  npm install --cache .npm
+                condition: ne(variables.CACHE_RESTORED, 'true')
+              - script: |
+                  bash devops/terraform_run.sh
+                displayName: 'Deployment'
+
+
+- stage: DisposableDeploy
+  jobs:
+    - deployment: Deployment
+      condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+      displayName: Deployment
+      environment: 'Testing'
+      pool:
+        vmImage: 'macos-latest'
+      variables:
+        - group: pre-production
+      strategy:
+        # Default deployment strategy, more coming...
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - task: Cache@2
+                inputs:
+                  key: 'npmV2 | "$(Agent.OS)" | package.json'
+                  restoreKeys: |
+                    npmV2 | "$(Agent.OS)"
+                  path: "$(System.DefaultWorkingDirectory)/node_modules"
+                  cacheHitVar: CACHE_RESTORED
+                displayName: Cache npm
+              # - task: DownloadPipelineArtifact@2
+              #   name: environment
+              #   inputs:
+              #     artifact: environment
+              #     targetPath: '$(System.DefaultWorkingDirectory)'
+              - script: |
+                  npm install --cache .npm
+                condition: ne(variables.CACHE_RESTORED, 'true')
+              - script: |
+                  bash devops/terraform_run.sh
+                displayName: 'Deployment'
+
+
+- stage: DeleteDisposable
+  jobs:
+    - deployment: Deployment
+      condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+      displayName: Deployment
+      environment: 'Testing'
+      pool:
+        vmImage: 'macos-latest'
+      variables:
+        - group: pre-production
+      strategy:
+        # Default deployment strategy, more coming...
+        runOnce:
+          deploy:
+            steps:
+              - checkout: self
+              - task: Cache@2
+                inputs:
+                  key: 'npmV2 | "$(Agent.OS)" | package.json'
+                  restoreKeys: |
+                    npmV2 | "$(Agent.OS)"
+                  path: "$(System.DefaultWorkingDirectory)/node_modules"
+                  cacheHitVar: CACHE_RESTORED
+                displayName: Cache npm
+              # - task: DownloadPipelineArtifact@2
+              #   name: environment
+              #   inputs:
+              #     artifact: environment
+              #     targetPath: '$(System.DefaultWorkingDirectory)'
+              - script: |
+                  npm install --cache .npm
+                condition: ne(variables.CACHE_RESTORED, 'true')
+              - script: |
+                  bash devops/terraform_destroy_init.sh
+                displayName: 'Deployment'
