@@ -4,6 +4,7 @@ import os
 import boto3
 # from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
+from lib.helper_python import send_pinpoint_email
 
 headers = {
     'Content-Type': 'application/json',
@@ -166,6 +167,8 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
+        email_status = send_pinpoint_email(data['email_address'], os.environ["SES_SENDER_EMAIL_ID"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
+                                        os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
         return {
                 "statusCode": 204,
                 "headers": headers,
