@@ -3,9 +3,9 @@ from pymongo import MongoClient
 import os
 
 # Replace the URI string with your MongoDB deployment's connection string.
-client = MongoClient('mongodb://indyauctionAdmin:OWRsvyIkXq4fYmzd@localhost:27017/dev?authMechanism=SCRAM-SHA-1&authSource=dev&retryWrites=false&directConnection=true')  #MongoClient(os.environ['MONGO_CLIENT'])
-db = client['dev']                       #client[os.environ['DATABASE']]
-collection = db['dev-users']       #db[os.environ['SELLERS_TABLE']]
+client = MongoClient(os.environ['MONGO_CLIENT'])
+db = client[os.environ['DATABASE']]
+collection = db[os.environ['SELLERS_TABLE']]
 
 
 
