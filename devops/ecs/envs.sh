@@ -16,6 +16,7 @@ parameter_names=(
     "MAILCHIMP_SECRET_KEY"
     "SENDER_EMAIL_ADDRESS"
     "AMPLIFY_DOMAIN_NAME"
+    "ADMIN_COGNITO_USERPOOL_ID"
 )
 
 # Loop through each parameter
