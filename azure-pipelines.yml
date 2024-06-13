@@ -163,7 +163,7 @@ stages:
       condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
       displayName: Deployment
       pool:
-        vmImage: 'macos-latest'
+        vmImage: 'ubuntu-latest'
       ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
           environment: 'Production'
       ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
