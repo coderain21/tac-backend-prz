@@ -52,6 +52,23 @@ async function getLot(rediskey, client, auctionData) {
     })
 }
 
+async function lotDetails(rediskey, client) {
+    try {
+        const existingRecord = await client.hget('lot', rediskey)
+        // If the lot was found in Redis, return it as a single-element array
+        if (existingRecord) {
+            return [existingRecord]
+        }
+        // If the lot was not found in Redis, return an empty array
+        return []
+    } catch (err) {
+        // Log any errors which occur
+        console.log(err)
+        // Return an empty array
+        return []
+    }
+}
+
 /**
  * Formats a currency string
  * @param {number|string} amount The amount to format
@@ -59,6 +76,7 @@ async function getLot(rediskey, client, auctionData) {
  * @returns {string} The formatted currency string
  */
 function formatCurrency(amount, currencyCode) {
+    console.log('amount', amount)
     try {
         // Convert amount to a string
         const amountString = String(amount)
@@ -180,7 +198,13 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                 // Loop through the lots and add them to the winning or losing lists
                 for (const lot of get_lot) {
-                // Add the CDN link to the image URL
+                    const rediskey = `lot:${lot._id}`
+                    const getLotInfo = await lotDetails(rediskey, client)
+                    const singleLot = []
+                    for (let i = 0; i < getLotInfo.length; i++) {
+                        singleLot.push(JSON.parse(getLotInfo[i]))
+                    }
+                    // Add the CDN link to the image URL
                     lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
 
                     // Add the formatted bid amount to the lot
@@ -189,7 +213,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         event.email_address = user.email_address
                         // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                         // console.log('won', getAmount)
-                        lot.bid_amount = formatCurrency(lot.bid_amount, auctionData.currency)
+                        lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
                         winningLot.push(lot)
                     } else {
                         event.lot_number = lot.lot_number
@@ -202,7 +226,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                         }
                     }
                 }
-
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
 

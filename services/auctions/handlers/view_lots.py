@@ -165,6 +165,7 @@ def list_lots(event, context):
             "total selling":percentage_bids_gt_zero
         }
         if export:
+            lots = list(collection.find(query).sort(sort_criteria))
             download_link = export_lots_as_csv(lots, db)
         if download_link is not None:
             body["csv_url"] = download_link

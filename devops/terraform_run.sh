@@ -63,6 +63,7 @@ npm i serverless-offline
 npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
+export config=serverless.yml
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 

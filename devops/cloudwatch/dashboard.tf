@@ -17,6 +17,7 @@ resource "aws_cloudwatch_dashboard" "demo-dashboard" {
 
   dashboard_body = local.json_data
 
+
 }
 
 
