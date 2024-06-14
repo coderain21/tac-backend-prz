@@ -4,6 +4,7 @@ import os
 import boto3
 # from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
+from lib.helper_python import send_pinpoint_email
 
 headers = {
     'Content-Type': 'application/json',
@@ -158,6 +159,9 @@ def update_password(event, context):
             }
         userdata= {'email_address':email_address, 'password': update_password}
         success_status = admin_set_password(userdata, userpool_id)
+        email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
+                                        os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
+        print('email_status', email_status)
         print('success_status', success_status)
         if success_status['success_status'] is not True:
             print('there was some error while updating password')
@@ -166,6 +170,9 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
+
+        # email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
+        #                                 os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
         return {
                 "statusCode": 204,
                 "headers": headers,
