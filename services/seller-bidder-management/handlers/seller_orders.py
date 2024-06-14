@@ -76,6 +76,7 @@ def list_orders(event, context):
         sort_order = data.get('sort_order', 'descending') 
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
+        filters = data.get('filter', False)
 
         #filter for created_at
         start_date = data.get('start_date', None)
@@ -115,28 +116,23 @@ def list_orders(event, context):
 
         # Build the query based on parameters
         query = {"seller_email": email_address}
-        if payment_type:
-            query["payment"] = payment_type
-        if payment_status:
-            query["payment_status"] = payment_status
-
-
-        # print('Query:', query)
-
-        # Query the MongoDB collection
-        # Use cursor-based pagination instead of skip
-
-        if start_date and end_date:
-            start_date = int(start_date)
-            end_date = int(end_date)
-            date_range_condition = {
-                "created_at": {
-                    "$gte": start_date,
-                    "$lte": end_date
+        
+        if filters:
+            if payment_type:
+                query["payment"] = payment_type
+            if payment_status:
+                query["payment_status"] = payment_status
+            if start_date and end_date:
+                start_date = int(start_date)
+                end_date = int(end_date)
+                date_range_condition = {
+                    "created_at": {
+                        "$gte": start_date,
+                        "$lte": end_date
+                    }
                 }
-            }
-            print(date_range_condition)
-            query.update(date_range_condition)
+                print(date_range_condition)
+                query.update(date_range_condition)
 
         if search_query:
             query.update(search_query)  # Update the query dictionary with search_query
