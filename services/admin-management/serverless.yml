@@ -43,15 +43,15 @@ provider:
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     SALES_CSV_FILE:  /tmp/Sales_List.csv
 
-    BUYER_EMAIL_OTP_TEMPLATE:
-      Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "mobiletargeting"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
+    # BUYER_EMAIL_OTP_TEMPLATE:
+    #   Fn::Join:
+    #     - ":"
+    #     - - "arn"
+    #       - "aws"
+    #       - "mobiletargeting"
+    #       - !Ref "AWS::Region"
+    #       - !Ref "AWS::AccountId"
+    #       - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
 
     ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
@@ -101,15 +101,15 @@ provider:
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
-    TEMPLATE_ARN_AUCTION_COMPLETION:
-      Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "mobiletargeting"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
+    # TEMPLATE_ARN_AUCTION_COMPLETION:
+    #   Fn::Join:
+    #     - ":"
+    #     - - "arn"
+    #       - "aws"
+    #       - "mobiletargeting"
+    #       - !Ref "AWS::Region"
+    #       - !Ref "AWS::AccountId"
+    #       - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL: ${ssm:CDN_URL}
     SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
     STATE_MACHINE_LOT_ARN:  
@@ -806,12 +806,12 @@ resources:
           Ref: "ApiGatewayRestApi"
 
 
-    UpdatePassword:
-      Type: AWS::Pinpoint::EmailTemplate
-      Properties: 
-        HtmlPart: ${file(./templates/update_password.html)}
-        Subject: Indy.auction - Password Update Confirmation
-        TemplateName: ${self:provider.stage}-admin-update-password-template
+    # UpdatePassword:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/update_password.html)}
+    #     Subject: Indy.auction - Password Update Confirmation
+    #     TemplateName: ${self:provider.stage}-admin-update-password-template
 
     LotStateMachineSSMParameter:
       Type: 'AWS::SSM::Parameter'

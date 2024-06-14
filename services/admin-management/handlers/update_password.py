@@ -171,8 +171,8 @@ def update_password(event, context):
                 "body": json.dumps({"message": "there was some error while updating"})
             }
 
-        email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
-                                        os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
+        # email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
+        #                                 os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
         return {
                 "statusCode": 204,
                 "headers": headers,
