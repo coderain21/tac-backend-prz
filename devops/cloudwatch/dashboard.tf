@@ -49,194 +49,199 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
   provider = aws.deployment-eu
 }
 
-# Create CloudWatch Alarms for 5xx status code  metrics
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Seller Web Application"
+
+
+
+#Creating alarm for Admin web application erros 
+resource "aws_cloudwatch_metric_alarm" "combined_errors_alarm_admin" {
+  alarm_name          = "Admin-Web-Application-Errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/RUM"
-  period              = 60  # 1 min (adjust based on your desired granularity)
-  statistic           = "Sum"
+  threshold           = 5
+  alarm_description   = "Alarm when the combined count of JsErrorCount, 5xxError, and 4xxError exceeds 5 in a 30-minute period."
+  actions_enabled     = true
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
+  metric_query {
+    id          = "e1"
+    expression  = "q1 + q2 + q3"
+    label       = "TotalErrorCount"
+    period      = 1800
+    return_data = "true"
+  }
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  metric_query {
+    id = "q1"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "JsErrorCount"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Admin-Web-Application"
+      }
+    }
    
-   
-  dimensions = {
-    application_name = "Seller-Web-Application"
+  }
+
+  metric_query {
+    id = "q2"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "5xxError"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Admin-Web-Application"
+      }
+    }
+  }
+
+  metric_query {
+    id = "q3"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "4xxError"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Admin-Web-Application"
+      }
+    }
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Buyer Web Application"
+
+#Creating alarm for Seller web application erros 
+resource "aws_cloudwatch_metric_alarm" "combined_errors_alarm_seller" {
+  alarm_name          = "Seller-Web-Application-Errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/RUM"
-  period              = 60  # 1 min (adjust based on your desired granularity)
-  statistic           = "Sum"
+  threshold           = 5
+  alarm_description   = "Alarm when the combined count of JsErrorCount, 5xxError, and 4xxError exceeds 5 in a 30-minute period."
+  actions_enabled     = true
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
+  metric_query {
+    id          = "e1"
+    expression  = "q1 + q2 + q3"
+    label       = "TotalErrorCount"
+    period      = 1800
+    return_data = "true"
+  }
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  metric_query {
+    id = "q1"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "JsErrorCount"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Seller-Web-Application"
+      }
+    }
    
-   
-  dimensions = {
-    application_name = "Buyer-Web-Application"
+  }
+
+  metric_query {
+    id = "q2"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "5xxError"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Seller-Web-Application"
+      }
+    }
+  }
+
+  metric_query {
+    id = "q3"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "4xxError"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Seller-Web-Application"
+      }
+    }
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Admin Web Application"
+#Creating alarm for Buyer web application erros 
+resource "aws_cloudwatch_metric_alarm" "combined_errors_alarm_buyer" {
+  alarm_name          = "Buyer-Web-Application-Errors"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/RUM"
-  period              = 60  # 1 min (adjust based on your desired granularity)
-  statistic           = "Sum"
+  threshold           = 5
+  alarm_description   = "Alarm when the combined count of JsErrorCount, 5xxError, and 4xxError exceeds 5 in a 30-minute period."
+  actions_enabled     = true
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
+  metric_query {
+    id          = "e1"
+    expression  = "q1 + q2 + q3"
+    label       = "TotalErrorCount"
+    period      = 1800
+    return_data = "true"
+  }
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  metric_query {
+    id = "q1"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "JsErrorCount"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Buyer-Web-Application"
+      }
+    }
    
-   
-  dimensions = {
-    application_name = "Admin-Web-Application"
+  }
+
+  metric_query {
+    id = "q2"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "5xxError"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Buyer-Web-Application"
+      }
+    }
+  }
+
+  metric_query {
+    id = "q3"
+
+    metric {
+      namespace   = "AWS/RUM"
+      metric_name = "4xxError"
+      period = 1800
+      stat   = "SampleCount"
+      dimensions = {
+        application_name = "Buyer-Web-Application"
+      }
+    }
   }
 }
 
-# Create CloudWatch Alarms for 4xx status code  metrics
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_400_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 4xx Admin Web Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Http4xxCount"
-  namespace           = "AWS/RUM"
-  period              = 300  # 1 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    application_name = "Admin-Web-Application"
-  }
-}
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_400_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 4xx Buyer Web Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Http4xxCount"
-  namespace           = "AWS/RUM"
-  period              = 300  # 1 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    application_name = "Buyer-Web-Application"
-  }
-}
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_400_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 4xx Seller Web Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Http4xxCount"
-  namespace           = "AWS/RUM"
-  period              =  300 # 5 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    application_name = "Seller-Web-Application"
-  }
-}
-# Create CloudWatch Alarms for JS errors  metrics
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_js_error" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode JS error Seller Web Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "JsErrorCount"
-  namespace           = "AWS/RUM"
-  period              =  300 # 5 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 5
-
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    application_name = "Seller-Web-Application"
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_js_error" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode JS error Buyer Web Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "JsErrorCount"
-  namespace           = "AWS/RUM"
-  period              =  300 # 5 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 5
-
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    application_name = "Buyer-Web-Application"
-  }
-}
-
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_js_error" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode JS error Admin Web Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "JsErrorCount"
-  namespace           = "AWS/RUM"
-  period              =  300 # 5 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 5
-
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    application_name = "Admin-Web-Application"
-  }
-}
 # Create CloudWatch Alarms for DocuementDB maximum connections metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_connections" {
   provider = aws.deployment-eu
@@ -277,6 +282,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
     DBClusterIdentifier = "docdb-mongodb-instance"
   }
 }
+
 # Create CloudWatch Alarms for DocuementDB Memory utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
   provider = aws.deployment-eu
@@ -394,4 +400,10 @@ resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
   protocol  = "email"
   endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
+}
+resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
+  provider = aws.deployment-eu
+  topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
+  protocol  = "email"
+  endpoint  = "admin@indy.auction"  # Replace with your email address
 }
