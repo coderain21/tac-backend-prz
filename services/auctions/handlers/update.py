@@ -177,6 +177,8 @@ def update_auction(event, context):
         auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
         auction_extension_type = request_body.get('extension_type', None)
+        auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
+        print('auction_extension_between_lots', auction_extension_between_lots)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
@@ -370,18 +372,20 @@ def update_auction(event, context):
         else:
             extension_time=0
 
-        if auction_extension_type != None:
-            extension_time_str = request_body.get('extension_time_between_lots', auction_record.get('extension_time_between_lots') )
-            if extension_time_str != '':
+        if auction_extension_type or auction_extension_between_lots:
+            if auction_extension_type and not auction_extension_between_lots:
+                extension_time_str = auction_record.get('extension_time_between_lots', '0')
                 extension_time = int(extension_time_str[:1])
-            else:
-                extension_time=0
+            elif auction_extension_between_lots and not auction_extension_type:
+                extension_time_str = request_body.get('extension_time_between_lots', '0')
+                extension_time = int(extension_time_str[:1])
+            elif auction_extension_type and auction_extension_between_lots:
+                extension_time_str = request_body.get('extension_time_between_lots', '0')
+                extension_time = int(extension_time_str[:1])
+
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
-        print('auction_end_date', auction_end_date)
-        print('auction_extension_type', auction_extension_type)
         if auction_end_date != None:
-            print('insid enddate')
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
@@ -430,7 +434,6 @@ def update_auction(event, context):
 
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 for item in listLots:
-                    print('inisde lot update', item['end_date'], epoch_time_milliseconds)
                     if not item['end_date'] < epoch_time_milliseconds:
                         if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                             item['start_date'] = start_date
@@ -476,7 +479,6 @@ def update_auction(event, context):
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
                     if len(getExistingLot) > 0:
-                        print('yes greater than', getExistingLot)
                         # Create a new dictionary with only the required fields
                         required_fields = {
                             **getExistingLot,
@@ -537,8 +539,9 @@ def update_auction(event, context):
                         Entries=entries
                     )
                     print('cc', cc)
-        if auction_extension_type != None:
-            print('auction_extension_type', auction_extension_type)
+        if auction_extension_type or auction_extension_between_lots:
+            if auction_extension_type is None:
+                auction_extension_type = auction_record['extension_type']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
                 end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
                 auction_record['end_date'] = end_date_update
