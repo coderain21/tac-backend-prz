@@ -23,8 +23,8 @@ headers = {
 client = MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
 orders_collection = db[os.environ['ORDERS_COLLECTION']]
-buyer_collection = db[os.environ['BUYER_COLLECTION']]
-user_collection = db[os.environ['SELLERS_TABLE']]
+# buyer_collection = db[os.environ['BUYER_COLLECTION']]
+# user_collection = db[os.environ['SELLERS_TABLE']]
 
 def prepend_backslash(text):
     """
@@ -66,7 +66,7 @@ def list_orders(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-
+        # email_address = 'sthuthi+test3@7edge.com'
         # Extract parameters from the request, defaulting to empty dictionary if not present
         data = event.get('queryStringParameters', {}).copy() if event.get('queryStringParameters') else {}
 
@@ -85,30 +85,43 @@ def list_orders(event, context):
         payment_type = data.get("payment_type", '')
         payment_status = data.get("payment_status", '')
 
+
         print('Page:', page)
         print('Limit:', limit)
+        print('Start Date:', start_date)
+        print('End Date:', end_date)
+        print('Payment Type:', payment_type)
+        print('Payment Status:', payment_status)
+
 
         search_query = {}
-        if 'queryStringParameters' in event and 'search' in event['queryStringParameters']:
-            search_text = event['queryStringParameters']['search']
-            search_text = prepend_backslash(search_text)
+        if 'search' in data:
+            search_text = prepend_backslash(data['search'])
             search_query['$or'] = [
                 {"name": {"$regex": search_text, "$options": "i"}},
                 {"auction_title": {"$regex": search_text, "$options": "i"}},
                 {"order_number": {"$regex": search_text, "$options": "i"}}
             ]
 
+        print('Search Query:', search_query)
+
         # Initialize sort_criteria with a default value
         sort_criteria = []
-        if sort_by and sort_by in ['name', 'auction_title']:
+        if sort_by and sort_by in ['name', 'auction_title', 'created_at']:
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
+        
+
+        print('Sort Criteria:', sort_criteria)
 
         # Build the query based on parameters
-        query = {"email_address": email_address}
+        query = {"seller_email": email_address}
         if payment_type:
             query["payment"] = payment_type
         if payment_status:
             query["payment_status"] = payment_status
+
+
+        # print('Query:', query)
 
         # Query the MongoDB collection
         # Use cursor-based pagination instead of skip
@@ -125,6 +138,9 @@ def list_orders(event, context):
             print(date_range_condition)
             query.update(date_range_condition)
 
+        if search_query:
+            query.update(search_query)  # Update the query dictionary with search_query
+
         orders_list = orders_collection.find(
             query,
             {
@@ -138,6 +154,8 @@ def list_orders(event, context):
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
 
+        # print('Orders List:', list(orders_list))
+
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
         total_pages = math.ceil(total_records / limit)
@@ -148,7 +166,7 @@ def list_orders(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No Orders found"})
             }
-
+        # print('ordersss', list(orders_list))    
         body = {
             "data": list(orders_list),
             "total_pages": total_pages,
@@ -156,7 +174,7 @@ def list_orders(event, context):
             "current_page": page
             # "total_orders": total_records
         }
-
+        # print(body)
         return {
             "statusCode": 200,
             "headers": headers,
