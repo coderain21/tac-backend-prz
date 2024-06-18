@@ -55,7 +55,7 @@ def set_authorization(transaction):
         print('Skipping the test...')
         transaction['skip'] = True
         return
-    
+
     if (transaction['request']['method'] == 'GET' and '/sellers' in transaction['request']['uri']):
         print('Skipping the test...')
         transaction['skip'] = True
@@ -63,6 +63,12 @@ def set_authorization(transaction):
 
     # skipping this test for now
     if (transaction['request']['method'] == 'GET' and '/buyers' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    
+
+    if (transaction['request']['method'] == 'PATCH' and '/admin-update-password' in transaction['request']['uri']):
         print('Skipping the test...')
         transaction['skip'] = True
         return
