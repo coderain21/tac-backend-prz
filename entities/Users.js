@@ -49,8 +49,8 @@ const UserSchema = new Schema({
     twitter: { type: String, trim: true, default: '' },
     linkedin_link: { type: String, trim: true, default: '' },
     tiktok_link: { type: String, trim: true, default: '' },
-    kyc_status: { type: String, trim: true, default: false },
     kyb_status: { type: String, trim: true, default: false },
+    kyc_status: { type: String, trim: true, default: false },
 
 })
 
