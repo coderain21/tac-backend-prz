@@ -89,7 +89,7 @@ module.exports.updateUserInformation = async (event) => {
                 }
             }
             body = JSON.stringify({
-                message: 'Failed to update information',
+                message: 'Failed to update information.',
             })
 
             return {
