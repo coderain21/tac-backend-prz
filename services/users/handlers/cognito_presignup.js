@@ -71,7 +71,6 @@ exports.handler = async (event, context, callback) => {
             const userData = {
                 first_name: event.request.userAttributes.given_name,
                 last_name: event.request.userAttributes.family_name,
-                full_name: `${event.request.userAttributes.given_name} ${event.request.userAttributes.family_name}`,
                 user_name: event.request.userAttributes.email,
                 email_address: event.request.userAttributes.email,
                 password: newPassword,
