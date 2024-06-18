@@ -250,6 +250,12 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
+            if seller_data.get('status') == 'Inactive':
+                return {
+                    "statusCode": 401,
+                    'headers': headers,
+                    "body": json.dumps({"message": "Unauthorised to perform this action."})
+                }
             result = has_images_for_auction_and_seller(auction_id, seller_email)
             if result:
                 print("All lots have images.")
