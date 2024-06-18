@@ -12,6 +12,7 @@ const CryptoJS = require('crypto-js')
 
 const { CognitoIdentityServiceProvider } = require('aws-sdk')
 const cognitoHelper = require('../lib/cognito_helper')
+const Counter = require('../entities/Counter')
 
 // eslint-disable-next-line import/order
 const helpers = require('../lib/helper')
@@ -99,32 +100,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        // if (userData.type === 'admin' && userData.session_token === '') {
-        //     try {
-        //         const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
-        //         const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
-        //         const OTP = userData.otp
-        //         userData = { ...userData, ...data }
-        //         if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
-        //             return {
-        //                 statusCode: 201,
-        //                 headers: await helpers.getHeaders(),
-        //                 body: JSON.stringify({ message: 'Succes' }),
-        //             }
-        //         }
-        //         return {
-        //             statusCode: 400,
-        //             headers: await helpers.getHeaders(),
-        //             body: JSON.stringify({ message: 'Invalid OTP' }),
-        //         }
-        //     } catch (err) {
-        //         return {
-        //             statusCode: 400,
-        //             headers: await helpers.getHeaders(),
-        //             body: JSON.stringify({ message: 'Something went wrong' }),
-        //         }
-        //     }
-        // }
         if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
@@ -152,6 +127,9 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const ciphertext = CryptoJS.AES.encrypt(userData.password, process.env.PASSWORD_SECRET_KEY).toString()
                     userData.password = ciphertext
+                    const counter = await Counter.findOneAndUpdate({ record_type: 'Seller', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+                    const sequenceNumber = `S${helpers.leftPad(counter.starting_sequence, 4)}`
+                    userData.seller_id = sequenceNumber
                     const user = await mongoConnection.save(userData, Users)
                     const domainInfo = {
                         seller_email: userData.email_address,
