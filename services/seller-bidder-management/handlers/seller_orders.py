@@ -146,7 +146,9 @@ def list_orders(event, context):
                 "order_number": 1,
                 "payment_status": 1,
                 "payment": 1,
-                'auction_title': 1
+                "amount": 1,
+                "currency": 1,
+                "auction_title": 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
 
