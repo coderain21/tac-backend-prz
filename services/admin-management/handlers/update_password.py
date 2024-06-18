@@ -2,9 +2,9 @@
 import json
 import os
 import boto3
-from pymongo import MongoClient
+# from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
-from bson import ObjectId
+from lib.helper_python import send_pinpoint_email
 
 headers = {
     'Content-Type': 'application/json',
@@ -14,15 +14,6 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-
-client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-db = client[os.environ['DATABASE']]
-user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
@@ -44,8 +35,8 @@ cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 def cognitoCheck(email_address, encrypt_password):
     try:
         response = cognito_client.admin_initiate_auth(
-            UserPoolId= os.environ['DEFAULT_USERPOOL_ID'],
-            ClientId= os.environ['BUYER_COGNITO_CLIENT_ID'],
+            UserPoolId = os.environ['ADMIN_COGNITO_USERPOOL_ID'],
+            ClientId= os.environ['ADMIN_COGNITO_CLIENT_ID'],
             AuthFlow='ADMIN_NO_SRP_AUTH',
             AuthParameters={
                 'USERNAME': email_address,
@@ -56,7 +47,7 @@ def cognitoCheck(email_address, encrypt_password):
                 'success_status': True,
             }
     except Exception as e:
-        print('errrrrrrrrrrrr', e)
+        print('Error in cognitoCheck', e)
         return {
                 'success_status': False,
             }
@@ -95,7 +86,7 @@ def admin_set_password(userData, userpool_id):
             }
 
     except Exception as e:
-        print(e)
+        print('Error in admin set password',str(e))
         return {
             'success_status': False,
             'message': str(e)
@@ -116,49 +107,31 @@ def update_password(event, context):
     depends on the conditions and logic within the function.
     """
     try:
-        print('event', event['requestContext']['authorizer']['claims'] )
         try:
-            cognito_data = json.loads(json.dumps(
-                event['requestContext']['authorizer']['claims']))
-            print('cognito data', cognito_data)
-            email_address = cognito_data['email']
-            print('email', email_address)
-            if "cognito:groups" not in cognito_data :
-                return {
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        except:
+            return {
                     "statusCode": 403,
                     "headers": headers,
                     "body": json.dumps({"message": "You do not have access to perform this API action"})
                 }
-        except Exception as e:
-            print('error', e)
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
         data = json.loads(event['body'])
+        print('data', data)
         old_password = data.get('old_password')
         new_password = data.get('new_password')
         confirm_password = data.get('confirm_password')
-        domain = data.get('domain')
-        auction_id = data.get('auction_id')
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
+        # auction_id = data.get('auction_id')
+        # client = MongoClient(os.environ['MONGO_CLIENT'])
         # db = client[os.environ['DATABASE']]
-        # user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-        seller_email = auction_collection.find_one({"_id": ObjectId(auction_id)},
-                                                {'seller_email': 1}).get('seller_email')
+        # # seller_email = auction_collection.find_one({"_id": ObjectId(auction_id)},
+        #                                         # {'seller_email': 1}).get('seller_email')
 
-        userpool_id = os.environ["DEFAULT_USERPOOL_ID"]
-        buyer = buyer_collection.find_one(
-            {'seller_email': seller_email, 'email_address': email_address})
-        password = buyer['password']
+        userpool_id = os.environ["ADMIN_COGNITO_USERPOOL_ID"]
         encrypt_password = hash_password(old_password)
         checkOldPassword = cognitoCheck(email_address, old_password)
+        print('checkOldPassword', checkOldPassword)
         if not checkOldPassword['success_status']:
             return {
                 "statusCode": 400,
@@ -169,6 +142,7 @@ def update_password(event, context):
             }
         update_password = new_password
         new_password= hash_password(new_password)
+        print('new_password', new_password)
         if new_password == encrypt_password:
             return {
                 "statusCode": 400,
@@ -176,6 +150,7 @@ def update_password(event, context):
                 "body": json.dumps({"message": "New password cannot be the same as old password. Please try again."})
             }
         confirm_password = hash_password(confirm_password)
+        print('confirm_password', confirm_password)
         if new_password != confirm_password:
             return {
                 "statusCode": 400,
@@ -184,21 +159,29 @@ def update_password(event, context):
             }
         userdata= {'email_address':email_address, 'password': update_password}
         success_status = admin_set_password(userdata, userpool_id)
+        email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
+                                        os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
+        print('email_status', email_status)
+        print('success_status', success_status)
         if success_status['success_status'] is not True:
+            print('there was some error while updating password')
             return {
                 "statusCode": 500,
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
+
+        # email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
+        #                                 os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
         return {
                 "statusCode": 204,
                 "headers": headers,
                 "body": json.dumps({"message": "Password updated successfully"})
             }
     except Exception as e:
+        print('Error in update password:', str(e))
         return {
             "statusCode": 500,
             'headers': headers,
             "body": json.dumps({"message": "Internal server error"})
         }
-        
