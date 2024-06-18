@@ -19,7 +19,7 @@ headers = {
 client = MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 user_collection = db[os.environ['SELLERS_TABLE']]
-
+# user_collection = db[os.environ['SELLERS_TABLE']]
 
 def prepend_backslash(text):
     """
