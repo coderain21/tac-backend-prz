@@ -31,7 +31,6 @@ const UserSchema = new Schema({
     free_user: { type: Boolean, default: true },
     first_name: { type: String, trim: true, default: '' },
     last_name: { type: String, trim: true, default: '' },
-    full_name: { type: String, trim: true, default: '' },
     brand_name: { type: String, trim: true, default: '' },
     business_registration_number: { type: String, trim: true, default: '' },
     website: { type: String, trim: true, default: '' },
@@ -51,6 +50,7 @@ const UserSchema = new Schema({
     tiktok_link: { type: String, trim: true, default: '' },
     kyb_status: { type: String, trim: true, default: false },
     kyc_status: { type: String, trim: true, default: false },
+    full_name: { type: String, trim: true, default: '' },
 
 })
 
