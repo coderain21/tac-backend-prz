@@ -163,7 +163,7 @@ stages:
       condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
       displayName: Deployment
       pool:
-        vmImage: 'macos-latest'
+        vmImage: 'ubuntu-latest'
       ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
           environment: 'Production'
       ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
@@ -197,75 +197,75 @@ stages:
                 displayName: 'Deployment'
 
 
-- stage: DisposableDeploy
-  jobs:
-    - deployment: Deployment
-      condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
-      displayName: Deployment
-      environment: 'Testing'
-      pool:
-        vmImage: 'macos-latest'
-      variables:
-        - group: pre-production
-      strategy:
-        # Default deployment strategy, more coming...
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - task: Cache@2
-                inputs:
-                  key: 'npmV2 | "$(Agent.OS)" | package.json'
-                  restoreKeys: |
-                    npmV2 | "$(Agent.OS)"
-                  path: "$(System.DefaultWorkingDirectory)/node_modules"
-                  cacheHitVar: CACHE_RESTORED
-                displayName: Cache npm
-              # - task: DownloadPipelineArtifact@2
-              #   name: environment
-              #   inputs:
-              #     artifact: environment
-              #     targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: |
-                  npm install --cache .npm
-                condition: ne(variables.CACHE_RESTORED, 'true')
-              - script: |
-                  bash devops/terraform_run.sh
-                displayName: 'Deployment'
+# - stage: DisposableDeploy
+#   jobs:
+#     - deployment: Deployment
+#       condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+#       displayName: Deployment
+#       environment: 'Testing'
+#       pool:
+#         vmImage: 'macos-latest'
+#       variables:
+#         - group: pre-production
+#       strategy:
+#         # Default deployment strategy, more coming...
+#         runOnce:
+#           deploy:
+#             steps:
+#               - checkout: self
+#               - task: Cache@2
+#                 inputs:
+#                   key: 'npmV2 | "$(Agent.OS)" | package.json'
+#                   restoreKeys: |
+#                     npmV2 | "$(Agent.OS)"
+#                   path: "$(System.DefaultWorkingDirectory)/node_modules"
+#                   cacheHitVar: CACHE_RESTORED
+#                 displayName: Cache npm
+#               # - task: DownloadPipelineArtifact@2
+#               #   name: environment
+#               #   inputs:
+#               #     artifact: environment
+#               #     targetPath: '$(System.DefaultWorkingDirectory)'
+#               - script: |
+#                   npm install --cache .npm
+#                 condition: ne(variables.CACHE_RESTORED, 'true')
+#               - script: |
+#                   bash devops/terraform_run.sh
+#                 displayName: 'Deployment'
 
 
-- stage: DeleteDisposable
-  jobs:
-    - deployment: Deployment
-      condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
-      displayName: Deployment
-      environment: 'Testing'
-      pool:
-        vmImage: 'macos-latest'
-      variables:
-        - group: pre-production
-      strategy:
-        # Default deployment strategy, more coming...
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - task: Cache@2
-                inputs:
-                  key: 'npmV2 | "$(Agent.OS)" | package.json'
-                  restoreKeys: |
-                    npmV2 | "$(Agent.OS)"
-                  path: "$(System.DefaultWorkingDirectory)/node_modules"
-                  cacheHitVar: CACHE_RESTORED
-                displayName: Cache npm
-              # - task: DownloadPipelineArtifact@2
-              #   name: environment
-              #   inputs:
-              #     artifact: environment
-              #     targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: |
-                  npm install --cache .npm
-                condition: ne(variables.CACHE_RESTORED, 'true')
-              - script: |
-                  bash devops/terraform_destroy_init.sh
-                displayName: 'Deployment'
+# - stage: DeleteDisposable
+#   jobs:
+#     - deployment: Deployment
+#       condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+#       displayName: Deployment
+#       environment: 'Testing'
+#       pool:
+#         vmImage: 'macos-latest'
+#       variables:
+#         - group: pre-production
+#       strategy:
+#         # Default deployment strategy, more coming...
+#         runOnce:
+#           deploy:
+#             steps:
+#               - checkout: self
+#               - task: Cache@2
+#                 inputs:
+#                   key: 'npmV2 | "$(Agent.OS)" | package.json'
+#                   restoreKeys: |
+#                     npmV2 | "$(Agent.OS)"
+#                   path: "$(System.DefaultWorkingDirectory)/node_modules"
+#                   cacheHitVar: CACHE_RESTORED
+#                 displayName: Cache npm
+#               # - task: DownloadPipelineArtifact@2
+#               #   name: environment
+#               #   inputs:
+#               #     artifact: environment
+#               #     targetPath: '$(System.DefaultWorkingDirectory)'
+#               - script: |
+#                   npm install --cache .npm
+#                 condition: ne(variables.CACHE_RESTORED, 'true')
+#               - script: |
+#                   bash devops/terraform_destroy_init.sh
+#                 displayName: 'Deployment'

@@ -10,15 +10,25 @@ collection = db[os.environ['SELLERS_TABLE']]
 
 
 # Function to update the documents with the full_name field.
-def add_full_name():
+def full_name_fix():
+    print('Starting full_name_fix')
     # Find all documents in the collection.
-    documents = collection.find()
+    documents = collection.find({})  # Use an empty dictionary to find all documents.
+    # print('found', list(documents))
 
     for doc in documents:
         # Concatenate first_name and last_name to form full_name.
+        print('here')
         first_name = doc.get('first_name', '')
         last_name = doc.get('last_name', '')
-        full_name = f"{first_name} {last_name}"
+        if not first_name and not last_name:
+            full_name = ''
+        if not first_name:
+            full_name = last_name
+        elif not last_name:
+            full_name = first_name
+        else:
+            full_name = f"{first_name} {last_name}"
 
         # Update the document with the new full_name field.
         collection.update_one(
@@ -28,7 +38,5 @@ def add_full_name():
 
         print(f"Document with ID {doc['_id']} has been updated with the full_name field.")
 
-    print("All documents have been updated with the full_name field.")
-
-# Call the function to perform the update.
-add_full_name()
+# Example call to the function
+full_name_fix()

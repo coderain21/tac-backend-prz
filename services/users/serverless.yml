@@ -755,7 +755,7 @@ resources:
         - GoogleAuth
         - FacebookAuth
       Properties:
-        AccessTokenValidity: 60
+        AccessTokenValidity: 5
         AllowedOAuthFlowsUserPoolClient: true
         AuthSessionValidity: 3
         ClientName: seller
@@ -788,7 +788,7 @@ resources:
         LogoutURLs:
           - "${ssm:BASE_URL_SELLER}"
           - "http://localhost:3000/"
-        IdTokenValidity: 60
+        IdTokenValidity: 5
         PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
