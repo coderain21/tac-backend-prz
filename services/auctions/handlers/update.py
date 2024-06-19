@@ -280,7 +280,26 @@ def update_auction(event, context):
                     'auction_id': auction_record.get('auction_id'),
                 }
                 auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
-                json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
+                allLots = []
+                for item in listLots:
+                    required_fields = {
+                            '_id': item.get('_id'),
+                            'start_date': item.get('start_date'),
+                            'end_date': item.get('end_date'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
+                            'winning_user': item.get('winning_user', ''),
+                            'bid_amount': item.get('bid_amount', ''),
+                            'lot_number': item.get('lot_number'),
+                            'starting_price': item.get('starting_price'),
+                            'images': item.get('images'),
+                            'title1': item.get('title1'),
+                            # Add more required fields as needed
+                        }
+                allLots.append(required_fields)
+                print('allLots', allLots)
+                json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
+                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
@@ -298,7 +317,9 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
+                        print('published', item)
                         message_body = 'published'
+
                         message_attributes = {
                             'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                             'auction': {'DataType': 'String', 'StringValue': auction_record_str},
