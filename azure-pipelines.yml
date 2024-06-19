@@ -120,18 +120,18 @@ stages:
             pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
             npm i -g dredd
             ./api-testing.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
             ./doc.sh
+          displayName: Unit Testing
+        - script: |
             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
             aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-          displayName: Unit Testing
-        - script: |
-            if [ $? -ne 0 ]; then
-              echo "Unit Testing failed"
-              exit 1
-            fi
-          displayName: Check Unit Testing Status
+          displayName:  Unit Testing Documentation
   
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
@@ -194,6 +194,10 @@ stages:
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - script: |
                   bash devops/terraform_run.sh
+                  if [ $? -ne 0 ]; then
+                    echo "API testing failed"
+                    exit 1
+                  fi
                 displayName: 'Deployment'
 
 
