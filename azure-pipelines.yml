@@ -120,12 +120,11 @@ stages:
             pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
             npm i -g dredd
             ./api-testing.sh
-            ./doc.sh
-        - script: |
             if [ $? -ne 0 ]; then
               echo "API testing failed"
               exit 1
             fi
+            ./doc.sh
         - script: |
             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
