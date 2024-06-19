@@ -24,6 +24,7 @@ const BidInformation = require('../entities/BidInformation')
 // const Bid = require('../entities/Bid')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
+const Lot = require('../entities/Lot')
 
 const pinpoint = new PinpointEmail()
 let connection = null
@@ -76,7 +77,6 @@ async function lotDetails(rediskey, client) {
  * @returns {string} The formatted currency string
  */
 function formatCurrency(amount, currencyCode) {
-    console.log('amount', amount)
     try {
         // Convert amount to a string
         const amountString = String(amount)
@@ -169,6 +169,14 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Initialize empty array to store promiseList
         const promiseList = []
         const auctionData = await mongodbHelper.getAuction(event, Auction)
+        const payload = {
+            seller_email: auctionData.seller_email,
+            auction_id: auctionData.auction_id,
+        }
+        const getAuctionLots = await mongodbHelper.getAuctionLots(payload, Lot)
+        console.log('getAuctionLots', getAuctionLots)
+        const lastRecord = getAuctionLots[getAuctionLots.length - 1]
+        console.log(lastRecord)
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         const getAllLots = await getLot('lot', client, event)
@@ -251,7 +259,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             await Promise.all(promiseList)
         }
         // clear the cache
-        if (lastLot === event.lot_number) {
+        if (lastLot.lot_number === event.lot_number) {
             for (const lot of get_lot) {
                 const redisKeys = `lot:${lot._id}`
                 const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
