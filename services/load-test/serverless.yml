@@ -1,4 +1,4 @@
-service: seller-bidder-management
+service: load-test
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -10,43 +10,40 @@ disabledDeprecations:
 provider:
   name: aws
   endpointType: REGIONAL
-  vpc:
-    securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
-    subnetIds:
-      - ${ssm:SUBNET_ID}
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   environment:
+    BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
-    DATABASE: ${opt:stage, self:provider.stage}
     STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
-    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
-    BUCKET_NAME: ${ssm:BUCKET_NAME}
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET:  ${ssm:BUCKET_NAME}
-    CDN_LINK: ${ssm:CDN_URL}
-    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
-    ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
+    USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
+    BUYER_COGNITO_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
 
 
-
-
-  
-
-    
   http:
     cors: true
     authorizers:
@@ -92,47 +89,55 @@ custom:
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
-
   serverlessIfElse:
     - If: '${param:offline, "false"} == true'
       Set:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
-functions: 
- 
-  list:
-    handler: handlers/list_of_bidders.list_bidders
-    timeout: 60
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    events:
-      - http:
-          cors: true
-          path: /
-          method: GET
-          authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-  
-  seller-orders:
-    handler: handlers/seller_orders.list_orders
-    timeout: 60
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    events:
-      - http:
-          cors: true
-          path: /seller-orders
-          method: GET
-          authorizer:
-            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-  
+                
 
+
+functions: 
+  registration:
+    handler: handlers/register.handler
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /register
+          method: POST
+          # authorizer:
+          #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  auction-registration:
+    handler: handlers/register_auction.handler
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /register-auction
+          method: POST
+
+  
   
 plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
   - serverless-plugin-ifelse
-

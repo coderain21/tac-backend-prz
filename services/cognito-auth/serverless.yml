@@ -736,6 +736,14 @@ resources:
           Name: LAMBDA_ARN
           Type: String
           Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:cognito-${self:provider.stage}-add_callback_logout_urls
+    
+    UpdatePassword:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/update_password.html)}
+        Subject: Indy.auction - Password Update Confirmation
+        TemplateName: ${self:provider.stage}-admin-update-password-template
+
 
 
             

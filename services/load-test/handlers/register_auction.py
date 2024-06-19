@@ -9,6 +9,7 @@ import boto3
 import os
 from bson import ObjectId
 
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -17,15 +18,8 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-db = client[os.environ['DATABASE']]
-
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
-buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
 
 def fetch_seller_email_from_auction(auction_id):
     """
@@ -37,19 +31,16 @@ def fetch_seller_email_from_auction(auction_id):
     Returns:
         str: The seller's email associated with the given auction_id or None if not found.
     """
-    # client = MongoClient(
-    #                   os.environ['MONGO_CLIENT'],
-    #                   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-    #                     )
-    # db = client[os.environ['DATABASE']]
-    # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+    client = MongoClient(os.environ['MONGO_CLIENT'])
+    db = client[os.environ['DATABASE']]
+    auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
     email = auction_collection.find_one({"_id": ObjectId(auction_id)}, {
                                         'seller_email': 1}).get('seller_email')
-    # client.close()
+    client.close()
     return email
 
 
-def update_user(event, context):
+def handler(event, context):
     """
     Update user information and add the user to a Cognito group.
 
@@ -61,49 +52,12 @@ def update_user(event, context):
         dict: A dictionary containing the API Gateway response.
     """
     try:
-        print('event', event['requestContext']['authorizer']['claims'] )
-        try:
-            cognito_data = json.loads(json.dumps(
-                event['requestContext']['authorizer']['claims']))
-            print('cognito data', cognito_data)
-            email_address = cognito_data['email']
-            print('email', email_address)
-            if "cognito:groups" not in cognito_data :
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except Exception as e:
-            print('error', e)
-            return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
-
         data = json.loads(event["body"])
         print('dataa', data)
-        expected_fields = ["auction_id", "group"]
-        fields_not_found = list(set(expected_fields).difference(data.keys()))
-        if fields_not_found:
-            return {"headers": headers,
-                    'statusCode': 400,
-                    "body": json.dumps(
-                        {"message": f"Please provide {','.join(fields_not_found)}"})
-                    }
+        email_address = data["email_address"]
         auction_id = data.get("auction_id")
-        group = data.get("group")
         new = data.get("new",False)
         seller_email = fetch_seller_email_from_auction(auction_id)
-        # Add user to the specified Cognito group
-        x = cognito_client.admin_add_user_to_group(
-            GroupName= group.split('@')[0],
-            UserPoolId=os.environ["DEFAULT_USERPOOL_ID"],
-            Username=email_address
-        )
-        print('xxxx', x)
-
         if seller_email is not None:
             buyer_data_to_add = {
                 "user_type": "buyer",
@@ -115,12 +69,11 @@ def update_user(event, context):
                 "first_name": "",
                 "last_name": ""
             }
-            # client = MongoClient(
-            #           os.environ['MONGO_CLIENT'],
-            #           maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-            #             )
-            # db = client[os.environ['DATABASE']]
-            # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+            client = MongoClient(os.environ['MONGO_CLIENT'])
+            db = client[os.environ['DATABASE']]
+            buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+            auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
+
 
             # Check if the user already has a seller_email associated
             buyer_data = buyer_collection.find_one(
@@ -165,8 +118,18 @@ def update_user(event, context):
 
                     if buyer_data_without_seller == None:
                         buyer_collection.insert_one(buyer_data_to_add)
-
-            # client.close()
+            data_to_insert= {
+                            'first_name':  data["first_name"],
+                            'last_name':  data["last_name"],
+                            'name': data["first_name"] + " " + data["last_name"],
+                            "auction_id": ObjectId(data["auction_id"]),
+                            "email_address": data["email_address"],
+                            "seller_email":seller_email,
+                            "status":"Approved"
+                   }
+            auction_register.insert_one(data_to_insert)
+            
+            client.close()
             return {
                 "statusCode": 204,
                 'headers': headers,
