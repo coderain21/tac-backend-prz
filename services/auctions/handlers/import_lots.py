@@ -163,7 +163,7 @@ def import_lots(event, context):
             "starting_bid": 0,
             "current_bid": 0,
             "Top_bidder": "",
-            # "images": [],
+            "images": [],
         }
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
@@ -238,9 +238,10 @@ def import_lots(event, context):
                 else:
                     dict1["tags"] = []
                 dict1.update(additional_fields)
-                static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
-                static_image_data = {"url": static_image_url, "featured": True}
-                dict1['images']=[static_image_data]
+                if email_address == 'anusha.k+subdomain2@7edge.com':
+                    static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+                    static_image_data = {"url": static_image_url, "featured": True}
+                    dict1['images']=[static_image_data]
                 documents.append(dict1)
         except Exception as err:
             print(err)
