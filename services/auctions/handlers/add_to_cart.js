@@ -73,10 +73,9 @@ module.exports.handler = async (event) => {
         for (let i = 0; i < getLotInfo.length; i++) {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
-        console.log('getLot', get_lot)
         const lotInformation = get_lot[0]
-        console.log('currentTimestamp', currentTimestamp)
         if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
+            console.log('inside a winning')
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
             lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
             lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
@@ -94,7 +93,7 @@ module.exports.handler = async (event) => {
                 console.log('no match')
             }
         }
-        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) {
+        if ((lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) || (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user == null)) {
             if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
             }

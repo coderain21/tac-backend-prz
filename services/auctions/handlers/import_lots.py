@@ -117,7 +117,10 @@ def import_lots(event, context):
             # 'Tags'
         ]
         # Initialize the MongoDB client
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
 
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -152,13 +155,15 @@ def import_lots(event, context):
         end_date= auction_record['end_date']
         print(123,auction_record)
         print(3333, start_date, end_date)
+        static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+        static_image_data = [{"url": static_image_url, "featured": True}]
         additional_fields = {
             "auction_id": auction_id,
             "seller_email": email_address,
             "starting_bid": 0,
             "current_bid": 0,
             "Top_bidder": "",
-            "images": [],
+            # "images": [],
         }
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
@@ -226,15 +231,16 @@ def import_lots(event, context):
                 dict1["starting_price"] = starting_price
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
+                # dict1['images'] = static_image_data
                 dict1["shipping_details"] = row['Product Shipping Location']
                 if 'Tags' in row:
                     dict1["tags"] = row['Tags'].split(',') if row['Tags'] else []
                 else:
                     dict1["tags"] = []
                 dict1.update(additional_fields)
-                # static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
-                # static_image_data = {"url": static_image_url, "featured": True}
-                # dict1['images']=[static_image_data]
+                static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+                static_image_data = {"url": static_image_url, "featured": True}
+                dict1['images']=[static_image_data]
                 documents.append(dict1)
         except Exception as err:
             print(err)

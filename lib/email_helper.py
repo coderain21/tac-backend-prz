@@ -36,7 +36,10 @@ def send_mail(link, email_template, destination_address, token):
         mail = client.send_templated_email(**param)
         print('mail', mail)
         if mail:
-        #     client = MongoClient(os.environ['MONGO_CLIENT'])
+        #     client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
         #     database = client[os.environ['DATABASE']]
         #     collection = database[os.environ['TOKENS_TABLE']]
         #     document = {

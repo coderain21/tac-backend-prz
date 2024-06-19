@@ -492,7 +492,6 @@ resources:
                     - "s3:PutObjectAcl"
                   Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
-  
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:

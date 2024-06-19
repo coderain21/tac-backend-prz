@@ -25,6 +25,15 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+address_collection = db[os.environ['ADDRESS_COLLECTION']]
+
+
 def view_address(event, context):
     """
     The function "view_address" is used to handle an event and context in Python.
@@ -71,9 +80,12 @@ def view_address(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # Create a SetupIntent to confirm the PaymentMethod
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        address_collection = db[os.environ['ADDRESS_COLLECTION']]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # address_collection = db[os.environ['ADDRESS_COLLECTION']]
         print(event["queryStringParameters"])
         request_body = event["queryStringParameters"]
         type= request_body['type']

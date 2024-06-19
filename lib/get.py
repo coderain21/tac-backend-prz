@@ -22,7 +22,10 @@ def get_by_email(email,collection):
     """
     try:
         # MongoDB configuration
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         collection_sellers = db[collection]
 
@@ -47,7 +50,10 @@ def fetch_seller_data_from_auction(auction_id):
         str: The seller's email associated with the given auction_id or None if not found.
     """
     try:
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         data = auction_collection.find_one({"_id":ObjectId(auction_id)})
@@ -68,7 +74,10 @@ def fetch_user_pool_data(email):
 
     """
     try:
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["USERPOOLS_MONGO"]]
         data = auction_collection.find_one({"email_address":email})
@@ -92,7 +101,10 @@ def fetch_buyer_data(seller_email,buyer_email):
         str: The seller's email associated with the given auction_id or None if not found.
     """
     try:
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["BUYER_COLLECTION"]]
         data = auction_collection.find_one({"email_address": buyer_email,"seller_email": seller_email})
@@ -116,7 +128,10 @@ def fetch_seller_data_from_subdomain(auction_id):
         str: The seller's email associated with the given auction_id or None if not found.
     """
     try:
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         auction_collection = db[os.environ["SUB_DOMAIN_TABLE"]]
         seller_data = fetch_seller_data_from_auction(auction_id)
