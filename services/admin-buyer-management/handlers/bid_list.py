@@ -28,7 +28,7 @@ def prepend_backslash(text):
     return modified_text
 
 
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_bidders = db[os.environ["UNIQUE_BIDDERS_COLLECTIONS"]]

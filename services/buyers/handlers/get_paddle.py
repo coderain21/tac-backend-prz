@@ -13,7 +13,10 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
@@ -77,7 +80,10 @@ def paddle_number(event, context):
             }
         auction_id= data['auction_id']
         auction_id= ObjectId(auction_id)
-        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
         # db = client[os.environ['DATABASE']]
         # buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
         # auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]

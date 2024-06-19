@@ -14,7 +14,10 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["BUYER_COLLECTION"]]
 auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
@@ -68,7 +71,10 @@ def view_profile(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # client = MongoClient(os.environ['MONGO_CLIENT'])
+        # client = MongoClient(
+                    #   os.environ['MONGO_CLIENT'],
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                    #     )
         # db = client[os.environ['DATABASE']]
         # collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
