@@ -321,6 +321,7 @@ def update_auction(event, context):
                     entries = []
                     for item in send_batches:
                         print('published', item)
+                        print('published', item)
                         message_body = 'published'
 
 
