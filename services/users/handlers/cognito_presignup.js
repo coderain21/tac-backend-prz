@@ -18,6 +18,10 @@ const cognito = new AWS.CognitoIdentityServiceProvider()
 const Users = require('../entities/Users')
 const SubDomain = require('../entities/SubDomain')
 const mongoConnection = require('../lib/mongodb_helper')
+const Counter = require('../entities/Counter')
+
+// eslint-disable-next-line import/order
+const helpers = require('../lib/helper')
 
 const cognitoHelper = require('../lib/cognito_helper')
 
@@ -67,6 +71,8 @@ exports.handler = async (event, context, callback) => {
             }
             let newPassword = process.env.SELLER_GOOGLE_PASSWORD// Change the length as needed
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
+            const counter = await Counter.findOneAndUpdate({ record_type: 'Seller', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+            const sequenceNumber = `S${helpers.leftPad(counter.starting_sequence, 4)}`
 
             const userData = {
                 first_name: event.request.userAttributes.given_name,
@@ -76,6 +82,7 @@ exports.handler = async (event, context, callback) => {
                 password: newPassword,
                 is_first_time_login: true,
                 user_type: 'seller',
+                seller_id: sequenceNumber,
             }
             const domainInfo = {
                 seller_email: event.request.userAttributes.email,
