@@ -750,6 +750,13 @@ resources:
         HtmlPart: ${file(./templates/activate_seller.html)}
         Subject: Indy.auction - Your Account Activation Notification
         TemplateName: ${self:provider.stage}-admin-activate-seller-template
+    
+    DeactivateSeller:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/deactivate_seller.html)}
+        Subject: Indy.auction - Your Account Deactivation Notification
+        TemplateName: ${self:provider.stage}-admin-deactivate-seller-template
 
 
 
