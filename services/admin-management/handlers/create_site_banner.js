@@ -5,7 +5,7 @@
 const Joi = require('joi')
 const helpers = require('../lib/helper')
 const mongodbHelper = require('../lib/mongodb_helper')
-const SiteBannerNotification = require('../entities/SiteBannerNotification')
+const SiteBanner = require('../entities/SiteBanner')
 
 let connection = null
 
@@ -33,7 +33,7 @@ const schema = Joi.object().keys({
 
 /**
  * The function will trigger after creating sitebar notifications from the admin panel
- * @param body - {object}
+ * @param {object} event - The event object containing the request body
  * @returns {Object} (201) - Created Successfully
  * @returns {Error} (500) - There was an error while creating the
  */
@@ -41,12 +41,11 @@ const schema = Joi.object().keys({
 module.exports.handler = async (event) => {
     try {
         if (connection === null || !connection.readyState) {
-            console.log('not coonected')
             connection = await mongodbHelper.connect()
         }
         const createRequest = JSON.parse(event.body)
-        console.log('notification request', createRequest)
         const validationResult = schema.validate(createRequest)
+        // Validation check
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
             return {
@@ -55,16 +54,25 @@ module.exports.handler = async (event) => {
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        const saveNotification = await mongodbHelper.save(createRequest, SiteBannerNotification)
+        // Upsert the notification in the database
+        const saveNotification = await SiteBanner.findOneAndUpdate(
+            { type: createRequest.type }, // Filter
+            { ...createRequest, updated_at: Date.now() }, // Update fields
+            { new: true, upsert: true, setDefaultsOnInsert: true }, // Options
+        )
+
+        // Check if the notification was saved successfully
         if (saveNotification) {
             return {
-                statusCode: 204,
+                statusCode: 201,
                 headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Notification created Successfully' }),
+                body: JSON.stringify({ message: 'Site Banner has been created successfully' }),
             }
         }
+        // Log any errors that occur during the process
+
         return {
-            statusCode: 400,
+            statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({ message: 'There is an error while creating sitebanner notification' }),
         }

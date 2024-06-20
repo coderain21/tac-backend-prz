@@ -3144,9 +3144,12 @@
                     "type": "string"
                   }
                 },
-                "example": {
-                  "object_id": "65a7bf0da3ae6e71fccd6252"
-                }
+                "example":
+                {
+                  "type":"Emergency/Informational",
+                   "audience": "All Seller/ All Buyer",
+                   "notification": "emergency"
+               }
               }
             }
           }
@@ -3157,7 +3160,7 @@
             "content": {
               "application/json": {
                 "example": {
-                  "message": "Auction has been cloned successfully"
+                  "message": "Site Banner has been created successfully"
                 }
               }
             }
@@ -3169,7 +3172,7 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "Internal server error"
+                      "message": "There is an error while creating sitebanner notification"
                     }
                   }
                 }
@@ -3190,14 +3193,14 @@
               }
             }
           },
-          "404": {
-            "description": "Not found",
+          "400": {
+            "description": "Validation error",
             "content": {
               "application/json": {
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "Auction with given ID not found"
+                      "message": "Please pass all required fields"
                     }
                   }
                 }
