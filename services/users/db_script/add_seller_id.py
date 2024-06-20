@@ -1,3 +1,4 @@
+'''adding the seller id for the old users'''
 from pymongo import MongoClient
 
 def update_seller_ids():
