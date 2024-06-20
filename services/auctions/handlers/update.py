@@ -172,7 +172,9 @@ def update_auction(event, context):
         request_body = json.loads(event['body'])
         end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
-        extension_type = request_body.get('extension_type', None)
+        auction_extension_type = request_body.get('extension_type', None)
+        auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
+        print('auction_extension_between_lots', auction_extension_between_lots)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
@@ -278,7 +280,26 @@ def update_auction(event, context):
                     'auction_id': auction_record.get('auction_id'),
                 }
                 auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
-                json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
+                allLots = []
+                for item in listLots:
+                    required_fields = {
+                            '_id': item.get('_id'),
+                            'start_date': item.get('start_date'),
+                            'end_date': item.get('end_date'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
+                            'winning_user': item.get('winning_user', ''),
+                            'bid_amount': item.get('bid_amount', ''),
+                            'lot_number': item.get('lot_number'),
+                            'starting_price': item.get('starting_price'),
+                            'images': item.get('images'),
+                            'title1': item.get('title1'),
+                            # Add more required fields as needed
+                        }
+                allLots.append(required_fields)
+                print('allLots', allLots)
+                json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
+                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
@@ -296,7 +317,9 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
+                        print('published', item)
                         message_body = 'published'
+
                         message_attributes = {
                             'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                             'auction': {'DataType': 'String', 'StringValue': auction_record_str},
@@ -366,15 +389,20 @@ def update_auction(event, context):
         else:
             extension_time=0
 
-        if extension_type != None:
-            extension_time_str = request_body.get('extension_time_between_lots', auction_record.get('extension_time_between_lots') )
-            if extension_time_str != '':
+        if auction_extension_type or auction_extension_between_lots:
+            if auction_extension_type and not auction_extension_between_lots:
+                extension_time_str = auction_record.get('extension_time_between_lots', '0')
                 extension_time = int(extension_time_str[:1])
-            else:
-                extension_time=0
+            elif auction_extension_between_lots and not auction_extension_type:
+                extension_time_str = request_body.get('extension_time_between_lots', '0')
+                extension_time = int(extension_time_str[:1])
+            elif auction_extension_type and auction_extension_between_lots:
+                extension_time_str = request_body.get('extension_time_between_lots', '0')
+                extension_time = int(extension_time_str[:1])
+
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
-        if end_date != None:
+        if auction_end_date != None:
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
@@ -467,7 +495,6 @@ def update_auction(event, context):
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
                     if len(getExistingLot) > 0:
-                        print('yes greater than')
                         # Create a new dictionary with only the required fields
                         required_fields = {
                             **getExistingLot,
@@ -528,7 +555,9 @@ def update_auction(event, context):
                         Entries=entries
                     )
                     print('cc', cc)
-        if extension_type != None:
+        if auction_extension_type or auction_extension_between_lots:
+            if auction_extension_type is None:
+                auction_extension_type = auction_record['extension_type']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
                 updatingLot = updateAllLot(listLots, extension_type, auction_record, auction_id, extension_time)
         if auction_start_date != None:
