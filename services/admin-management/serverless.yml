@@ -71,6 +71,16 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-admin-update-password-template/EMAIL"
 
+    TEMPLATE_ARN_ADMIN_ACTIVATE_SELLER: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-admin-activate-seller-template/EMAIL"
+
     BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
