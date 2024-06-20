@@ -16,6 +16,12 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+# Initialize the MongoDB client
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
+db = client[os.environ['DATABASE']]
+collection = db[os.environ["LOT_COLLECTION_NAME"]]
+collection_auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
 
 def update_lot(event):
     """
@@ -44,13 +50,8 @@ def update_lot(event):
         }
     request_body = json.loads(event['body'])
 
-    # Initialize the MongoDB client
-    client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-    db = client[os.environ['DATABASE']]
-    collection = db[os.environ["LOT_COLLECTION_NAME"]]
     lot_number = request_body.get('lot_number')
     auction_id = request_body.get('auction_id')
-    collection_auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 
     if not lot_number or not seller_email:
@@ -83,7 +84,7 @@ def update_lot(event):
     lot_id = str(lot_information['_id'])
     if auction_record['status']== 'Accepting bids':
         update = update_lot_data(request_body, lot_id)
-    client.close()
+    # client.close()
     return (204, {})
 
 

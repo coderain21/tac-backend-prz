@@ -2612,169 +2612,6 @@
         }
       }
     },
-    "/publish-auction/{auction_id}": {
-      "patch": {
-        "tags": [
-          "Auction"
-        ],
-        "summary": "Updating auction details",
-        "parameters": [
-          {
-            "name": "auction_id",
-            "in": "path",
-            "description": "Update auction information",
-            "required": true,
-            "schema": {
-              "type": "string"
-            },
-            "example": "A0172"
-          },
-          {
-            "name": "published",
-            "in": "query",
-            "description": "Filter by status",
-            "schema": {
-              "type": "string"
-            },
-            "example": "false"
-          },
-          {
-            "name": "seller_email",
-            "in": "query",
-            "description": "Filter by status",
-            "schema": {
-              "type": "string"
-            },
-            "example": "false"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "description": {
-                    "type": "string"
-                  }
-                }
-              },
-              "example": {
-                "description": "Join our auction event!"
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Update successful"
-          },
-          "400": {
-            "description": "Bad request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "required and cannot be empty."
-                    }
-                  },
-                  "example2": {
-                    "value": {
-                      "message": "required fields are missing or empty"
-                    }
-                  },
-                  "example3": {
-                    "value": {
-                      "message": "Some lots are missing lot images"
-                    }
-                  },
-                  "example4": {
-                    "value": {
-                      "message": "Please complete the Individual or Business verification before publishing the auction."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "You do not have access to perform this API action"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Auction doesn't exists."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "There was an error while updating the auction"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/admin-subdomain": {
       "get": {
         "tags": [
@@ -3089,6 +2926,194 @@
                     "message": {
                       "type": "string",
                       "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin-update-password": {
+      "patch": {
+        "tags": ["Admin Management"],
+        "summary": "updating admin password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old_password": {
+                    "type": "string"
+                  },
+                  "new_password": {
+                    "type": "string"
+                  },
+                  "confirm_password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "old_password": "Password@123",
+                "new_password": "Password@123",
+                "confirm_password": "Password@134"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Password updated successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Current password is incorrect. The password update cannot be completed"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "new password is same as old password"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Current password and new password not matching"
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                      "message": "Something went wrong.Please try again"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enable-disable-seller":{
+      "patch": {
+        "tags": ["Admin Management"],
+        "summary": "updating seller status(Activate/Deactivate)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "actor_id": {
+                    "type": "string"
+                  },
+                  "updated_by": {
+                    "type": "object"
+                  },
+                  "section": {
+                    "type": "object"
+                  }
+                }
+              },
+              "example": {
+                "actor_id": "IA001",
+                "updated_by": {
+                  "type": "Admin",
+                  "name": "admin",
+                  "email_address": "anusha.k+admin@7edge.com"
+                },
+                "section": {
+                  "name": "seller management",
+                  "user_id": "sandhyashri+sell@7edge.com",
+                  "action": "Activate"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "User Activated/Deactivated  successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while updating the status"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Please pass the required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
                     }
                   }
                 }
