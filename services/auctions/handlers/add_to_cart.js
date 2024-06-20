@@ -74,6 +74,7 @@ module.exports.handler = async (event) => {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
         const lotInformation = get_lot[0]
+
         console.log('currentTimestamp', currentTimestamp)
         if (auctionData.status !== 'Cancelled') {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
@@ -94,8 +95,13 @@ module.exports.handler = async (event) => {
                     console.log('no match')
                 }
             }
-            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) {
-                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
+        }
+        if ((lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) || (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user == null)) {
+            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
+                await sqsTriggerFunction(event)
+            }
+            if (getLots.length <= 0) {
+                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
                     await sqsTriggerFunction(event)
                 }
                 if (getLots.length <= 0) {

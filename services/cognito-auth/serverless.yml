@@ -744,6 +744,13 @@ resources:
         Subject: Indy.auction - Password Update Confirmation
         TemplateName: ${self:provider.stage}-admin-update-password-template
 
+    ActivateSeller:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/activate_seller.html)}
+        Subject: Indy.auction - Your Account Activation Notification
+        TemplateName: ${self:provider.stage}-admin-activate-seller-template
+
 
 
             

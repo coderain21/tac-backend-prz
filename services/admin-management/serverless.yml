@@ -71,6 +71,16 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-admin-update-password-template/EMAIL"
 
+    TEMPLATE_ARN_ADMIN_ACTIVATE_SELLER: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-admin-activate-seller-template/EMAIL"
+
     BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
@@ -496,8 +506,35 @@ functions:
           method: get
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
-  list-sellers:
-    handler: handlers/list_sellers.list_sellers
+  # list-sellers:
+  #   handler: handlers/list_sellers.list_sellers
+  #   runtime: python3.8
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   events:
+  #     - http:
+  #         cors:
+  #           origin: "*"
+  #           headers:
+  #             - Content-Type
+  #             - X-Amz-Date
+  #             - Authorization
+  #             - X-Api-Key
+  #             - X-Amz-Security-Token
+  #             - X-Requested-With
+  #             - Accept
+  #             - Access-Control-Allow-Headers
+  #         path: /sellers
+  #         method: get
+  #         authorizer:
+  #           arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  seller-view:
+    handler: handlers/seller_view.seller_view
     runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -519,34 +556,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          path: /sellers
-          method: get
-          authorizer:
-            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
-  seller-details:
-    handler: handlers/seller_details.seller_details
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: "*"
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /seller-details
+          path: /view-seller
           method: get
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
