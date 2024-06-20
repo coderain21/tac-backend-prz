@@ -11,12 +11,10 @@ The code's primary functionality involves user registration and validation by de
 """
 import json
 import os
-import time
 import boto3
 from pymongo import MongoClient
 from passlib.hash import pbkdf2_sha256
 from bson import ObjectId
-from lib.helper_python import decrypt_with_time_validation
 import datetime
 import pymongo
 
