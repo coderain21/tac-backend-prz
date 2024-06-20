@@ -128,7 +128,6 @@ def handler(event, context):
                             "status":"Approved"
                    }
             auction_register.insert_one(data_to_insert)
-            
             client.close()
             return {
                 "statusCode": 204,
