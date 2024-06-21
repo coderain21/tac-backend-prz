@@ -11,7 +11,10 @@ from datetime import datetime, timezone
 client_step_function = boto3.client('stepfunctions')
 from pymongo import MongoClient
 
-mongo_client = MongoClient(os.environ['MONGO_CLIENT'])
+mongo_client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = mongo_client[os.environ['DATABASE']]
 collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
 

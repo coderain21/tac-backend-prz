@@ -13,6 +13,14 @@ headers = {
     'Access-Control-Allow-Credentials': False,
 }
 
+client = MongoClient(
+                os.environ['MONGO_CLIENT'],
+                maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                )
+db = client[os.environ['DATABASE']]
+collection_sellers = db[os.environ["SELLERS_TABLE"]]
+
+
 class Encoder(json.JSONEncoder):
     """
     Custom JSON Encoder to handle special types.
@@ -43,7 +51,10 @@ def generate_token(event,context):
 
         level_name = os.environ['LEVEL_NAME']
 
-        client = MongoClient(os.environ['MONGO_CLIENT'])
+        client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
         db = client[os.environ['DATABASE']]
         collection_sellers = db[os.environ["SELLERS_TABLE"]]
 
