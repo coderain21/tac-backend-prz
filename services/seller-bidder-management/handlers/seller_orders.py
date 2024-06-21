@@ -73,7 +73,7 @@ def list_orders(event, context):
 
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'created_at')
-        sort_order = data.get('sort_order', 'descending') 
+        sort_order = data.get('sort_order', 'descending')
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
         filters = data.get('filter', False)
@@ -114,13 +114,8 @@ def list_orders(event, context):
         sort_criteria = []
         if sort_by and sort_by in ['name', 'auction_title', 'created_at']:
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
-        
-
-        print('Sort Criteria:', sort_criteria)
-
         # Build the query based on parameters
         query = {"seller_email": email_address}
-        
         if filters:
             if payment_type:
                 query["payment"] = payment_type
@@ -174,7 +169,6 @@ def list_orders(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No Orders found"})
             }
-
         body = {
             "data": list(orders_list),
             "total_pages": total_pages,
