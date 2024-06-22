@@ -173,8 +173,8 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
+        auction_end_date = request_body.get('end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
         auction_id = event['pathParameters']['auction_id']
@@ -414,14 +414,11 @@ def update_auction(event, context):
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
             elif auction_extension_type and auction_extension_between_lots:
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
-            
             try:
                 extension_time = int(extension_time_str[:1]) if extension_time_str else 0
             except ValueError:
                 extension_time = 0
-            
             print('extension_time', extension_time)
-
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if auction_end_date != None:
