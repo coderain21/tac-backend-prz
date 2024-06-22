@@ -42,15 +42,21 @@ stages:
           displayName: 'Dependencies'
         - script: |
             npm run eslint
+            if [ $? -ne 0 ]; then
+              echo "lint failed"
+              exit 1
+            fi
+          displayName: 'Eslint'
+        - script: |
             pip3 install pylint==3.1.1
             pylint services/**/**/*.py
             if [ $? -ne 0 ]; then
-              echo "API testing failed"
+              echo "lint failed"
               exit 1
             fi
             #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
             # sh terraform-linter.sh
-          displayName: 'Lint'
+          displayName: 'Pylint'
     - job: "secret"
       displayName: "Secret Checking"
       condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
@@ -61,7 +67,7 @@ stages:
             pip3 install detect-secrets
             detect-secrets scan 
             if [ $? -ne 0 ]; then
-              echo "API testing failed"
+              echo "Secret Checking failed"
               exit 1
             fi
           displayName: 'Lint'
@@ -76,7 +82,7 @@ stages:
             license-checker --json > licenses.json  
             node license.js
             if [ $? -ne 0 ]; then
-              echo "API testing failed"
+              echo "License Compliance failed"
               exit 1
             fi
           displayName: 'License Compliance'
@@ -92,7 +98,7 @@ stages:
             pip3 install bandit
             bandit -r services/**/*.py
             if [ $? -ne 0 ]; then
-              echo "API testing failed"
+              echo "SAST failed"
               exit 1
             fi
           displayName: 'Static Application Security Testing (SAST)'
