@@ -43,7 +43,11 @@ stages:
         - script: |
             npm run eslint
             pylint services/**/**/*.py
-            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
+            #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
             # sh terraform-linter.sh
           displayName: 'Lint'
     - job: "secret"
@@ -55,6 +59,10 @@ stages:
         - script: |
             pip3 install detect-secrets
             detect-secrets scan 
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
           displayName: 'Lint'
     - job: "licence_complaiance"
       displayName: "License Compliance"
@@ -66,6 +74,10 @@ stages:
             npm install -g license-checker 
             license-checker --json > licenses.json  
             node license.js
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
           displayName: 'License Compliance'
     - job: "sast"
       displayName: 'Static Application Security Testing (SAST)'
@@ -78,6 +90,10 @@ stages:
             njsscan -w .
             pip3 install bandit
             bandit -r services/**/*.py
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
           displayName: 'Static Application Security Testing (SAST)'
 - stage: Build
   jobs:
@@ -156,6 +172,10 @@ stages:
             pip3 install GitPython
             mkdir test_results
             python3 dast.py
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
           displayName: 'Dynamic Application Security Testing (DAST)'
     
 - stage: Deploy
