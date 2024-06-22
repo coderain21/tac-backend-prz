@@ -170,8 +170,8 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
+        auction_end_date = request_body.get('end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
         print('auction_extension_between_lots', auction_extension_between_lots)
@@ -317,7 +317,6 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
-                        print('published', item)
                         message_body = 'published'
 
                         message_attributes = {
