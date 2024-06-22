@@ -573,7 +573,7 @@ def update_auction(event, context):
             if auction_extension_type is None:
                 auction_extension_type = auction_record['extension_type']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
-                updatingLot = updateAllLot(listLots, extension_type, auction_record, auction_id, extension_time)
+                updatingLot = updateAllLot(listLots, auction_extension_type, auction_record, auction_id, extension_time)
         if auction_start_date != None:
             start_date =  request_body['start_date']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
