@@ -253,15 +253,15 @@ module.exports.sqsTriggerFunction = async (event) => {
             await Promise.all(promiseList)
         }
         // clear the cache
-        if (lastLot === event.lot_number) {
-            for (const lot of get_lot) {
-                const redisKeys = `lot:${lot._id}`
-                const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
-                const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
-                const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
-                console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
-            }
-        }
+        // if (lastLot.lot_number === event.lot_number) {
+        //     for (const lot of get_lot) {
+        //         const redisKeys = `lot:${lot._id}`
+        //         const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
+        //         const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
+        //         const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
+        //         console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
+        //     }
+        // }
         return true
     } catch (err) {
         console.log('err', err)
