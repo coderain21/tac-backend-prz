@@ -42,6 +42,7 @@ stages:
           displayName: 'Dependencies'
         - script: |
             npm run eslint
+            pip3 install pylint==3.1.1
             pylint services/**/**/*.py
             if [ $? -ne 0 ]; then
               echo "API testing failed"
