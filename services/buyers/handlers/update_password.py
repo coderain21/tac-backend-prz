@@ -15,6 +15,15 @@ headers = {
 }
 
 
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
 
@@ -107,18 +116,21 @@ def update_password(event, context):
     depends on the conditions and logic within the function.
     """
     try:
+        print('event', event['requestContext']['authorizer']['claims'] )
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            cognito_data = json.loads(json.dumps(
+                event['requestContext']['authorizer']['claims']))
+            print('cognito data', cognito_data)
+            email_address = cognito_data['email']
             print('email', email_address)
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                print('here in first')
+            if "cognito:groups" not in cognito_data :
                 return {
                     "statusCode": 403,
                     "headers": headers,
                     "body": json.dumps({"message": "You do not have access to perform this API action"})
                 }
-        except:
-            print('here in second')
+        except Exception as e:
+            print('error', e)
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -130,11 +142,14 @@ def update_password(event, context):
         confirm_password = data.get('confirm_password')
         domain = data.get('domain')
         auction_id = data.get('auction_id')
-        client = MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-        auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+        # client = MongoClient(
+        #               os.environ['MONGO_CLIENT'],
+        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+        #                 )
+        # db = client[os.environ['DATABASE']]
+        # user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
+        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
         seller_email = auction_collection.find_one({"_id": ObjectId(auction_id)},
                                                 {'seller_email': 1}).get('seller_email')
 

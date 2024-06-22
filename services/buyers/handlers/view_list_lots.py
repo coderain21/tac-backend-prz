@@ -24,7 +24,10 @@ def prepend_backslash(text):
     return re.sub(special_chars_pattern, r'\\\1', text)
 
 # Create MongoClient instance globally
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
