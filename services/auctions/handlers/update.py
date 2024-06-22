@@ -414,14 +414,11 @@ def update_auction(event, context):
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
             elif auction_extension_type and auction_extension_between_lots:
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
-            
             try:
                 extension_time = int(extension_time_str[:1]) if extension_time_str else 0
             except ValueError:
                 extension_time = 0
-            
             print('extension_time', extension_time)
-
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if auction_end_date != None:
