@@ -820,6 +820,23 @@ functions:
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
+  list_site_banner:
+    handler: handlers/list_site_banner.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /site-banner
+          method: GET
+          authorizer:
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+            
   manage-seller-deactivation:
     handler: handlers/manage-seller-deactivation.handler
     vpc:
