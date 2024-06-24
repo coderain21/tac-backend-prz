@@ -16,7 +16,7 @@ const NotificationSchema = new Schema({
 })
 
 // Create a compound unique index on type and audience
-NotificationSchema.index({ type: 1, audience: 1 }, { unique: true })
+NotificationSchema.index({ audience: 1 }, { unique: true })
 
 NotificationSchema.plugin(mongoosePaginate)
 const SiteBanner = mongoose.model(`${stage}-site-banner-notification`, NotificationSchema, `${stage}-site-banner-notification`)
