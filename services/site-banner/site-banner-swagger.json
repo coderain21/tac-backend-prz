@@ -41,7 +41,7 @@
                 "example":
                 {
                   "type":"Emergency",
-                   "audience": "All Seller",
+                   "audience": "All Sellers",
                    "notification": "emergency"
                }
               }
