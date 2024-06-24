@@ -56,7 +56,7 @@ module.exports.handler = async (event) => {
         }
         // Upsert the notification in the database
         const saveNotification = await SiteBanner.findOneAndUpdate(
-            { type: createRequest.type }, // Filter
+            { audience: createRequest.audience }, // Filter
             { ...createRequest, updated_at: Date.now() }, // Update fields
             { new: true, upsert: true, setDefaultsOnInsert: true }, // Options
         )
