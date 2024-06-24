@@ -16,7 +16,10 @@ headers = {
 
 
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 

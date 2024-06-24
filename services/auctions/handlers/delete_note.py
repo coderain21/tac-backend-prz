@@ -6,8 +6,12 @@ from pymongo import MongoClient
 
 
 
-client = MongoClient(os.environ['MONGO_CLIENT'])
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
 db = client[os.environ['DATABASE']]
+collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
 headers = {
     'Content-Type': 'application/json',
@@ -39,7 +43,6 @@ def delete_note(event, context):
         key= event['queryStringParameters'].get('del','0')
         if key == '1':
             auction_id = event['queryStringParameters'].get('auction_id')
-            collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": ""}}
             filters = {"seller_email": email_address, "auction_id": auction_id}
 
@@ -63,7 +66,6 @@ def delete_note(event, context):
             auction_id = event['queryStringParameters'].get('auction_id')
             event_body = json.loads(event['body'])
             note = event_body.get('note')
-            collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
             update = {"$set": {"note": note}}
             filters = {"seller_email": email_address, "auction_id": auction_id}
 
