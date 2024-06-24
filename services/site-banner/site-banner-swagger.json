@@ -236,7 +236,8 @@
           "description": "Audience type (e.g., All Buyers, All Sellers)",
           "schema": {
             "type": "string"
-          }
+          },
+          "example": "All Buyers"
         }
       ],
       "responses": {
@@ -244,8 +245,31 @@
           "description": "Successful response with a  view site banner notifications for the specified audience.",
           "content": {
             "application/json": {
+              "schema": {
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "number"
+                      },
+                      "audience": {
+                        "type": "string"
+                      },
+                      "notification": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+                },
               "example": {
-                "data": {
                   "data": {
                     "type": "Emergency",
                     "created_at": 1719214275801,
@@ -253,7 +277,6 @@
                     "notification": "<p>Blahhh</p>",
                     "updated_at": 1719223575521
                   }
-                }
               }
             }
           }
@@ -290,7 +313,7 @@
         }
       }
     }
-  }
+   }
   },
   "components": {
     "schemas": {
