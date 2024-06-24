@@ -173,8 +173,8 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
+        auction_end_date = request_body.get('end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
         auction_id = event['pathParameters']['auction_id']
@@ -326,6 +326,7 @@ def update_auction(event, context):
                     entries = []
                     for item in send_batches:
                         message_body = 'published'
+
                         message_attributes = {
                             'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                             'auction': {'DataType': 'String', 'StringValue': auction_record_str},
@@ -395,17 +396,29 @@ def update_auction(event, context):
         else:
             extension_time=0
 
+        # if auction_extension_type or auction_extension_between_lots:
+        #     if auction_extension_type and not auction_extension_between_lots:
+        #         extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        #         extension_time = int(extension_time_str[:1])
+        #     elif auction_extension_between_lots and not auction_extension_type:
+        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
+        #         extension_time = int(extension_time_str[:1])
+        #     elif auction_extension_type and auction_extension_between_lots:
+        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
+        #         extension_time = int(extension_time_str[:1])
+
         if auction_extension_type or auction_extension_between_lots:
             if auction_extension_type and not auction_extension_between_lots:
                 extension_time_str = auction_record.get('extension_time_between_lots', '0')
-                extension_time = int(extension_time_str[:1])
             elif auction_extension_between_lots and not auction_extension_type:
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
-                extension_time = int(extension_time_str[:1])
             elif auction_extension_type and auction_extension_between_lots:
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
-                extension_time = int(extension_time_str[:1])
-
+            try:
+                extension_time = int(extension_time_str[:1]) if extension_time_str else 0
+            except ValueError:
+                extension_time = 0
+            print('extension_time', extension_time)
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if auction_end_date != None:
