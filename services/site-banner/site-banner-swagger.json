@@ -215,7 +215,82 @@
           }
         }
       }
+    },
+    "/{audience}": {
+    "get": {
+      "summary": "View Site Banner Notification by Audience",
+      "description": "Fetch a site banner notifications for a specific audience.",
+      "tags": [
+        "Admin Site Banner Notification Management"
+      ],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "audience",
+          "in": "path",
+          "required": true,
+          "description": "Audience type (e.g., All Buyers, All Sellers)",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful response with a  view site banner notifications for the specified audience.",
+          "content": {
+            "application/json": {
+              "example": {
+                "data": {
+                  "data": {
+                    "type": "Emergency",
+                    "created_at": 1719214275801,
+                    "audience": "All Buyers",
+                    "notification": "<p>Blahhh</p>",
+                    "updated_at": 1719223575521
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Site Banner Notification for the specified audience not found.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
+  }
   },
   "components": {
     "schemas": {

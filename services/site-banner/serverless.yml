@@ -203,8 +203,6 @@ functions:
           cors: true
           path: /{audience}
           method: GET
-          authorizer:
-            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
             
 
 

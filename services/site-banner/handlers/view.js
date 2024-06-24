@@ -26,14 +26,15 @@ module.exports.handler = async (event) => {
         }
         /** Extract user and query parameters from the event */
         const audience = decodeURIComponent(event.pathParameters.audience)
-        console.log(audience)
         const query = {
             audience,
         }
+        const projection = {
+            type: 1, updated_at: 1, created_at: 1, audience: 1, notification: 1, _id: 0,
+        }
 
         /** Fetch enterprises using the provided criteria */
-        const notificationView = await SiteBanner.findOne(query)
-        console.log('notificationView', notificationView)
+        const notificationView = await SiteBanner.findOne(query, projection)
 
         if (!notificationView) {
             return {
@@ -60,7 +61,7 @@ module.exports.handler = async (event) => {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'There was an error while listing the notification list',
+                message: 'There was an error while viewing the notification',
             }),
         }
     } finally {
