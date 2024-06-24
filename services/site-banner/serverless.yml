@@ -155,8 +155,8 @@ custom:
 
 
 functions:
-  create_site_banner:
-      handler: handlers/create_site_banner.handler
+  create:
+      handler: handlers/create.handler
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -172,8 +172,8 @@ functions:
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
-  list_site_banner:
-    handler: handlers/list_site_banner.handler
+  list:
+    handler: handlers/list.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
