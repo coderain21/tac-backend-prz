@@ -130,6 +130,7 @@ module.exports.handler = async (event) => {
         payload.updated_by.email_address = emailAddress
         const Status = payload.section.action === 'Activate' ? 'adminEnableUser' : 'adminDisableUser'
         const seller_email = payload.section.user_id
+        const templateName = payload.section.action === 'Activate' ? process.env.TEMPLATE_ARN_ADMIN_ACTIVATE_SELLER : process.env.TEMPLATE_ARN_ADMIN_DEACTIVATE_SELLER
 
         /** ----------------------------------------------chnage status in the documentDB------------------------------------------------------------------------------------------------- */
         const query = { email_address: seller_email }
@@ -149,6 +150,7 @@ module.exports.handler = async (event) => {
         /** ----------------------------------------------IF SUCCESS----------------------------------------------------------------------------------- */
 
         if (cognitoUpdate) {
+            await helpers.sendPinpointEmail(seller_email, process.env.SES_SENDER_EMAIL_ID, JSON.stringify({}), templateName)
             return {
                 statusCode: 201,
                 headers: await helpers.getHeaders(),
