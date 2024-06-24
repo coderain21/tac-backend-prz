@@ -40,7 +40,7 @@
                 },
                 "example":
                 {
-                  "type":"Emergency/Informational",
+                  "type":"Emergency",
                    "audience": "All Seller",
                    "notification": "emergency"
                }
