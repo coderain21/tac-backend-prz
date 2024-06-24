@@ -15,7 +15,6 @@ const NotificationSchema = new Schema({
     updated_at: { type: Number, default: () => Date.now() },
 })
 
-
 // Create a compound unique index on type and audience
 NotificationSchema.index({ type: 1, audience: 1 }, { unique: true })
 
