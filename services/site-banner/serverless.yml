@@ -188,6 +188,23 @@ functions:
           method: GET
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
+  view:
+    handler: handlers/view.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /{audience}
+          method: GET
+          authorizer:
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
             
 
 
