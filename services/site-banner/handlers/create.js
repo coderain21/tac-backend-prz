@@ -37,6 +37,8 @@ const schema = Joi.object().keys({
  * @returns {Object} (201) - Created Successfully
  * @returns {Error} (500) - There was an error while creating the
  */
+// Function to convert a string to title case
+const toTitleCase = (str) => str.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase())
 
 module.exports.handler = async (event) => {
     try {
@@ -45,6 +47,11 @@ module.exports.handler = async (event) => {
         }
         const createRequest = JSON.parse(event.body)
         const validationResult = schema.validate(createRequest)
+
+        // Convert audience to title case
+        createRequest.audience = toTitleCase(createRequest.audience)
+        createRequest.type = toTitleCase(createRequest.type)
+
         // Validation check
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
@@ -56,7 +63,7 @@ module.exports.handler = async (event) => {
         }
         // Upsert the notification in the database
         const saveNotification = await SiteBanner.findOneAndUpdate(
-            { type: createRequest.type }, // Filter
+            { audience: createRequest.audience }, // Filter
             { ...createRequest, updated_at: Date.now() }, // Update fields
             { new: true, upsert: true, setDefaultsOnInsert: true }, // Options
         )
