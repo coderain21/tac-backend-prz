@@ -270,7 +270,7 @@ def export_as_csv(sales, email_address):
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["Order Number", "Customer Name", "Auction Name","Date","Result", "Payment type", "Payment status"])
+            writer = csv.DictWriter(file, ["Order number", "Customer name", "Auction name","Date","Result", "Payment type", "Payment status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
@@ -284,9 +284,9 @@ def export_as_csv(sales, email_address):
                 formatted_date = date
                 # shipping_address = sale['shipping_address']
                 full_name = sale['name']
-                modified_sales["Order Number"] = sale["order_number"]
-                modified_sales["Customer Name"] = full_name
-                modified_sales["Auction Name"] = sale['auction_title']
+                modified_sales["Order number"] = sale["order_number"]
+                modified_sales["Customer name"] = full_name
+                modified_sales["Auction name"] = sale['auction_title']
                 modified_sales["Date"] = formatted_date
                 modified_sales["Result"] = currency + str(sale["amount"])
                 modified_sales["Payment status"] = sale["payment_status"]
