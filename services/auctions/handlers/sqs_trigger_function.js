@@ -228,6 +228,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 }
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
+                const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
 
                 // Create the email data
                 const template_data = {
@@ -241,6 +242,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
                     seller_email: auctionData.seller_email,
                     subject: subjectDescription,
+                    paymentContent,
                 }
 
                 // Send email
@@ -251,15 +253,15 @@ module.exports.sqsTriggerFunction = async (event) => {
             await Promise.all(promiseList)
         }
         // clear the cache
-        if (lastLot === event.lot_number) {
-            for (const lot of get_lot) {
-                const redisKeys = `lot:${lot._id}`
-                const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
-                const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
-                const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
-                console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
-            }
-        }
+        // if (lastLot.lot_number === event.lot_number) {
+        //     for (const lot of get_lot) {
+        //         const redisKeys = `lot:${lot._id}`
+        //         const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
+        //         const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
+        //         const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
+        //         console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
+        //     }
+        // }
         return true
     } catch (err) {
         console.log('err', err)

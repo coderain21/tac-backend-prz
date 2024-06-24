@@ -284,7 +284,26 @@ def update_auction(event, context):
                     'auction_id': auction_record.get('auction_id'),
                 }
                 auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
-                json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
+                allLots = []
+                for item in listLots:
+                    required_fields = {
+                            '_id': item.get('_id'),
+                            'start_date': item.get('start_date'),
+                            'end_date': item.get('end_date'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
+                            'winning_user': item.get('winning_user', ''),
+                            'bid_amount': item.get('bid_amount', ''),
+                            'lot_number': item.get('lot_number'),
+                            'starting_price': item.get('starting_price'),
+                            'images': item.get('images'),
+                            'title1': item.get('title1'),
+                            # Add more required fields as needed
+                        }
+                allLots.append(required_fields)
+                print('allLots', allLots)
+                json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
+                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
@@ -303,6 +322,7 @@ def update_auction(event, context):
                     entries = []
                     for item in send_batches:
                         message_body = 'published'
+
                         message_attributes = {
                             'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
                             'auction': {'DataType': 'String', 'StringValue': auction_record_str},
@@ -372,16 +392,31 @@ def update_auction(event, context):
         else:
             extension_time=0
 
+        # if auction_extension_type or auction_extension_between_lots:
+        #     if auction_extension_type and not auction_extension_between_lots:
+        #         extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        #         extension_time = int(extension_time_str[:1])
+        #     elif auction_extension_between_lots and not auction_extension_type:
+        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
+        #         extension_time = int(extension_time_str[:1])
+        #     elif auction_extension_type and auction_extension_between_lots:
+        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
+        #         extension_time = int(extension_time_str[:1])
+
         if auction_extension_type or auction_extension_between_lots:
             if auction_extension_type and not auction_extension_between_lots:
                 extension_time_str = auction_record.get('extension_time_between_lots', '0')
-                extension_time = int(extension_time_str[:1])
             elif auction_extension_between_lots and not auction_extension_type:
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
-                extension_time = int(extension_time_str[:1])
             elif auction_extension_type and auction_extension_between_lots:
                 extension_time_str = request_body.get('extension_time_between_lots', '0')
-                extension_time = int(extension_time_str[:1])
+            
+            try:
+                extension_time = int(extension_time_str[:1]) if extension_time_str else 0
+            except ValueError:
+                extension_time = 0
+            
+            print('extension_time', extension_time)
 
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
