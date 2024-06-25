@@ -1,9 +1,15 @@
 #!/bin/bash
 
-# Set the correct path to the Python script
-PYTHON_SCRIPT="/home/user/Desktop/work/backend/indy-auction-backend-apis/access_token_genation.py"
+# Set the path to the Python script relative to this bash script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PYTHON_SCRIPT="$SCRIPT_DIR/access_token_genation.py"
 
 generate_token() {
+    if [ ! -f "$PYTHON_SCRIPT" ]; then
+        echo "Error: $PYTHON_SCRIPT not found. Please ensure the script exists and the path is correct."
+        exit 1
+    fi
+
     python3 "$PYTHON_SCRIPT" > logins.sh
     logins_file="logins.sh"
 
@@ -36,7 +42,7 @@ while getopts ":s:" opt; do
 done
 
 # Change to the services directory
-cd services || exit
+cd "$SCRIPT_DIR/services" || exit
 
 run_tests() {
     local current_service=$1
