@@ -21,7 +21,6 @@ services/**/access_token_genation.py
 services/**/api-testing.sh
 test-results
 /test_results
-logins.sh
 .terraform
 terraform.tfstate
 terraform.tfstate.backup
