@@ -1,17 +1,20 @@
 #!/bin/bash
 
-# Function to generate the token
+# Set the correct path to the Python script
+PYTHON_SCRIPT="/home/user/Desktop/work/backend/indy-auction-backend-apis/access_token_genation.py"
+
 generate_token() {
-    python3 access_token_genation.py > logins.sh
-    
-    if [ -r "logins.sh" ]; then
+    python3 "$PYTHON_SCRIPT" > logins.sh
+    logins_file="logins.sh"
+
+    if [ -r "$logins_file" ]; then
         while IFS= read -r line; do
             if [[ $line == export* ]]; then
                 eval "$line"
             fi
-        done < "logins.sh"
+        done < "$logins_file"
     else
-        echo "Error: logins.sh does not exist or is not readable."
+        echo "Error: $logins_file does not exist or is not readable."
         exit 1
     fi
 }
@@ -32,6 +35,7 @@ while getopts ":s:" opt; do
   esac
 done
 
+# Change to the services directory
 cd services || exit
 
 run_tests() {
@@ -47,7 +51,7 @@ run_tests() {
         cd ..
         if [ $exit_status -ne 0 ]; then
             echo "Dredd tests failed in folder: $current_service"
-            return 1
+            exit $exit_status
         fi
     else
         echo "No dredd.yml found for service: $current_service"
@@ -55,27 +59,15 @@ run_tests() {
     fi
     
     echo "Dredd tests completed for $current_service."
-    return 0
 }
 
-# Main execution
 if [ -n "$service" ]; then
     run_tests "$service"
-    if [ $? -ne 0 ]; then
-        echo "Tests failed for $service. Exiting."
-        exit 1
-    fi
-    echo "Tests for $service completed successfully. Exiting."
-    exit 0
 else
     for folder in */; do
         folder=${folder%/}  # Remove trailing slash
         run_tests "$folder"
-        if [ $? -ne 0 ]; then
-            echo "Tests failed for $folder. Exiting."
-            exit 1
-        fi
     done
-    echo "All tests for all services completed successfully. Exiting."
-    exit 0
 fi
+
+echo "All Dredd tests completed."
