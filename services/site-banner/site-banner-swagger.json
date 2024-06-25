@@ -1,18 +1,18 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Admin-Management APIs",
+    "title": "Site Banner APIs",
     "description": "APIs for the Admins to manage.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://apis.dev.indyauction.net/v1/admin-management"
+      "url": "https://apis.dev.indyauction.net/v1/site-banner"
     }
   ],
   "tags": [
     {
-      "name": "Admin management",
+      "name": "Site Banner",
       "description": "APIs to manage the Admin"
     }
   ],
