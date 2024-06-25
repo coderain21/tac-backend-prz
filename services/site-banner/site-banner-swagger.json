@@ -13,7 +13,7 @@
   "tags": [
     {
       "name": "Site Banner",
-      "description": "APIs to manage the Admin"
+      "description": "APIs to manage the site banners in the seller and buyer side of the auction"
     }
   ],
   "paths": {
