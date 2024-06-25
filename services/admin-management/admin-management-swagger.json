@@ -313,16 +313,7 @@
                           "email_address": {
                             "type": "number"
                           },
-                          "seller_email": {
-                            "type": "string"
-                          },
-                          "first_name": {
-                            "type": "number"
-                          },
-                          "last_name": {
-                            "type": "string"
-                          },
-                          "name": {
+                          "full_name": {
                             "type": "string"
                           },
                           "created_at": {
@@ -338,7 +329,7 @@
                       "type": "integer"
                     },
                     "page_number": {
-                      "type": "integer"
+                      "type": "integer" 
                     },
                     "page_size": {
                       "type": "integer"
@@ -348,153 +339,63 @@
                 "example": {
                   "buyers": [
                     {
+                      "_id": "663b4c1317654f444922d3bb",
+                      "email_address": "testmaisonqr@gmail.com",
+                      "created_at": "2024-05-08 09:55:31.007000",
+                      "buyer_id": "B0231"
+                    },
+                    {
                       "_id": "6628f469deb4ba6493d75000",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19AMNqyiXAuxP9QzVezN/i4Pticbfmf+uE=",
                       "email_address": "ibrahimkhaleel0399@gmail.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "IBRAHIM",
-                      "last_name": "KHALEEL",
-                      "registered_through": "federated",
                       "created_at": "2024-04-24 12:00:37.422000",
-                      "buyer_id": "B0192",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com"
+                      "buyer_id": "B0192"
+                    },
+                    {
+                      "_id": "6639fe2b4028f54a68c50f18",
+                      "email_address": "ssandhyashri@gmail.com",
+                      "created_at": "2024-05-07 10:10:51.301000",
+                      "buyer_id": "B0228"
+                    },
+                    {
+                      "_id": "66332683cbf11ea82ccfcee0",
+                      "email_address": "sushmitha.j@7edge.com",
+                      "created_at": "2024-05-02 05:37:07.134000",
+                      "buyer_id": "B0211"
                     },
                     {
                       "_id": "65ddc527cca2efbf6a77a199",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19T9rOlvYoOIeH95VeoyRoUk02KAahrpM4=",
                       "email_address": "ranjith.n@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "",
                       "created_at": "2024-02-27 11:19:03.827000",
-                      "buyer_id": "B0159",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com",
-                      "token": {
-                        "endpoint": "https://fcm.googleapis.com/fcm/send/ckQIJlnC3sY:APA91bGcRjHH9omDvamn2ovPooaF5D-X3JERvpN1knwqyjAOvDdF2ee_t9egMn9Fdk38xVf514Fu6rDgOoJ1L-lIOeT9eixf5ExdmidhOzeeGqWOEdcaNzxiqIvxNrYkqhHDMQdTkN2Z",
-                        "expirationTime": null,
-                        "keys": {
-                          "p256dh": "BHilXltJxPkyHmHbS7DPZXHlnHIikQBPd-KUNUB85AI0ftGJ7NJCIsoVzJGGd4OxXKkpGs_Giu_l0BQ8pZaZKDI",
-                          "auth": "EVzD5S9wBhawZY6nb7rzAQ"
-                        }
-                      }
+                      "buyer_id": "B0159"
                     },
                     {
-                      "_id": "65dc375df646dea4687b61e4",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+wPyyaXGcE8sfyoJlODekKNW53SR3CV9g=",
-                      "email_address": "sushmitha.j@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "",
-                      "created_at": "2024-02-26 07:01:49.800000",
-                      "buyer_id": "B0157",
-                      "__v": 0,
-                      "seller_email": "sthuthi+stripe@7edge.com"
-                    },
-                    {
-                      "_id": "6628fa73161dfe72936def73",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19BjZPcjiuFupj/B4bMdtYvFL+qa2WEwgA=",
-                      "email_address": "anusha.k@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Anusha",
-                      "last_name": "K",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-24 12:26:27.952000",
-                      "buyer_id": "B0199",
-                      "__v": 0
-                    },
-                    {
-                      "_id": "66290633fa8b23477b47b353",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+n/lqIYj4S7jDnHhl0XvIMfDzIY6kNYs4=",
-                      "email_address": "ibrahim.khaleel@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Ibrahim",
-                      "last_name": "Khaleel",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-24 13:16:28.940000",
-                      "buyer_id": "B0201",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com"
-                    },
-                    {
-                      "_id": "662644514434bce4ccf53c1b",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19soFAwgo2AQKvnseThYPRRV6axRVrad48=",
-                      "email_address": "sthuthi@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Sthuthi",
-                      "last_name": "B",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-22 11:04:49.532000",
-                      "buyer_id": "B0190",
-                      "__v": 0
-                    },
-                    {
-                      "_id": "65d861d7f46ef6bed548dacd",
-                      "user_type": "buyer",
-                      "password": "",
-                      "email_address": "sthuthi+auction@7edge.com",
-                      "newsletter_notification": false,
-                      "seller_email": "namratha.shettigar+dev@7edge.com",
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": ""
+                      "_id": "666ae74412b3b56b6ea4e9e4",
+                      "email_address": "sayyed.adullah@7edge.com",
+                      "created_at": "2024-06-13 12:34:12.573000",
+                      "buyer_id": "B0386"
                     },
                     {
                       "_id": "6627a1a710dbf1eb85016ad4",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+YsMRhX2m88uGAxRRM0tmZ9sbmpz0MHRA=",
                       "email_address": "sandhyashri@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Sandhyashri",
-                      "last_name": "S",
-                      "registered_through": "federated",
                       "created_at": "2024-04-23 11:55:19.780000",
-                      "buyer_id": "B0191",
-                      "__v": 0
+                      "buyer_id": "B0191"
                     },
                     {
-                      "_id": "654f761642ec4ad6db303f3e",
-                      "user_type": "buyer",
-                      "password": "",
-                      "email_address": "aishwarya@7edge.com",
-                      "newsletter_notification": false,
-                      "seller_email": "sthuthi+testing@7edge.com",
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "full_name": " "
+                      "_id": "6639eac201be4846a189390c",
+                      "email_address": "sthuthi+auction@7edge.com"
                     },
                     {
-                      "_id": "6539052c46ee02100faba421",
-                      "email_address": "aishwarya+vt@7edge.com",
-                      "first_name": "Aishwarya",
-                      "last_name": "K",
-                      "password": "$pbkdf2-sha256$29000$aW5keUBhdWN0aW9u$7k7XPbv5UYbS9OLtuTiWboLKa82wxo42hX8EXHiazmE",
-                      "terms_and_condition": true,
-                      "user_type": "buyer",
-                      "newsletter_notification": false,
-                      "sub_domain": "www-dev",
-                      "seller_email": "aishwarya+30@7edge.com",
-                      "full_name": "Aishwarya K"
+                      "_id": "66290633fa8b23477b47b353",
+                      "email_address": "ibrahim.khaleel@7edge.com",
+                      "created_at": "2024-04-24 13:16:28.940000",
+                      "buyer_id": "B0201"
+                    },
+                    {
+                      "_id": "664739a101e9f805ececd62d",
+                      "email_address": "sthuthi+ssss@7edge.com"
                     }
                   ],
-                  "total_buyers": 65,
+                  "total_buyers": 250,
                   "page_size": 10,
                   "page_number": 1
                 }
@@ -3351,207 +3252,6 @@
                 }
               }
             }
-        }
-      }
-    },
-    "/create-site-banner": {
-      "post": {
-        "tags": [
-          "Admin Site Banner Notification Management"
-        ],
-        "summary": "Create Site Banner",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "audience": {
-                    "type": "string"
-                  },
-                  "notification": {
-                    "type": "string"
-                  }
-                },
-                "example":
-                {
-                  "type":"Emergency/Informational",
-                   "audience": "All Seller/ All Buyer",
-                   "notification": "emergency"
-               }
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Site Banner has been created successfully"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "There is an error while creating sitebanner notification"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "forbidden",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "You do not have access to perform this API action"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Validation error",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "example1": {
-                    "value": {
-                      "message": "Please pass all required fields"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/site-banner": {
-      "get": {
-        "summary": "List Site Banner Notification",
-        "description": "Fetch a list of created site banner notification.",
-        "tags": [
-          "Admin Site Banner Notification Management"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "sort_by",
-            "in": "query",
-            "description": "Sort field",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sort_order",
-            "in": "query",
-            "description": "Sort order (e.g., asc, desc)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Page number for pagination",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Number of items per page",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response with a list of site banner notifications.",
-            "content": {
-              "application/json": {
-                "example": {
-                  "data": [
-                    {
-                      "_id": "6674650bebae3e47b805390f",
-                      "type": "Emergency",
-                      "audience": "All buyers",
-                      "notification": "<p>Defaeco creator comminor.</p>",
-                      "created_at": 1718904075462,
-                      "updated_at": 1718968229812
-                    },
-                    {
-                      "_id": "6675123109986f3f985b031d",
-                      "type": "Informational",
-                      "created_at": 1718948401111,
-                      "audience": "All buyers",
-                      "notification": "<p>Utrum acervus vomer universe cibus decerno atrocitas somnus undique eaque.</p>",
-                      "updated_at": 1718968216367
-                    }
-                  ],
-                  "pagination": {
-                    "total_pages": 1,
-                    "limit": 10,
-                    "total_records": 2,
-                    "next_page": null,
-                    "page": 1
-                  }
-               }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "SIte Banner Notification list Not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
         }
       }
     }
