@@ -24,7 +24,7 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
+client = pymongo.MongoClient(os.environ['MONGO_CLIENT'], maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
@@ -38,6 +38,7 @@ class Encoder(json.JSONEncoder):
 
 def  updateAllLot(listLots, extension_type, auction_record, auction_id, extension_time):
     try:
+        print('auction_extension_type12333', extension_type)
         documents = []
         start_date =  auction_record.get('start_date')
         end_date = auction_record.get('end_date')
@@ -108,7 +109,10 @@ def has_kyb_or_kyc_completed(email_address):
 
 def has_images_for_auction_and_seller(auction_id, seller_email):
 
-    client = MongoClient(os.environ['MONGO_CLIENT'])
+    client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
     db = client[os.environ['DATABASE']]
     collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 
@@ -170,8 +174,8 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        auction_start_date = request_body.get('start_date', None)
         auction_end_date = request_body.get('end_date', None)
+        auction_start_date = request_body.get('start_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
         print('auction_extension_between_lots', auction_extension_between_lots)
@@ -496,6 +500,7 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
+                    print('result:', result)
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_data_sqs = {
                     'extension_time': auction_record.get('extension_time'),
@@ -573,7 +578,15 @@ def update_auction(event, context):
             if auction_extension_type is None:
                 auction_extension_type = auction_record['extension_type']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
+                end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
+                auction_record['end_date'] = end_date_update
                 updatingLot = updateAllLot(listLots, auction_extension_type, auction_record, auction_id, extension_time)
+                if  len(listLots) > 0 and auction_extension_type in ["Cascade", "Individual Lots"]:
+                    additional_time_ms = end_date_update + (existing_lots_count -1 ) * extension_time * 60 * 1000
+                    update_data ['end_date'] = additional_time_ms
+                else:
+                    end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
+                    update_data ['end_date'] = end_date_update
         if auction_start_date != None:
             start_date =  request_body['start_date']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
@@ -597,7 +610,7 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
-
+        print('updatedataa', update_data)
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
