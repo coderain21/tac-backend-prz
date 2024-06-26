@@ -1,19 +1,19 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Admin-Management APIs",
+    "title": "Site Banner APIs",
     "description": "APIs for the Admins to manage.",
     "version": "1.0.0"
   },
   "servers": [
     {
-      "url": "https://apis.dev.indyauction.net/v1/admin-management"
+      "url": "https://apis.dev.indyauction.net/v1/site-banner"
     }
   ],
   "tags": [
     {
-      "name": "Admin management",
-      "description": "APIs to manage the Admin"
+      "name": "Site Banner",
+      "description": "APIs to manage the site banners in the seller and buyer side of the auction"
     }
   ],
   "paths": {
@@ -41,7 +41,7 @@
                 "example":
                 {
                   "type":"Emergency",
-                   "audience": "All Seller",
+                   "audience": "All Sellers",
                    "notification": "emergency"
                }
               }
@@ -215,7 +215,105 @@
           }
         }
       }
+    },
+    "/{audience}": {
+    "get": {
+      "summary": "View Site Banner Notification by Audience",
+      "description": "Fetch a site banner notifications for a specific audience.",
+      "tags": [
+        "Admin Site Banner Notification Management"
+      ],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "audience",
+          "in": "path",
+          "required": true,
+          "description": "Audience type (e.g., All Buyers, All Sellers)",
+          "schema": {
+            "type": "string"
+          },
+          "example": "All Buyers"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful response with a  view site banner notifications for the specified audience.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "number"
+                      },
+                      "audience": {
+                        "type": "string"
+                      },
+                      "notification": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+                },
+              "example": {
+                  "data": {
+                    "type": "Emergency",
+                    "created_at": 1719214275801,
+                    "audience": "All Buyers",
+                    "notification": "<p>Blahhh</p>",
+                    "updated_at": 1719223575521
+                  }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Site Banner Notification for the specified audience not found.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
+   }
   },
   "components": {
     "schemas": {

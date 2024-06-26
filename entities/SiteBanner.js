@@ -8,8 +8,8 @@ const stage = process.env.STAGE
 const { Schema } = mongoose
 
 const NotificationSchema = new Schema({
-    type: { type: String,required: true },
-    audience: { type: String, required: true},
+    type: { type: String, required: true },
+    audience: { type: String, required: true },
     notification: { type: String, maxlength: 2000 },
     created_at: { type: Number, default: () => Date.now() },
     updated_at: { type: Number, default: () => Date.now() },
