@@ -8,6 +8,7 @@ from lib.common_helper import Encoder
 import math
 import csv
 import boto3
+import tempfile
 from datetime import datetime
 
 headers = {
@@ -73,6 +74,11 @@ def list_all_purchases(event, context):
 
         start_date = event['queryStringParameters'].get('start_date', None)
         end_date = event['queryStringParameters'].get('end_date', None)
+
+
+        # Export to CSV
+        export = event['queryStringParameters'].get('export', False)
+
 
         # Initialize sort_criteria with a default value
         sort_criteria = []
@@ -149,8 +155,22 @@ def list_all_purchases(event, context):
             "data": list(orders_list),
             "total_pages": total_pages,
             "total_records": total_records,
-            "current_page": page
+            "current_page": page,
+            "download_link": None
         }
+
+        if export:
+            body["download_link"] = export_as_csv(orders_collection.find(query, {
+                "_id": 1,
+                "name": 1,
+                "created_at": 1,
+                "order_number": 1,
+                "payment_status": 1,
+                "payment": 1,
+                "amount": 1,
+                "currency": 1,
+                "auction_title": 1
+            }).sort(sort_criteria), email_address)
 
         return {
             "statusCode": 200,
@@ -172,11 +192,47 @@ def list_all_purchases(event, context):
 
 
 
+def format_date(date_value):
+    try:
+        if isinstance(date_value, int):
+            # Treat the value as a Unix timestamp (seconds since epoch)
+            date_obj = datetime.fromtimestamp(date_value)
+        else:
+            # Treat the value as a formatted string
+            date_obj = datetime.strptime(date_value, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+        # Format the datetime object as "03 June 2024"
+        formatted_date = date_obj.strftime('%d %B %Y')
+
+        return formatted_date
+
+    except Exception as e:
+        print("Error:", e)
+        return None
 
 
 
 
-def export_as_csv(sales):
+currencySymbolMapping = {
+    "GBP": '£',
+    "USD": '$',
+    "EUR": '€',
+    "HKD": 'HK$',
+    "JPY": '¥',
+    "CHF": 'Fr',
+    "SGD": 'S$',
+    "AUD": 'A$',
+    "CAD": 'C$',
+    "INR": '₹',
+}
+
+
+
+
+
+
+
+def export_as_csv(sales, email_address):
     """
     Exports a list of auctions as a CSV file and uploads it to an S3 bucket.
 
@@ -190,29 +246,37 @@ def export_as_csv(sales):
         Exception: If an error occurs during the export and upload process.
     """
     try:
-        # Export QR codes as CSV and upload to S3
-        csv_file = os.environ["SALES_CSV_FILE"]
-        s3_key = f"exports/{csv_file}"
+        filename = "All Orders"
+        seller_email = email_address
+        temp_dir = tempfile.mkdtemp()
+        csv_file = os.path.join(temp_dir, f'{filename}.csv')
+
+        s3_key = f"exports/seller/{seller_email}/{filename}.csv"
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date","Payment Type", "Payment Status"])
+            writer = csv.DictWriter(file, ["Order number", "Customer name", "Auction name","Date","Result", "Payment type", "Payment status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
-                date = datetime.fromtimestamp(sale['created_at'])
+                currency = sale.get("currency", "")
+                if currency in currencySymbolMapping:
+                    currency = currencySymbolMapping.get(currency, "")
+                date = format_date(int(sale['created_at']))
                 # Format the date as a string with only the date
-                formatted_date = date.strftime('%Y-%m-%d')
-                shipping_address = sale['shipping_address']
-                full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
-                modified_sales["ORDER ID"] = sale["order_number"]
-                modified_sales["Customer Name"] = full_name
-                modified_sales["Auction Name"] = sale['auction_title']
-                modified_sales["Order Date"] = formatted_date
-                modified_sales["Payment Status"] = sale["payment_status"]
-                modified_sales["Payment Type"]= sale["payment"]
+                formatted_date = date
+                # shipping_address = sale['shipping_address']
+                # full_name = sale['name']
+                # print('full_name', full_name)
+                modified_sales["Order number"] = sale["order_number"]
+                modified_sales["Customer name"] = sale.get("name", "")
+                modified_sales["Auction name"] = sale['auction_title']
+                modified_sales["Date"] = formatted_date
+                modified_sales["Result"] = currency + str(sale["amount"])
+                modified_sales["Payment status"] = sale["payment_status"]
+                modified_sales["Payment type"]= sale["payment"]
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
@@ -227,5 +291,5 @@ def export_as_csv(sales):
         )
         return s3_signed_url
     except Exception as err:
-        print(err)
+        print('Error: ', str(err))
         return None
