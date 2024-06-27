@@ -213,18 +213,18 @@ def format_date(date_value):
 
 
 
-currencySymbolMapping = {
-    "GBP": '£',
-    "USD": '$',
-    "EUR": '€',
-    "HKD": 'HK$',
-    "JPY": '¥',
-    "CHF": 'Fr',
-    "SGD": 'S$',
-    "AUD": 'A$',
-    "CAD": 'C$',
-    "INR": '₹',
-}
+# currencySymbolMapping = {
+#     "GBP": '£',
+#     "USD": '$',
+#     "EUR": '€',
+#     "HKD": 'HK$',
+#     "JPY": '¥',
+#     "CHF": 'Fr',
+#     "SGD": 'S$',
+#     "AUD": 'A$',
+#     "CAD": 'C$',
+#     "INR": '₹',
+# }
 
 
 
@@ -255,26 +255,26 @@ def export_as_csv(sales, email_address):
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["Order number", "Customer name", "Auction name","Date","Result", "Payment type", "Payment status"])
+            writer = csv.DictWriter(file, ["Order ID", "Customer name", "Auction name","Order date", "Payment type", "Payment status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
-                currency = sale.get("currency", "")
-                if currency in currencySymbolMapping:
-                    currency = currencySymbolMapping.get(currency, "")
+                # currency = sale.get("currency", "")
+                # if currency in currencySymbolMapping:
+                #     currency = currencySymbolMapping.get(currency, "")
                 date = format_date(int(sale['created_at']))
                 # Format the date as a string with only the date
                 formatted_date = date
                 # shipping_address = sale['shipping_address']
                 # full_name = sale['name']
                 # print('full_name', full_name)
-                modified_sales["Order number"] = sale["order_number"]
+                modified_sales["Order ID"] = sale["order_number"]
                 modified_sales["Customer name"] = sale.get("name", "")
                 modified_sales["Auction name"] = sale['auction_title']
-                modified_sales["Date"] = formatted_date
-                modified_sales["Result"] = currency + str(sale["amount"])
+                modified_sales["Order date"] = formatted_date
+                # modified_sales["Result"] = currency + str(sale["amount"])
                 modified_sales["Payment status"] = sale["payment_status"]
                 modified_sales["Payment type"]= sale["payment"]
                 writer.writerow(modified_sales)
