@@ -2402,7 +2402,7 @@
         }
       }
     },
-    "/link": {
+    "/links": {
       "get": {
         "tags": ["Buyers Management"],
         "summary": "Get Seller social links",
@@ -2443,6 +2443,9 @@
                           "type": "string"
                         },
                         "linkdin_link": {
+                          "type": "string"
+                        },
+                        "tiktok_link": {
                           "type": "string"
                         }
                       }
