@@ -318,7 +318,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
   statistic           = "Maximum"
   
   # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 70
+  threshold = 50
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
    
@@ -340,7 +340,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
   statistic           = "Maximum"
   
   # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 70
+  threshold = 50
 
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
    
