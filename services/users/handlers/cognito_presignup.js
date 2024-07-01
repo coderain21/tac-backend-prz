@@ -13,6 +13,7 @@
 const CryptoJS = require('crypto-js')
 const uuid = require('uuid')
 const AWS = require('aws-sdk')
+const mailchimp = require('@mailchimp/mailchimp_transactional')(process.env.MAILCHIMP_API_KEY)
 
 const cognito = new AWS.CognitoIdentityServiceProvider()
 const Users = require('../entities/Users')
@@ -38,6 +39,29 @@ const createGroup = async (username, userPoolId) => {
         console.error('Error creating group:', error)
     }
 }
+
+async function createMailchimpTemplate(userEmail) {
+    const templateName = `Welcome Template for ${userEmail}`
+    const htmlContent = `
+        <h1>Welcome to Our Platform, ${userEmail}!</h1>
+        <p>We're excited to have you on board.</p>
+        <!-- Add more HTML content as needed -->
+    `
+
+    try {
+        const response = await mailchimp.templates.add({
+            name: templateName,
+            html: htmlContent,
+        })
+
+        console.log('Mailchimp template created:', response)
+        return response
+    } catch (error) {
+        console.error('Error creating Mailchimp template:', error)
+        throw error
+    }
+}
+
 exports.handler = async (event, context, callback) => {
     async function checkForExistingUsers(event, linkToExistingUser) {
         console.log('Executing checkForExistingUsers')
@@ -98,6 +122,10 @@ exports.handler = async (event, context, callback) => {
             console.log(user)
             const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
             console.log(cognitoResponse)
+
+            // Create Mailchimp template
+            await createMailchimpTemplate(event.request.userAttributes.email)
+
             await linkUser(event.request.userAttributes.email, event)
         } catch (error) {
             throw error
