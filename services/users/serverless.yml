@@ -143,7 +143,23 @@ functions:
             trigger: PreSignUp
             existing: true
   
-  cognito-post-confirmation-trigger:
+  # cognito-post-confirmations-trigger:
+  #   handler: handlers/cognito_post_confirmation.handler
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  
+  #   events:
+  #       - cognitoUserPool:
+  #           pool: ${opt:stage, self:provider.stage}-indyauction-seller
+  #           trigger: PostConfirmation
+  #           existing: true
+  
+  cognito-post-signups-trigger:
     handler: handlers/cognito_post_confirmation.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
@@ -156,8 +172,8 @@ functions:
     events:
         - cognitoUserPool:
             pool: ${opt:stage, self:provider.stage}-indyauction-seller
-            trigger: PostConfirmation
-            existing: true
+            trigger: PostConfirmation                                             #PreAuthentication
+            existing: true 
 
 
   verify-recaptha:
