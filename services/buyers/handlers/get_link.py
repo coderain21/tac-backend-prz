@@ -36,7 +36,7 @@ def get_link(event, context):
             "Instagram_link": 1,
             "twitter": 1,
             "tiktok_link": 1,
-            "linkdin_link": 1
+            "linkedin_link": 1
         }
         seller_links = seller_collection.find_one({"email_address": data["seller_email"]}, projection)
 
