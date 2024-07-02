@@ -48,6 +48,35 @@ TIMEZONE_MAPPING = {
     }
 
 
+import mailchimp_transactional
+from mailchimp_transactional.api_client import ApiClientError
+
+client = mailchimp_transactional.Client('md-fkPl2YP1NO-7OS6bQXQPjw')
+
+
+def send_email(email, template_id, template_data):
+    try:
+        response = client.messages.send_template(
+            {
+                "template_name": template_id,
+                "template_content": [],
+                "message": {
+                    "to": [{"email": email, "type": "to"}],
+                    "global_merge_vars": [
+                        {"name": key, "content": value}
+                        for key, value in template_data.items()
+                    ],
+                    "from_email": template_data["from_email"],
+                    "subject": template_data["subject"]
+                }
+            }
+        )
+        print('response', response)
+        return response
+    except ApiClientError as e:
+        print("An error occurred: {}".format(e))
+        return False
+
 
 
 
@@ -211,8 +240,15 @@ def register_auction(event, context):
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
                             "img":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
-                                template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
+            # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
+            #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
+            template_collection = db['email_templates']
+            template = template_collection.find_one({"email_address": seller_email})
+            template_id = template['template_id']
+
+            send_email(email_address, template_id, template_data)
+
+
             data_to_insert= {
                         'first_name': first_name,
                         'last_name': last_name,
