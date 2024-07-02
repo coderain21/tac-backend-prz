@@ -40,6 +40,8 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     MAILCHIMP_COLLECTION: ${opt:stage, self:provider.stage}-mailchimp-templates
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
+    AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
