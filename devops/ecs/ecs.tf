@@ -262,6 +262,13 @@ resource "aws_ecr_repository" "repo1" {
   provider = aws.deployment-eu
   force_delete = true
 }
+# ECR Repositories
+resource "aws_ecr_repository" "repo" {
+  name = "update-auction-repo"
+  provider = aws.deployment-eu
+  force_delete = true
+}
+
 
 ########################
 
@@ -310,6 +317,12 @@ data "aws_ssm_parameter" "cpu" {
 }
 data "aws_ssm_parameter" "memory" {
   name = "MEMORY"
+}
+data "aws_ssm_parameter" "ecs_cpu" {
+  name = "ECS_CPU"
+}
+data "aws_ssm_parameter" "ecs_memory" {
+  name = "ECS_MEMORY"
 }
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
@@ -440,7 +453,23 @@ resource "aws_appautoscaling_policy" "cpu" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    target_value = 70
+    target_value = data.aws_ssm_parameter.ecs_cpu.value
+  }
+  provider = aws.deployment-eu
+}
+resource "aws_appautoscaling_policy" "memory" {
+  name = "memory"
+  policy_type = "TargetTrackingScaling"
+  resource_id = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace = aws_appautoscaling_target.target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+
+    target_value = data.aws_ssm_parameter.ecs_memory.value
   }
   provider = aws.deployment-eu
 }
