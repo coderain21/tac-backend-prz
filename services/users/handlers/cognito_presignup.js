@@ -10,19 +10,49 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-console */
+
 const CryptoJS = require('crypto-js')
 const uuid = require('uuid')
 const AWS = require('aws-sdk')
-const mailchimp = require('@mailchimp/mailchimp_transactional')(process.env.MAILCHIMP_API_KEY)
+const mailchimp = require('@mailchimp/mailchimp_transactional')
 
 const cognito = new AWS.CognitoIdentityServiceProvider()
 const Users = require('../entities/Users')
 const SubDomain = require('../entities/SubDomain')
 const mongoConnection = require('../lib/mongodb_helper')
-
+const Counter = require('../entities/Counter')
+const helpers = require('../lib/helper')
 const cognitoHelper = require('../lib/cognito_helper')
 
 let connection = null
+
+// Initialize Mailchimp Transactional
+const mailchimpClient = mailchimp(process.env.MAILCHIMP_TRANSACTIONAL_API_KEY)
+
+async function sendWelcomeEmail(userData) {
+    try {
+        const message = {
+            from_email: 'your-sender-email@example.com',
+            subject: 'Welcome to Our Platform',
+            html: `<h1>Welcome ${userData.full_name}!</h1>
+             <p>Thank you for registering on our platform.</p>
+             <p>Your seller ID is: ${userData.seller_id}</p>`,
+            to: [
+                {
+                    email: userData.email_address,
+                    type: 'to',
+                },
+            ],
+        }
+
+        const response = await mailchimpClient.messages.send({ message })
+        console.log('Welcome email sent:', response)
+        return response
+    } catch (error) {
+        console.error('Error sending welcome email:', error)
+        throw error
+    }
+}
 
 const createGroup = async (username, userPoolId) => {
     try {
@@ -36,34 +66,12 @@ const createGroup = async (username, userPoolId) => {
     }
 }
 
-async function createMailchimpTemplate(userEmail) {
-    const templateName = `Welcome Template for ${userEmail}`
-    const htmlContent = `
-        <h1>Welcome to Our Platform, ${userEmail}!</h1>
-        <p>We're excited to have you on board.</p>
-        <!-- Add more HTML content as needed -->
-    `
-
-    try {
-        const response = await mailchimp.templates.add({
-            name: templateName,
-            html: htmlContent,
-        })
-
-        console.log('Mailchimp template created:', response)
-        return response
-    } catch (error) {
-        console.error('Error creating Mailchimp template:', error)
-        throw error
-    }
-}
-
 exports.handler = async (event, context, callback) => {
     async function checkForExistingUsers(event, linkToExistingUser) {
         console.log('Executing checkForExistingUsers')
         try {
             if (connection === null || !connection.readyState) {
-                console.log('not coonected')
+                console.log('not connected')
                 connection = await mongoConnection.connect()
             }
             const params = {
@@ -89,7 +97,7 @@ exports.handler = async (event, context, callback) => {
                 await linkUser(result.Users[0].Username, event)
                 return result
             }
-            let newPassword = process.env.SELLER_GOOGLE_PASSWORD// Change the length as needed
+            let newPassword = process.env.SELLER_GOOGLE_PASSWORD
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
 
             const userData = {
@@ -115,11 +123,14 @@ exports.handler = async (event, context, callback) => {
             const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
             console.log(cognitoResponse)
 
-            // Create Mailchimp template
-            await createMailchimpTemplate(event.request.userAttributes.email)
+            // Send welcome email
+            await sendWelcomeEmail(userData)
 
             await linkUser(event.request.userAttributes.email, event)
+
+            return { user, domain }
         } catch (error) {
+            console.error('Error in checkForExistingUsers:', error)
             throw error
         } finally {
             // Disconnect from the MongoDB database
@@ -132,10 +143,8 @@ exports.handler = async (event, context, callback) => {
     function linkUser(sub, event) {
         console.log(`Linking user accounts with target sub: ${sub}and event: `, event)
 
-        // By default, assume the existing account is a Cognito username/password
         let destinationProvider = 'Cognito'
         let destinationSub = sub
-        // If the existing user is in fact an external user (Xero etc), override the the provider
         if (sub.includes('_')) {
             destinationProvider = sub.split('_')[0]
             destinationSub = sub.split('_')[1]
@@ -173,8 +182,8 @@ exports.handler = async (event, context, callback) => {
             callback(null, event)
         } catch (error) {
             console.log('Error checking for existing users: ', error)
-            // proceed with sign-up
-            callback(null, event)
+            // In case of error, we should probably not proceed with sign-up
+            callback(error)
         }
     } else {
         callback(null, event)

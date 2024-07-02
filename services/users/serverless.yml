@@ -88,7 +88,7 @@ provider:
             - s3:*
             - lambda:*
             - mobiletargeting:*
-            - lambda:RemovePermission 
+            # - lambda:RemovePermission 
           Resource: "*"
  
 package:
