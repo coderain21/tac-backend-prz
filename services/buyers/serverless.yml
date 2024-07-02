@@ -317,7 +317,8 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}      #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
           path: /update-password
           method: post
   
@@ -348,7 +349,8 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}          #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}          #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
 
   view_profile:
     handler: handlers/view_profile.view_profile
@@ -375,7 +377,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /profile
           method: patch
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}           #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}           #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
   
   add_address:
     handler: handlers/add_address.add_address
@@ -402,7 +405,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /add-address
           method: patch
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}              #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}              #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number
@@ -429,7 +433,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /paddle
           method: get
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}             #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
 
 
   send-reset-link:
@@ -464,6 +469,34 @@ functions:
           cors: true
           path: /reset_password
           method: post
+  
+
+  footer-links:
+    handler: handlers/get_link.get_link
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /links
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          # authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
 
 
