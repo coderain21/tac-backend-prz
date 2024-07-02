@@ -27,6 +27,7 @@
     "csv-writer": "^1.6.0",
     "uuid": "^9.0.0",
     "ioredis": "^4.16.0",
-    "axios":"^1.6.8"
+    "axios":"^1.6.8",
+    "@mailchimp/mailchimp_transactional": "^1.0.59"
   }
 }
