@@ -4,7 +4,7 @@ import os
 import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.helper_python import send_pinpoint_email
+# from lib.helper_python import send_pinpoint_email
 from datetime import datetime
 import pytz
 import mailchimp_transactional as MailchimpTransactional
@@ -31,6 +31,8 @@ auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
+subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
+template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
 
@@ -54,38 +56,37 @@ TIMEZONE_MAPPING = {
 import mailchimp_transactional
 from mailchimp_transactional.api_client import ApiClientError
 
-client = mailchimp_transactional.Client('md-fkPl2YP1NO-7OS6bQXQPjw')
+client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
 
 
 def send_email(email, template_name, template_data):
     try:
         print('here in mailchimp')
-        # response = client.messages.send_template(
-        #     {
-        #         "template_name": template_name,
-        #         "template_content": [],
-        #         "message": {
-        #             "to": [{"email": email, "type": "to"}],
-        #             "global_merge_vars": [
-        #                 {"name": key, "content": value}
-        #                 for key, value in template_data.items()
-        #             ],
-        #             "subject": template_data["subject"]
-        #         }
-        #     }
-        # ) 
-        # print('response', response)
         response = client.messages.send_template(
             {
                 "template_name": template_name,
                 "template_content": [],
                 "message": {
                     "to": [{"email": email, "type": "to"}],
-                    "subject": 'testing'
+                    "global_merge_vars": [
+                        {"name": key, "content": value}
+                        for key, value in template_data.items()
+                    ]
                 }
             }
         )
         print('response', response)
+        # response = client.messages.send_template(
+        #     {
+        #         "template_name": template_name,
+        #         "template_content": [],
+        #         "message": {
+        #             "to": [{"email": email, "type": "to"}],
+        #             "subject": 'testing'
+        #         }
+        #     }
+        # )
+        # print('response', response)
         return response
     except ApiClientError as e:
         print("An error occurred: {}".format(e))
@@ -190,6 +191,16 @@ def register_auction(event, context):
 
         print('Start date:', start_date, 'Start time:', start_time)
 
+
+
+        end_date_time_in_milliseconds = registration_type.get('end_date', datetime.utcnow().timestamp() * 1000)
+        end_date_time_utc = datetime.utcfromtimestamp(end_date_time_in_milliseconds / 1000)
+        end_date_time_local = end_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
+        end_date = end_date_time_local.date()
+        end_time = end_date_time_local.time().strftime('%H:%M:%S')
+
+        print('Start date:', start_date, 'Start time:', start_time)
+
         paddle_color = registration_type['paddle']
         paddle_text_color = paddle_color["text_color"]
         paddle_background_color = paddle_color["background_color"]
@@ -253,10 +264,14 @@ def register_auction(event, context):
                                 'starting_sequence': 1}},
                             return_document=pymongo.ReturnDocument.AFTER,
                             upsert=True)
+            subdomain = subdomain_collection.find_one_and_update({"seller_email": seller_email})
+            domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
             template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
                             "auction_start_time":str(start_time),
+                            "auction_end_date":str(end_date), "auction_end_time":str(end_time),
+                            "auction_image": registration_type["auction_image"],
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
                             "logo":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful",
