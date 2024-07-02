@@ -51,6 +51,35 @@ TIMEZONE_MAPPING = {
     }
 
 
+import mailchimp_transactional
+from mailchimp_transactional.api_client import ApiClientError
+
+client = mailchimp_transactional.Client('md-fkPl2YP1NO-7OS6bQXQPjw')
+
+
+def send_email(email, template_id, template_data):
+    try:
+        response = client.messages.send_template(
+            {
+                "template_name": template_id,
+                "template_content": [],
+                "message": {
+                    "to": [{"email": email, "type": "to"}],
+                    "global_merge_vars": [
+                        {"name": key, "content": value}
+                        for key, value in template_data.items()
+                    ],
+                    "from_email": template_data["from_email"],
+                    "subject": template_data["subject"]
+                }
+            }
+        )
+        print('response', response)
+        return response
+    except ApiClientError as e:
+        print("An error occurred: {}".format(e))
+        return False
+
 
 
 
