@@ -73,7 +73,9 @@ provider:
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     DEFAULT_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
-    
+    MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
+
+   
     
   http:
     cors: true
@@ -129,6 +131,7 @@ functions:
   #COGNITO PRE SIGNUP TRIGGER
   cognito-pre-signup-trigger:
     handler: handlers/cognito_presignup.handler
+    timeout: 300
     layers:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
@@ -142,22 +145,6 @@ functions:
             pool: ${opt:stage, self:provider.stage}-indyauction-seller
             trigger: PreSignUp
             existing: true
-  
-  # cognito-post-confirmations-trigger:
-  #   handler: handlers/cognito_post_confirmation.handler
-  #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
-  #   vpc:
-  #     securityGroupIds:
-  #       - ${ssm:SECURITY_GROUP_ID}
-  #     subnetIds:
-  #       - ${ssm:SUBNET_ID}
-  
-  #   events:
-  #       - cognitoUserPool:
-  #           pool: ${opt:stage, self:provider.stage}-indyauction-seller
-  #           trigger: PostConfirmation
-  #           existing: true
   
   cognito-post-signups-trigger:
     handler: handlers/cognito_post_confirmation.handler
@@ -174,7 +161,6 @@ functions:
             pool: ${opt:stage, self:provider.stage}-indyauction-seller
             trigger: PostConfirmation                                             #PreAuthentication
             existing: true 
-
 
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verifyReCaptcha
