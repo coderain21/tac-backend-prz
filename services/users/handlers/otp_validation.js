@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
@@ -20,6 +21,7 @@ const Users = require('../entities/Users')
 const SubDomain = require('../entities/SubDomain')
 
 const mongoConnection = require('../lib/mongodb_helper')
+const mailchimpHelper = require('../lib/mailchimp_helper')
 
 AWS.config.update({ region: process.env.REGION })
 
@@ -35,7 +37,7 @@ const createGroup = async (username, userPoolId) => {
             GroupName: username,
             UserPoolId: userPoolId,
         }).promise()
-        console.log('Group created:', response)
+        return response
     } catch (error) {
         console.error('Error creating group:', error)
     }
@@ -93,7 +95,6 @@ module.exports.otpValidation = async (event, _context, callback) => {
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
-            console.log(errorMessage)
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),

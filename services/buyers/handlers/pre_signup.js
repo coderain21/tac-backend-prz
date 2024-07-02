@@ -20,18 +20,13 @@ const mongoConnection = require('../lib/mongodb_helper')
 const cognitoHelper = require('../lib/cognito_helper')
 
 exports.handler = async (event, context, callback) => {
-    console.log('event', JSON.stringify(event))
     async function checkForExistingUsers(event, linkToExistingUser) {
-        console.log('Executing checkForExistingUsers', event)
-
         try {
             const params = {
                 UserPoolId: event.userPoolId,
                 AttributesToGet: ['sub', 'email'],
                 Filter: `email = "${event.request.userAttributes.email}"`,
             }
-            console.log('params', params)
-
             const result = await new Promise((resolve, reject) => cognito.listUsers(params, (err, data) => {
                 if (err) {
                     reject(err)
@@ -39,10 +34,7 @@ exports.handler = async (event, context, callback) => {
                 }
                 resolve(data)
             }))
-            console.log('result', result)
-
             if (result.Users && result.Users.length > 0 && result.Users[0].Username && linkToExistingUser) {
-                console.log('Found existing users: ', result.Users)
                 if (result.Users.length > 1) {
                     result.Users.sort((a, b) => ((a.UserCreateDate > b.UserCreateDate) ? 1 : -1))
                     console.log('Found more than one existing users. Ordered by createdDate: ', result.Users)
@@ -51,10 +43,7 @@ exports.handler = async (event, context, callback) => {
                 return result
             }
             let newPassword = process.env.SELLER_GOOGLE_PASSWORD// Change the length as needed
-            console.log('newPassword', newPassword)
-            console.log('skey', process.env.PASSWORD_SECRET_KEY)
             newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
-            console.log('event - >', event)
             const userData = {
                 first_name: event.request.userAttributes.given_name,
                 last_name: event.request.userAttributes.family_name,
@@ -69,9 +58,7 @@ exports.handler = async (event, context, callback) => {
             }
             const connection = await mongoConnection.connect()
             const user = await mongoConnection.save(userData, Users)
-            console.log(user)
             const cognitoResponse = await cognitoHelper.buyerCognitoCreate(userData, event.userPoolId)
-            console.log(cognitoResponse)
             await connection.disconnect()
             await linkUser(event.request.userAttributes.email, event)
         } catch (error) {
@@ -117,11 +104,8 @@ exports.handler = async (event, context, callback) => {
     console.log('event', JSON.stringify(event))
 
     if (event.triggerSource === 'PreSignUp_ExternalProvider') {
-        console.log('111111111111111111')
         try {
             const result = await checkForExistingUsers(event, true)
-            console.log('res', result)
-            console.log('Completed looking up users and linking them: ', event)
             callback(null, event)
         } catch (error) {
             console.log('Error checking for existing users: ', error)
