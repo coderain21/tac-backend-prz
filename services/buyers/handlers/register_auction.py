@@ -57,20 +57,31 @@ from mailchimp_transactional.api_client import ApiClientError
 client = mailchimp_transactional.Client('md-fkPl2YP1NO-7OS6bQXQPjw')
 
 
-def send_email(email, template_id, template_data):
+def send_email(email, template_name, template_data):
     try:
+        print('here in mailchimp')
+        # response = client.messages.send_template(
+        #     {
+        #         "template_name": template_name,
+        #         "template_content": [],
+        #         "message": {
+        #             "to": [{"email": email, "type": "to"}],
+        #             "global_merge_vars": [
+        #                 {"name": key, "content": value}
+        #                 for key, value in template_data.items()
+        #             ],
+        #             "subject": template_data["subject"]
+        #         }
+        #     }
+        # ) 
+        # print('response', response)
         response = client.messages.send_template(
             {
-                "template_name": template_id,
+                "template_name": template_name,
                 "template_content": [],
                 "message": {
                     "to": [{"email": email, "type": "to"}],
-                    "global_merge_vars": [
-                        {"name": key, "content": value}
-                        for key, value in template_data.items()
-                    ],
-                    "from_email": template_data["from_email"],
-                    "subject": template_data["subject"]
+                    "subject": 'testing'
                 }
             }
         )
@@ -242,7 +253,7 @@ def register_auction(event, context):
                                 'starting_sequence': 1}},
                             return_document=pymongo.ReturnDocument.AFTER,
                             upsert=True)
-            template_data = json.dumps({"paddle":paddle['starting_sequence'],
+            template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
                             "auction_start_time":str(start_time),
