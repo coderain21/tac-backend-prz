@@ -42,6 +42,7 @@ provider:
     MAILCHIMP_COLLECTION: ${opt:stage, self:provider.stage}-mailchimp-templates
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
+    CDN_LINK: ${ssm:CDN_URL}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:

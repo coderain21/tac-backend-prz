@@ -269,7 +269,7 @@ def register_auction(event, context):
             subdomain = subdomain_collection.find_one({"seller_email": seller_email})
             domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
 
-            auction_image = f"https://cdn.dev.indyauction.net/public/{registration_type['auction_image']}"
+            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
             template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
