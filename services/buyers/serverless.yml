@@ -42,6 +42,7 @@ provider:
     MAILCHIMP_COLLECTION: ${opt:stage, self:provider.stage}-mailchimp-templates
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
+    CDN_LINK: ${ssm:CDN_URL}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
@@ -88,7 +89,7 @@ provider:
    
     BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     DOMAIN_URL: ".${ssm:AMPLIFY_DOMAIN_NAME}"
-    CDN_LINK: ${ssm:CDN_URL}
+    # CDN_LINK: ${ssm:CDN_URL}
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     DEFAULT_COGNITO_DOMAIN: ${ssm:BUYER_COGNITO_USERPOOL_DOMAIN}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
