@@ -72,3 +72,5 @@ devops/ecs/ecs_task.env
 devops/mongodb/tf-key-pair-dev.pem
 .serverless/*
 devops/buyer_web_application/subdomains.json
+logins.sh
+.serverless
