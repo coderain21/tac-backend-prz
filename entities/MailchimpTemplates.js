@@ -16,7 +16,7 @@ const TemplateSchema = new Schema({
     },
     seller_id: { type: String, trim: true },
     slug: { type: String, trim: true },
-
+    type: { type: String, trim: true },
 })
 
 TemplateSchema.plugin(mongoosePaginate)
