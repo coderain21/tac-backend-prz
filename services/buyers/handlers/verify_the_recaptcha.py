@@ -170,7 +170,7 @@ def verify(event, context):
         template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
         print('template', template)
         template_name = template['name']
-        
+
         email_status = send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
                                         os.environ["SES_SENDER_EMAIL_ID"])
 
