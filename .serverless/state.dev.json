@@ -6,6 +6,13 @@
     "buyers": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://pxz7ksim2f.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "buyers-dev-serverlessdeploymentbucket-hwmedbhmnfab"
       }
     },
     "auctions": {
@@ -16,21 +23,49 @@
     "lot-bid-history": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://nwawo36a7d.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "lot-bid-history-dev-serverlessdeploymentbucket-srwz6qzujjqt"
       }
     },
     "order-management": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://yb9lr1o6c5.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "orders-dev-serverlessdeploymentbucket-ygiovoyx6qlb"
       }
     },
     "payments": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://721cd01pm0.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "payments-dev-serverlessdeploymentbucket-5jepwzw5oebj"
       }
     },
     "buyer-wishlist": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://3m6bq32o1j.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "buyer-wishlist-dev-serverlessdeploymentbucket-4vxnsr3nyy2i"
       }
     },
     "cognito-auth": {
@@ -44,6 +79,14 @@
     "admin-management": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DevDashsellerDashdeactivateArn": "arn:aws:states:eu-west-2:339712957347:stateMachine:dev-seller-deactivate",
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://2judix2sj5.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "admin-management-dev-serverlessdeploymentbucket-f4baoqjrtajs"
       }
     },
     "lambda-authorizer": {
@@ -58,16 +101,37 @@
     "subdomain": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://59ep6o62ld.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "subdomain-dev-serverlessdeploymentbucket-nkfs9rkv0lku"
       }
     },
     "address-management": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://dzs8h4jwv4.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "address-management-dev-serverlessdeploymentbucket-m1ivioajt9va"
       }
     },
     "bids": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://zhvsgr5psd.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "bids-dev-serverlessdeploymentbucket-cp514jvae7m5"
       }
     },
     "users": {
@@ -78,6 +142,49 @@
     "cart-management": {
       "state": {
         "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://d45tzkfyqi.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "cart-management-dev-serverlessdeploymentbucket-zexsamkbpuxm"
+      }
+    },
+    "seller-bidder-management": {
+      "state": {
+        "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://4qb98g45q4.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "seller-bidder-management--serverlessdeploymentbuck-qqu7btb9wkph"
+      }
+    },
+    "admin-buyer-management": {
+      "state": {
+        "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://efuleywwr4.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "admin-buyer-bid-history-d-serverlessdeploymentbuck-buk9tdpnffwt"
+      }
+    },
+    "site-banner": {
+      "state": {
+        "detectedFrameworkVersion": "3.38.0"
+      },
+      "outputs": {
+        "DomainName": "apis.dev.indyauction.net",
+        "HostedZoneId": "ZJ5UAJN8Y3Z2Q",
+        "DistributionDomainName": "d-cqhgdogkve.execute-api.eu-west-2.amazonaws.com",
+        "ServiceEndpoint": "https://j6ikft8uif.execute-api.eu-west-2.amazonaws.com/dev",
+        "ServerlessDeploymentBucketName": "site-banner-dev-serverlessdeploymentbucket-wohg95vcskdq"
       }
     }
   }

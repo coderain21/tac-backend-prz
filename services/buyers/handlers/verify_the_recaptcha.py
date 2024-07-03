@@ -94,6 +94,7 @@ def check_user_in_cognito(email_address):
 def verify(event, context):
     try:
         data = json.loads(event['body'])
+        print('data', data)
         expected_fields = ["auction_id", "email_address", "first_name", "last_name", "password", "confirm_password",
                            "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type", "session_token"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
@@ -187,7 +188,6 @@ def verify(event, context):
             'body': json.dumps({'encrypted_token': encrypted_data})
         }
     except Exception as e:
-        print('Error:', str(e))
         print('Error:', str(e))
         return {
             'statusCode': 500,
