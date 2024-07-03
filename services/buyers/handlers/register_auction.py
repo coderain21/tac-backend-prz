@@ -277,7 +277,7 @@ def register_auction(event, context):
             #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
 
             print('template_data', template_data)
-            template = template_collection.find_one({"seller_email": seller_email})
+            template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
             template_name = template['name']
 
             send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
