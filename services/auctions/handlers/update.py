@@ -604,7 +604,7 @@ def update_auction(event, context):
             "section": {
                 "name": 'Auctions Management',
                 "action": 'Update',
-                "auction_id": auction_record.get(auction_id),
+                "auction_id": auction_id,
                 "updated": update_data
             },
         }
