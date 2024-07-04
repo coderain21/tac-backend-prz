@@ -91,7 +91,6 @@ def check_user_in_cognito(email_address):
 def verify(event, context):
     try:
         data = json.loads(event['body'])
-        print('data', data)
         expected_fields = ["auction_id", "email_address", "first_name", "last_name", "password", "confirm_password",
                            "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type", "session_token"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
@@ -105,18 +104,9 @@ def verify(event, context):
         password = data.get("password")
         confirm_password = data.get("confirm_password")
         is_password_valid = False
-
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        # user_collection = db[os.environ["BUYER_COLLECTION"]]
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
-        print('seller_details', seller_details)
         user_exist = check_user_in_cognito(data['email_address'])
 
         if user_exist is True:
@@ -148,10 +138,7 @@ def verify(event, context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
         hostname = data['hostname']
-
-        print('Before captcha verification')
         captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
-        print('After captcha verification')
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
         if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
@@ -164,14 +151,13 @@ def verify(event, context):
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
-        # email_status = send_pinpoint_email(data['email_address'], os.environ["SES_SENDER_EMAIL_ID"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
-        #                                 os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
-        # print('seller', seller_details)
         template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
-        print('template', template)
-        template_name = template['name']
+        if template is None:
+            template_name = 'buyer-default-otp-template'
+        else:
+            template_name = template['name']
 
-        email_status = send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
+        send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
                                         os.environ["SES_SENDER_EMAIL_ID"])
 
         return {

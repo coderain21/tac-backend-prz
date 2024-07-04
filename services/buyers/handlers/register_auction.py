@@ -51,50 +51,6 @@ TIMEZONE_MAPPING = {
     }
 
 
-# import mailchimp_transactional
-# from mailchimp_transactional.api_client import ApiClientError
-
-# client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-
-
-# def send_email(email, template_name, template_data, seller_email):
-#     try:
-#         print('here in mailchimp')
-#         response = client.messages.send_template(
-#             {
-#                 "template_name": template_name,
-#                 "template_content": [],
-#                 "message": {
-#                     "to": [{"email": email, "type": "to"}],
-#                     "from": 'no-reply@indy.auction',
-#                     "global_merge_vars": [
-#                         {"name": key, "content": value}
-#                         for key, value in template_data.items()
-#                     ]
-#                 }
-#             }
-#         )
-#         print('response', response)
-#         # response = client.messages.send_template(
-#         #     {
-#         #         "template_name": template_name,
-#         #         "template_content": [],
-#         #         "message": {
-#         #             "to": [{"email": email, "type": "to"}],
-#         #             "subject": 'testing'
-#         #         }
-#         #     }
-#         # )
-#         # print('response', response)
-#         return response
-#     except ApiClientError as e:
-#         print("An error occurred: {}".format(e))
-#         return False
-
-
-
-
-
 def register_auction(event, context):
     """
     Register an auction for a buyer.
@@ -276,12 +232,13 @@ def register_auction(event, context):
             # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
             #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
 
-            print('template_data', template_data)
             template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
-            template_name = template['name']
+            if template is None:
+              template_name = 'buyer_default_paddle_template'
+            else:
+              template_name = template['name']
 
             send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
-
 
             data_to_insert= {
                         'first_name': first_name,
