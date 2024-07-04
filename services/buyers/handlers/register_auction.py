@@ -234,10 +234,9 @@ def register_auction(event, context):
 
             template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
             if template is None:
-              template_name = 'buyer_default_paddle_template'
+                template_name = 'buyer_default_paddle_template'
             else:
-              template_name = template['name']
-
+                template_name = template['name']
             send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
 
             data_to_insert= {
