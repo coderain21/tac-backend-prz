@@ -29,6 +29,8 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
@@ -202,13 +204,6 @@ def update_auction(event, context):
             {"auction_id": auction_id, "seller_email": seller_email},{"_id": 0}
         )
         seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
-        # print('seller data', seller_data)
-        # if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
-        #     return {
-        #         "statusCode": 400,
-        #         'headers': headers,
-        #         "body": json.dumps({"message": "Stripe account not linked."})
-        #     }
         if auction_record is None:
             return {
                 "statusCode": 404,
@@ -217,13 +212,6 @@ def update_auction(event, context):
             }
 
         if published_status == 'true':
-            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            # if kyc_kyb_review is not True:
-            #     return {
-            #             "statusCode": 400,
-            #             'headers': headers,
-            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
-            #         }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
@@ -305,10 +293,7 @@ def update_auction(event, context):
                             # Add more required fields as needed
                         }
                     allLots.append(required_fields)
-                print('allLots', allLots)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
-                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
-                # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
@@ -395,18 +380,6 @@ def update_auction(event, context):
             extension_time = int(extension_time_str[:1])
         else:
             extension_time=0
-
-        # if auction_extension_type or auction_extension_between_lots:
-        #     if auction_extension_type and not auction_extension_between_lots:
-        #         extension_time_str = auction_record.get('extension_time_between_lots', '0')
-        #         extension_time = int(extension_time_str[:1])
-        #     elif auction_extension_between_lots and not auction_extension_type:
-        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
-        #         extension_time = int(extension_time_str[:1])
-        #     elif auction_extension_type and auction_extension_between_lots:
-        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
-        #         extension_time = int(extension_time_str[:1])
-
         if auction_extension_type or auction_extension_between_lots:
             if auction_extension_type and not auction_extension_between_lots:
                 extension_time_str = auction_record.get('extension_time_between_lots', '0')
@@ -418,7 +391,6 @@ def update_auction(event, context):
                 extension_time = int(extension_time_str[:1]) if extension_time_str else 0
             except ValueError:
                 extension_time = 0
-            print('extension_time', extension_time)
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if auction_end_date != None:
@@ -622,6 +594,21 @@ def update_auction(event, context):
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
+        access_logs = {
+            "actor_id": seller_data.get('seller_id'),
+            "updated_by": {
+                "type": 'Seller',
+                "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+                "email_address": seller_email,
+            },
+            "section": {
+                "name": 'Auctions Management',
+                "action": 'Update',
+                "auction_id": auction_id,
+                "updated": update_data
+            },
+        }
+        access_logs_collection.insert_one(access_logs)
         return {
             "headers": headers,
             'statusCode': 204,
