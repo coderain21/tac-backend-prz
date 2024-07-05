@@ -198,12 +198,12 @@ def update_password(event, context):
             "actor_id": buyer.get('buyer_id'),
             "updated_by": {
                 "type": 'Buyer',
-                "name": buyer.get('first_name') + ' ' + buyer.get('last_name'),
+                "name": ' '.join(filter(None, [buyer.get('first_name'), buyer.get('last_name')])),
                 "email_address": email_address,
             },
             "section": {
                 "name": 'Bidder Management',
-                "action": 'Update'
+                "action": 'Update Password'
             },
         }
         access_logs_collection.insert_one(access_logs)
