@@ -23,6 +23,8 @@ db = client[os.environ['DATABASE']]
 user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+
 
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
@@ -190,6 +192,23 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
+        
+        #adding logs of password update
+        access_logs = {
+            "actor_id": buyer.get('buyer_id'),
+            "updated_by": {
+                "type": 'Buyer',
+                "name": buyer.get('first_name') + ' ' + buyer.get('last_name'),
+                "email_address": email_address,
+            },
+            "section": {
+                "name": 'Bidder Management',
+                "action": 'Update'
+            },
+        }
+        access_logs_collection.insert_one(access_logs)
+
+
         return {
                 "statusCode": 204,
                 "headers": headers,
