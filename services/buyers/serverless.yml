@@ -504,6 +504,35 @@ functions:
           # authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
 
+  buyer-signin-logger:
+    handler: handlers/buyer_signin_logger.buyer_signin_logger
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /buyer-logs
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
+
 
 resources:
    Resources:
