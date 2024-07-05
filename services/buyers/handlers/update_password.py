@@ -1,4 +1,5 @@
 '''this api updates the current password'''
+import datetime
 import json
 import os
 import boto3
@@ -205,6 +206,7 @@ def update_password(event, context):
                 "name": 'Bidder Management',
                 "action": 'Update Password'
             },
+            "updated_at": int(datetime.datetime.now().timestamp())
         }
         access_logs_collection.insert_one(access_logs)
 

@@ -40,6 +40,7 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     MAILCHIMP_COLLECTION: ${opt:stage, self:provider.stage}-mailchimp-templates
+    ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     CDN_LINK: ${ssm:CDN_URL}
