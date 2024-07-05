@@ -24,6 +24,7 @@ const BidInformation = require('../entities/BidInformation')
 // const Bid = require('../entities/Bid')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
+const SubDomain = require('../entities/SubDomain')
 
 const pinpoint = new PinpointEmail()
 let connection = null
@@ -229,6 +230,16 @@ module.exports.sqsTriggerFunction = async (event) => {
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
                 const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
+                let totalAmount = winningLot.reduce((total, lot) => total + lot.bid_amount, 0)
+                totalAmount = formatCurrency(totalAmount, auctionData.currency)
+                const subdomainQuery = {
+                    seller_email: currentLotDetails.seller_email,
+                }
+                const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
+                console.log('auctionRedirectionURL', auctionRedirectionURL)
+                const auctionId = auctionData._id.toString()
+                console.log('AUCTION_ID', auctionId)
+                const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
 
                 // Create the email data
                 const template_data = {
@@ -243,7 +254,10 @@ module.exports.sqsTriggerFunction = async (event) => {
                     seller_email: auctionData.seller_email,
                     subject: subjectDescription,
                     paymentContent,
+                    total_amount: totalAmount,
+                    checkout_url: checkoutURL,
                 }
+                console.log('template', template_data)
 
                 // Send email
                 promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))

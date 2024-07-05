@@ -162,6 +162,13 @@
                 padding: 18px 20px 0;
                 margin: 20px 40px;
             }
+            .payment, .not-winning-lots{
+                margin-top: 0;
+                border: 1px solid #E4E4E7;
+                border-radius: 8px;
+                /* padding: 18px 20px 0; */
+                margin: 20px 40px;
+            }
             .winning-lot-section, .not-winning-lot-section{
                 display: flex;
                 margin-bottom: 18px;
@@ -182,10 +189,24 @@
                 text-align: left;
                 flex-wrap: wrap;
             }
+            
             .lot-details p:last-child{
                 font-size: 14px;
                 margin: 0;
             }
+            .lot {
+                display: flex;
+                /* justify-content: space-between; */
+                align-items: center;
+               
+                padding: 20px 20px 20px 20px;
+               
+              }
+              .imageB {
+                /* padding-bottom: 10px; */
+                margin-left: 20px;
+                display: inline-block;
+              }
             @media(max-width:575px){
                 .headersection{
                     padding: 22px 20px 40px 20px;
@@ -240,6 +261,111 @@
                     margin-bottom: 20px;
                 }
             }
+            @media only screen and (max-width:748px) {
+        .lot {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-radius: 8px;
+          
+        }
+            .fontfame {
+            font-family: 'Inter', sans-serif !important;
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px !important;
+         }
+
+         .fonttext {
+            font-family: 'Inter', sans-serif !important;
+            font-style: normal;
+            font-weight: 500;
+            font-size: 16px !important;
+         }
+            
+            .small{
+                padding-top:12px  !important;
+                padding-bottom:12px  !important; 
+                padding-left:16px  !important; 
+                padding-right:16px  !important; 
+                cursor:pointer !important;
+            }
+
+
+        .auction {
+          display: block;
+          justify-content: space-between;
+          align-items: center;
+         
+          border-radius: 8px;
+          padding: 10px 20px 10px 20px;
+          margin-top: 22px;
+        }
+
+     
+        .imageB {
+          padding-bottom: 20px;
+          margin-left: 0px !important;
+          display: inline-block;
+          margin-bottom: 10px;
+          margin-top: 12px;
+        }
+
+        .auction {
+          display: block;
+          justify-content: space-between;
+          align-items: center;
+         
+          border-radius: 8px;
+          padding: 10px 20px 10px 20px;
+          margin-top: 22px;
+        }
+
+        .header {
+          font-style: normal;
+          font-weight: 500;
+          font-size: 12px;
+          line-height: 19px;
+          color: black;
+        }
+
+        .dates {
+          font-size: 10px !important;
+          font-style: normal;
+          font-weight: 500;
+          color: #A1A1A9;
+          line-height: 15px;
+          padding-top: 8px;
+        }
+
+        .amount {
+          font-size: 12px !important;
+          font-style: normal;
+          font-weight: 500;
+          color: #343434;
+          line-height: 15px;
+        }
+
+        .auction_title {
+          font-weight: 500;
+          line-height: 22px;
+          color: #343434;
+        }
+
+        .lasttitle {
+          margin-top: 10px;
+        }
+            .make{
+                margin-top:30px;
+            }
+            
+            .fontbutton {
+        font-family: 'Inter', sans-serif !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 12px !important;
+      }
+      }
         </style>
     </head>
     <body>
@@ -282,8 +408,26 @@
                     </div>
                  {{/each}}
                 </div>
+ 
                 {{/gt}}
                 <p class="paragraph">{{paymentContent}}</p>
+                  <div class="payment">
+        <div class="lot" style=" flex-wrap: wrap; justify-content:space-between; align-items:center">
+        <div class="imageA">
+          <div style="display:flex; align-items:center;justify-content: center;color:black;">
+            <p class="amount" style="font-family:Inter;color:black;">Total:</p>
+            <p class="bid">{{total_amount}}</p>
+          </div>
+        </div>
+          <div class="imageB make" style=" margin-left: auto; cursor:pointer;" vertical-align="middle" align="center">
+            <div style="margin-top: auto; display: flex; justify-content: end;">
+            <a href={{checkout_url}} style="text-decoration:none;">
+                <span style="background-color: #282828; color: #fff; padding-top:16px;padding-bottom:16px; padding-left:31px; padding-right:31px; text-decoration: none; border-radius: 6px; cursor:pointer;" class="fontbutton small">Make payment </span>
+            </a>
+          </div>
+        </div>
+        </div>
+                </div>
                 <p class="paragraph">For any questions, please contact {{seller_email}}.</p>
                 <div class="note-main">
                     <p class="note-con" style="margin-top: 25px;">All our best,<br/>  {{seller_name}}</p>
