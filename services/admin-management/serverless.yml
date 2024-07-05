@@ -100,11 +100,14 @@ provider:
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
+    ADMIN_USER_COLLECTION: ${opt:stage, self:provider.stage}-admin-users
     COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_AUTH_ARN: ${ssm:ADMIN_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     ADMIN_COGNITO_USERPOOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
+
     # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
 
     SQS_QUEUE_ARN:  
