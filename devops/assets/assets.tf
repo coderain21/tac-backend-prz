@@ -517,4 +517,34 @@ resource "aws_ssm_parameter" "google_api" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "paypal_client_id" {
+  name  = "PAYPAL_CLIENT_ID"
+  type  = "String"
+  value = var.PAYPAL_CLIENT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_client_secret" {
+  name  = "PAYPAL_CLIENT_SECRET"
+  type  = "String"
+  value = var.PAYPAL_CLIENT_SECRET
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_oauth_url" {
+  name  = "PAYPAL_OAUTH_URL"
+  type  = "String"
+  value = var.PAYPAL_OAUTH_URL
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_partner_referrals_url" {
+  name  = "PAYPAL_PARTNER_REFERRALS_URL"
+  type  = "String"
+  value = var.PAYPAL_PARTNER_REFERRALS_URL
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+
 
