@@ -310,19 +310,41 @@
           margin-bottom: 20px;
         }
         .flex-container {
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
+            display: flex;
+            flex-direction: column;
+            align-items:flex-start !important;
+            /* width: max-content !important; */
         }
+        .imageB.make{
+          /* margin: 0px !important; */
+          margin-top: 34px !important;
+          width: 100% !important;
+          margin-left: 0px !important;
+          padding-bottom: 0px !important;
+        }
+        .imageB{
+          margin-left: 0px !important;
+        }
+        .imageB > div {
+            display: flex !important;
+            justify-content: flex-start !important;
+        }
+        .payment,
+      .not-winning-lots {
+        margin-top: 0;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        /* padding: 18px 20px 0; */
+        margin: 20px 14px;
       }
-
-      @media only screen and (max-width:748px) {
-        .lot {
+      }
+@media only screen and (max-width:748px) {
+        /* .lot {
           display: flex;
           justify-content: space-between;
           align-items: center;
           border-radius: 8px;
-        }
+        } */
 
         .fontfame {
           font-family: 'Inter', sans-serif !important;
@@ -419,6 +441,7 @@
         }
 
       }
+
     </style>
   </head>
   <body>
@@ -464,23 +487,25 @@
           </div>
         {{/gt}}
         <p class="paragraph">{{paymentContent}}</p>
+        {{#gt winning_lot_count 0}}
         <div class="payment">
-          <div class="lot" class="flex-container" >
+          <div class="lot flex-container" >
             <div class="imageA">
-              <div style="display:flex; align-items:center;justify-content: center;color:black;">
-                <p class="amount" style="font-family:Inter;color:black;">Total:</p>
-                <p class="bid">{{total_amount}}</p>
+              <div style="display:flex; align-items:center;justify-content: center;color:black;font-weight: 500;">
+                <p class="amount" style="font-family:Inter;color:black;">Total: </p>
+                <p class="bid" style="margin-left: 6px;">{{total_amount}}</p>
               </div>
-            </div>
-            <div class="imageB make" style=" margin-left: auto; cursor:pointer;" vertical-align="middle" align="center">
+            </div>       
+            <div class="imageB make" style="margin-left: auto; cursor:pointer; align-items: center;" vertical-align="middle">
               <div style="margin-top: auto; display: flex; justify-content: end;">
                 <a href={{checkout_url}} style="text-decoration:none;">
-                  <span style="background-color: #282828; color: #fff; padding-top:16px;padding-bottom:16px; padding-left:31px; padding-right:31px; text-decoration: none; border-radius: 6px; cursor:pointer;" class="fontbutton small">Make payment </span>
+                  <span style="background-color: #282828; color: #fff; padding-top:16px;padding-bottom:16px; padding-left:31px; padding-right:31px; text-decoration: none; border-radius: 6px; cursor:pointer; display: block;" class="fontbutton small">Make payment </span>
                 </a>
               </div>
             </div>
           </div>
         </div>
+        {{/gt}}
         <p class="paragraph">For any questions, please contact {{seller_email}}.</p>
         <div class="note-main">
           <p class="note-con" style="margin-top: 25px;">All our best, <br /> {{seller_name}}
