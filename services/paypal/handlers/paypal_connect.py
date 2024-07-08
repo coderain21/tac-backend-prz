@@ -1,4 +1,6 @@
 import base64
+from datetime import datetime
+from pymongo import MongoClient
 import requests
 import json
 import os
@@ -20,6 +22,14 @@ CLIENT_SECRET = 'EETqZretSNiyj5DOt26Bcr5_rLKqC8UImFnId-Qi0ArXaKMAHmH30ElBDeRvtTQ
 PAYPAL_OAUTH_URL = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
 PAYPAL_PARTNER_REFERRALS_URL = "https://api-m.sandbox.paypal.com/v2/customer/partner-referrals"
 
+
+mongo_client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = mongo_client[os.environ['DATABASE']]
+seller_collection = db[os.environ['SELLERS_TABLE']]
+
 def get_paypal_access_token():
     """Gets a PayPal access token."""
     headers = {
@@ -37,10 +47,6 @@ def get_paypal_access_token():
 
 def create_partner_referral(access_token, tracking_id, return_url):
     """Creates a partner referral in PayPal."""
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}',
-    }
     data = {
         "tracking_id": tracking_id,
         "partner_config_override": {
@@ -59,20 +65,52 @@ def create_partner_referral(access_token, tracking_id, return_url):
 
 def connect(event, context):
     try:
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['email']
+        except:
+            return {
+                "headers": headers,
+                "statusCode": 403,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+
+        user_info = seller_collection.find_one({"email_address": email_address})
+
+        # Restricting free tier users from connecting to PayPal
+        if "plan_type" in user_info and user_info.get("plan_type") == "Free":
+            print("free_user")
+            return {
+                "headers": headers,
+                "statusCode": 403,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+
         access_token = get_paypal_access_token()
-        tracking_id = 'indy123123'#event['queryStringParameters']['tracking_id']  # Pass tracking ID as query parameter
-        return_url = 'https://seller.dev.indyauction.net/'#event['queryStringParameters']['return_url']  # Pass return URL as query parameter
+        tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        return_url = 'https://seller.dev.indyauction.net/'
 
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
 
         links = referral_response.get('links', [])
         if links:
-            referral_link = links[1]['href']  # The URL to which the seller should be redirected
+            referral_link = links[1]['href']
             print('referral', referral_link)
+
+            # Update user information in the database
+            update_data = {
+                "paypal_tracking_id": tracking_id,
+                "paypal_status": "pending"
+            }
+            update_status = seller_collection.update_one({'email_address':email_address}, {'$set': update_data})
+            print(f"Database update status: {update_status}")
+
             return {
-                'statusCode': 302,
+                'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({'link': referral_link})
+                'body': json.dumps({
+                    'paypal_url': referral_link,
+                    'tracking_id': tracking_id
+                })
             }
 
         return {
@@ -82,7 +120,6 @@ def connect(event, context):
                 'error': 'Referral link not found in the response'
             })
         }
-
 
     except Exception as e:
         print('Error', e)

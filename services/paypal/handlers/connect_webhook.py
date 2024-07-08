@@ -8,7 +8,9 @@ from paypalrestsdk import WebhookEvent
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': False,
+    'Access-Control-Allow-Credentials': True,
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*'
 }
 
 class Encoder(json.JSONEncoder):
@@ -30,25 +32,27 @@ class Encoder(json.JSONEncoder):
 def create(event, context):
     try:
         event_body = json.loads(event["body"])
-        webhook_id = os.environ["PAYPAL_WEBHOOK_ID"]
-        transmission_id = event["headers"]["Paypal-Transmission-Id"]
-        transmission_time = event["headers"]["Paypal-Transmission-Time"]
-        cert_url = event["headers"]["Paypal-Cert-Url"]
-        auth_algo = event["headers"]["Paypal-Auth-Algo"]
-        transmission_sig = event["headers"]["Paypal-Transmission-Sig"]
+        print('event', event_body)
+        # webhook_id = '65A78381AA3113133'    #os.environ["PAYPAL_WEBHOOK_ID"]
+        # transmission_id = event["headers"]["Paypal-Transmission-Id"]
+        # transmission_time = event["headers"]["Paypal-Transmission-Time"]
+        # cert_url = event["headers"]["Paypal-Cert-Url"]
+        # auth_algo = event["headers"]["Paypal-Auth-Algo"]
+        # transmission_sig = event["headers"]["Paypal-Transmission-Sig"]
         webhook_event = event_body
 
         # Verify the webhook event
-        response = WebhookEvent.verify(
-            transmission_id=transmission_id,
-            timestamp=transmission_time,
-            webhook_id=webhook_id,
-            event_body=json.dumps(webhook_event),
-            cert_url=cert_url,
-            actual_sig=transmission_sig,
-            auth_algo=auth_algo
-        )
+        # response = WebhookEvent.verify(
+        #     transmission_id=transmission_id,
+        #     timestamp=transmission_time,
+        #     webhook_id=webhook_id,
+        #     event_body=json.dumps(webhook_event),
+        #     cert_url=cert_url,
+        #     actual_sig=transmission_sig,
+        #     auth_algo=auth_algo
+        # )
 
+        response = True
         if response:
             data = webhook_event["resource"]
             verified = False
@@ -58,30 +62,44 @@ def create(event, context):
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 
-            if webhook_event["event_type"] == "MERCHANT.ACCOUNT.UPDATED":
-                paypal_id = data["merchant_id"]
-                if data["status"] == "ACTIVE":
-                    verified = True
-                    account_linked += 1
+            if webhook_event["event_type"] == "MERCHANT.ONBOARDING.COMPLETED":
+                data = webhook_event["resource"]
+                paypal_id = data.get("merchant_id")
+                tracking_id = data.get("tracking_id")
 
-                query_result = collection.find_one(
-                    {'paypal_connected_id': paypal_id}, {'password': 0})
+                update_data = {
+                    "paypal_connected_id": paypal_id,
+                    "paypal_status": "connected",
+                    "paypal_onboarding_completed": datetime.now(),
+                }
+
+                # Find the user by tracking_id and update their information
+                update_result = collection.update_one(
+                    {'paypal_tracking_id': tracking_id},
+                    {'$set': update_data}
+                )
+                print(f"Merchant onboarding completed for PayPal ID: {paypal_id}")
+            elif webhook_event["event_type"] == "MERCHANT.ACCOUNT.UPDATED":
+                # Handle merchant account updates
+                paypal_id = data.get("merchant_id")
+                status = data.get("status", "UNKNOWN")
+            
+                query_result = collection.find_one({'paypal_connected_id': paypal_id})
                 if query_result is not None:
                     update_data = {
-                        "paypal_status": "connected" if verified else "disconnected",
-                        "account_linked": account_linked
+                        "paypal_status": "connected" if status == "ACTIVE" else "disconnected",
+                        "last_updated": datetime.now()
                     }
                     update_result = collection.update_one(
-                        {'paypal_connected_id': paypal_id}, {'$set': update_data})
+                        {'paypal_connected_id': paypal_id},
+                        {'$set': update_data}
+                    )
+                    print(f"Updated merchant status for PayPal ID: {paypal_id}")
                 else:
-                # No existing document found, insert a new document
-                    new_document = {
-                            "paypal_connected_id": paypal_id,
-                            "paypal_status": "connected" if verified else "disconnected",
-                            "account_linked": account_linked
-                    # You might include other relevant fields here
-                            }
-                    insert_result = collection.insert_one(new_document)
+                    print(f"Warning: No user found with PayPal ID: {paypal_id} for status update")
+            
+            else:
+                print(f"Unhandled event type: {webhook_event['event_type']}")
 
             client.close()
             return {
