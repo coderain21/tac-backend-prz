@@ -193,7 +193,7 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
-        
+
         #adding logs of password update
         access_logs = {
             "actor_id": buyer.get('buyer_id'),
