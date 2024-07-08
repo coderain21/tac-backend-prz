@@ -3,9 +3,18 @@ import requests
 import json
 import os
 
+
+headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': True,
+    'Access-Control-Allow-Headers': '*',
+    'Access-Control-Allow-Methods': '*'
+}
+
 # Environment variables for sensitive data
-CLIENT_ID = "AcRKzvjgOiDpoecavRoQkat26s6EK_prJcvmH9w8DIpOZ5QqqIrf7oOkhF-Dl3i9C4qZXHYENLtxIVJO"                                                      #os.getenv("PAYPAL_CLIENT_ID")
-CLIENT_SECRET = "EETqZretSNiyj5DOt26Bcr5_rLKqC8UImFnId-Qi0ArXaKMAHmH30ElBDeRvtTQzzRcXSr8Oa-JPEjdv"                                                  #os.getenv("PAYPAL_CLIENT_SECRET")
+CLIENT_ID = 'AcRKzvjgOiDpoecavRoQkat26s6EK_prJcvmH9w8DIpOZ5QqqIrf7oOkhF-Dl3i9C4qZXHYENLtxIVJO'                         #os.getenv("PAYPAL_CLIENT_ID")
+CLIENT_SECRET = 'EETqZretSNiyj5DOt26Bcr5_rLKqC8UImFnId-Qi0ArXaKMAHmH30ElBDeRvtTQzzRcXSr8Oa-JPEjdv'                     #os.getenv("PAYPAL_CLIENT_SECRET")
 
 # URLs and other constants
 PAYPAL_OAUTH_URL = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
@@ -62,20 +71,23 @@ def connect(event, context):
             print('referral', referral_link)
             return {
                 'statusCode': 302,
-                'headers': {
-                    'Location': referral_link
-                }
+                'headers': headers,
+                'body': json.dumps({'link': referral_link})
             }
 
         return {
             'statusCode': 500,
+            'headers': headers,
             'body': json.dumps({
                 'error': 'Referral link not found in the response'
             })
         }
 
+
     except Exception as e:
+        print('Error', e)
         return {
             'statusCode': 500,
+            'headers': headers,
             'body': json.dumps({'error': str(e)})
         }
