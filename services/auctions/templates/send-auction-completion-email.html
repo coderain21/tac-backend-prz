@@ -1,280 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Otp Template For Buyer Registration</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Noto+Sans:wght@300;400;500&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&family=Roboto:wght@100;400;500&display=swap" rel="stylesheet">
-        <style>
-            body{
-                background: #E6E6E6;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .indy-logo{
-                margin: 0 auto 0px;
-                text-align: center;
-                cursor: pointer;
-            }
-            .maincontent{
-                background: #FFFFFF;
-                max-width: 666px;
-                height: auto;
-                margin: 40px auto;
-                border-radius: 10px;
-                font-family: 'Inter', sans-serif !important;
-                padding-top: 28px;
-            }
-            .maincontent1{
-                max-width: 660px;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .footer-content1 {
-                font-size: 12px;
-                font-weight: 500px;
-                color: #A1A1A9;
-                font-family: 'Inter', sans-serif !important;
-                margin: 20px auto 50px;
-                text-align: center;
-            }
-            .headersection{
-                text-align: center;
-                padding: 28px 0px;
-                background-color: white;
-                border-radius: 6px;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .heading-con, .heading-con1{
-                font-size: 18px;
-                line-height: normal;
-                color: #343434;
-                font-style: medium;
-                font-weight: 500;
-                margin:0px;
-                font-family: 'Inter', sans-serif !important;
-                text-align: left;
-                padding:0px 56px;
-            }
-            .heading-con1{
-                font-size: 16px;
-            }
-            .paragraph{
-                font-size: 16px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: normal;
-                color:#343434;
-                text-align: left;
-                padding:24px 56px 0;
-                font-family: 'Inter', sans-serif !important;
-                margin: 0;
-            }
-            .note-main{
-                margin: 0px !important;
-                padding: 0px;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .note-con{
-                font-size: 16px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: normal;
-                color:#343434;
-                font-family: 'Inter', sans-serif !important;
-                margin: 25px 56px;
-                text-align: left;            
-            }
-            .paddle-body{
-                max-width: 540px;
-                margin: 28px auto;
-                border-radius: 8px;
-                background: #323232;
-                padding: 1px;
-            }
-            .paddle-body p{
-                font-size: 91px;
-                font-weight: 500;
-                line-height: 34px;
-                color: #ffffff;
-            }
-            .otp-con{
-                font-size: 22px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: normal;
-                margin:34px 0px 20px;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .validcode{
-                font-size: 18px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: normal;
-                color:#A1A1A9;
-                margin-bottom: 44px;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .indy-link{
-                font-size: 14px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: normal;
-                text-decoration-line: underline;
-                color:#343434 !important;
-                cursor: pointer;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .footer-con{
-                margin:22px auto 0px;
-                text-align: center;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .insta-icon{
-                margin-right:16px;
-                cursor: pointer;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .linkedin-icon{
-                cursor: pointer;
-            }
-            .facebook-icon{
-                margin-right:16px;
-                cursor: pointer;
-            }
-            .twitter-icon{
-                margin-right:16px;
-                cursor: pointer;
-            }
-            .footer-content{
-                font-size: 10px;
-                font-style: normal;
-                font-weight: 500;
-                line-height: normal;
-                color:#A1A1A9;
-                font-family: 'Inter', sans-serif !important;
-            }
-            .winning-lots, .not-winning-lots{
-                margin-top: 0;
-                border: 1px solid #E4E4E7;
-                border-radius: 8px;
-                padding: 18px 20px 0;
-                margin: 20px 40px;
-            }
-            .payment, .not-winning-lots{
-                margin-top: 0;
-                border: 1px solid #E4E4E7;
-                border-radius: 8px;
-                /* padding: 18px 20px 0; */
-                margin: 20px 40px;
-            }
-            .winning-lot-section, .not-winning-lot-section{
-                display: flex;
-                margin-bottom: 18px;
-            }
-            .winning-lot-section img, .not-winning-lots img{
-                width: 136px;
-                height: 136px;
-                object-fit: cover;
-            }
-            .lot-details{
-                margin-left: 48px;
-            }
-            .lot-details p{
-                color: #343434;
-                font: 500;
-                font-size: 18px;
-                line-height: 20px;
-                text-align: left;
-                flex-wrap: wrap;
-            }
-            
-            .lot-details p:last-child{
-                font-size: 14px;
-                margin: 0;
-            }
-            .lot {
-                display: flex;
-                /* justify-content: space-between; */
-                align-items: center;
-               
-                padding: 20px 20px 20px 20px;
-               
-              }
-              .imageB {
-                /* padding-bottom: 10px; */
-                margin-left: 20px;
-                display: inline-block;
-              }
-            @media(max-width:575px){
-                .headersection{
-                    padding: 22px 20px 40px 20px;
-                    background-color: white;
-                    border-radius: 6px;
-                }
-                .heading-con{
-                    font-size: 20px;
-                    padding: 0 20px 15px;
-                }
-                .paragraph{
-                    font-size: 16px;
-                    padding: 15px 20px;
-                }
-                .otp-con{
-                    margin:20px;
-                    font-size: 20px;
-                }
-                .validcode{
-                    font-size: 16px;
-                    margin-bottom: 30px;
-                }
-                .main-content{
-                    margin: 120px auto;
-                }
-                .note-con{
-                    font-size: 14px;
-                }
-                .paddle-body p{
-                    font-size: 50px;
-                }
-                .indy-logo {
-                    margin: 20px auto 0px;
-                }
-                .winning-lots, .not-winning-lots{
-                    margin: 20px 10px;
-                }
-                .lot-details{
-                    margin-left: 20px;
-                }
-                .winning-lot-section img, .not-winning-lots img {
-                    width: 120px;
-                    height: 120px;
-                }
-                .lot-details p{
-                    margin: 10px 0;
-                }
-                .note-con{
-                    margin: 0 20px;
-                }
-                .footer-content1{
-                    margin-bottom: 20px;
-                }
-            }
-            @media only screen and (max-width:748px) {
-        .lot {
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Otp Template For Buyer Registration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&family=Noto+Sans:wght@300;400;500&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&family=Roboto:wght@100;400;500&display=swap" rel="stylesheet">
+    <style>
+      body {
+        background: #E6E6E6;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .indy-logo {
+        margin: 0 auto 0px;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      .maincontent {
+        background: #FFFFFF;
+        max-width: 666px;
+        height: auto;
+        margin: 40px auto;
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif !important;
+        padding-top: 28px;
+      }
+
+      .maincontent1 {
+        max-width: 660px;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .footer-content1 {
+        font-size: 12px;
+        font-weight: 500px;
+        color: #A1A1A9;
+        font-family: 'Inter', sans-serif !important;
+        margin: 20px auto 50px;
+        text-align: center;
+      }
+
+      .headersection {
+        text-align: center;
+        padding: 28px 0px;
+        background-color: white;
+        border-radius: 6px;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .heading-con,
+      .heading-con1 {
+        font-size: 18px;
+        line-height: normal;
+        color: #343434;
+        font-style: medium;
+        font-weight: 500;
+        margin: 0px;
+        font-family: 'Inter', sans-serif !important;
+        text-align: left;
+        padding: 0px 56px;
+      }
+
+      .heading-con1 {
+        font-size: 16px;
+      }
+
+      .paragraph {
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        color: #343434;
+        text-align: left;
+        padding: 24px 56px 0;
+        font-family: 'Inter', sans-serif !important;
+        margin: 0;
+      }
+
+      .note-main {
+        margin: 0px !important;
+        padding: 0px;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .note-con {
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        color: #343434;
+        font-family: 'Inter', sans-serif !important;
+        margin: 25px 56px;
+        text-align: left;
+      }
+
+      .paddle-body {
+        max-width: 540px;
+        margin: 28px auto;
+        border-radius: 8px;
+        background: #323232;
+        padding: 1px;
+      }
+
+      .paddle-body p {
+        font-size: 91px;
+        font-weight: 500;
+        line-height: 34px;
+        color: #ffffff;
+      }
+
+      .otp-con {
+        font-size: 22px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        margin: 34px 0px 20px;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .validcode {
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        color: #A1A1A9;
+        margin-bottom: 44px;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .indy-link {
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        text-decoration-line: underline;
+        color: #343434 !important;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .footer-con {
+        margin: 22px auto 0px;
+        text-align: center;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .insta-icon {
+        margin-right: 16px;
+        cursor: pointer;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .linkedin-icon {
+        cursor: pointer;
+      }
+
+      .facebook-icon {
+        margin-right: 16px;
+        cursor: pointer;
+      }
+
+      .twitter-icon {
+        margin-right: 16px;
+        cursor: pointer;
+      }
+
+      .footer-content {
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        color: #A1A1A9;
+        font-family: 'Inter', sans-serif !important;
+      }
+
+      .winning-lots,
+      .not-winning-lots {
+        margin-top: 0;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        padding: 18px 20px 0;
+        margin: 20px 40px;
+      }
+
+      .payment,
+      .not-winning-lots {
+        margin-top: 0;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        /* padding: 18px 20px 0; */
+        margin: 20px 40px;
+      }
+
+      .winning-lot-section,
+      .not-winning-lot-section {
+        display: flex;
+        margin-bottom: 18px;
+      }
+
+      .winning-lot-section img,
+      .not-winning-lots img {
+        width: 136px;
+        height: 136px;
+        object-fit: cover;
+      }
+
+      .lot-details {
+        margin-left: 48px;
+      }
+
+      .lot-details p {
+        color: #343434;
+        font: 500;
+        font-size: 18px;
+        line-height: 20px;
+        text-align: left;
+        flex-wrap: wrap;
+      }
+
+      .lot-details p:last-child {
+        font-size: 14px;
+        margin: 0;
+      }
+
+      .lot {
+        display: flex;
+        /* justify-content: space-between; */
+        align-items: center;
+        padding: 20px 20px 20px 20px;
+      }
+
+      .imageB {
+        /* padding-bottom: 10px; */
+        margin-left: 20px;
+        display: inline-block;
+      }
+
+      @media(max-width:575px) {
+        .headersection {
+          padding: 22px 20px 40px 20px;
+          background-color: white;
+          border-radius: 6px;
+        }
+
+        .heading-con {
+          font-size: 20px;
+          padding: 0 20px 15px;
+        }
+
+        .paragraph {
+          font-size: 16px;
+          padding: 15px 20px;
+        }
+
+        .otp-con {
+          margin: 20px;
+          font-size: 20px;
+        }
+
+        .validcode {
+          font-size: 16px;
+          margin-bottom: 30px;
+        }
+
+        .main-content {
+          margin: 120px auto;
+        }
+
+        .note-con {
+          font-size: 14px;
+        }
+
+        .paddle-body p {
+          font-size: 50px;
+        }
+
+        .indy-logo {
+          margin: 20px auto 0px;
+        }
+
+        .winning-lots,
+        .not-winning-lots {
+          margin: 20px 10px;
+        }
+
+        .lot-details {
+          margin-left: 20px;
+        }
+
+        .winning-lot-section img,
+        .not-winning-lots img {
+          width: 120px;
+          height: 120px;
+        }
+
+        .lot-details p {
+          margin: 10px 0;
+        }
+
+        .note-con {
+          margin: 0 20px;
+        }
+
+        .footer-content1 {
+          margin-bottom: 20px;
+        }
+        .flex-container {
+            display: flex;
+            flex-direction: column;
+            align-items:flex-start !important;
+            /* width: max-content !important; */
+        }
+        .imageB.make{
+          /* margin: 0px !important; */
+          margin-top: 34px !important;
+          width: 100% !important;
+          margin-left: 0px !important;
+          padding-bottom: 0px !important;
+        }
+        .imageB{
+          margin-left: 0px !important;
+        }
+        .imageB > div {
+            display: flex !important;
+            justify-content: flex-start !important;
+        }
+        .payment,
+      .not-winning-lots {
+        margin-top: 0;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        /* padding: 18px 20px 0; */
+        margin: 20px 14px;
+      }
+      }
+@media only screen and (max-width:748px) {
+        /* .lot {
           display: flex;
           justify-content: space-between;
           align-items: center;
           border-radius: 8px;
-          
+        } */
+
+        .fontfame {
+          font-family: 'Inter', sans-serif !important;
+          font-style: normal;
+          font-weight: 500;
+          font-size: 14px !important;
         }
-            .fontfame {
-            font-family: 'Inter', sans-serif !important;
-            font-style: normal;
-            font-weight: 500;
-            font-size: 14px !important;
-         }
 
          .fonttext {
             font-family: 'Inter', sans-serif !important;
@@ -366,76 +443,80 @@
         font-size: 12px !important;
       }
       }
-        </style>
-    </head>
-    <body>
-        <div class="maincontent">
-            <div class="indy-logo">
-                <a href="https://theauctioncollective.com/"><img src= {{logo_url}} alt="img" style="width: 100px;"></a> 
-            </div>
-            <div class="headersection">
-                <P class="heading-con">Dear {{buyer}}, </P>
-                <p class="paragraph">Thank you for taking part in {{title}}.</p>
-                {{#gt winning_lot_count 0}}
-                <p class="paragraph">Congratulations on winning the bids on the following lots:</p>
-                <div class="winning-lots">
-                    {{#each winning_lot}}
-                    <div class="winning-lot-section">
-                        <div>
-                            <img src={{lot_image}} alt="icon" >
-                        </div>
-                        <div class="lot-details">
-                            <p>{{lot_number}}. {{title1}}</p>
-                            <p>Bid Amount: {{bid_amount}}</p>
-                        </div>
-                    </div>
-                    {{/each}}
-                   
-                </div>
-                {{/gt}}
-                {{#gt not_winning_lot_count 0 }}
-                <p class="paragraph">Unfortunately, your following bid(s) did not win the auction.</p>
-                <div class="not-winning-lots">
-                 {{#each not_winning_lot}}
-                    <div class="not-winning-lot-section">
-                        <div>
-                            <img src={{lot_image}} alt="icon" >
-                        </div>
-                        <div class="lot-details">
-                            <p>{{lot_number}}. {{title1}}</p>
-                            <p>Bid Amount: {{bid_amount}}</p>
-                        </div>
-                    </div>
-                 {{/each}}
-                </div>
- 
-                {{/gt}}
-                <p class="paragraph">{{paymentContent}}</p>
-                  <div class="payment">
-        <div class="lot" style=" flex-wrap: wrap; justify-content:space-between; align-items:center">
-        <div class="imageA">
-          <div style="display:flex; align-items:center;justify-content: center;color:black;">
-            <p class="amount" style="font-family:Inter;color:black;">Total:</p>
-            <p class="bid">{{total_amount}}</p>
-          </div>
-        </div>
-          <div class="imageB make" style=" margin-left: auto; cursor:pointer;" vertical-align="middle" align="center">
-            <div style="margin-top: auto; display: flex; justify-content: end;">
-            <a href={{checkout_url}} style="text-decoration:none;">
-                <span style="background-color: #282828; color: #fff; padding-top:16px;padding-bottom:16px; padding-left:31px; padding-right:31px; text-decoration: none; border-radius: 6px; cursor:pointer;" class="fontbutton small">Make payment </span>
-            </a>
-          </div>
-        </div>
-        </div>
-                </div>
-                <p class="paragraph">For any questions, please contact {{seller_email}}.</p>
-                <div class="note-main">
-                    <p class="note-con" style="margin-top: 25px;">All our best,<br/>  {{seller_name}}</p>
-                </div>
+
+    </style>
+  </head>
+  <body>
+    <div class="maincontent">
+      <div class="indy-logo">
+        <a href="https://theauctioncollective.com/">
+          <img src={{logo_url}} alt="img" style="width: 100px;">
+        </a>
+      </div>
+      <div class="headersection">
+        <P class="heading-con">Dear {{buyer}}, </P>
+        <p class="paragraph">Thank you for taking part in {{title}}.</p>
+        {{#gt winning_lot_count 0}}
+          <p class="paragraph">Congratulations on winning the bids on the following lots:</p>
+          <div class="winning-lots">
+            {{#each winning_lot}}
+              <div class="winning-lot-section">
                 <div>
-                    <p class="footer-content1">Powered by Indy.auction</p>
+                  <img src={{lot_image}} alt="icon">
                 </div>
+                <div class="lot-details">
+                  <p>{{lot_number}}. {{title1}}</p>
+                  <p>Bid Amount: {{bid_amount}}</p>
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        {{/gt}}
+        {{#gt not_winning_lot_count 0 }}
+          <p class="paragraph">Unfortunately, your following bid(s) did not win the auction.</p>
+          <div class="not-winning-lots">
+            {{#each not_winning_lot}}
+              <div class="not-winning-lot-section">
+                <div>
+                  <img src={{lot_image}} alt="icon">
+                </div>
+                <div class="lot-details">
+                  <p>{{lot_number}}. {{title1}}</p>
+                  <p>Bid Amount: {{bid_amount}}</p>
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        {{/gt}}
+        <p class="paragraph">{{paymentContent}}</p>
+        {{#gt winning_lot_count 0}}
+        <div class="payment">
+          <div class="lot flex-container" >
+            <div class="imageA">
+              <div style="display:flex; align-items:center;justify-content: center;color:black;font-weight: 500;">
+                <p class="amount" style="font-family:Inter;color:black;">Total: </p>
+                <p class="bid" style="margin-left: 6px;">{{total_amount}}</p>
+              </div>
+            </div>       
+            <div class="imageB make" style="margin-left: auto; cursor:pointer; align-items: center;" vertical-align="middle">
+              <div style="margin-top: auto; display: flex; justify-content: end;">
+                <a href={{checkout_url}} style="text-decoration:none;">
+                  <span style="background-color: #282828; color: #fff; padding-top:16px;padding-bottom:16px; padding-left:31px; padding-right:31px; text-decoration: none; border-radius: 6px; cursor:pointer; display: block;" class="fontbutton small">Make payment </span>
+                </a>
+              </div>
             </div>
+          </div>
         </div>
-    </body>
+        {{/gt}}
+        <p class="paragraph">For any questions, please contact {{seller_email}}.</p>
+        <div class="note-main">
+          <p class="note-con" style="margin-top: 25px;">All our best, <br /> {{seller_name}}
+          </p>
+        </div>
+        <div>
+          <p class="footer-content1">Powered by Indy.auction</p>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
