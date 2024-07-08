@@ -1,3 +1,5 @@
+/* eslint-disable consistent-return */
+/* eslint-disable max-len */
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
@@ -12,6 +14,7 @@ const CryptoJS = require('crypto-js')
 
 const { CognitoIdentityServiceProvider } = require('aws-sdk')
 const cognitoHelper = require('../lib/cognito_helper')
+const Counter = require('../entities/Counter')
 
 // eslint-disable-next-line import/order
 const helpers = require('../lib/helper')
@@ -19,6 +22,7 @@ const Users = require('../entities/Users')
 const SubDomain = require('../entities/SubDomain')
 
 const mongoConnection = require('../lib/mongodb_helper')
+const mailchimpHelper = require('../lib/mailchimp_helper')
 
 AWS.config.update({ region: process.env.REGION })
 
@@ -34,7 +38,7 @@ const createGroup = async (username, userPoolId) => {
             GroupName: username,
             UserPoolId: userPoolId,
         }).promise()
-        console.log('Group created:', response)
+        return response
     } catch (error) {
         console.error('Error creating group:', error)
     }
@@ -82,39 +86,12 @@ module.exports.otpValidation = async (event, _context, callback) => {
         const validationResult = schema.validate(userData)
         if (validationResult.error) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
-            console.log(errorMessage)
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: errorMessage }),
             }
         }
-        // if (userData.type === 'admin' && userData.session_token === '') {
-        //     try {
-        //         const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
-        //         const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
-        //         const OTP = userData.otp
-        //         userData = { ...userData, ...data }
-        //         if (parseInt(data.otp, 10) === parseInt(OTP, 10) || (process.env.STAGE !== 'prod' && OTP === '573421')) {
-        //             return {
-        //                 statusCode: 201,
-        //                 headers: await helpers.getHeaders(),
-        //                 body: JSON.stringify({ message: 'Succes' }),
-        //             }
-        //         }
-        //         return {
-        //             statusCode: 400,
-        //             headers: await helpers.getHeaders(),
-        //             body: JSON.stringify({ message: 'Invalid OTP' }),
-        //         }
-        //     } catch (err) {
-        //         return {
-        //             statusCode: 400,
-        //             headers: await helpers.getHeaders(),
-        //             body: JSON.stringify({ message: 'Something went wrong' }),
-        //         }
-        //     }
-        // }
         if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
@@ -140,6 +117,9 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     }
                     const ciphertext = CryptoJS.AES.encrypt(userData.password, process.env.PASSWORD_SECRET_KEY).toString()
                     userData.password = ciphertext
+                    const counter = await Counter.findOneAndUpdate({ record_type: 'Seller', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+                    const sequenceNumber = `S${helpers.leftPad(counter.starting_sequence, 4)}`
+                    userData.seller_id = sequenceNumber
                     const user = await mongoConnection.save(userData, Users)
                     const domainInfo = {
                         seller_email: userData.email_address,
@@ -154,7 +134,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                         url: process.env.DASHBOARD_URL,
                     }
                     await helpers.sendPinpointEmail(userData.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
-
+                    await mailchimpHelper.createTemplate(userData)
                     return {
                         statusCode: 201,
                         headers: await helpers.getHeaders(),
