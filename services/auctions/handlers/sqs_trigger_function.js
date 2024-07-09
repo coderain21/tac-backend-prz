@@ -14,9 +14,9 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-await-in-loop */
 
-const {
-    PinpointEmail,
-} = require('aws-sdk')
+// const {
+//     PinpointEmail,
+// } = require('aws-sdk')
 const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
@@ -29,7 +29,7 @@ const SubDomain = require('../entities/SubDomain')
 const Lot = require('../entities/Lot')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
-const pinpoint = new PinpointEmail()
+// const pinpoint = new PinpointEmail()
 let connection = null
 
 /**
@@ -118,35 +118,35 @@ function formatCurrency(amount, currencyCode) {
  * @param {string} templateData The data to pass to the email template
  * @param {string} templateArn The ARN of the email template to use
  */
-async function sendMail(destinationId, sourceId, templateData, templateArn) {
-    const params = {
-        // The content of the email
-        Content: {
-            // The template to use
-            Template: {
-                // The ARN of the email template to use
-                TemplateArn: templateArn,
-                // The data to pass to the email template
-                TemplateData: templateData,
-            },
-        },
-        // The email address the email is from
-        FromEmailAddress: process.env.SENDER_EMAIL,
-        // The email address to send the email to
-        Destination: {
-            // An array of email addresses to send the email to
-            ToAddresses: [destinationId],
-        },
-    }
-    try {
-        // Send the email using the AWS Pinpoint service
-        const sendEmail = await pinpoint.sendEmail(params).promise()
-        console.log('sendEmail', sendEmail)
-    } catch (error) {
-        // Log any errors that occur
-        console.error('Failed to send email:', error)
-    }
-}
+// async function sendMail(destinationId, sourceId, templateData, templateArn) {
+//     const params = {
+//         // The content of the email
+//         Content: {
+//             // The template to use
+//             Template: {
+//                 // The ARN of the email template to use
+//                 TemplateArn: templateArn,
+//                 // The data to pass to the email template
+//                 TemplateData: templateData,
+//             },
+//         },
+//         // The email address the email is from
+//         FromEmailAddress: process.env.SENDER_EMAIL,
+//         // The email address to send the email to
+//         Destination: {
+//             // An array of email addresses to send the email to
+//             ToAddresses: [destinationId],
+//         },
+//     }
+//     try {
+//         // Send the email using the AWS Pinpoint service
+//         const sendEmail = await pinpoint.sendEmail(params).promise()
+//         console.log('sendEmail', sendEmail)
+//     } catch (error) {
+//         // Log any errors that occur
+//         console.error('Failed to send email:', error)
+//     }
+// }
 
 /**
  * Handle the AWS SQS trigger event for the auction completion job
