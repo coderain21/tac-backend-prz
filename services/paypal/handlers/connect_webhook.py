@@ -32,8 +32,9 @@ class Encoder(json.JSONEncoder):
 def create(event, context):
     try:
         event_body = json.loads(event["body"])
+        print('event full', event)
         print('event', event_body)
-        # webhook_id = '65A78381AA3113133'    #os.environ["PAYPAL_WEBHOOK_ID"]
+        webhook_id = '1JP10492GF092505V'    #os.environ["PAYPAL_WEBHOOK_ID"]
         # transmission_id = event["headers"]["Paypal-Transmission-Id"]
         # transmission_time = event["headers"]["Paypal-Transmission-Time"]
         # cert_url = event["headers"]["Paypal-Cert-Url"]
@@ -62,15 +63,17 @@ def create(event, context):
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 
-            if webhook_event["event_type"] == "MERCHANT.ONBOARDING.COMPLETED":
+            if webhook_event["event_type"] == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED":
                 data = webhook_event["resource"]
                 paypal_id = data.get("merchant_id")
                 tracking_id = data.get("tracking_id")
+                account_linked +=1
 
                 update_data = {
                     "paypal_connected_id": paypal_id,
                     "paypal_status": "connected",
                     "paypal_onboarding_completed": datetime.now(),
+                    "account_linked": account_linked,
                 }
 
                 # Find the user by tracking_id and update their information

@@ -5,14 +5,10 @@ import requests
 import json
 import os
 
-
-headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': True,
-    'Access-Control-Allow-Headers': '*',
-    'Access-Control-Allow-Methods': '*'
-}
+# headers = {
+#         'Content-Type': 'application/scim+json',
+#         'Authorization': f'Bearer {access_token}',
+#     }
 
 # Environment variables for sensitive data
 CLIENT_ID = 'AcRKzvjgOiDpoecavRoQkat26s6EK_prJcvmH9w8DIpOZ5QqqIrf7oOkhF-Dl3i9C4qZXHYENLtxIVJO'                         #os.getenv("PAYPAL_CLIENT_ID")
@@ -46,23 +42,46 @@ def get_paypal_access_token():
     return response_json["access_token"]
 
 def create_partner_referral(access_token, tracking_id, return_url):
-    """Creates a partner referral in PayPal."""
+    """Creates a partner referral with API_INTEGRATION operation in PayPal."""
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}',
+    }
     data = {
         "tracking_id": tracking_id,
         "partner_config_override": {
             "partner_logo_url": "https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg",
             "return_url": return_url,
             "return_url_description": "the URL to return the merchant after the PayPal onboarding process.",
-            "action_renewal_url": "https://testenterprises.com/renew-expired-url",
-            "show_add_credit_card": True
+            "action_renewal_url": "https://testenterprises.com/renew"
         },
-        "operations": [{"operation": "BANK_ADDITION"}],
-        "legal_consents": [{"type": "SHARE_DATA_CONSENT", "granted": True}],
-        "products": ["EXPRESS_CHECKOUT"]
+        "operations": [
+            {
+                "operation": "API_INTEGRATION",
+                "api_integration_preference": {
+                    "rest_api_integration": {
+                        "integration_method": "PAYPAL",
+                        "integration_type": "THIRD_PARTY",
+                        "third_party_details": {
+                            "features": [
+                                "PAYMENT",
+                                "REFUND"
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
     }
-    response = requests.post(PAYPAL_PARTNER_REFERRALS_URL, headers=headers, data=json.dumps(data))
+
+    response = requests.post(PAYPAL_PARTNER_REFERRALS_URL, headers=headers, json=data)
+    if response.status_code != 201:
+        raise Exception(f"Failed to create partner referral: {response.status_code}, {response.content}")
     return response.json()
 
+    
+    
+    
 def connect(event, context):
     try:
         try:
@@ -88,10 +107,16 @@ def connect(event, context):
         access_token = get_paypal_access_token()
         tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         return_url = 'https://seller.dev.indyauction.net/'
-
+        headers = {
+            'Content-Type': 'application/scim+json',
+            'Authorization': f'Bearer {access_token}',
+            }
+        
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
+        print('referral_response', referral_response)
 
         links = referral_response.get('links', [])
+        referral_link = None
         if links:
             referral_link = links[1]['href']
             print('referral', referral_link)
