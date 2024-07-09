@@ -106,9 +106,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true
@@ -125,9 +125,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true

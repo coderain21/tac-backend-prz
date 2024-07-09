@@ -83,7 +83,7 @@ provider:
     TEMP_ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-temp-orders
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
 
 
     
@@ -145,9 +145,9 @@ functions:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -171,9 +171,9 @@ functions:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:

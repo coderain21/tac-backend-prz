@@ -71,7 +71,7 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-welcome_email_template/EMAIL"
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     BUYER_COGNITO_USERPOOL_ID: { Ref: Buyers }
     BUYER_COGNITO_CLIENT_ID: { Ref: BuyersClient } 
   http:
@@ -117,9 +117,9 @@ functions:
     handler: handlers/pre_signup.handler
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     layers:
       
       - ${ssm:COMMON_LIB_ARN}
@@ -169,9 +169,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
 resources:
    Resources:
     Buyers:

@@ -39,7 +39,7 @@ provider:
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
         - ":"
@@ -128,9 +128,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true
@@ -145,9 +145,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true
@@ -162,9 +162,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true
@@ -180,9 +180,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true

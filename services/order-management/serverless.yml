@@ -76,7 +76,7 @@ provider:
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SALES_CSV_FILE:  /tmp/Sales_List.csv
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     
   http:
     cors: true
@@ -133,9 +133,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           path: /
@@ -160,9 +160,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           path: /details
@@ -186,9 +186,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           path: /sales
@@ -214,9 +214,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           path: /seller

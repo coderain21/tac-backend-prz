@@ -76,7 +76,7 @@ provider:
     BUYER_COGNITO_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     AMPLIFY_BRANCH: ${ssm:AMPLIFY_BRANCH}
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     HOSTED_ZONE_ID: ${ssm:HOSTED_ZONE_ID}
     CROSS_ACCOUNT_ARN: ${ssm:CROSS_ACCOUNT_ARN}
 
@@ -143,9 +143,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true

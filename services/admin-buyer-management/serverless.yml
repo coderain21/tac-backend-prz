@@ -12,9 +12,9 @@ provider:
   endpointType: REGIONAL
   vpc:
     securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
     subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
@@ -41,7 +41,7 @@ provider:
     CDN_LINK: ${ssm:CDN_URL}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
     
@@ -146,9 +146,9 @@ functions:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -173,9 +173,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true

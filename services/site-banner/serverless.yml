@@ -75,14 +75,14 @@ provider:
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     ADMIN_COGNITO_USERPOOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
-    # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    # REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
-    SOCKET_URL: ${ssm:SOCKET_URL}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
+    SOCKET_URL: ${ssm:NEW_SOCKET_URL}
     # TEMPLATE_ARN_AUCTION_COMPLETION:
     #   Fn::Join:
     #     - ":"
@@ -160,9 +160,9 @@ functions:
       handler: handlers/create.handler
       vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
       layers:
          - ${ssm:COMMON_LIB_ARN}
       events:
@@ -179,9 +179,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true
@@ -196,9 +196,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true

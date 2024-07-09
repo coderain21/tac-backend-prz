@@ -17,9 +17,9 @@ provider:
   layers: ${ssm:COMMON_LIB_ARN}
   vpc:
     securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
     subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -41,7 +41,7 @@ provider:
     CDN_LINK: ${ssm:CDN_URL}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns

@@ -51,9 +51,9 @@ functions:
     handler: handlers/auth.handler
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     layers:
       - ${ssm:LAMBDA_AUTH_LIB_NODE_ARN}
 
