@@ -20,6 +20,10 @@ aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
+if [ "${STAGE}" != "prod" ]; then
+    terraform -chdir=devops/vpc init
+    terraform -chdir=devops/vpc apply -auto-approve
+fi
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
 terraform -chdir=devops/ses init
