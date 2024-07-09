@@ -40,6 +40,7 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     MAILCHIMP_COLLECTION: ${opt:stage, self:provider.stage}-mailchimp-templates
+    ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     CDN_LINK: ${ssm:CDN_URL}
@@ -501,6 +502,35 @@ functions:
               - Accept
               - Access-Control-Allow-Headers
           # authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
+
+  buyer-signin-logger:
+    handler: handlers/buyer_signin_logger.buyer_signin_logger
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /buyer-logs
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
 
 
