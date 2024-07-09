@@ -26,6 +26,7 @@ const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
 const Lot = require('../entities/Lot')
+const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
 const pinpoint = new PinpointEmail()
 let connection = null
@@ -275,7 +276,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                 }
 
                 // Send email
-                promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+                // promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+                promiseList.push(sendTemplateEmails(user.email_address, template_data))
             }
 
             // Run all the promises in parallel
