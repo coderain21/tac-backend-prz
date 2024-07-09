@@ -229,9 +229,17 @@ module.exports.sqsTriggerFunction = async (event) => {
                 }
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
+                console.log('winningLot', winningLot)
                 const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
-                let totalAmount = winningLot.reduce((total, lot) => total + lot.bid_amount, 0)
-                totalAmount = formatCurrency(totalAmount, auctionData.currency)
+                if (winningLot > 0) {
+                    let totalBidAmount = winningLot.reduce((total, lot) => {
+                        const bidAmount = parseFloat(lot.bid_amount.replace(/[$,]/g, ''))
+                        return total + bidAmount
+                    }, 0)
+                    totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
+                    console.log('totalBidAmount', totalBidAmount)
+                }
+
                 const subdomainQuery = {
                     seller_email: currentLotDetails.seller_email,
                 }
@@ -254,10 +262,9 @@ module.exports.sqsTriggerFunction = async (event) => {
                     seller_email: auctionData.seller_email,
                     subject: subjectDescription,
                     paymentContent,
-                    total_amount: totalAmount,
+                    total_amount: totalBidAmount,
                     checkout_url: checkoutURL,
                 }
-                console.log('template', template_data)
 
                 // Send email
                 promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
