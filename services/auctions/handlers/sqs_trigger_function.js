@@ -177,7 +177,6 @@ module.exports.sqsTriggerFunction = async (event) => {
             auction_id: auctionData.auction_id,
         }
         const getAuctionLots = await mongodbHelper.getAuctionLots(payload, Lot)
-        console.log('getAuctionLots', getAuctionLots)
         const lastRecord = getAuctionLots[getAuctionLots.length - 1]
         console.log(lastRecord)
         // Update the auction status to 'Completed' in MongoDB
@@ -239,7 +238,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                 }
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
-                console.log('winningLot', winningLot)
                 const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
                 let totalBidAmount = 0
                 if (winningLot.length > 0) {
@@ -249,16 +247,13 @@ module.exports.sqsTriggerFunction = async (event) => {
                         return total + bidAmount
                     }, 0)
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
-                    console.log('totalBidAmount', totalBidAmount)
                 }
 
                 const subdomainQuery = {
                     seller_email: auctionData.seller_email,
                 }
                 const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
-                console.log('auctionRedirectionURL', auctionRedirectionURL)
                 const auctionId = auctionData._id.toString()
-                console.log('AUCTION_ID', auctionId)
                 const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
 
                 // Create the email data
