@@ -3,7 +3,7 @@ import os
 import decimal
 from pymongo import MongoClient
 from datetime import datetime
-from paypalrestsdk import WebhookEvent
+# from paypalrestsdk import WebhookEvent
 
 headers = {
     'Content-Type': 'application/json',
@@ -32,9 +32,9 @@ class Encoder(json.JSONEncoder):
 def create(event, context):
     try:
         event_body = json.loads(event["body"])
-        print('event full', event)
+        # print('event full', event)
         print('event', event_body)
-        webhook_id = '1JP10492GF092505V'    #os.environ["PAYPAL_WEBHOOK_ID"]
+        # webhook_id = '1JP10492GF092505V'    #os.environ["PAYPAL_WEBHOOK_ID"]
         # transmission_id = event["headers"]["Paypal-Transmission-Id"]
         # transmission_time = event["headers"]["Paypal-Transmission-Time"]
         # cert_url = event["headers"]["Paypal-Cert-Url"]
@@ -57,45 +57,62 @@ def create(event, context):
         if response:
             data = webhook_event["resource"]
             verified = False
-            account_linked = 0
             # MongoDB configuration
             client = MongoClient(os.environ['MONGO_CLIENT'])
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 
-            if webhook_event["event_type"] == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED":
+            if webhook_event["event_type"] in ["CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-COMPLETED", "MERCHANT.ONBOARDING.COMPLETED"]:
                 data = webhook_event["resource"]
                 paypal_id = data.get("merchant_id")
                 tracking_id = data.get("tracking_id")
-                account_linked +=1
+                # account_linked_increment = 1
+
 
                 update_data = {
-                    "paypal_connected_id": paypal_id,
-                    "paypal_status": "connected",
-                    "paypal_onboarding_completed": datetime.now(),
-                    "account_linked": account_linked,
+                    "$set":
+                        {
+                        "paypal_connected_id": paypal_id,
+                        "paypal_status": "connected",
+                        "paypal_onboarding_completed": datetime.now(),
+                        }
+                    # "$inc": {
+                    #         "account_linked": account_linked_increment
+                    #              }
                 }
 
                 # Find the user by tracking_id and update their information
                 update_result = collection.update_one(
                     {'paypal_tracking_id': tracking_id},
-                    {'$set': update_data}
+                     update_data
                 )
                 print(f"Merchant onboarding completed for PayPal ID: {paypal_id}")
-            elif webhook_event["event_type"] == "MERCHANT.ACCOUNT.UPDATED":
+
+
+
+
+
+            elif webhook_event["event_type"] == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-STATUS-CHANGE":
                 # Handle merchant account updates
                 paypal_id = data.get("merchant_id")
                 status = data.get("status", "UNKNOWN")
+                # account_linked_increment = 1
             
                 query_result = collection.find_one({'paypal_connected_id': paypal_id})
                 if query_result is not None:
                     update_data = {
-                        "paypal_status": "connected" if status == "ACTIVE" else "disconnected",
-                        "last_updated": datetime.now()
-                    }
+                        "$set": {
+                            "paypal_status": "connected" if status == "ACTIVE" else "disconnected",
+                            "last_updated": datetime.now(),
+                        }
+                        
+                        # "$inc": {
+                        #     "account_linked": account_linked_increment
+                        #          }
+                            }
                     update_result = collection.update_one(
                         {'paypal_connected_id': paypal_id},
-                        {'$set': update_data}
+                        update_data
                     )
                     print(f"Updated merchant status for PayPal ID: {paypal_id}")
                 else:
@@ -118,7 +135,7 @@ def create(event, context):
             }
 
     except Exception as err:
-        print(err)
+        print('Error', err)
         return {
             "headers": headers,
             "statusCode": 500,

@@ -5,24 +5,17 @@ import requests
 import json
 import os
 
-# headers = {
-#         'Content-Type': 'application/scim+json',
-#         'Authorization': f'Bearer {access_token}',
-#     }
-
 # Environment variables for sensitive data
-CLIENT_ID = 'AcRKzvjgOiDpoecavRoQkat26s6EK_prJcvmH9w8DIpOZ5QqqIrf7oOkhF-Dl3i9C4qZXHYENLtxIVJO'                         #os.getenv("PAYPAL_CLIENT_ID")
-CLIENT_SECRET = 'EETqZretSNiyj5DOt26Bcr5_rLKqC8UImFnId-Qi0ArXaKMAHmH30ElBDeRvtTQzzRcXSr8Oa-JPEjdv'                     #os.getenv("PAYPAL_CLIENT_SECRET")
+CLIENT_ID = os.environ["PAYPAL_CLIENT_ID"]
+CLIENT_SECRET = os.environ["PAYPAL_CLIENT_SECRET"]
 
 # URLs and other constants
-PAYPAL_OAUTH_URL = "https://api-m.sandbox.paypal.com/v1/oauth2/token"
-PAYPAL_PARTNER_REFERRALS_URL = "https://api-m.sandbox.paypal.com/v2/customer/partner-referrals"
-
+PAYPAL_OAUTH_URL = os.environ["PAYPAL_OAUTH_URL"]
+PAYPAL_PARTNER_REFERRALS_URL = os.environ["PAYPAL_PARTNER_REFERRALS_URL"]
 
 mongo_client = MongoClient(
-                      os.environ['MONGO_CLIENT']
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
+    os.environ['MONGO_CLIENT']
+)
 db = mongo_client[os.environ['DATABASE']]
 seller_collection = db[os.environ['SELLERS_TABLE']]
 
@@ -79,10 +72,12 @@ def create_partner_referral(access_token, tracking_id, return_url):
         raise Exception(f"Failed to create partner referral: {response.status_code}, {response.content}")
     return response.json()
 
-    
-    
-    
 def connect(event, context):
+    headers = {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': 'false',
+    }
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
@@ -103,14 +98,22 @@ def connect(event, context):
                 "statusCode": 403,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+        
+        #if the user is already connected to paypal, we are just querying the database and changing the status
+        if 'paypal_connected_id' in user_info and user_info['paypal_connected_id']:
+            update_data = {
+                'paypal_status': 'connected'
+            }
+            connected = seller_collection.update_one({'email_address': email_address}, {'$set': update_data})
+            return {
+                'statusCode': 201,
+                'headers': headers,
+                'body': json.dumps({})
+            }
 
         access_token = get_paypal_access_token()
         tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        return_url = 'https://seller.dev.indyauction.net/'
-        headers = {
-            'Content-Type': 'application/scim+json',
-            'Authorization': f'Bearer {access_token}',
-            }
+        return_url = os.environ['BASE_URL_SELLER']
         
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
         print('referral_response', referral_response)
@@ -126,7 +129,7 @@ def connect(event, context):
                 "paypal_tracking_id": tracking_id,
                 "paypal_status": "pending"
             }
-            update_status = seller_collection.update_one({'email_address':email_address}, {'$set': update_data})
+            update_status = seller_collection.update_one({'email_address': email_address}, {'$set': update_data})
             print(f"Database update status: {update_status}")
 
             return {
