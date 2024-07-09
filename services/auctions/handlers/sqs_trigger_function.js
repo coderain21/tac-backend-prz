@@ -231,7 +231,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
                 console.log('winningLot', winningLot)
                 const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
-                if (winningLot > 0) {
+                if (winningLot.length > 0) {
                     let totalBidAmount = winningLot.reduce((total, lot) => {
                         const bidAmount = parseFloat(lot.bid_amount.replace(/[$,]/g, ''))
                         return total + bidAmount
