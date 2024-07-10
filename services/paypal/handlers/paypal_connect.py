@@ -46,7 +46,7 @@ def create_partner_referral(access_token, tracking_id, return_url):
             "partner_logo_url": "https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg",
             "return_url": return_url,
             "return_url_description": "the URL to return the merchant after the PayPal onboarding process.",
-            "action_renewal_url": "https://testenterprises.com/renew"
+            "action_renewal_url": os.environ['DASHBOARD_URL']
         },
         "operations": [
             {
@@ -113,7 +113,7 @@ def connect(event, context):
 
         access_token = get_paypal_access_token()
         tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        return_url = os.environ['BASE_URL_SELLER']
+        return_url = os.environ['DASHBOARD_URL']
         
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
         print('referral_response', referral_response)
@@ -136,8 +136,8 @@ def connect(event, context):
                 'statusCode': 200,
                 'headers': headers,
                 'body': json.dumps({
-                    'paypal_url': referral_link,
-                    'tracking_id': tracking_id
+                    'paypal_url': referral_link
+                    # 'tracking_id': tracking_id
                 })
             }
 

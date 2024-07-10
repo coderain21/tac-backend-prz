@@ -62,7 +62,7 @@ def create(event, context):
             db = client[os.environ['DATABASE']]
             collection = db[os.environ['SELLERS_TABLE']]
 
-            if webhook_event["event_type"] in ["CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-COMPLETED", "MERCHANT.ONBOARDING.COMPLETED"]:
+            if webhook_event["event_type"] in ["CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED","CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-COMPLETED", "MERCHANT.ONBOARDING.COMPLETED"]:
                 data = webhook_event["resource"]
                 paypal_id = data.get("merchant_id")
                 tracking_id = data.get("tracking_id")
