@@ -1,6 +1,7 @@
 '''this api will get the paddle number of the buyer for a particular auction'''
 import json
 import os
+from bson import ObjectId
 from pymongo import MongoClient
 import datetime
 
@@ -20,6 +21,7 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 access_logs_collection = db[os.environ["ACCESS_LOGS_TABLE"]]
 buyers_collection = db[os.environ["BUYER_COLLECTION"]]
+auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 def buyer_signin_logger(event, context):
     """
@@ -57,8 +59,12 @@ def buyer_signin_logger(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+        data = event['queryStringParameters']
+        auction_id = data['auction_id']
 
-        buyer_data = buyers_collection.find_one({"email_address": email_address})
+        auction_data = auction_collection.find_one({"_id": ObjectId(auction_id)})
+        seller_email = auction_data['seller_email']
+        buyer_data = buyers_collection.find_one({"email_address": email_address, "seller_email": seller_email})
         actor_id = buyer_data.get('buyer_id')
         name = ' '.join(filter(None, [buyer_data.get('first_name'), buyer_data.get('last_name')]))
 
