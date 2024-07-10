@@ -45,8 +45,10 @@ provider:
     BID_INFORMATION_COLLECTION: ${opt:stage, self:provider.stage}-bid-informations
     # REDIS_URL: ${ssm:REDIS_URL}
     BUYERS_TABLE: ${opt:stage, self:provider.stage}-buyers
+    AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
+    MAILCHIMP_API_KEY:  ${ssm:MAILCHIMP_SECRET_KEY}
     SQS_QUEUE_ARN:  
        Fn::Join:
         - ":"
