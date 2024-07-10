@@ -300,7 +300,7 @@ def update_auction(event, context):
                             'title1': item.get('title1'),
                             # Add more required fields as needed
                         }
-                allLots.append(required_fields)
+                    allLots.append(required_fields)
                 print('allLots', allLots)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
