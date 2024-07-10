@@ -197,6 +197,24 @@ functions:
               - Access-Control-Allow-Headers
           path: /paypal-connect-webhook
           method: post
+  
+  paypal-disconnect:
+    handler: handlers/paypal_disconnect.disconnect_account
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /paypal-disconnect
+          method: patch
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
 resources:
