@@ -18,95 +18,26 @@
   ],
 
   "paths": {
-    "/stripe": {
+    "/paypal-connect": {
       "get": {
-        "tags": ["Stripe Payments Management"],
-        "summary": "Get payment related data",
-        "description": "Get payment related data",
-        "parameters": [
-          {
-            "name": "amount",
-            "in": "query",
-            "description": "total amount",
-            "schema": {
-              "type": "string"
-            },
-            "example": "100"
-          },
-          {
-            "name": "id",
-            "in": "query",
-            "description": "auction id",
-            "schema": {
-              "type": "string"
-            },
-            "example": "6520008e74542648a5819807"
-          },
-          {
-            "name": "domain",
-            "in": "query",
-            "description": "sub domain",
-            "schema": {
-              "type": "string"
-            },
-            "example": "auction-domain"
-          },
-          {
-            "name": "payment",
-            "in": "query",
-            "description": "payment type",
-            "schema": {
-              "type": "string"
-            },
-            "example": "stripe"
-          },
-          {
-            "name": "billing",
-            "in": "query",
-            "description": "billing address id",
-            "schema": {
-              "type": "string"
-            },
-            "example": "6569734504bebdf5cc4bb24f"
-          },
-          {
-            "name": "shipping",
-            "in": "query",
-            "description": "shipping address id",
-            "schema": {
-              "type": "string"
-            },
-            "example": "6569734504bebdf5cc4bb24f"
-          },
-          {
-            "name": "timestamp",
-            "in": "query",
-            "description": "time_stamp of the order",
-            "schema": {
-              "type": "string"
-            },
-            "example": "123456789"
-          }
-        ],
+        "tags": ["Paypal Payments Management"],
+        "summary": "Connecting to paypal",
+        "description": "Connecting to paypal",
         "responses": {
-          "201": {
-            "description": "Successfully retrieved payment intent data",
+          "200": {
+            "description": "Successfully retrieved the link for connecting",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "data": {
-                      "type": "string"
-                    },
-                    "account_id": {
+                    "paypal_url": {
                       "type": "string"
                     }
                   }
                 },
                 "example": {
-                  "data": "sabhvsbajshcakscjnacnackan",
-                  "account_id": "acct_1Nknf8C5wvaI16p7"
+                  "paypal_url": "sabhvsbajshcakscjnacnackan"
                 }
               }
             }
@@ -123,7 +54,7 @@
                   },
                   "example2": {
                     "value": {
-                      "message": "Seller does not have stripe account,please connect"
+                      "message": "Seller does not have paypal account,please connect"
                     }
                   },
                   "example3": {
@@ -180,6 +111,33 @@
                       "example": "There was an error while generating payment data"
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/paypal-disconnect": {
+      "patch": {
+        "tags": ["Paypal Payments Management"],
+        "summary": "Disconnecting from paypal",
+        "description": "Disconnecting from paypal",
+        "responses": {
+          "200": {
+            "description": "Successfully disconnected from paypal",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Successfully disconnected from paypal"
                 }
               }
             }

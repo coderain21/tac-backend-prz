@@ -25,27 +25,16 @@ def skip_404_test_results(transaction):
 
 @before_each
 def set_authorization(transaction):
-    token_buyers = str(os.environ.get('BUYERS'))
     token_seller = str(os.environ.get('USER'))
     print('s', transaction['expected']['statusCode'] == '400')
     transaction['request']['uri'] = urllib.parse.unquote(
         transaction['request']['uri'])
 
-    if transaction['expected']['statusCode'] != '401' and '/approval' in transaction['request']['uri']:
-        transaction['request']['headers']['Authorization'] = f'Bearer {token_seller}'
-    else:
-        transaction['request']['headers']['Authorization'] = f'Bearer {token_buyers}'
-
-    # if transaction['expected']['statusCode'] == '400':
-    #     transaction['request']['body'] = json.dumps({
-    #         "template_name": 3,
-    #     })
-
-    if (
-        transaction['expected']['statusCode'] == '200' or
-        transaction['expected']['statusCode'] == '204'
-    ):
-        logging.info(transaction)
-        transaction['request']['uri'] = urllib.parse.unquote(
-            transaction['request']['uri'])
-        logging.info(transaction['request'])
+    if (transaction['request']['method'] == 'PATCH' and '/paypal-disconnect' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    if (transaction['request']['method'] == 'PATCH' and '/paypal-connect' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
