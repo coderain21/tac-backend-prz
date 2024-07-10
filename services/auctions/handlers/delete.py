@@ -34,6 +34,10 @@ client = MongoClient(
                         )
 db = client[os.environ['DATABASE']]
 auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+collection_seller = db[os.environ["SELLERS_TABLE"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+
+
 
 
 def delete_auction(event, context):
@@ -83,6 +87,21 @@ def delete_auction(event, context):
                     {'auction_id': auction_id, 'seller_email': seller_email},
                     {'$set': {'status': 'Deleted'}}
                 )
+                seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
+                access_logs = {
+                    "actor_id": seller_data.get('seller_id'),
+                    "updated_by": {
+                        "type": 'Seller',
+                        "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+                        "email_address": seller_email,
+                    },
+                    "section": {
+                        "name": 'Auctions Management',
+                        "action": 'Delete',
+                        "auction_id": auction_id,
+                    },
+                }
+                access_logs_collection.insert_one(access_logs)
                 return {
                     "headers": headers,
                     'statusCode': 204,
