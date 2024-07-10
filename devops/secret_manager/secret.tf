@@ -73,7 +73,7 @@ resource "aws_kms_key" "kms_key" {
 
 # Step 3: Create Secrets Manager secret for DocumentDB
 resource "aws_secretsmanager_secret" "documentdb_secret" {
-  name = "documentdb-secret-${var.STAGE}"
+  name = "documentdb-secret-${var.STAGE}-value"
   description = "Secret for DocumentDB credentials"
   kms_key_id = aws_kms_key.kms_key.arn
   depends_on = [resource.aws_kms_key.kms_key]
@@ -112,6 +112,26 @@ resource "aws_iam_role_policy_attachment" "athena_ambda_role_policy_attachment" 
   role       = aws_iam_role.athena_ambda_role.name
   depends_on = [resource.aws_secretsmanager_secret_policy.documentdb_secret_policy]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  provider = aws.deployment-main
+}
+# Define the inline S3 access policy
+resource "aws_iam_role_policy" "athena_lambda_s3_policy" {
+  name   = "AthenaLambdaS3Policy"
+  role   = aws_iam_role.athena_ambda_role.name
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:*"
+        ]
+        Resource = [
+          "*"
+        ]
+      }
+    ]
+  })
   provider = aws.deployment-main
 }
 
