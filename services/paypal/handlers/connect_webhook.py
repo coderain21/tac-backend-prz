@@ -1,3 +1,4 @@
+'''This is a paypal webhook which will be triggered when seller is connected to paypal'''
 import json
 import os
 import decimal
@@ -97,7 +98,7 @@ def create(event, context):
                 paypal_id = data.get("merchant_id")
                 status = data.get("status", "UNKNOWN")
                 # account_linked_increment = 1
-            
+
                 query_result = collection.find_one({'paypal_connected_id': paypal_id})
                 if query_result is not None:
                     update_data = {
@@ -105,7 +106,7 @@ def create(event, context):
                             "paypal_status": "connected" if status == "ACTIVE" else "disconnected",
                             "last_updated": datetime.now(),
                         }
-                        
+
                         # "$inc": {
                         #     "account_linked": account_linked_increment
                         #          }
@@ -117,7 +118,7 @@ def create(event, context):
                     print(f"Updated merchant status for PayPal ID: {paypal_id}")
                 else:
                     print(f"Warning: No user found with PayPal ID: {paypal_id} for status update")
-            
+
             else:
                 print(f"Unhandled event type: {webhook_event['event_type']}")
 

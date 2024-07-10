@@ -1,3 +1,4 @@
+''''This is a paypal connect which is used to connect the paypal account'''
 import base64
 from datetime import datetime
 from pymongo import MongoClient
@@ -29,7 +30,7 @@ def get_paypal_access_token():
     response = requests.post(PAYPAL_OAUTH_URL, headers=headers, data=payload)
 
     if response.status_code != 200:
-        raise Exception(f"Failed to get PayPal access token: {response.content}")
+        raise requests.HTTPError(f"Failed to get PayPal access token: {response.status_code} - {response.content}")
 
     response_json = response.json()
     return response_json["access_token"]
@@ -69,7 +70,7 @@ def create_partner_referral(access_token, tracking_id, return_url):
 
     response = requests.post(PAYPAL_PARTNER_REFERRALS_URL, headers=headers, json=data)
     if response.status_code != 201:
-        raise Exception(f"Failed to create partner referral: {response.status_code}, {response.content}")
+        raise requests.HTTPError(f"Failed to create partner referral: {response.status_code} - {response.content}")
     return response.json()
 
 def connect(event, context):
@@ -98,7 +99,7 @@ def connect(event, context):
                 "statusCode": 403,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         #if the user is already connected to paypal, we are just querying the database and changing the status
         if 'paypal_connected_id' in user_info and user_info['paypal_connected_id']:
             update_data = {
@@ -114,7 +115,7 @@ def connect(event, context):
         access_token = get_paypal_access_token()
         tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         return_url = os.environ['DASHBOARD_URL']
-        
+
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
         print('referral_response', referral_response)
 
