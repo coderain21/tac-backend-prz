@@ -121,23 +121,24 @@ variable "GOOGLE_API" {
 
 variable "PAYPAL_CLIENT_ID" {
   type        = string
-  description = "Description of the variable
+  description = "Description of the variable"
+  
 }
 
 
 variable "PAYPAL_CLIENT_SECRET" {
   type        = string
-  description = "Description of the variable
+  description = "Description of the variable"
 }
 
 
 variable "PAYPAL_OAUTH_URL" {
   type        = string
-  description = "Description of the variable
+  description = "Description of the variable"
 }
 
 
 variable "PAYPAL_PARTNER_REFERRALS_URL" {
   type        = string
-  description = "Description of the variable
+  description = "Description of the variable"
 }
