@@ -337,7 +337,7 @@ data "aws_route53_zone" "domain_zone" {
 }
 
 resource "aws_route53_record" "my_cname" {
-  name    = "new-websocket.${local.sub_domain}" # Replace with your desired CNAME
+  name    = "websocket.${local.sub_domain}" # Replace with your desired CNAME
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id  # Replace with your Route 53 hosted zone ID
   alias {
