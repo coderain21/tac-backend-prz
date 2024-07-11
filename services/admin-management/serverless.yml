@@ -23,7 +23,7 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:ADMIN_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
@@ -124,7 +124,7 @@ provider:
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     # TEMPLATE_ARN_AUCTION_COMPLETION:
     #   Fn::Join:
@@ -256,9 +256,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -283,9 +283,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -310,9 +310,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -337,9 +337,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -364,9 +364,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -391,9 +391,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -418,9 +418,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -446,9 +446,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -473,9 +473,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -501,9 +501,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -528,9 +528,9 @@ functions:
   #     - ${ssm:COMMON_LIB_ARN_PYTHON}
   #   vpc:
   #     securityGroupIds:
-  #       - ${ssm:SECURITY_GROUP_ID}
+  #       - ${ssm:SECURITY_GROUP_ID_NEW}
   #     subnetIds:
-  #       - ${ssm:SUBNET_ID}
+  #       - ${ssm:SUBNET_ID_NEW}
   #   events:
   #     - http:
   #         cors:
@@ -555,9 +555,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -582,9 +582,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -610,9 +610,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -634,9 +634,9 @@ functions:
     handler: handlers/bdd_api.handler
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -663,9 +663,9 @@ functions:
       memorySize: 128
       vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -684,9 +684,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors: true
@@ -701,9 +701,9 @@ functions:
       memorySize: 2048
       vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -721,9 +721,9 @@ functions:
       memorySize: 128
       vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
         - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -742,9 +742,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -770,9 +770,9 @@ functions:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID_NEW}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID_NEW}
     events:
       - http:
           cors:
@@ -794,9 +794,9 @@ functions:
       handler: handlers/seller_enable_disable.handler
       vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
       layers:
          - ${ssm:COMMON_LIB_ARN}
       events:
@@ -811,9 +811,9 @@ functions:
     handler: handlers/manage-seller-deactivation.handler
     vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
+          - ${ssm:SECURITY_GROUP_ID_NEW}
         subnetIds:
-          - ${ssm:SUBNET_ID}
+          - ${ssm:SUBNET_ID_NEW}
     layers:
       - ${ssm:COMMON_LIB_ARN}
 
