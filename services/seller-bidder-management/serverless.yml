@@ -29,7 +29,7 @@ provider:
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}

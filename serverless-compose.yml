@@ -41,3 +41,9 @@ services:
   site-banner:
     path: services/site-banner
     config: ${env:config}
+  users:
+    path: services/users
+    config: ${env:config}
+  auctions:
+    path: services/auctions
+    config: ${env:config}

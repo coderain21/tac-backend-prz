@@ -30,7 +30,7 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
@@ -64,7 +64,7 @@ provider:
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:NEW_REDIS_CLUSTER_CONNECTION_URL}
     REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
-    SOCKET_URL: ${ssm:NEW_SOCKET_URL}
+    SOCKET_URL: ${ssm:SOCKET_URL}
     TEMPLATE_ARN_AUCTION_COMPLETION:
       Fn::Join:
         - ":"

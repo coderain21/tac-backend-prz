@@ -69,7 +69,7 @@ resource "aws_docdb_subnet_group" "subnet_group" {
 #######################
 
 resource "aws_key_pair" "my_key"{
-    key_name = "tf-key-pair-${var.STAGE}"
+    key_name = "tf-key-pair-new-${var.STAGE}"
     public_key = tls_private_key.rsa.public_key_openssh
     provider = aws.deployment-eu
 }
@@ -79,7 +79,7 @@ resource "tls_private_key" "rsa"{
 }
 resource "local_file" "tf-key"{
     content  = tls_private_key.rsa.private_key_pem
-    filename = "tf-key-pair-${var.STAGE}.pem"
+    filename = "tf-key-pair-new-${var.STAGE}.pem"
 }
 
 ########################

@@ -23,7 +23,7 @@ provider:
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     TEMPLATE_ARN_EMAIL_OTP: 
