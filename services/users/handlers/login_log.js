@@ -14,8 +14,8 @@ const AccessLogs = require('../entities/AccessLogs')
 let connection = null
 
 function getFullname(nameObject) {
-    const fname = nameObject.fname.trim()
-    const lname = nameObject.last.trim()
+    const fname = nameObject.first_name.trim()
+    const lname = nameObject.last_name.trim()
 
     if (fname && lname) {
         return `${fname} ${lname}`
@@ -40,11 +40,9 @@ module.exports.handler = async (event) => {
             console.log('not coonected')
             connection = await mongodbHelper.connect()
         }
-        const payload = JSON.parse(event.body)
-
         const emailAddress = event.requestContext.authorizer.claims['cognito:username']
         const getSeller = await mongodbHelper.getUser({ email_address: emailAddress }, Users)
-        payload.updated_by.email_address = emailAddress
+        console.log('getSeller', getSeller)
         const fullName = getFullname(getSeller[0])
         const access_logs = {
             actor_id: getSeller[0].seller_id,
