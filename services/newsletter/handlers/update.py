@@ -1,11 +1,7 @@
 '''this api is used to newsletter preferences'''
-import datetime
 import json
 import os
-import boto3
 from pymongo import MongoClient
-from passlib.hash import pbkdf2_sha256
-from bson import ObjectId
 
 headers = {
     'Content-Type': 'application/json',
@@ -39,27 +35,26 @@ def update(event, context):
     depends on the conditions and logic within the function.
     """
     try:
-        # print('event', event['requestContext']['authorizer']['claims'] )
-        # try:
-        #     cognito_data = json.loads(json.dumps(
-        #         event['requestContext']['authorizer']['claims']))
-        #     print('cognito data', cognito_data)
-        #     email_address = cognito_data['email']
-        #     print('email', email_address)
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except Exception as e:
-        #     print('error', e)
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
-        email_address = 'namratha.shettigar+seller@7edge.com'
+        print('event', event['requestContext']['authorizer']['claims'] )
+        try:
+            cognito_data = json.loads(json.dumps(
+                event['requestContext']['authorizer']['claims']))
+            print('cognito data', cognito_data)
+            email_address = cognito_data['email']
+            print('email', email_address)
+            if "cognito:groups" not in cognito_data :
+                return {
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
+        except Exception as e:
+            print('error', e)
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         data = json.loads(event['body'])
         print('data', data)
         if 'newsletter' not in data:

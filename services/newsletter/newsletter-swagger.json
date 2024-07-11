@@ -7,57 +7,42 @@
   },
   "servers": [
     {
-      "url": "https://apis.dev.indyauction.net/v1/site-banner"
+      "url": "https://apis.dev.indyauction.net/v1/newsletter"
     }
   ],
   "tags": [
     {
-      "name": "Site Banner",
-      "description": "APIs to manage the site banners in the seller and buyer side of the auction"
+      "name": "NewsletterManagement",
+      "description": "APIs to manage the Newsletter in the seller"
     }
   ],
   "paths": {
     "/": {
-      "post": {
+      "patch": {
         "tags": [
-          "Admin Site Banner Notification Management"
+          "Newsletter Management"
         ],
-        "summary": "Create Site Banner",
+        "summary": "Update the newsletter notification",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
                 "properties": {
-                  "type": {
-                    "type": "string"
-                  },
-                  "audience": {
-                    "type": "string"
-                  },
-                  "notification": {
+                  "newsletter": {
                     "type": "string"
                   }
                 },
                 "example":
                 {
-                  "type":"Emergency",
-                   "audience": "All Sellers",
-                   "notification": "emergency"
+                  "newsletter" : "False"
                }
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Site Banner has been created successfully"
-                }
-              }
-            }
+          "204": {
+            "description": "Success"
           },
           "500": {
             "description": "Internal server error",
@@ -66,7 +51,7 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "There is an error while creating sitebanner notification"
+                      "message": "Internal server error"
                     }
                   }
                 }
@@ -102,218 +87,8 @@
             }
           }
         }
-      },
-      "get": {
-        "summary": "List Site Banner Notification",
-        "description": "Fetch a list of created site banner notification.",
-        "tags": [
-          "Admin Site Banner Notification Management"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "sort_by",
-            "in": "query",
-            "description": "Sort field",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "sort_order",
-            "in": "query",
-            "description": "Sort order (e.g., asc, desc)",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "page",
-            "in": "query",
-            "description": "Page number for pagination",
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "Number of items per page",
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response with a list of site banner notifications.",
-            "content": {
-              "application/json": {
-                "example": {
-                  "data": [
-                    {
-                      "_id": "6674650bebae3e47b805390f",
-                      "type": "Emergency",
-                      "audience": "All buyers",
-                      "notification": "<p>Defaeco creator comminor.</p>",
-                      "created_at": 1718904075462,
-                      "updated_at": 1718968229812
-                    },
-                    {
-                      "_id": "6675123109986f3f985b031d",
-                      "type": "Informational",
-                      "created_at": 1718948401111,
-                      "audience": "All buyers",
-                      "notification": "<p>Utrum acervus vomer universe cibus decerno atrocitas somnus undique eaque.</p>",
-                      "updated_at": 1718968216367
-                    }
-                  ],
-                  "pagination": {
-                    "total_pages": 1,
-                    "limit": 10,
-                    "total_records": 2,
-                    "next_page": null,
-                    "page": 1
-                  }
-               }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "SIte Banner Notification list Not found.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/{audience}": {
-    "get": {
-      "summary": "View Site Banner Notification by Audience",
-      "description": "Fetch a site banner notifications for a specific audience.",
-      "tags": [
-        "Admin Site Banner Notification Management"
-      ],
-      "security": [
-        {
-          "bearerAuth": []
-        }
-      ],
-      "parameters": [
-        {
-          "name": "audience",
-          "in": "path",
-          "required": true,
-          "description": "Audience type (e.g., All Buyers, All Sellers)",
-          "schema": {
-            "type": "string"
-          },
-          "example": "All Buyers"
-        }
-      ],
-      "responses": {
-        "200": {
-          "description": "Successful response with a  view site banner notifications for the specified audience.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "properties": {
-                  "data": {
-                    "type": "object",
-                    "properties": {
-                      "type": {
-                        "type": "string"
-                      },
-                      "created_at": {
-                        "type": "number"
-                      },
-                      "audience": {
-                        "type": "string"
-                      },
-                      "notification": {
-                        "type": "string"
-                      },
-                      "updated_at": {
-                        "type": "number"
-                      }
-                    }
-                  }
-                }
-                },
-              "example": {
-                  "data": {
-                    "type": "Emergency",
-                    "created_at": 1719214275801,
-                    "audience": "All Buyers",
-                    "notification": "<p>Blahhh</p>",
-                    "updated_at": 1719223575521
-                  }
-              }
-            }
-          }
-        },
-        "500": {
-          "description": "Internal server error.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "404": {
-          "description": "Site Banner Notification for the specified audience not found.",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        }
       }
     }
-   }
   },
   "components": {
     "schemas": {
