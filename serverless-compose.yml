@@ -41,3 +41,6 @@ services:
   site-banner:
     path: services/site-banner
     config: ${env:config}
+  newsletter:
+    path: services/newsletter
+    config: ${env:config}
