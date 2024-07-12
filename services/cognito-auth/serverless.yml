@@ -184,7 +184,7 @@ resources:
             RequireUppercase: true
             RequireLowercase: true
             RequireNumbers: true
-            RequireSymbols: true
+            RequireSymbols: false
             TemporaryPasswordValidityDays: 7
         # DeletionProtection: ACTIVE
         Schema:
