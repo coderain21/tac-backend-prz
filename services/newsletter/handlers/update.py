@@ -65,7 +65,7 @@ def update(event, context):
             }
         seller_info = seller_collection.find_one({"email_address": email_address})
         if seller_info:
-            seller_info['newsletter_notification'] = True if data['newsletter'] == 'True' else False
+            seller_info['newsletter_notification'] = data['newsletter'] == 'True'
             seller_collection.update_one({"email_address": email_address}, {"$set": seller_info})
 
             return {
