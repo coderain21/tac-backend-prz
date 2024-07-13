@@ -29,17 +29,17 @@ def get_mongodb_connection():
     return client, db[os.environ['SELLERS_TABLE']]
 
 def verify_webhook(event):
-    webhook_id = os.environ["PAYPAL_WEBHOOK_ID"]
+    webhook_id = '1JP10492GF092505V'#os.environ["PAYPAL_WEBHOOK_ID"]
     headers = event["headers"]
     
     return WebhookEvent.verify(
-        transmission_id=headers["Paypal-Transmission-Id"],
-        timestamp=headers["Paypal-Transmission-Time"],
+        transmission_id=headers["PAYPAL-TRANSMISSION-ID"],
+        timestamp=headers["PAYPAL-TRANSMISSION-TIME"],
         webhook_id=webhook_id,
         event_body=event["body"],
-        cert_url=headers["Paypal-Cert-Url"],
-        actual_sig=headers["Paypal-Transmission-Sig"],
-        auth_algo=headers["Paypal-Auth-Algo"]
+        cert_url=headers["PAYPAL-CERT-URL"],
+        actual_sig=headers["PAYPAL-TRANSMISSION-SIG"],
+        auth_algo=headers["PAYPAL-AUTH-ALGO"]
     )
 
 def get_paypal_access_token():
@@ -137,6 +137,7 @@ def create(event, context):
             if webhook_event["event_type"] in [
                 "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED", 
                 "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-COMPLETED", 
+                "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED",
                 "MERCHANT.ONBOARDING.COMPLETED",
                 "CUSTOMER.MERCHANT-INTEGRATION.COMPLETED"
             ]:

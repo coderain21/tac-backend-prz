@@ -108,7 +108,9 @@ def connect(event, context):
             }
 
         #if the user is already connected to paypal, we are just querying the database and changing the status
+        print('user info', user_info)
         if 'paypal_connected_id' in user_info and user_info['paypal_connected_id']:
+            print('here')
             update_data = {
                 'paypal_status': 'connected'
             }
