@@ -65,7 +65,14 @@ def create_partner_referral(access_token, tracking_id, return_url):
                     }
                 }
             }
-        ]
+        ],
+        "products": [
+                "EXPRESS_CHECKOUT"
+                    ],
+        "legal_consents": [{
+                    "type": "SHARE_DATA_CONSENT",
+                    "granted": True
+                         }]
     }
 
     response = requests.post(PAYPAL_PARTNER_REFERRALS_URL, headers=headers, json=data)
