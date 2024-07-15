@@ -1,3 +1,4 @@
+'''This module is used as webhook for the paypal connect'''
 import json
 import os
 import decimal
@@ -31,7 +32,7 @@ def get_mongodb_connection():
 def verify_webhook(event):
     webhook_id = os.environ["PAYPAL_WEBHOOK_ID"]
     headers = event["headers"]
-    
+
     return WebhookEvent.verify(
         transmission_id=headers["PAYPAL-TRANSMISSION-ID"],
         timestamp=headers["PAYPAL-TRANSMISSION-TIME"],
@@ -46,7 +47,7 @@ def get_paypal_access_token():
     client_id = os.environ.get('PAYPAL_CLIENT_ID')
     client_secret = os.environ.get('PAYPAL_CLIENT_SECRET')
     paypal_api_base = "https://api-m.sandbox.paypal.com"  # Use the production URL for live environment
-    
+
     auth = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     headers = {
         "Authorization": f"Basic {auth}"
@@ -64,7 +65,7 @@ def call_paypal_api(endpoint, method='GET'):
         "Authorization": f"Bearer {get_paypal_access_token()}",
         "Content-Type": "application/json"
     }
-    
+
     try:
         response = requests.request(method, f"{paypal_api_base}{endpoint}", headers=headers)
         response.raise_for_status()
@@ -76,11 +77,11 @@ def call_paypal_api(endpoint, method='GET'):
 def handle_onboarding_event(collection, data, event_type):
     paypal_id = data.get("merchant_id")
     tracking_id = data.get("tracking_id")
-    
+
     # Get merchant's onboarding status
     if paypal_id:
         onboarding_status = call_paypal_api(f"/v1/customer/partners/S2DT3GS2RAWHL/merchant-integrations/{paypal_id}")
-        
+
         update_data = {
             "$set": {
                 "paypal_connected_id": paypal_id,
@@ -98,14 +99,14 @@ def handle_onboarding_event(collection, data, event_type):
                 "paypal_onboarding_started": datetime.now() if "STARTED" in event_type else None,
             }
         }
-    
+
     result = collection.update_one({'paypal_tracking_id': tracking_id}, update_data)
     print(f"Merchant onboarding {event_type} for PayPal ID: {paypal_id}. Modified: {result.modified_count}")
 
 def handle_status_change_event(collection, data):
     paypal_id = data.get("merchant_id")
     status = data.get("status", "UNKNOWN")
-    
+
     query_result = collection.find_one({'paypal_connected_id': paypal_id})
     if query_result:
         update_data = {
