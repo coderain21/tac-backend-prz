@@ -38,3 +38,9 @@ services:
   # bdd-api:
   #   path: services/bdd-api
   #   config: ${env:config}
+  site-banner:
+    path: services/site-banner
+    config: ${env:config}
+  paypal: 
+    path: services/paypal
+    config: ${env:config}

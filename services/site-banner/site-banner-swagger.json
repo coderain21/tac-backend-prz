@@ -1,0 +1,547 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Site Banner APIs",
+    "description": "APIs for the Admins to manage.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.dev.indyauction.net/v1/site-banner"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Site Banner",
+      "description": "APIs to manage the site banners in the seller and buyer side of the auction"
+    }
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "tags": [
+          "Admin Site Banner Notification Management"
+        ],
+        "summary": "Create Site Banner",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "audience": {
+                    "type": "string"
+                  },
+                  "notification": {
+                    "type": "string"
+                  }
+                },
+                "example":
+                {
+                  "type":"Emergency",
+                   "audience": "All Sellers",
+                   "notification": "emergency"
+               }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Site Banner has been created successfully"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There is an error while creating sitebanner notification"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please pass all required fields"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List Site Banner Notification",
+        "description": "Fetch a list of created site banner notification.",
+        "tags": [
+          "Admin Site Banner Notification Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort field",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "Sort order (e.g., asc, desc)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of items per page",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with a list of site banner notifications.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "_id": "6674650bebae3e47b805390f",
+                      "type": "Emergency",
+                      "audience": "All buyers",
+                      "notification": "<p>Defaeco creator comminor.</p>",
+                      "created_at": 1718904075462,
+                      "updated_at": 1718968229812
+                    },
+                    {
+                      "_id": "6675123109986f3f985b031d",
+                      "type": "Informational",
+                      "created_at": 1718948401111,
+                      "audience": "All buyers",
+                      "notification": "<p>Utrum acervus vomer universe cibus decerno atrocitas somnus undique eaque.</p>",
+                      "updated_at": 1718968216367
+                    }
+                  ],
+                  "pagination": {
+                    "total_pages": 1,
+                    "limit": 10,
+                    "total_records": 2,
+                    "next_page": null,
+                    "page": 1
+                  }
+               }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SIte Banner Notification list Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{audience}": {
+    "get": {
+      "summary": "View Site Banner Notification by Audience",
+      "description": "Fetch a site banner notifications for a specific audience.",
+      "tags": [
+        "Admin Site Banner Notification Management"
+      ],
+      "security": [
+        {
+          "bearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "audience",
+          "in": "path",
+          "required": true,
+          "description": "Audience type (e.g., All Buyers, All Sellers)",
+          "schema": {
+            "type": "string"
+          },
+          "example": "All Buyers"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful response with a  view site banner notifications for the specified audience.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "number"
+                      },
+                      "audience": {
+                        "type": "string"
+                      },
+                      "notification": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+                },
+              "example": {
+                  "data": {
+                    "type": "Emergency",
+                    "created_at": 1719214275801,
+                    "audience": "All Buyers",
+                    "notification": "<p>Blahhh</p>",
+                    "updated_at": 1719223575521
+                  }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Site Banner Notification for the specified audience not found.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+   }
+  },
+  "components": {
+    "schemas": {
+      "Auction": {
+        "type": "object",
+        "properties": {
+          "seller_email":{
+            "type": "string"
+          },
+          "auction_id":{
+            "type": "string"
+          },
+          "template_name":{
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          },
+          "menu_links":{
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "link_url": {
+                  "type": "string"
+                },
+                "dropdown": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title" :{
+                        "type": "string"
+                      },
+                      "link_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "logo_image":{
+            "type": "string"
+          },
+          "logo_redirection_url":{
+            "type": "string"
+          },
+          "title":{
+            "type": "string"
+          },
+          "auction_image":{
+            "type": "string"
+          },
+          "description":{
+            "type": "string"
+          },
+          "currency":{
+            "type": "string"
+          },
+          "start_date":{
+            "type": "number"
+          },
+          "end_date":{
+            "type": "number"
+          },
+          "extension_type":{
+            "type": "string"
+          },
+          "extension_time":{
+            "type": "string"
+          },
+          "extension_time_between_lots": {
+            "type": "string"
+          },
+          "registration_type":{
+            "type": "string"
+          },
+          "add_buyer_fees":{
+            "type": "number"
+          },
+          "time_zone" :{
+            "type": "string"
+          },
+          "faq":{
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question": {
+                  "type": "string"
+                },
+                "answer": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "terms_and_condition":{
+            "type": "string"
+          },
+          "publish_auction_result":{
+            "type": "boolean"
+          },
+          "show_bidder_location_in_bidder_history":{
+            "type": "boolean"
+          },
+          "make_your_auction_private":{
+            "type": "boolean"
+          },
+          "passcode":{
+            "type": "string"
+          },
+          "font":{
+            "type": "object"
+          },
+          "button":{
+            "type": "object"
+          },
+          "header":{
+            "type": "object"
+          },
+          "content_area":{
+            "type": "object"
+          },
+          "footer":{
+            "type": "object"
+          },
+          "paddle":{
+            "type": "object"
+          },
+          "status":{
+            "type": "string"
+          }
+      }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+    "Lots":{
+      "type": "object",
+      "properties": {
+        "auction_id":{
+          "type": "string"
+        },
+        "seller_email":{
+          "type": "string"
+        },
+        "lot_number":{
+          "type":"integer"
+        },
+        "lot_title":{
+          "type":"string"
+        },
+        "starting_bid":{
+          "type":"integer"
+        },
+        "current_bid":{
+          "type":"integer"
+        },
+        "Top_bidder":{
+          "type":"string"
+        },
+        "images":{
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "feature": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "title1":{
+          "type":"string"
+        },
+        "title2":{
+          "type":"string"
+        },
+        "description":{
+          "type":"string"
+        },
+        "starting_price":{
+          "type":"integer"
+        },
+        "low_estimate":{
+          "type":"integer"
+        },
+        "high_estimate":{
+          "type":"integer"
+        },
+        "shipping_details":{
+          "type":"string"
+        },
+        "tags":{
+          "type":"array",
+          "items":{
+            "type": "object",
+            "properties": {
+              "tags_name":{
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}
