@@ -58,11 +58,24 @@ data "aws_subnets" "all_subnets" {
   provider = aws.deployment-eu
 }
 
+data "aws_subnets" "filtered_subnets" {
+  provider = aws.deployment-eu
+  filter {
+    name   = "availabilityZoneId"
+    values = ["euw2-az3",	"euw2-az2"]
+  }
+   filter {
+    name   = "vpc-id"
+    values = [data.aws_ssm_parameter.vpc_id.value]
+  }
+}
+
 resource "aws_docdb_subnet_group" "subnet_group" {
   name       = "mongodb-subnet-group"
-  subnet_ids = data.aws_subnets.all_subnets.ids
+  subnet_ids = data.aws_subnets.filtered_subnets.ids
   provider   = aws.deployment-eu
 }
+
 
 
 
@@ -156,7 +169,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   db_subnet_group_name = aws_docdb_subnet_group.subnet_group.name
-  snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
+  # snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
   master_password         = random_password.password.result
