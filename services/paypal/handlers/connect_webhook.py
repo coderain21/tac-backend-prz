@@ -29,7 +29,7 @@ def get_mongodb_connection():
     return client, db[os.environ['SELLERS_TABLE']]
 
 def verify_webhook(event):
-    webhook_id = '1JP10492GF092505V'#os.environ["PAYPAL_WEBHOOK_ID"]
+    webhook_id = os.environ["PAYPAL_WEBHOOK_ID"]
     headers = event["headers"]
     
     return WebhookEvent.verify(
@@ -79,12 +79,12 @@ def handle_onboarding_event(collection, data, event_type):
     
     # Get merchant's onboarding status
     if paypal_id:
-        onboarding_status = call_paypal_api(f"/v1/customer/partners/merchant-integrations/{paypal_id}")
+        onboarding_status = call_paypal_api(f"/v1/customer/partners/S2DT3GS2RAWHL/merchant-integrations/{paypal_id}")
         
         update_data = {
             "$set": {
                 "paypal_connected_id": paypal_id,
-                "paypal_status": onboarding_status.get('status', 'unknown'),
+                "paypal_status": 'connected',
                 "paypal_capabilities": onboarding_status.get('capabilities', []),
                 "paypal_products": onboarding_status.get('products', []),
                 "paypal_onboarding_completed": datetime.now() if "COMPLETED" in event_type else None,
