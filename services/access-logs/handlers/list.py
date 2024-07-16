@@ -81,20 +81,19 @@ def list_all_logs(event, context):
         # Initialize search query
         
         search_query = {}
-        if Filter:
-            if 'search' in data:
-                search_terms = data['search'].split()
-                search_conditions = []
-                for term in search_terms:
-                    escaped_term = prepend_backslash(term)
-                    search_conditions.append({
-                        "$or": [
-                            {"updated_by.email_address": {"$regex": escaped_term, "$options": "i"}},
-                            {"actor_id": {"$regex": escaped_term, "$options": "i"}}
+        if 'search' in data:
+            search_terms = data['search'].split()
+            search_conditions = []
+            for term in search_terms:
+                escaped_term = prepend_backslash(term)
+                search_conditions.append({
+                    "$or": [
+                        {"updated_by.email_address": {"$regex": escaped_term, "$options": "i"}},
+                        {"actor_id": {"$regex": escaped_term, "$options": "i"}}
 
-                                ]})
-                if search_conditions:
-                    search_query["$and"] = search_conditions
+                            ]})
+            if search_conditions:
+                search_query["$and"] = search_conditions
 
         # Merge search query with the existing query
         query.update(search_query)
