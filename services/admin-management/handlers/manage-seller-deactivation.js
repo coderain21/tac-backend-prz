@@ -21,6 +21,7 @@ let connection = null
 
 module.exports.handler = async (event) => {
     try {
+        console.log('event', event)
         if (connection === null || !connection.readyState) {
             console.log('not coonected')
             connection = await mongodbHelper.connect()
