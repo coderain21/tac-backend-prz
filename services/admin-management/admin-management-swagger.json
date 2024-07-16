@@ -285,13 +285,13 @@
             "example": 1
           },
           {
-            "name": "search",
+            "name": "search", 
             "in": "query",
             "description": "search key",
             "schema": {
               "type": "string"
             },
-            "example": "C"
+            "example": "B0228"
           }
         ],
         "responses": {
@@ -311,7 +311,7 @@
                             "type": "string"
                           },
                           "email_address": {
-                            "type": "number"
+                            "type": "string"
                           },
                           "full_name": {
                             "type": "string"
@@ -2953,10 +2953,10 @@
                 }
               },
               "example": {
-                "actor_id": "IA001",
+                "actor_id": "IA0001",
                 "updated_by": {
                   "type": "Admin",
-                  "name": "admin",
+                  "name": "AnushaK",
                   "email_address": "anusha.k+admin@7edge.com"
                 },
                 "section": {
