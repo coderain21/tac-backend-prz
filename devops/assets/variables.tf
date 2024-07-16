@@ -147,3 +147,8 @@ variable "PAYPAL_WEBHOOK_ID" {
   type        = string
   description = "Description of the variable"
 }
+
+variable "PAYPAL_REDIRECTION_PATH" {
+  type        = string
+  description = "Description of the variable"
+}
