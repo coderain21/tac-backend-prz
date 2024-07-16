@@ -65,159 +65,159 @@
               "application/json": {
                 "example": {
                   "data": [
-                      {
-                          "_id": "6662ac18c982d59130c4b906",
-                          "actor_id": "IA001",
-                          "updated_by": {
-                              "type": "Admin",
-                              "name": "admin",
-                              "email_address": "anusha.k+admin@7edge.com"
-                          },
-                          "section": {
-                              "name": "seller management",
-                              "user_id": "sandhyashri@7edge.com",
-                              "action": "Activate"
-                          },
-                          "updated_at": "2024-06-07 06:43:36.951000"
+                    {
+                      "_id": "6662ac18c982d59130c4b906",
+                      "actor_id": "IA001",
+                      "updated_by": {
+                        "type": "Admin",
+                        "name": "admin",
+                        "email_address": "anusha.k+admin@7edge.com"
                       },
-                      {
-                          "_id": "6662ab17957df501d5bd2cf6",
-                          "actor_id": "IA001",
-                          "updated_by": {
-                              "type": "Admin",
-                              "name": "admin",
-                              "email_address": "anusha.k+admin@7edge.com"
-                          },
-                          "section": {
-                              "name": "seller management",
-                              "user_id": "sandhyashri@7edge.com",
-                              "action": "Activate"
-                          },
-                          "updated_at": "2024-06-07 06:39:19.282000"
+                      "section": {
+                        "name": "seller management",
+                        "user_id": "sandhyashri@7edge.com",
+                        "action": "Activate"
                       },
-                      {
-                          "_id": "668ea7799c4266af66a09010",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1934"
-                          },
-                          "updated_at": 1720625017143.0
+                      "updated_at": "2024-06-07 06:43:36.951000"
+                    },
+                    {
+                      "_id": "6662ab17957df501d5bd2cf6",
+                      "actor_id": "IA001",
+                      "updated_by": {
+                        "type": "Admin",
+                        "name": "admin",
+                        "email_address": "anusha.k+admin@7edge.com"
                       },
-                      {
-                          "_id": "668ea7789c4266af66a09004",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1933"
-                          },
-                          "updated_at": 1720625016532.0
+                      "section": {
+                        "name": "seller management",
+                        "user_id": "sandhyashri@7edge.com",
+                        "action": "Activate"
                       },
-                      {
-                          "_id": "668ea7779c4266af66a08ff7",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1932"
-                          },
-                          "updated_at": 1720625015853.0
+                      "updated_at": "2024-06-07 06:39:19.282000"
+                    },
+                    {
+                      "_id": "66964d24fdbe188066423c08",
+                      "actor_id": "S0054",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "Sandhyashri s",
+                        "email_address": "sthuthi+test3@7edge.com"
                       },
-                      {
-                          "_id": "668e93bc712fbdfc97ee441f",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1923"
-                          },
-                          "updated_at": 1720619964548.0
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "sthuthi+test3@7edge.com"
                       },
-                      {
-                          "_id": "668e93bb712fbdfc97ee4413",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1922"
-                          },
-                          "updated_at": 1720619963883.0
+                      "updated_at": 1721126180694
+                    },
+                    {
+                      "_id": "66964d11fdbe188066423c05",
+                      "actor_id": "S0014",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "Sthuthi S",
+                        "email_address": "sthuthi+stripe@7edge.com"
                       },
-                      {
-                          "_id": "668e93bb712fbdfc97ee4407",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1921"
-                          },
-                          "updated_at": 1720619963178.0
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "sthuthi+stripe@7edge.com"
                       },
-                      {
-                          "_id": "668e88fa5b2c776046bdf0b9",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1912"
-                          },
-                          "updated_at": 1720617210109.0
+                      "updated_at": 1721126161824
+                    },
+                    {
+                      "_id": "66964cd3fdbe188066423c02",
+                      "actor_id": "S0014",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "Sthuthi S",
+                        "email_address": "sthuthi+stripe@7edge.com"
                       },
-                      {
-                          "_id": "668e88f95b2c776046bdf0ad",
-                          "actor_id": "S0065",
-                          "updated_by": {
-                              "type": "Seller",
-                              "name": " ",
-                              "email_address": "sthuthi+testing@7edge.com"
-                          },
-                          "section": {
-                              "name": "Auctions Management",
-                              "action": "Create",
-                              "auction_id": "A1911"
-                          },
-                          "updated_at": 1720617209465.0
-                      }
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "sthuthi+stripe@7edge.com"
+                      },
+                      "updated_at": 1721126099092
+                    },
+                    {
+                      "_id": "66964cc2fdbe188066423bff",
+                      "actor_id": "S0014",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "Sthuthi S",
+                        "email_address": "sthuthi+stripe@7edge.com"
+                      },
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "sthuthi+stripe@7edge.com"
+                      },
+                      "updated_at": 1721126082048
+                    },
+                    {
+                      "_id": "66964cc1fdbe188066423bfc",
+                      "actor_id": "S0051",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "",
+                        "email_address": "anusha.k+subdomain@7edge.com"
+                      },
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "anusha.k+subdomain@7edge.com"
+                      },
+                      "updated_at": 1721126081973
+                    },
+                    {
+                      "_id": "66964cc0fdbe188066423bf9",
+                      "actor_id": "S0014",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "Sthuthi S",
+                        "email_address": "sthuthi+stripe@7edge.com"
+                      },
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "sthuthi+stripe@7edge.com"
+                      },
+                      "updated_at": 1721126080487
+                    },
+                    {
+                      "_id": "66964c94fdbe188066423bf6",
+                      "actor_id": "S0051",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "",
+                        "email_address": "anusha.k+subdomain@7edge.com"
+                      },
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "anusha.k+subdomain@7edge.com"
+                      },
+                      "updated_at": 1721126036965
+                    },
+                    {
+                      "_id": "669646a91c46b30ff2591bed",
+                      "actor_id": "S1281",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": "",
+                        "email_address": "sushmitha.j+www1@7edge.com"
+                      },
+                      "section": {
+                        "name": "Seller Management",
+                        "action": "Login",
+                        "user_id": "sushmitha.j+www1@7edge.com"
+                      },
+                      "updated_at": 1721124521993
+                    }
                   ],
-                  "total_pages": 55,
-                  "total_records": 549,
+                  "total_pages": 68,
+                  "total_records": 672,
                   "current_page": 1,
                   "download_link": null
                 }
