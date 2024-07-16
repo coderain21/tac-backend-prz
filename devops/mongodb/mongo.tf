@@ -292,6 +292,14 @@ resource "aws_ssm_parameter" "ec2_instance_id" {
   provider = aws.deployment-eu
   overwrite = true
 }
+
+resource "aws_ssm_parameter" "mongodb_password" {
+  name  = "MONGO_PASSWORD"
+  type  = "String"
+  value = random_password.password.result
+  provider = aws.deployment-eu
+  overwrite = true
+}
 output "connection_details" {
   value = {
     endpoint = aws_docdb_cluster.my_documentdb_cluster.endpoint
