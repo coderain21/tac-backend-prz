@@ -70,6 +70,7 @@ logins.sh
 services/**/package-lock.json
 devops/ecs/ecs_task.env
 devops/mongodb/tf-key-pair-dev.pem
+tf-key-*.pem
 .serverless/*
 devops/buyer_web_application/subdomains.json
 logins.sh

@@ -1,3 +1,4 @@
+/* eslint-disable no-self-assign */
 /* eslint-disable camelcase */
 /* eslint-disable consistent-return */
 /* eslint-disable import/no-extraneous-dependencies */
@@ -13,6 +14,7 @@ const Joi = require('joi')
 const mongodbHelper = require('../lib/mongodb_helper')
 const helpers = require('../lib/helper')
 const Users = require('../entities/Users')
+const Admin = require('../entities/Admin')
 
 let connection = null
 
@@ -127,7 +129,13 @@ module.exports.handler = async (event) => {
         /** ---------------------------------------ASSIGNING VARIABLE-------------------------------------------------------------------------------------------------- */
 
         const emailAddress = event.requestContext.authorizer.claims['cognito:username']
+        const getAdmin = await mongodbHelper.getUser({ email_address: emailAddress }, Admin)
         payload.updated_by.email_address = emailAddress
+        payload.updated_by.type = 'Admin'
+        payload.section.name = 'Seller Management'
+        payload.section.action = payload.section.action
+        payload.actor_id = getAdmin[0].user_id
+        payload.updated_by.name = `${getAdmin[0].first_name} ${getAdmin[0].last_name}`
         const Status = payload.section.action === 'Activate' ? 'adminEnableUser' : 'adminDisableUser'
         const seller_email = payload.section.user_id
         const templateName = payload.section.action === 'Activate' ? process.env.TEMPLATE_ARN_ADMIN_ACTIVATE_SELLER : process.env.TEMPLATE_ARN_ADMIN_DEACTIVATE_SELLER

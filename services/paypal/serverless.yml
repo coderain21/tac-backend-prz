@@ -1,4 +1,4 @@
-service: orders
+service: paypal
 frameworkVersion: '3'
 useDotenv: true
 deprecationNotificationMode: error
@@ -37,7 +37,6 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
-    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
@@ -48,14 +47,14 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
-         
+        
     ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
-    DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN} 
+    DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}    
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_EMAIL_RESET_PASSWORD:  
       Fn::Join:
@@ -66,17 +65,34 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
-       
+      
    
     BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
-    CDN_LINK: ${ssm:CDN_URL}
+    AMPLIFY_APP_ID: ${ssm:AMPLIFY_APP_ID}
+    AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
+    DEFAULT_INDENTITY_POOL_ID: ${ssm:BUYER_COGNITO_IDENTITY_POOL_ID}
+    DEFAULT_IDENTITY_POOL_NAME: ${ssm:BUYER_COGNITO_IDENTITY_POOL_NAME}
+    DEFAULT_BUYER_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
+    AMPLIFY_BRANCH: ${ssm:AMPLIFY_BRANCH}
     STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: INDY@SELLER
-    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
+    PAYMENTS_COLLECTION: ${opt:stage, self:provider.stage}-buyers-payments
+    STRIPE_ENDPOINT_SECRET: ${ssm:STRIPE_ENDPOINT_SECRET}
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
-    SALES_CSV_FILE:  /tmp/Sales_List.csv
+    TEMP_ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-temp-orders
+    ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
+    CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+
+    PAYPAL_CLIENT_ID: ${ssm:PAYPAL_CLIENT_ID}
+    PAYPAL_CLIENT_SECRET: ${ssm:PAYPAL_CLIENT_SECRET}
+    PAYPAL_OAUTH_URL: ${ssm:PAYPAL_OAUTH_URL}
+    PAYPAL_PARTNER_REFERRALS_URL: ${ssm:PAYPAL_PARTNER_REFERRALS_URL}
+    BASE_URL_SELLER: ${ssm:BASE_URL_SELLER}
+    DASHBOARD_URL: ${ssm:SELLER_DASHBOARD_APPLICATION_URL}
+    PAYPAL_WEBHOOK_ID: ${ssm:PAYPAL_WEBHOOK_ID}
+
+
     
   http:
     cors: true
@@ -94,6 +110,9 @@ provider:
             - mobiletargeting:*
             - dynamodb:*
             - execute-api:*
+            - amplify:*
+            - route53:*
+            - cognito-identity:UpdateIdentityPool
           Resource: "*"
  
 package:
@@ -125,102 +144,47 @@ custom:
       Set:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
-functions:
-  list_orders:
-    handler: handlers/list.list_orders
+functions: 
+  paypal_connect:
+    handler: handlers/paypal_connect.connect
     runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID}
     events:
       - http:
-          path: /
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /paypal-connect
           method: get
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}        #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
-  
-  order_detail:
-    handler: handlers/order_detail.order_detail
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          path: /details
-          method: get
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
-  
-  order_update:
-    handler: handlers/order_update.order_update
-    runtime: python3.8
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          path: /update
-          method: put
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          authorizer: ${ssm:SELLER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer: ${ssm:SELLER_COGNITO_AUTH_ARN}     
 
-  sales_details:
-    handler: handlers/sales_details.sales_details
+  
+  paypal_connect_webhook:
+    handler: handlers/connect_webhook.create
     runtime: python3.8
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
+      - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID}
+      - ${ssm:SUBNET_ID}
     events:
       - http:
-          path: /sales
-          method: get
           cors:
             origin: '*'
             headers:
@@ -232,11 +196,11 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-          
-  seller_list_orders:
-    handler: handlers/sellers_list.list_orders
+          path: /paypal-connect-webhook
+          method: post
+  
+  paypal-disconnect:
+    handler: handlers/paypal_disconnect.disconnect_account
     runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -247,21 +211,12 @@ functions:
         - ${ssm:SUBNET_ID}
     events:
       - http:
-          path: /seller
-          method: get
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
+          cors: true
+          path: /paypal-disconnect
+          method: patch
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
 
 resources:
    Resources:
@@ -274,7 +229,6 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
-    
     # BuyerEmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate
     #   Properties: 
@@ -288,6 +242,7 @@ resources:
     #     HtmlPart: ${file(./templates/buyer_reset_password.html)}
     #     Subject: Indy.auction- Reset your password
     #     TemplateName: ${self:provider.stage}-buyer_reset_password
+
 
 plugins:
   - serverless-offline
