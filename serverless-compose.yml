@@ -44,4 +44,6 @@ services:
   paypal: 
     path: services/paypal
     config: ${env:config}
-    
+  newsletter:
+    path: services/newsletter
+    config: ${env:config}

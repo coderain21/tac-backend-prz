@@ -545,6 +545,13 @@ resource "aws_ssm_parameter" "paypal_partner_referrals_url" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "paypal_webhook_id" {
+  name  = "PAYPAL_WEBHOOK_ID"
+  type  = "String"
+  value = var.PAYPAL_WEBHOOK_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
 
