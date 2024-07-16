@@ -127,9 +127,8 @@ def verify(event, context):
             }
 
 
-        if is_valid_password(password):
-            if password == confirm_password:
-                is_password_valid = True
+        if password == confirm_password:
+            is_password_valid = True
 
         if not is_password_valid:
             return {
