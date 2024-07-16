@@ -142,3 +142,8 @@ variable "PAYPAL_PARTNER_REFERRALS_URL" {
   type        = string
   description = "Description of the variable"
 }
+
+variable "PAYPAL_WEBHOOK_ID" {
+  type        = string
+  description = "Description of the variable"
+}
