@@ -62,7 +62,7 @@ data "aws_subnets" "filtered_subnets" {
   provider = aws.deployment-eu
   filter {
     name   = "availabilityZoneId"
-    values = ["euw2-az3",	"euw2-az2"]
+    values = ["euw2-az1",	"euw2-az2"]
   }
    filter {
     name   = "vpc-id"
@@ -293,7 +293,7 @@ resource "aws_eip" "example" {
 }
 
 resource "aws_ssm_parameter" "documentdb" {
-  name  = "MONGODB_CONNECTION_STRING_NEW"
+  name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
   value = "mongodb://indyauctionAdmin:${random_password.password.result}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
   provider = aws.deployment-eu
@@ -301,7 +301,7 @@ resource "aws_ssm_parameter" "documentdb" {
 }
 
 resource "aws_ssm_parameter" "subnet_id" {
-  name  = "SUBNET_ID_NEW"
+  name  = "SUBNET_ID"
   type  = "String"
   value = aws_subnet.mongodb_subnet.id
   provider = aws.deployment-eu
@@ -309,7 +309,7 @@ resource "aws_ssm_parameter" "subnet_id" {
 }
 
 resource "aws_ssm_parameter" "security_group_id" {
-  name  = "SECURITY_GROUP_ID_NEW"
+  name  = "SECURITY_GROUP_ID"
   type  = "String"
   value = aws_security_group.ssh_sg_new.id
   provider = aws.deployment-eu
@@ -317,7 +317,7 @@ resource "aws_ssm_parameter" "security_group_id" {
 }
 
 resource "aws_ssm_parameter" "ec2_instance_id" {
-  name  = "EC2_INSTANCE_ID_NEW"
+  name  = "EC2_INSTANCE_ID"
   type  = "String"
   value = resource.aws_instance.ssh_tunnel.id
   provider = aws.deployment-eu
@@ -327,7 +327,7 @@ resource "aws_ssm_parameter" "ec2_instance_id" {
 
 
 resource "aws_ssm_parameter" "mongodb_password" {
-  name  = "NEW_MONGO_PASSWORD"
+  name  = "MONGO_PASSWORD"
   type  = "String"
   value = random_password.password.result
   provider = aws.deployment-eu

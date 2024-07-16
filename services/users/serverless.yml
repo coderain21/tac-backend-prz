@@ -23,7 +23,7 @@ provider:
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     TEMPLATE_ARN_EMAIL_OTP: 
@@ -72,7 +72,7 @@ provider:
     DEFAULT_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
     DEFAULT_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
-    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
@@ -137,9 +137,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
   
     events:
         - cognitoUserPool:
@@ -153,9 +153,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
   
     events:
         - cognitoUserPool:
@@ -169,9 +169,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /verify-captcha
@@ -184,9 +184,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /otp-validation
@@ -199,9 +199,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /request-otp
@@ -215,9 +215,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -231,9 +231,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
           securityGroupIds:
-            - ${ssm:SECURITY_GROUP_ID_NEW}
+            - ${ssm:SECURITY_GROUP_ID}
           subnetIds:
-            - ${ssm:SUBNET_ID_NEW}
+            - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -247,9 +247,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
   
     events:
         - http:
@@ -268,9 +268,9 @@ functions:
           - ${ssm:COMMON_LIB_ARN}
         vpc:
           securityGroupIds:
-            - ${ssm:SECURITY_GROUP_ID_NEW}
+            - ${ssm:SECURITY_GROUP_ID}
           subnetIds:
-            - ${ssm:SUBNET_ID_NEW}
+            - ${ssm:SUBNET_ID}
         events:
           - http:
               cors: true
@@ -288,9 +288,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -308,9 +308,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -324,9 +324,9 @@ functions:
           - ${ssm:COMMON_LIB_ARN}
         vpc:
           securityGroupIds:
-            - ${ssm:SECURITY_GROUP_ID_NEW}
+            - ${ssm:SECURITY_GROUP_ID}
           subnetIds:
-            - ${ssm:SUBNET_ID_NEW}
+            - ${ssm:SUBNET_ID}
         events:
           - http:
               cors: true
@@ -342,9 +342,9 @@ functions:
           - ${ssm:COMMON_LIB_ARN}
         vpc:
           securityGroupIds:
-            - ${ssm:SECURITY_GROUP_ID_NEW}
+            - ${ssm:SECURITY_GROUP_ID}
           subnetIds:
-            - ${ssm:SUBNET_ID_NEW}
+            - ${ssm:SUBNET_ID}
         events:
           - http:
               cors: true
@@ -362,9 +362,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -381,9 +381,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -401,9 +401,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -420,9 +420,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -439,9 +439,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
         - http:
             cors: true
@@ -458,9 +458,9 @@ functions:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
         securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID_NEW}
+          - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
-          - ${ssm:SUBNET_ID_NEW}
+          - ${ssm:SUBNET_ID}
     
       events:
           - http:

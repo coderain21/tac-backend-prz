@@ -86,7 +86,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   provider                  = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "distribution_id" {
-  name  = "NEW_REDIS_CLUSTER_ENDPOINT"
+  name  = "REDIS_CLUSTER_ENDPOINT"
   type  = "String"
   value = aws_elasticache_replication_group.websocket.configuration_endpoint_address
   provider = aws.deployment-eu
@@ -96,7 +96,7 @@ locals {
   redis_host     = split(":", aws_elasticache_replication_group.websocket.configuration_endpoint_address)[0]
 }
 resource "aws_ssm_parameter" "redis_host_parameter" {
-  name  = "NEW_REDIS_CLUSTER_CONNECTION_URL"
+  name  = "REDIS_CLUSTER_CONNECTION_URL"
   type  = "String"
   value = "redis://${local.redis_host}:6379"
   overwrite = true 

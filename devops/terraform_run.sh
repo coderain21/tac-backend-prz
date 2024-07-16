@@ -20,12 +20,6 @@ aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
-if [ "${STAGE}" != "prod" ]; then
-    terraform -chdir=devops/vpc init
-    terraform -chdir=devops/vpc apply -auto-approve
-    terraform -chdir=devops/secret_manager init
-    terraform -chdir=devops/secret_manager apply -auto-approve
-fi
 terraform -chdir=devops/assets init
 terraform -chdir=devops/assets apply -auto-approve
 terraform -chdir=devops/ses init
@@ -42,14 +36,14 @@ terraform -chdir=devops/dependency/nodejs-auth-layer init
 terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 terraform -chdir=devops/dependency/python init
 terraform -chdir=devops/dependency/python apply -auto-approve
-terraform -chdir=devops/mongodb_new init
-terraform -chdir=devops/mongodb_new apply -auto-approve
-terraform -chdir=devops/ecs_new init
-terraform -chdir=devops/ecs_new apply -auto-approve
+terraform -chdir=devops/mongodb init
+terraform -chdir=devops/mongodb apply -auto-approve
+terraform -chdir=devops/ecs init
+terraform -chdir=devops/ecs apply -auto-approve
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
-terraform -chdir=devops/redis_cluster_new init
-terraform -chdir=devops/redis_cluster_new apply -auto-approve
+terraform -chdir=devops/redis-cluster init
+terraform -chdir=devops/redis-cluster apply -auto-approve
 terraform -chdir=devops/budgets init
 terraform -chdir=devops/budgets apply -auto-approve
 terraform -chdir=devops/stripe_webhook init

@@ -12,7 +12,7 @@ provider:
     REGION: ${env:REGION}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     DATABASE: ${opt:stage, self:provider.stage}
     
 
@@ -51,9 +51,9 @@ functions:
     handler: handlers/auth.handler
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     layers:
       - ${ssm:LAMBDA_AUTH_LIB_NODE_ARN}
 

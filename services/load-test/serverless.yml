@@ -26,7 +26,7 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
@@ -106,9 +106,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true
@@ -125,9 +125,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors: true

@@ -24,7 +24,7 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
@@ -76,7 +76,7 @@ provider:
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SALES_CSV_FILE:  /tmp/Sales_List.csv
-    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     
   http:
     cors: true
@@ -133,9 +133,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /
@@ -160,9 +160,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /details
@@ -186,9 +186,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /sales
@@ -214,9 +214,9 @@ functions:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
       securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID_NEW}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-        - ${ssm:SUBNET_ID_NEW}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           path: /seller

@@ -12,9 +12,9 @@ provider:
   endpointType: REGIONAL
   vpc:
     securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID_NEW}
+      - ${ssm:SECURITY_GROUP_ID}
     subnetIds:
-      - ${ssm:SUBNET_ID_NEW}
+      - ${ssm:SUBNET_ID}
   runtime: nodejs18.x
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
@@ -29,7 +29,7 @@ provider:
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING_NEW}
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -38,7 +38,7 @@ provider:
     S3_BUCKET:  ${ssm:BUCKET_NAME}
     CDN_LINK: ${ssm:CDN_URL}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
-    REDIS_CLUSTER_ENDPOINT: ${ssm:NEW_REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 

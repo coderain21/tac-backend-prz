@@ -5,11 +5,11 @@ env_object="{"
 
 # Fetch parameter names
 parameter_names=(
-    "MONGODB_CONNECTION_STRING_NEW"
+    "MONGODB_CONNECTION_STRING"
     "BUYER_COGNITO_USERPOOL_ID"
     "STAGE"
     "REGION"
-    "NEW_REDIS_CLUSTER_ENDPOINT"
+    "REDIS_CLUSTER_ENDPOINT"
     "STATE_MACHINE_LOT_ARN"
     "WEB_PUSH_SECRET_KEY"
     "CDN_URL"

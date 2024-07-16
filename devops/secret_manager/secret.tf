@@ -103,7 +103,7 @@ resource "aws_secretsmanager_secret_policy" "documentdb_secret_policy" {
 
 # Output the username and password from SSM Parameter Store
 data "aws_ssm_parameter" "documentdb_password" {
-  name = "NEW_MONGO_PASSWORD"  
+  name = "MONGO_PASSWORD"  
    provider  = aws.deployment-eu # Assuming the password for DocumentDB is stored here
 }
 
