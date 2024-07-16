@@ -47,7 +47,7 @@ def create_partner_referral(access_token, tracking_id, return_url):
             "partner_logo_url": "https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg",
             "return_url": return_url,
             "return_url_description": "the URL to return the merchant after the PayPal onboarding process.",
-            "action_renewal_url": os.environ['DASHBOARD_URL']
+            "action_renewal_url": os.environ['DASHBOARD_URL']+os.environ['PAYPAL_REDIRECTION_PATH'],
         },
         "operations": [
             {
