@@ -79,7 +79,6 @@ def list_all_logs(event, context):
         sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
         # Initialize search query
-        
         search_query = {}
         if 'search' in data:
             search_terms = data['search'].split()
