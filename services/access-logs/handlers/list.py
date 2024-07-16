@@ -69,6 +69,7 @@ def list_all_logs(event, context):
         sort_order = data.get('sort_order', 'descending')
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
+        Filter = data.get('filter', False)
         start_date = data.get('start_date')
         end_date = data.get('end_date')
         export = data.get('export', 'false').lower() == 'true'
@@ -80,33 +81,35 @@ def list_all_logs(event, context):
         # Initialize search query
         
         search_query = {}
-        if 'search' in data:
-            search_terms = data['search'].split()
-            search_conditions = []
-            for term in search_terms:
-                escaped_term = prepend_backslash(term)
-                search_conditions.append({
-                    "$or": [
-                        {"updated_by.email_address": {"$regex": escaped_term, "$options": "i"}},
-                        {"actor_id": {"$regex": escaped_term, "$options": "i"}}
+        if Filter:
+            if 'search' in data:
+                search_terms = data['search'].split()
+                search_conditions = []
+                for term in search_terms:
+                    escaped_term = prepend_backslash(term)
+                    search_conditions.append({
+                        "$or": [
+                            {"updated_by.email_address": {"$regex": escaped_term, "$options": "i"}},
+                            {"actor_id": {"$regex": escaped_term, "$options": "i"}}
 
-                             ]})
-            if search_conditions:
-                search_query["$and"] = search_conditions
+                                ]})
+                if search_conditions:
+                    search_query["$and"] = search_conditions
 
         # Merge search query with the existing query
         query.update(search_query)
 
         # Date range filter
-        if start_date and end_date:
-            print('start_date', start_date, 'end_date', end_date)
-            date_range_condition = {
-                "updated_at": {
-                    "$gte": int(start_date),
-                    "$lte": int(end_date)
+        if Filter:
+            if start_date and end_date:
+                print('start_date', start_date, 'end_date', end_date)
+                date_range_condition = {
+                    "updated_at": {
+                        "$gte": int(start_date),
+                        "$lte": int(end_date)
+                    }
                 }
-            }
-            query.update(date_range_condition)
+                query.update(date_range_condition)
 
         # Query the MongoDB collection
         access_log_list = list(access_log_collection.find(

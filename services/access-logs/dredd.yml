@@ -29,7 +29,7 @@ hooks-worker-term-retry: 500
 hooks-worker-handler-host: 127.0.0.1
 hooks-worker-handler-port: 61321
 config: ./dredd.yml 
-blueprint: site-banner-swagger.json
+blueprint: access-logs-swagger.json
 endpoint: 'https://apis.dev.indyauction.net/v1/access-logs'
 
 
