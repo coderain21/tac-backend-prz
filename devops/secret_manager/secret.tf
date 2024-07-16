@@ -8,7 +8,7 @@ provider "aws" {
 provider "aws" {
   region = var.REGION
   alias = "deployment-main"   # Specify a default AWS region here
-  profile = "indyauction-prod"
+  profile = "indyauction-qa"
 }
 
 
@@ -186,6 +186,23 @@ resource "aws_iam_policy" "quicksight_access_policy" {
   })
 }
 
+resource "aws_iam_policy" "quicksight_access_policy_new" {
+  provider = aws.deployment-eu
+  name     = "quicksight-access-policy-${var.STAGE}"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Action = [
+          "quicksight:*",
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
 
 # Attach Policy to Role in Dev Account
 resource "aws_iam_role_policy_attachment" "attach_quicksight_policy" {
@@ -193,6 +210,7 @@ resource "aws_iam_role_policy_attachment" "attach_quicksight_policy" {
   role      = aws_iam_role.quicksight_access_role.name
   policy_arn = aws_iam_policy.quicksight_access_policy.arn
 }
+
 
 # IAM Role for Lambda in Pre-production Account
 resource "aws_iam_role" "lambda_execution_role" {
@@ -211,6 +229,11 @@ resource "aws_iam_role" "lambda_execution_role" {
       }
     ]
   })
+}
+resource "aws_iam_role_policy_attachment" "attach_quicksight_lambda_policy" {
+  provider  = aws.deployment-eu
+  role      = aws_iam_role.lambda_execution_role.name
+  policy_arn = aws_iam_policy.quicksight_access_policy_new.arn
 }
 
 resource "aws_iam_role_policy" "lambda_assume_role_policy" {
