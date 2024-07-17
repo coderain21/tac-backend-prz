@@ -139,6 +139,11 @@ def list_auction(event, context):
             "publish_auction_results": 1
         }
         if export is not None and export == 1:
+            # Get the current timestamp in seconds and convert to milliseconds
+            timestamp_ms = int(datetime.now().timestamp() * 1000)
+
+            # Convert to float and format as a string with '.0'
+            formatted_timestamp = float(timestamp_ms)
             seller_data = collection_seller.find_one({"email_address": email_address}, {"_id": 0})
             access_logs = {
                 "actor_id": seller_data.get('seller_id'),
@@ -148,9 +153,10 @@ def list_auction(event, context):
                     "email_address": email_address,
                 },
                 "section": {
-                    "name": 'Auctions Management',
+                    "name": 'Auction Management',
                     "action": 'Export',
                 },
+                "updated_at": formatted_timestamp
             }
             access_logs_collection.insert_one(access_logs)
             projection_for_export = {

@@ -66,185 +66,159 @@
                 "example": {
                   "data": [
                     {
-                      "_id": "6697a2d903562ce1fcec33eb",
-                      "actor_id": "S0014",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": "Sthuthi S",
-                        "email_address": "sthuthi+stripe@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Update",
-                        "auction_id": "A0251",
-                        "updated": {
-                          "description": "<p>fdfdds</p>",
-                          "title": "the great walll",
-                          "menu_links": [
-                            {
-                              "title": "menu",
-                              "link_url": "https://seller.dev.indyauction.net/",
-                              "dropdown": [
-                                {
-                                  "title": "",
-                                  "link_url": ""
-                                }
-                              ]
-                            }
-                          ],
-                          "faq": [
-                            {
-                              "question": "How do I register for an auction?",
-                              "answer": "Click on the \"Register for the Auction\" button on the auction page. Once you confirm your intent to register for the auction, you'll be provided with your paddle number which will also be emailed to you. Once the auction is live, you can start bidding in the auction. Please note that to validate your intent to bid for certain auctions, you might be required to enter your credit or debit card information or be requested for documents such as a photo ID or proof of funds."
-                            },
-                            {
-                              "question": "What is a maximum bid?",
-                              "answer": "The maximum bid (or max bid) is the highest amount you are willing to pay for an auction lot. When you set your max bid, the auction software automatically places bids on your behalf at the next available increments if other competitive bids come in to keep you as the highest bidder up to your maximum bid and never any further. If no one else bids higher, the max bidder wins the auction at the lowest possible price, which is the amount of the second-highest bid plus the minimum increment. Max bids can be advantageous for bidders who can't constantly monitor an auction or who want to avoid bidding wars. By placing a max bid, they can set a limit on how much they're willing to pay and let the system do the rest."
-                            },
-                            {
-                              "question": "what is auction?",
-                              "answer": "rtrtrtrtr"
-                            }
-                          ]
-                        }
-                      },
-                      "updated_at": 1721213657210
-                    },
-                    {
-                      "_id": "6697a02f228bf0d8a8c3bcde",
-                      "actor_id": "B0272",
+                      "_id": "6697b6c3b05b49ee3425ee14",
+                      "actor_id": "B0163",
                       "updated_by": {
                         "type": "Buyer",
-                        "name": "Khaleel",
-                        "email_address": "ibrahim.khaleel+login@7edge.com"
+                        "name": "Anusha Test",
+                        "email_address": "anusha.k+buyer1@7edge.com"
                       },
                       "section": {
                         "name": "Bidder Management",
                         "action": "Login"
                       },
-                      "updated_at": 1721212975329
+                      "updated_at": 1721218755348
                     },
                     {
-                      "_id": "66979fb5dc8782c59da16669",
-                      "actor_id": "B0272",
+                      "_id": "6697b60cb05b49ee3425ee13",
+                      "actor_id": "B0347",
                       "updated_by": {
                         "type": "Buyer",
-                        "name": "Khaleel",
-                        "email_address": "ibrahim.khaleel+login@7edge.com"
+                        "name": "Sandhyashri s",
+                        "email_address": "sandhyashri+b1@7edge.com"
                       },
                       "section": {
                         "name": "Bidder Management",
-                        "action": "Update Password"
+                        "action": "Login"
                       },
-                      "updated_at": 1721212853186
+                      "updated_at": 1721218572832
                     },
                     {
-                      "_id": "66979ecfdc8782c59da16668",
-                      "actor_id": "B0272",
+                      "_id": "6697b40ece4163c14bda66da",
+                      "actor_id": null,
                       "updated_by": {
                         "type": "Buyer",
-                        "name": "Khaleel",
-                        "email_address": "ibrahim.khaleel+login@7edge.com"
+                        "name": "",
+                        "email_address": "sthuthi+ssss@7edge.com"
                       },
                       "section": {
                         "name": "Bidder Management",
-                        "action": "Update Password"
+                        "action": "Login"
                       },
-                      "updated_at": 1721212623378
+                      "updated_at": 1721218062087
                     },
                     {
-                      "_id": "66979e7e40ec4f31553283b4",
-                      "actor_id": "S0014",
+                      "_id": "6697b3dbce4163c14bda66d9",
+                      "actor_id": "B0241",
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "Sthuthi",
+                        "email_address": "sthuthi+bidding@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218011746
+                    },
+                    {
+                      "_id": "6697a7c3caa1ca5225e4f5c2",
+                      "actor_id": "S0065",
                       "updated_by": {
                         "type": "Seller",
-                        "name": "Sthuthi S",
-                        "email_address": "sthuthi+stripe@7edge.com"
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
                       },
                       "section": {
-                        "name": "Seller Management",
-                        "action": "Login",
-                        "user_id": "sthuthi+stripe@7edge.com"
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
                       },
-                      "updated_at": 1721212542027
+                      "updated_at": 1721214915268
                     },
                     {
-                      "_id": "669794058a8e6602f7d44902",
-                      "actor_id": "IA0001",
+                      "_id": "6697a7c0caa1ca5225e4f5c1",
+                      "actor_id": "S0065",
                       "updated_by": {
-                        "type": "Admin",
-                        "name": "Indy Admin",
-                        "email_address": "anusha.k+admin@7edge.com"
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
                       },
                       "section": {
-                        "name": "Seller Management",
-                        "user_id": "namratha.shettigar+dev@7edge.com",
-                        "action": "Activate"
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
                       },
-                      "updated_at": 1721209861897
+                      "updated_at": 1721214912917
                     },
                     {
-                      "_id": "669793d38a8e6602f7d448fe",
-                      "actor_id": "IA0001",
+                      "_id": "6697a7bfcaa1ca5225e4f5c0",
+                      "actor_id": "S0065",
                       "updated_by": {
-                        "type": "Admin",
-                        "name": "Indy Admin",
-                        "email_address": "anusha.k+admin@7edge.com"
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
                       },
                       "section": {
-                        "name": "Seller Management",
-                        "user_id": "namratha.shettigar+dev@7edge.com",
-                        "action": "Deactivate"
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
                       },
-                      "updated_at": 1721209811884
+                      "updated_at": 1721214911251
                     },
                     {
-                      "_id": "669791d0187e00295de5e0c1",
-                      "actor_id": "IA0001",
+                      "_id": "6697a7bdcaa1ca5225e4f5bf",
+                      "actor_id": "S0065",
                       "updated_by": {
-                        "type": "Admin",
-                        "name": "Indy Admin",
-                        "email_address": "anusha.k+admin@7edge.com"
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
                       },
                       "section": {
-                        "name": "Seller Management",
-                        "user_id": "namratha.shettigar+dev@7edge.com",
-                        "action": "Activate"
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
                       },
-                      "updated_at": 1721209296402
+                      "updated_at": 1721214909500
                     },
                     {
-                      "_id": "6697919d187e00295de5e0bd",
-                      "actor_id": "IA0001",
+                      "_id": "6697a7bbcaa1ca5225e4f5be",
+                      "actor_id": "S0065",
                       "updated_by": {
-                        "type": "Admin",
-                        "name": "Indy Admin",
-                        "email_address": "anusha.k+admin@7edge.com"
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
                       },
                       "section": {
-                        "name": "Seller Management",
-                        "user_id": "namratha.shettigar+dev@7edge.com",
-                        "action": "Deactivate"
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
                       },
-                      "updated_at": 1721209245944
+                      "updated_at": 1721214907606
                     },
                     {
-                      "_id": "669787f9f278ec45c6337155",
-                      "actor_id": "IA0001",
+                      "_id": "6697a785419624d496f68fa5",
+                      "actor_id": "S0065",
                       "updated_by": {
-                        "type": "Admin",
-                        "name": "Indy Admin",
-                        "email_address": "anusha.k+admin@7edge.com"
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
                       },
                       "section": {
-                        "name": "Seller Management",
-                        "user_id": "namratha.shettigar+dev@7edge.com",
-                        "action": "Activate"
+                        "name": "Auctions Management",
+                        "action": "Create",
+                        "auction_id": "A2023"
                       },
-                      "updated_at": 1721206777085
+                      "updated_at": 1721214853456
                     }
                   ],
-                  "total_pages": 77,
-                  "total_records": 767,
+                  "total_pages": 79,
+                  "total_records": 784,
                   "current_page": 1,
                   "download_link": null
                 }
