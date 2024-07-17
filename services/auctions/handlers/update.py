@@ -595,6 +595,14 @@ def update_auction(event, context):
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
+
+        # Get the current timestamp in seconds and convert to milliseconds
+        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+
+        # Convert to float and format as a string with '.0'
+        formatted_timestamp = float(timestamp_ms)
+
+
         access_logs = {
             "actor_id": seller_data.get('seller_id'),
             "updated_by": {
@@ -608,6 +616,7 @@ def update_auction(event, context):
                 "auction_id": auction_id,
                 "updated": update_data
             },
+            "updated_at": formatted_timestamp
         }
         access_logs_collection.insert_one(access_logs)
         return {

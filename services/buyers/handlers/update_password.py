@@ -194,6 +194,12 @@ def update_password(event, context):
                 "body": json.dumps({"message": "there was some error while updating"})
             }
 
+        # Get the current timestamp in seconds and convert to milliseconds
+        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+
+        # Convert to float and format as a string with '.0'
+        formatted_timestamp = float(timestamp_ms)
+
         #adding logs of password update
         access_logs = {
             "actor_id": buyer.get('buyer_id'),
@@ -206,7 +212,7 @@ def update_password(event, context):
                 "name": 'Bidder Management',
                 "action": 'Update Password'
             },
-            "updated_at": int(datetime.datetime.now().timestamp())
+            "updated_at": formatted_timestamp
         }
         access_logs_collection.insert_one(access_logs)
 
