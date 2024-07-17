@@ -67,7 +67,12 @@ def buyer_signin_logger(event, context):
         buyer_data = buyers_collection.find_one({"email_address": email_address, "seller_email": seller_email})
         actor_id = buyer_data.get('buyer_id')
         name = ' '.join(filter(None, [buyer_data.get('first_name'), buyer_data.get('last_name')]))
+        
+        # Get the current timestamp in seconds and convert to milliseconds
+        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
 
+        # Convert to float and format as a string with '.0'
+        formatted_timestamp = float(timestamp_ms)
         access_logs = {
             "actor_id": actor_id,
             "updated_by": {
@@ -79,7 +84,7 @@ def buyer_signin_logger(event, context):
                 "name": 'Bidder Management',
                 "action": 'Login'
             },
-            "updated_at": int(datetime.datetime.now().timestamp())
+            "updated_at": formatted_timestamp
         }
 
         access_logs_collection.insert_one(access_logs)
