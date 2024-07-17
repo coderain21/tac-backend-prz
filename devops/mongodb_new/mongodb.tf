@@ -199,6 +199,9 @@ resource "aws_security_group" "ssh_sg_new" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
   }
+  lifecycle {
+    ignore_changes = [ingress]
+  }
   # ingress {
   #   from_port       = 27017
   #   to_port         = 27017

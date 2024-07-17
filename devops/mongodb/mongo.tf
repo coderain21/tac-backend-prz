@@ -188,6 +188,9 @@ resource "aws_security_group" "ssh_sg_1" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
+  lifecycle {
+    ignore_changes = [egress]
+  }
   provider = aws.deployment-eu
 }
 
