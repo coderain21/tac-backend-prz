@@ -19,6 +19,7 @@ Environment Variables:
 import os
 import json
 from pymongo import MongoClient
+from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -88,6 +89,12 @@ def delete_auction(event, context):
                     {'$set': {'status': 'Deleted'}}
                 )
                 seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
+                # Get the current timestamp in seconds and convert to milliseconds
+                timestamp_ms = int(datetime.now().timestamp() * 1000)
+
+                # Convert to float and format as a string with '.0'
+                formatted_timestamp = float(timestamp_ms)
+
                 access_logs = {
                     "actor_id": seller_data.get('seller_id'),
                     "updated_by": {
@@ -96,10 +103,11 @@ def delete_auction(event, context):
                         "email_address": seller_email,
                     },
                     "section": {
-                        "name": 'Auctions Management',
+                        "name": 'Auction Management',
                         "action": 'Delete',
                         "auction_id": auction_id,
                     },
+                    "updated_at": formatted_timestamp
                 }
                 access_logs_collection.insert_one(access_logs)
                 return {

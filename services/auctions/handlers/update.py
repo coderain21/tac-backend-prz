@@ -597,7 +597,7 @@ def update_auction(event, context):
             )
 
         # Get the current timestamp in seconds and convert to milliseconds
-        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+        timestamp_ms = int(datetime.now().timestamp() * 1000)
 
         # Convert to float and format as a string with '.0'
         formatted_timestamp = float(timestamp_ms)
@@ -611,7 +611,7 @@ def update_auction(event, context):
                 "email_address": seller_email,
             },
             "section": {
-                "name": 'Auctions Management',
+                "name": 'Auction Management',
                 "action": 'Update',
                 "auction_id": auction_id,
                 "updated": update_data
