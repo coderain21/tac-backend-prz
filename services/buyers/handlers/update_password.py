@@ -193,7 +193,7 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
-        
+
         # Get the current timestamp in seconds and convert to milliseconds
         timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
 

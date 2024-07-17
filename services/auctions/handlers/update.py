@@ -596,7 +596,6 @@ def update_auction(event, context):
                 {"$set": update_data}
             )
 
-        
         # Get the current timestamp in seconds and convert to milliseconds
         timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
 

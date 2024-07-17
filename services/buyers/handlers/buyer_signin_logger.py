@@ -67,7 +67,7 @@ def buyer_signin_logger(event, context):
         buyer_data = buyers_collection.find_one({"email_address": email_address, "seller_email": seller_email})
         actor_id = buyer_data.get('buyer_id')
         name = ' '.join(filter(None, [buyer_data.get('first_name'), buyer_data.get('last_name')]))
-        
+
         # Get the current timestamp in seconds and convert to milliseconds
         timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
 
