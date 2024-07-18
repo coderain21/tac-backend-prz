@@ -7,6 +7,51 @@ This module provides functionality to send emails using Amazon SES .
 import os
 import json
 import boto3
+import mailchimp_transactional
+from mailchimp_transactional.api_client import ApiClientError
+
+client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+
+
+def send_mailchimp_email(email, template_name, template_data, sender_email):
+    try:
+        print('here in mailchimp')
+        response = client.messages.send_template(
+            {
+                "template_name": template_name,
+                "template_content": [],
+                "message": {
+                    "to": [{"email": email, "type": "to"}],
+                    "from": 'no-reply@indy.auction',
+                    "global_merge_vars": [
+                        {"name": key, "content": value}
+                        for key, value in template_data.items()
+                    ]
+                }
+            }
+        )
+        print('response', response)
+        # response = client.messages.send_template(
+        #     {
+        #         "template_name": template_name,
+        #         "template_content": [],
+        #         "message": {
+        #             "to": [{"email": email, "type": "to"}],
+        #             "subject": 'testing'
+        #         }
+        #     }
+        # )
+        # print('response', response)
+        return response
+    except ApiClientError as e:
+        print("An error occurred: {}".format(e))
+        return False
+
+
+
+
+
+
 
 def send_mail(link, email_template, destination_address, token):
     """

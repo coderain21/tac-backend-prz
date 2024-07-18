@@ -21,7 +21,6 @@ services/**/access_token_genation.py
 services/**/api-testing.sh
 test-results
 /test_results
-logins.sh
 .terraform
 terraform.tfstate
 terraform.tfstate.backup
@@ -34,6 +33,7 @@ python_lib2
 python.zip
 .terraform.tfstate.lock.info
 layer
+tf-key-pair-*.pem
 # Compiled Java class files
 *.class
 # Compiled Python bytecode
@@ -67,9 +67,12 @@ Thumbs.db
 env
 .vscode/launch.json
 .env
-login.sh
+logins.sh
 services/**/package-lock.json
 devops/ecs/ecs_task.env
 devops/mongodb/tf-key-pair-dev.pem
+tf-key-*.pem
 .serverless/*
 devops/buyer_web_application/subdomains.json
+logins.sh
+.serverless

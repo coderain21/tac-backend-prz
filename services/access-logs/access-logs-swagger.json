@@ -1,0 +1,324 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Access Logs APIs",
+    "description": "APIs for the Admins to manage access logs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.dev.indyauction.net/v1/access-logs"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Access Logs",
+      "description": "APIs to manage the access logs in the admin panel"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "List Access Logs",
+        "description": "Fetch a list of created access logs",
+        "tags": [
+          "Access Logs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Sort field",
+            "schema": {
+              "type": "string"
+            },
+            "example": 5
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Filter field",
+            "schema": {
+              "type": "string"
+            },
+            "example": "False"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response with a list of access logs",
+            "content": {
+              "application/json": {
+                "example": {
+                  "data": [
+                    {
+                      "_id": "6697b6c3b05b49ee3425ee14",
+                      "actor_id": "B0163",
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "Anusha Test",
+                        "email_address": "anusha.k+buyer1@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218755348
+                    },
+                    {
+                      "_id": "6697b60cb05b49ee3425ee13",
+                      "actor_id": "B0347",
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "Sandhyashri s",
+                        "email_address": "sandhyashri+b1@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218572832
+                    },
+                    {
+                      "_id": "6697b40ece4163c14bda66da",
+                      "actor_id": null,
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "",
+                        "email_address": "sthuthi+ssss@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218062087
+                    },
+                    {
+                      "_id": "6697b3dbce4163c14bda66d9",
+                      "actor_id": "B0241",
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "Sthuthi",
+                        "email_address": "sthuthi+bidding@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218011746
+                    },
+                    {
+                      "_id": "6697a7c3caa1ca5225e4f5c2",
+                      "actor_id": "S0065",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
+                      },
+                      "section": {
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
+                      },
+                      "updated_at": 1721214915268
+                    },
+                    {
+                      "_id": "6697a7c0caa1ca5225e4f5c1",
+                      "actor_id": "S0065",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
+                      },
+                      "section": {
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
+                      },
+                      "updated_at": 1721214912917
+                    },
+                    {
+                      "_id": "6697a7bfcaa1ca5225e4f5c0",
+                      "actor_id": "S0065",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
+                      },
+                      "section": {
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
+                      },
+                      "updated_at": 1721214911251
+                    },
+                    {
+                      "_id": "6697a7bdcaa1ca5225e4f5bf",
+                      "actor_id": "S0065",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
+                      },
+                      "section": {
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
+                      },
+                      "updated_at": 1721214909500
+                    },
+                    {
+                      "_id": "6697a7bbcaa1ca5225e4f5be",
+                      "actor_id": "S0065",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
+                      },
+                      "section": {
+                        "name": "Auctions Management",
+                        "action": "Update",
+                        "auction_id": "A0172",
+                        "updated": {}
+                      },
+                      "updated_at": 1721214907606
+                    },
+                    {
+                      "_id": "6697a785419624d496f68fa5",
+                      "actor_id": "S0065",
+                      "updated_by": {
+                        "type": "Seller",
+                        "name": " ",
+                        "email_address": "sthuthi+testing@7edge.com"
+                      },
+                      "section": {
+                        "name": "Auctions Management",
+                        "action": "Create",
+                        "auction_id": "A2023"
+                      },
+                      "updated_at": 1721214853456
+                    }
+                  ],
+                  "total_pages": 79,
+                  "total_records": 784,
+                  "current_page": 1,
+                  "download_link": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SIte Banner Notification list Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccessLogs": {
+        "type": "object",
+        "properties": {
+          "actor_id":{
+            "type": "string"
+          },
+          "updated_by":{
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "email_address": {
+                "type": "string"
+              }
+            }
+          },
+          "section":{
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              },
+              "auction_id": {
+                "type": "string"
+              }
+            }
+          },
+          "updated_at":{
+            "type": "number"
+          },
+          "_id":{
+            "type": "string"
+          }
+      }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+  },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}
