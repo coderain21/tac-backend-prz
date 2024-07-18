@@ -73,7 +73,7 @@ resource "aws_kms_key" "kms_key" {
 
 # Step 3: Create Secrets Manager secret for DocumentDB
 resource "aws_secretsmanager_secret" "documentdb_secret" {
-  name = "documentdb-secret-${var.STAGE}-value"
+  name = "${var.STAGE}-documentdb-secret"
   description = "Secret for DocumentDB credentials"
   kms_key_id = aws_kms_key.kms_key.arn
   depends_on = [resource.aws_kms_key.kms_key]
@@ -188,7 +188,7 @@ resource "aws_iam_policy" "quicksight_access_policy" {
 
 resource "aws_iam_policy" "quicksight_access_policy_new" {
   provider = aws.deployment-eu
-  name     = "quicksight-access-policy-${var.STAGE}"
+  name     = "${var.STAGE}-quicksight-access-policy"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -279,12 +279,14 @@ resource "aws_ssm_parameter" "quiksight_role_arn" {
   type  = "String"
   value = aws_iam_role.lambda_execution_role.arn
   provider = aws.deployment-eu
+  overwrite = true
 }
 resource "aws_ssm_parameter" "quiksight_assume_role_arn" {
   name  = "QUICKSIGHT_ASSUME_ROLE_ARN"
   type  = "String"
   value = aws_iam_role.quicksight_access_role.arn
   provider = aws.deployment-eu
+  overwrite = true
 }
 
 
