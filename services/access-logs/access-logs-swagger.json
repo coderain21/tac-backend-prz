@@ -44,9 +44,9 @@
             "in": "query",
             "description": "Sort field",
             "schema": {
-              "type": "string"
+              "type": "integer"
             },
-            "example": 5
+            "example": 10
           },
           {
             "name": "filter",
@@ -55,14 +55,17 @@
             "schema": {
               "type": "string"
             },
-            "example": "False"
+            "example": "admin"
           }
         ],
-        "responses": {
+       "responses": {
           "200": {
             "description": "Successful response with a list of access logs",
             "content": {
               "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessLogsResponse"
+                },
                 "example": {
                   "data": [
                     {
@@ -92,129 +95,6 @@
                         "action": "Login"
                       },
                       "updated_at": 1721218572832
-                    },
-                    {
-                      "_id": "6697b40ece4163c14bda66da",
-                      "actor_id": null,
-                      "updated_by": {
-                        "type": "Buyer",
-                        "name": "",
-                        "email_address": "sthuthi+ssss@7edge.com"
-                      },
-                      "section": {
-                        "name": "Bidder Management",
-                        "action": "Login"
-                      },
-                      "updated_at": 1721218062087
-                    },
-                    {
-                      "_id": "6697b3dbce4163c14bda66d9",
-                      "actor_id": "B0241",
-                      "updated_by": {
-                        "type": "Buyer",
-                        "name": "Sthuthi",
-                        "email_address": "sthuthi+bidding@7edge.com"
-                      },
-                      "section": {
-                        "name": "Bidder Management",
-                        "action": "Login"
-                      },
-                      "updated_at": 1721218011746
-                    },
-                    {
-                      "_id": "6697a7c3caa1ca5225e4f5c2",
-                      "actor_id": "S0065",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": " ",
-                        "email_address": "sthuthi+testing@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Update",
-                        "auction_id": "A0172",
-                        "updated": {}
-                      },
-                      "updated_at": 1721214915268
-                    },
-                    {
-                      "_id": "6697a7c0caa1ca5225e4f5c1",
-                      "actor_id": "S0065",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": " ",
-                        "email_address": "sthuthi+testing@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Update",
-                        "auction_id": "A0172",
-                        "updated": {}
-                      },
-                      "updated_at": 1721214912917
-                    },
-                    {
-                      "_id": "6697a7bfcaa1ca5225e4f5c0",
-                      "actor_id": "S0065",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": " ",
-                        "email_address": "sthuthi+testing@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Update",
-                        "auction_id": "A0172",
-                        "updated": {}
-                      },
-                      "updated_at": 1721214911251
-                    },
-                    {
-                      "_id": "6697a7bdcaa1ca5225e4f5bf",
-                      "actor_id": "S0065",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": " ",
-                        "email_address": "sthuthi+testing@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Update",
-                        "auction_id": "A0172",
-                        "updated": {}
-                      },
-                      "updated_at": 1721214909500
-                    },
-                    {
-                      "_id": "6697a7bbcaa1ca5225e4f5be",
-                      "actor_id": "S0065",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": " ",
-                        "email_address": "sthuthi+testing@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Update",
-                        "auction_id": "A0172",
-                        "updated": {}
-                      },
-                      "updated_at": 1721214907606
-                    },
-                    {
-                      "_id": "6697a785419624d496f68fa5",
-                      "actor_id": "S0065",
-                      "updated_by": {
-                        "type": "Seller",
-                        "name": " ",
-                        "email_address": "sthuthi+testing@7edge.com"
-                      },
-                      "section": {
-                        "name": "Auctions Management",
-                        "action": "Create",
-                        "auction_id": "A2023"
-                      },
-                      "updated_at": 1721214853456
                     }
                   ],
                   "total_pages": 79,
@@ -261,57 +141,69 @@
   },
   "components": {
     "schemas": {
-      "AccessLogs": {
+      "AccessLogsResponse": {
         "type": "object",
         "properties": {
-          "actor_id":{
-            "type": "string"
-          },
-          "updated_by":{
-            "type": "object",
-            "properties": {
-              "type": {
-                "type": "string"
-              },
-              "name": {
-                "type": "string"
-              },
-              "email_address": {
-                "type": "string"
-              }
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccessLog"
             }
           },
-          "section":{
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "action": {
-                "type": "string"
-              },
-              "auction_id": {
-                "type": "string"
-              }
-            }
+          "total_pages": {
+            "type": "integer",
+            "minimum": 1
           },
-          "updated_at":{
-            "type": "number"
+          "total_records": {
+            "type": "integer",
+            "minimum": 1
           },
-          "_id":{
-            "type": "string"
+          "current_page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "download_link": {
+            "type": ["string", "null"]
           }
-      }
+        },
+        "required": ["data", "total_pages", "total_records", "current_page", "download_link"]
       },
-      "Error": {
+      "AccessLog": {
         "type": "object",
         "properties": {
-          "message": {
+          "_id": {
             "type": "string"
+          },
+          "actor_id": {
+            "type": ["string", "null"]
+          },
+          "updated_by": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "name": {"type": "string"},
+              "email_address": {"type": "string"}
+            },
+            "required": ["type", "name", "email_address"],
+            "additionalProperties": true
+          },
+          "section": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "action": {"type": "string"}
+            },
+            "required": ["name", "action"],
+            "additionalProperties": true
+          },
+          "updated_at": {
+            "type": "integer"
           }
-        }
+        },
+        "required": ["_id", "updated_by", "section", "updated_at"],
+        "additionalProperties": true
       }
-  },
+    },
     "securitySchemes": {
       "BearerAuth": {
         "type": "apiKey",
