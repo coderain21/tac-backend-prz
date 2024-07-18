@@ -47,3 +47,6 @@ services:
   newsletter:
     path: services/newsletter
     config: ${env:config}
+  access-logs:
+    path: services/access-logs
+    config: ${env:config}

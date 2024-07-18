@@ -47,7 +47,7 @@ def create_partner_referral(access_token, tracking_id, return_url):
             "partner_logo_url": "https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg",
             "return_url": return_url,
             "return_url_description": "the URL to return the merchant after the PayPal onboarding process.",
-            "action_renewal_url": os.environ['DASHBOARD_URL']
+            "action_renewal_url": os.environ['DASHBOARD_URL']+os.environ['PAYPAL_REDIRECTION_PATH'],
         },
         "operations": [
             {
@@ -65,7 +65,14 @@ def create_partner_referral(access_token, tracking_id, return_url):
                     }
                 }
             }
-        ]
+        ],
+        "products": [
+                "EXPRESS_CHECKOUT"
+                    ],
+        "legal_consents": [{
+                    "type": "SHARE_DATA_CONSENT",
+                    "granted": True
+                         }]
     }
 
     response = requests.post(PAYPAL_PARTNER_REFERRALS_URL, headers=headers, json=data)
@@ -101,7 +108,9 @@ def connect(event, context):
             }
 
         #if the user is already connected to paypal, we are just querying the database and changing the status
+        print('user info', user_info)
         if 'paypal_connected_id' in user_info and user_info['paypal_connected_id']:
+            print('here')
             update_data = {
                 'paypal_status': 'connected'
             }
@@ -114,7 +123,7 @@ def connect(event, context):
 
         access_token = get_paypal_access_token()
         tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        return_url = os.environ['DASHBOARD_URL']
+        return_url = os.environ['DASHBOARD_URL']+os.environ['PAYPAL_REDIRECTION_PATH']
 
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
         print('referral_response', referral_response)

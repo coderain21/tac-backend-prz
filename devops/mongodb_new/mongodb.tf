@@ -21,17 +21,68 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
-# Create a subnet within the VPC
-resource "aws_subnet" "mongodb_subnet" {
-  vpc_id     = aws_default_vpc.def_vpc.id
-  cidr_block = "172.31.96.0/20"
+
+data "aws_ssm_parameter" "subnet_id" {
+  name = "PUBLIC_SUBNET_ID"
   provider = aws.deployment-eu
 }
+data "aws_ssm_parameter" "vpc_id" {
+  name     = "VPC_ID"
+  provider = aws.deployment-eu
+}
+
+data "aws_ssm_parameter" "cidr_blocks" {
+  name     = "PUBLIC_SUBNET_CIDR_BLOCK_3"
+  provider = aws.deployment-eu
+}
+
+data "aws_ssm_parameter" "snapshot_arn" {
+  name     = "SNAPSHOT_ARN"
+  provider = aws.deployment-eu
+}
+
+resource "aws_subnet" "mongodb_subnet" {
+  vpc_id            = data.aws_ssm_parameter.vpc_id.value
+  cidr_block        = data.aws_ssm_parameter.cidr_blocks.value
+  availability_zone = "eu-west-2c"
+  provider          = aws.deployment-eu
+}
+
+# Fetch all subnets in the VPC
+data "aws_subnets" "all_subnets" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_ssm_parameter.vpc_id.value]
+  }
+
+  provider = aws.deployment-eu
+}
+
+data "aws_subnets" "filtered_subnets" {
+  provider = aws.deployment-eu
+  filter {
+    name   = "availabilityZoneId"
+    values = ["euw2-az1",	"euw2-az2"]
+  }
+   filter {
+    name   = "vpc-id"
+    values = [data.aws_ssm_parameter.vpc_id.value]
+  }
+}
+
+resource "aws_docdb_subnet_group" "subnet_group" {
+  name       = "mongodb-subnet-group"
+  subnet_ids = data.aws_subnets.filtered_subnets.ids
+  provider   = aws.deployment-eu
+}
+
+
+
 
 #######################
 
 resource "aws_key_pair" "my_key"{
-    key_name = "tf-key-pair"
+    key_name = "tf-key-pair-new-${var.STAGE}"
     public_key = tls_private_key.rsa.public_key_openssh
     provider = aws.deployment-eu
 }
@@ -41,14 +92,14 @@ resource "tls_private_key" "rsa"{
 }
 resource "local_file" "tf-key"{
     content  = tls_private_key.rsa.private_key_pem
-    filename = "tf-key-pair-${var.STAGE}.pem"
+    filename = "tf-key-pair-new-${var.STAGE}.pem"
 }
 
 ########################
 
 
 resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
-  name        = "${var.STAGE}-parameter-group"
+  name        = "${var.STAGE}-new-parameter-group"
   family      = "docdb5.0" # Adjust the family to match your DocumentDB version
   description = "My DocumentDB Parameter Group"
   parameter {
@@ -66,9 +117,9 @@ resource "aws_eip" "nat_gateway" {
 
 resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.nat_gateway.id
-  subnet_id = aws_default_subnet.default_az1.id
+  subnet_id     = data.aws_ssm_parameter.subnet_id.value
   tags = {
-    "Name" = "NatGateway"
+    "Name" = "NatGateway_new"
   }
   provider = aws.deployment-eu
 }
@@ -78,20 +129,14 @@ output "nat_gateway_ip" {
 }
 
 resource "aws_route_table" "instance" {
-  vpc_id = aws_default_vpc.def_vpc.id
-
-  lifecycle {
-    ignore_changes = [route]
+  vpc_id = data.aws_ssm_parameter.vpc_id.value
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
   provider = aws.deployment-eu
 }
 
-resource "aws_route" "nat_gateway_route" {
-  route_table_id         = aws_route_table.instance.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
-  provider               = aws.deployment-eu
-}
 
 resource "aws_route_table_association" "instance" {
   subnet_id = aws_subnet.mongodb_subnet.id
@@ -103,15 +148,12 @@ data "aws_availability_zones" "available" {
   provider = aws.deployment-eu
   }
 
-resource "aws_default_subnet" "default_az1" {
-  availability_zone = data.aws_availability_zones.available.names[0]
-  provider = aws.deployment-eu
-}
+
 data "aws_ssm_parameter" "instance_class" {
   name = "INSTANCE_CLASS"
 }
 resource "aws_docdb_cluster_instance" "cluster_instances" {
-  identifier         = "docdb-mongodb-instance"
+  identifier         = "new-docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
   instance_class     = data.aws_ssm_parameter.instance_class.value
   apply_immediately = true
@@ -122,24 +164,28 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
 
 # Create the DocumentDB instance
 resource "aws_docdb_cluster" "my_documentdb_cluster" {
-  cluster_identifier        = "${var.STAGE}"
+  cluster_identifier        = "new-${var.STAGE}"
   engine                    = "docdb"
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
+  db_subnet_group_name = aws_docdb_subnet_group.subnet_group.name
+  # snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
   master_password         = random_password.password.result
-  vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
+  vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
   provider = aws.deployment-eu
 }
 
 
 
-# Create a security group to allow SSH access
-resource "aws_security_group" "ssh_sg" {
-  name        = "ssh-security-group"
+
+
+
+resource "aws_security_group" "ssh_sg_new" {
+  name        = "new-ssh-security-groups"
   description = "SSH Security Group"
-  vpc_id = aws_default_vpc.def_vpc.id
+  vpc_id = data.aws_ssm_parameter.vpc_id.value
   # Allow SSH traffic
   ingress {
     from_port   = 22
@@ -152,50 +198,30 @@ resource "aws_security_group" "ssh_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
-  }
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-  provider = aws.deployment-eu
-}
-
-
-resource "aws_security_group" "ssh_sg_1" {
-  name        = "ssh-security-group1"
-  description = "SSH Security Group"
-  vpc_id = aws_default_vpc.def_vpc.id
-  # Allow SSH traffic
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
-  }
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
-  }
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
   }
   lifecycle {
-    ignore_changes = [egress]
+    ignore_changes = [ingress]
+  }
+  # ingress {
+  #   from_port       = 27017
+  #   to_port         = 27017
+  #   protocol        = "tcp"
+  #   security_groups = [data.aws_ssm_parameter.security_group_b.value] # Replace with the security group ID of the Lambda function in Account B
+  # }
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
   }
   provider = aws.deployment-eu
 }
 
+
+
 resource "aws_iam_role" "ssm_role" {
-  name = "ssm-role-ec2"
+  name = "new-ssm-role-ec2"
   provider = aws.deployment-eu
 
   assume_role_policy = jsonencode({
@@ -239,8 +265,10 @@ resource "aws_instance" "ssh_tunnel" {
   ami           = "ami-0e5f882be1900e43b" # Specify a valid Amazon Linux AMI ID
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
-  vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
+  vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
   provider = aws.deployment-eu
+  subnet_id = data.aws_ssm_parameter.subnet_id.value
+  associate_public_ip_address = true
   # User data to create the SSH tunnel
   user_data = <<-EOF
               #!/bin/bash
@@ -258,7 +286,7 @@ resource "aws_instance" "ssh_tunnel" {
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 }
 resource "aws_iam_instance_profile" "ssm_profile" {
-  name = "ssm-role-ec2"
+  name = "new-ssm-role-ec2"
   provider = aws.deployment-eu
   role = aws_iam_role.ssm_role.name
 }
@@ -286,13 +314,9 @@ resource "aws_ssm_parameter" "subnet_id" {
 resource "aws_ssm_parameter" "security_group_id" {
   name  = "SECURITY_GROUP_ID"
   type  = "String"
-  value = aws_security_group.ssh_sg_1.id
+  value = aws_security_group.ssh_sg_new.id
   provider = aws.deployment-eu
   overwrite = true
-}
-
-resource "aws_default_vpc" "def_vpc"{
-  provider = aws.deployment-eu
 }
 
 resource "aws_ssm_parameter" "ec2_instance_id" {
@@ -303,18 +327,12 @@ resource "aws_ssm_parameter" "ec2_instance_id" {
   overwrite = true
 }
 
+
+
 resource "aws_ssm_parameter" "mongodb_password" {
   name  = "MONGO_PASSWORD"
   type  = "String"
   value = random_password.password.result
   provider = aws.deployment-eu
   overwrite = true
-}
-output "connection_details" {
-  value = {
-    endpoint = aws_docdb_cluster.my_documentdb_cluster.endpoint
-    port     = "27017"
-    ec2_public_ip = aws_instance.ssh_tunnel.public_ip
-    shh_tunnel = "ssh -i tf-key-pair-${var.STAGE}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
-  }
 }
