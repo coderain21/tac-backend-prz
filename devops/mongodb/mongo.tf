@@ -79,18 +79,14 @@ output "nat_gateway_ip" {
 
 resource "aws_route_table" "instance" {
   vpc_id = aws_default_vpc.def_vpc.id
-
+  route {
+    cidr_block = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+  }
   lifecycle {
     ignore_changes = [route]
   }
   provider = aws.deployment-eu
-}
-
-resource "aws_route" "nat_gateway_route" {
-  route_table_id         = aws_route_table.instance.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.nat_gateway.id
-  provider               = aws.deployment-eu
 }
 
 resource "aws_route_table_association" "instance" {
