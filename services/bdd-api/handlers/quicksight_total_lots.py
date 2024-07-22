@@ -35,9 +35,7 @@ def prepend_backslash(text):
 
 def total_lots(event, context):
     try:
-        print('connection', client, db, lot_collection)
         seller_email = event['queryStringParameters']['seller_email']
-        print(1)
         result= lot_collection.count_documents({"seller_email":seller_email})
         if result is None:
             return {
