@@ -4,7 +4,6 @@ import os
 import re
 from pymongo import MongoClient
 from lib.common_helper import Encoder
-from bson import ObjectId
 
 headers = {
     'Content-Type': 'application/json',
@@ -17,7 +16,7 @@ headers = {
 
 
 client = MongoClient(
-                      'mongodb://indyauctionAdmin:eIlhwu7wFM1xRzM2@localhost:27017/dev?authMechanism=SCRAM-SHA-1&authSource=dev&retryWrites=false&directConnection=true',
+                      os.environ['MONGO_CLIENT'],
                       maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
 db = client[os.environ['DATABASE']]
