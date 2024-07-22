@@ -1,6 +1,9 @@
 import boto3
 import json
 import os
+from botocore.exceptions import ClientError
+
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -10,19 +13,23 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
-
 def check_user(client, aws_account_id, user_name):
+    print('in check user')
     try:
         response = client.describe_user(
             AwsAccountId=aws_account_id,
             Namespace='default',
             UserName=user_name
         )
+        print('after')
         # User exists, return user details
         return response['User']
-    except Exception as e:
-        print(e)
-        return None
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            print(f"User {user_name} not found.")
+            return None
+        else:
+            raise
 
 def get_dashboard(event, context):
     try:
@@ -34,9 +41,9 @@ def get_dashboard(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        aws_account_id = '211125706423'#os.environ.get('QUICKSIGHT_AWS_ACCOUNT_ID')
-        print('account_id', aws_account_id)
-        dashboard_id = os.environ.get('QUICKSIGHT_DASHBOARD_ID')
+        aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
+        print('account id', aws_account_id)
+        dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
         user_name = email_address
         print(user_name,"user_name")
         
@@ -66,25 +73,27 @@ def get_dashboard(event, context):
         user_exists = check_user(quicksight_client, aws_account_id, user_name)
 
         if not user_exists:
-            if os.environ.get('STAGE') == 'prod':
-                print('User does not exist, creating user in quicksight')
-                try:
-                    params = {
-                            'AwsAccountId': aws_account_id,
-                            'Namespace': 'default',
-                            'IdentityType': 'QUICKSIGHT',
-                            'UserName': user_name,
-                            'UserRole': 'READER',
-                            'Email': user_name,
-                        }
-                    quicksight_client.register_user(**params)  # Create the user in QuickSight
-                except Exception as e:
-                    print('Error:', str(e))
-                    return {
-                        'statusCode': 500,
-                        'headers': headers,
-                        'body': json.dumps({'error': str(e)})
+            # if os.environ.get('STAGE') == 'prod':
+            print('User does not exist, creating user in quicksight')
+            try:
+                params = {
+                        'AwsAccountId': str(aws_account_id),
+                        'Namespace': 'default',
+                        'IdentityType': 'QUICKSIGHT',
+                        'UserName': user_name,
+                        'UserRole': 'READER',
+                        'Email': user_name,
                     }
+                print('param', params)
+                quicksight_client.register_user(**params)  # Create the user in QuickSight
+            except Exception as e:
+                print('eeeeee')
+                print('Error:', str(e))
+                return {
+                    'statusCode': 500,
+                    'headers': headers,
+                    'body': json.dumps({'error': str(e)})
+                }
 
 
         response = quicksight_client.generate_embed_url_for_registered_user(
