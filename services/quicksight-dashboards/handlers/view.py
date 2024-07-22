@@ -10,6 +10,20 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+
+def check_user(client, aws_account_id, user_name):
+    try:
+        response = client.describe_user(
+            AwsAccountId=aws_account_id,
+            Namespace='default',
+            UserName=user_name
+        )
+        # User exists, return user details
+        return response['User']
+    except Exception as e:
+        print(e)
+        return None
+
 def get_dashboard(event, context):
     try:
         try:
@@ -20,9 +34,10 @@ def get_dashboard(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        aws_account_id = '211125706423'  #os.environ.get('AWS_ACCOUNT_ID')
-        dashboard_id = '25c91904-12bc-4233-81aa-7b31698622d2' #os.environ.get('DASHBOARD_ID')
-        user_name = 'anusha.k@7edge.com' #email_address
+        aws_account_id = '211125706423'#os.environ.get('QUICKSIGHT_AWS_ACCOUNT_ID')
+        print('account_id', aws_account_id)
+        dashboard_id = os.environ.get('QUICKSIGHT_DASHBOARD_ID')
+        user_name = email_address
         print(user_name,"user_name")
         
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-prod':
@@ -47,6 +62,31 @@ def get_dashboard(event, context):
 
         quicksight_client = session.client('quicksight')
         print("here")
+
+        user_exists = check_user(quicksight_client, aws_account_id, user_name)
+
+        if not user_exists:
+            if os.environ.get('STAGE') == 'prod':
+                print('User does not exist, creating user in quicksight')
+                try:
+                    params = {
+                            'AwsAccountId': aws_account_id,
+                            'Namespace': 'default',
+                            'IdentityType': 'QUICKSIGHT',
+                            'UserName': user_name,
+                            'UserRole': 'READER',
+                            'Email': user_name,
+                        }
+                    quicksight_client.register_user(**params)  # Create the user in QuickSight
+                except Exception as e:
+                    print('Error:', str(e))
+                    return {
+                        'statusCode': 500,
+                        'headers': headers,
+                        'body': json.dumps({'error': str(e)})
+                    }
+
+
         response = quicksight_client.generate_embed_url_for_registered_user(
             AwsAccountId=aws_account_id,
             ExperienceConfiguration={

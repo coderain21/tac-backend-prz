@@ -1,4 +1,4 @@
-service: site-banner
+service: quicksight-dashboards
 frameworkVersion: "3"
 useDotenv: true
 deprecationNotificationMode: error
@@ -84,6 +84,8 @@ provider:
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     QUICKSIGHT_ASSUME_ROLE_ARN: ${ssm:QUICKSIGHT_ASSUME_ROLE_ARN}
+    QUICKSIGHT_ACCOUNT_ID: ${ssm:ACCOUNT_ID}
+    QUICKSIGHT_DASHBOARD_ID: ${ssm:QUICKSIGHT_DASHBOARD_ID}
     # TEMPLATE_ARN_AUCTION_COMPLETION:
     #   Fn::Join:
     #     - ":"
@@ -171,7 +173,7 @@ functions:
         - http:
             cors: true
             path: /
-            method: post
+            method: get
             authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
