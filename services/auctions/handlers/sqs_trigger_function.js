@@ -238,7 +238,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                 }
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
-                console.log('winningLot', winningLot)
                 const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
                 let totalBidAmount = 0
                 if (winningLot.length > 0) {
