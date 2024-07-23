@@ -84,7 +84,7 @@ provider:
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     QUICKSIGHT_ASSUME_ROLE_ARN: ${ssm:QUICKSIGHT_ASSUME_ROLE_ARN}
-    QUICKSIGHT_ACCOUNT_ID: ${ssm:ACCOUNT_ID}
+    QUICKSIGHT_ACCOUNT_ID: ${ssm:QUICKSIGHT_ACCOUNT_ID}
     QUICKSIGHT_DASHBOARD_ID: ${ssm:QUICKSIGHT_DASHBOARD_ID}
     # TEMPLATE_ARN_AUCTION_COMPLETION:
     #   Fn::Join:
@@ -169,6 +169,7 @@ functions:
           - ${ssm:SUBNET_ID}
       layers:
          - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
             cors: true

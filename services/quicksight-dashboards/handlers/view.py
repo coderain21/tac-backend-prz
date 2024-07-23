@@ -1,9 +1,6 @@
 import boto3
 import json
 import os
-from botocore.exceptions import ClientError
-
-
 
 headers = {
     'Content-Type': 'application/json',
@@ -12,6 +9,9 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+
+from botocore.exceptions import ClientError
 
 def check_user(client, aws_account_id, user_name):
     print('in check user')
@@ -50,18 +50,18 @@ def get_dashboard(event, context):
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-prod':
             sts_client = boto3.client('sts')
             assumed_role = sts_client.assume_role(
-                RoleArn=os.environ.get('QUICKSIGHT_ASSUME_ROLE_ARN'),
-                RoleSessionName='LambdaAccessQuickSightSession'
-            )
+                    RoleArn=os.environ.get('QUICKSIGHT_ASSUME_ROLE_ARN'),
+                    RoleSessionName='LambdaAccessQuickSightSession'
+                )
             print("assumed_role",assumed_role)
-
+    
             credentials = assumed_role['Credentials']
             session = boto3.Session(
-                aws_access_key_id=credentials['AccessKeyId'],
-                aws_secret_access_key=credentials['SecretAccessKey'],
-                aws_session_token=credentials['SessionToken'],
-                region_name='eu-west-2'
-            )
+                    aws_access_key_id=credentials['AccessKeyId'],
+                    aws_secret_access_key=credentials['SecretAccessKey'],
+                    aws_session_token=credentials['SessionToken'],
+                    region_name='eu-west-2'
+                )
             print(session,"session")
         else:
             print("else")
@@ -73,27 +73,27 @@ def get_dashboard(event, context):
         user_exists = check_user(quicksight_client, aws_account_id, user_name)
 
         if not user_exists:
-            # if os.environ.get('STAGE') == 'prod':
+            #if os.environ.get('STAGE') == 'prod':
             print('User does not exist, creating user in quicksight')
             try:
                 params = {
-                        'AwsAccountId': str(aws_account_id),
-                        'Namespace': 'default',
-                        'IdentityType': 'QUICKSIGHT',
-                        'UserName': user_name,
-                        'UserRole': 'READER',
-                        'Email': user_name,
-                    }
+                            'AwsAccountId': str(aws_account_id),
+                            'Namespace': 'default',
+                            'IdentityType': 'QUICKSIGHT',
+                            'UserName': user_name,
+                            'UserRole': 'READER',
+                            'Email': user_name,
+                        }
                 print('param', params)
                 quicksight_client.register_user(**params)  # Create the user in QuickSight
             except Exception as e:
                 print('eeeeee')
                 print('Error:', str(e))
                 return {
-                    'statusCode': 500,
-                    'headers': headers,
-                    'body': json.dumps({'error': str(e)})
-                }
+                        'statusCode': 500,
+                        'headers': headers,
+                        'body': json.dumps({'error': str(e)})
+                    }
 
 
         response = quicksight_client.generate_embed_url_for_registered_user(
