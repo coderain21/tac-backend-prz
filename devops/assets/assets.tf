@@ -559,5 +559,21 @@ resource "aws_ssm_parameter" "paypal_redirection_path" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "quicksight_account_id" {
+  name  = "QUICKSIGHT_ACCOUNT_ID"
+  type  = "String"
+  value = var.QUICKSIGHT_ACCOUNT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "quicksight_dashboard_id" {
+  name  = "QUICKSIGHT_DASHBOARD_ID"
+  type  = "String"
+  value = var.QUICKSIGHT_DASHBOARD_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+
 
 
