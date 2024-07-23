@@ -1,3 +1,4 @@
+'''This api will get the dashboard for the user'''
 import boto3
 import json
 import os
