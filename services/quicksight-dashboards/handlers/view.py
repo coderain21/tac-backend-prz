@@ -47,7 +47,7 @@ def get_dashboard(event, context):
         dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
         user_name = email_address
         print(user_name,"user_name")
-        
+
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-prod':
             sts_client = boto3.client('sts')
             assumed_role = sts_client.assume_role(
@@ -55,7 +55,7 @@ def get_dashboard(event, context):
                     RoleSessionName='LambdaAccessQuickSightSession'
                 )
             print("assumed_role",assumed_role)
-    
+
             credentials = assumed_role['Credentials']
             session = boto3.Session(
                     aws_access_key_id=credentials['AccessKeyId'],
