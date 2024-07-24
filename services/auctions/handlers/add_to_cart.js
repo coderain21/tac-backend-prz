@@ -49,7 +49,6 @@ module.exports.handler = async (event) => {
     try {
         console.log('even', event)
         if (connection === null || !connection.readyState) {
-            console.log('not connected')
             connection = await mongodbHelper.connect()
         }
         const currentTimestamp = new Date(Date.now()).getTime()
@@ -73,9 +72,7 @@ module.exports.handler = async (event) => {
         for (let i = 0; i < getLotInfo.length; i++) {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
-        console.log('getLot', get_lot)
         const lotInformation = get_lot[0]
-        console.log('currentTimestamp', currentTimestamp)
         if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
             const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
             lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
