@@ -162,7 +162,6 @@ def import_lots(event, context):
             "seller_email": email_address,
             "starting_bid": 0,
             "current_bid": 0,
-            "Top_bidder": "",
             "images": [],
         }
         # Get the next lot number for the seller
