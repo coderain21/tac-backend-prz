@@ -33,6 +33,7 @@ provider:
     QUICKSIGHT_DASHBOARD_ID: ${ssm:QUICKSIGHT_DASHBOARD_ID}
     S3_BUCKET_URL: ${ssm:CDN_URL}
     SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
+    QUICKSIGHT_AUCTION_DASHBOARD_ID: ${ssm:QUICKSIGHT_AUCTION_DASHBOARD_ID}
 
 
 
@@ -110,6 +111,24 @@ functions:
         - http:
             cors: true
             path: /
+            method: get
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  auction-view:
+      handler: handlers/auction_view.get_auction_dashboard
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /auction-view
             method: get
             authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
