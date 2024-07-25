@@ -116,6 +116,7 @@ functions:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   auction-view:
       handler: handlers/auction_view.get_auction_dashboard
+      timeout: 30
       runtime: python3.8
       vpc:
         securityGroupIds:

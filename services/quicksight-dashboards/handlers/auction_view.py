@@ -34,17 +34,16 @@ def check_user(client, aws_account_id, user_name):
 
 def get_auction_dashboard(event, context):
     try:
-        # try:
-        #     email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+        except:
+            return {
+                "statusCode": 403,
+                "headers": headers,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
 
-        email_address = 'sushmitha.j'
-        
+
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
         print('account id', aws_account_id)
         dashboard_id = os.environ['QUICKSIGHT_AUCTION_DASHBOARD_ID']
@@ -90,13 +89,23 @@ def get_auction_dashboard(event, context):
                     'IdentityType': 'QUICKSIGHT',
                     'UserName': user_name,
                     'UserRole': 'READER',
-                    'Email': user_name,
-                    'UserSettings': {
-                        'EmailNotificationSubscription': 'DISABLED'
-                    }
+                    'Email': 'placeholder@example.com',   #temporary dummy email
                 }
                 print('param', params)
-                quicksight_client.register_user(**params)  # Create the user in QuickSight
+                response = quicksight_client.register_user(**params)  # Create the user in QuickSight
+                print('registered user', response)
+
+                update_params = {
+                    'AwsAccountId': str(aws_account_id),
+                    'UserName': user_name,
+                    'Namespace': 'default',
+                    'Email': user_name,
+                    'Role': 'READER'
+                }
+                update_response = quicksight_client.update_user(**update_params)  # Update the user in QuickSight
+                print('updated user', update_response)
+
+
             except Exception as e:
                 print('eeeeee')
                 print('Error:', str(e))

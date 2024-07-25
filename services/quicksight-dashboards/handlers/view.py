@@ -78,15 +78,27 @@ def get_dashboard(event, context):
             print('User does not exist, creating user in quicksight')
             try:
                 params = {
-                            'AwsAccountId': str(aws_account_id),
-                            'Namespace': 'default',
-                            'IdentityType': 'QUICKSIGHT',
-                            'UserName': user_name,
-                            'UserRole': 'READER',
-                            'Email': user_name,
-                        }
+                    'AwsAccountId': str(aws_account_id),
+                    'Namespace': 'default',
+                    'IdentityType': 'QUICKSIGHT',
+                    'UserName': user_name,
+                    'UserRole': 'READER',
+                    'Email': 'placeholder@example.com',   #temporary dummy email
+                }
                 print('param', params)
-                quicksight_client.register_user(**params)  # Create the user in QuickSight
+                response = quicksight_client.register_user(**params)  # Create the user in QuickSight
+                print('registered user', response)
+
+                update_params = {
+                    'AwsAccountId': str(aws_account_id),
+                    'UserName': user_name,
+                    'Namespace': 'default',
+                    'Email': user_name,
+                    'Role': 'READER'
+                }
+                update_response = quicksight_client.update_user(**update_params)  # Update the user in QuickSight
+                print('updated user', update_response)
+
             except Exception as e:
                 print('eeeeee')
                 print('Error:', str(e))
