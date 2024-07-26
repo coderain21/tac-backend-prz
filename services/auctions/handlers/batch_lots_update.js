@@ -36,7 +36,6 @@ const currentTimeEpoch = Date.now()
  */
 async function startExecutionAfterPublish(executionARN, lots) {
     try {
-        console.log('startexecution', executionARN, lots)
         const stepfunctions = new StepFunctions()
 
         // Set the start date to the ISO string, which is required by the state machine
@@ -48,7 +47,6 @@ async function startExecutionAfterPublish(executionARN, lots) {
             stateMachineArn: executionARN,
             input: JSON.stringify(lots),
         }
-        console.log('params', params)
 
         return new Promise((resolve, reject) => {
             // Start the execution of the state machine
@@ -66,8 +64,6 @@ async function startExecutionAfterPublish(executionARN, lots) {
                         auction_id: lots.auction_id,
                         seller_email: lots.seller_email,
                     }
-                    console.log('requestPayload', requestPayload)
-
                     const x = await mongodbHelper.save(requestPayload, StepFunctionArn)
                     console.log('x', x)
 
@@ -113,7 +109,6 @@ async function startExecution(executionARN, lots) {
         return new Promise((resolve, reject) => {
             // Start the state machine execution
             stepfunctions.startExecution(params, async (error, data) => {
-                console.log('startexec', data)
                 // If there is an error, reject the promise with that error
                 if (error) {
                     reject(error)
@@ -164,7 +159,6 @@ async function stopExecutions(executionArn) {
         return new Promise((resolve, reject) => {
             // Stop the state machine execution
             stepFunctions.stopExecution(params, async (error, data) => {
-                console.log('dtaa stopExecution', data)
                 // If there is an error, reject the promise with that error
                 if (error) {
                     reject(error)
@@ -211,7 +205,6 @@ async function updateRedisData(lotInformation, client) {
             lot_end_date: lotInformation.lot_end_time,
             end_date: lotInformation.end_date,
         }
-        console.log('update request', updateRequest)
         updateRequest.winning_user = updateRequest.winning_user || ''
         const updatePromise = client
             .multi()
@@ -309,11 +302,9 @@ async function findAndUpdateTime(auctionLots, client, extend_time) {
  */
 module.exports.handler = async (event, context, callback) => {
     try {
-        console.log('connection before', connection)
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
-        console.log('connection after', connection)
         const firstRecord = event.Records[0]
         // Get the lots, auction details and type from the event message
         const lotsString = firstRecord.messageAttributes.lots.stringValue
@@ -321,14 +312,10 @@ module.exports.handler = async (event, context, callback) => {
         const type = firstRecord.messageAttributes.type.stringValue
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
-        console.log('type', type, auctionLots, auctionDetails)
         // Create a Redis client
         const client = await redisHelper.createRedisClient()
-        console.log('client', client)
-        console.log('eevnt', event)
         // Calculate the extension time in ms
         const extend_time = parseInt(auctionDetails.extension_time.replace('m', ''), 10) * 60 * 1000
-        console.log('extend_time', extend_time)
 
         // If the event type is 'update', update the time of the lots in Redis
         if (type === 'update') {
@@ -375,7 +362,7 @@ module.exports.handler = async (event, context, callback) => {
 
         // If the event type is 'published', start new executions for all the lots
         if (type === 'published') {
-            console.log('inside', auctionLots, process.env.STATE_MACHINE_LOT_ARN)
+            console.log('inside')
             const startExecutions = []
             for (const item of auctionLots) {
                 startExecutions.push(startExecutionAfterPublish(process.env.STATE_MACHINE_LOT_ARN, item))
