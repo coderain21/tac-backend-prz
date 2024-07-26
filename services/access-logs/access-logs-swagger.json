@@ -1,0 +1,216 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Access Logs APIs",
+    "description": "APIs for the Admins to manage access logs.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.dev.indyauction.net/v1/access-logs"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Access Logs",
+      "description": "APIs to manage the access logs in the admin panel"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "List Access Logs",
+        "description": "Fetch a list of created access logs",
+        "tags": [
+          "Access Logs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Sort field",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 10
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Filter field",
+            "schema": {
+              "type": "string"
+            },
+            "example": "admin"
+          }
+        ],
+       "responses": {
+          "200": {
+            "description": "Successful response with a list of access logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessLogsResponse"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "_id": "6697b6c3b05b49ee3425ee14",
+                      "actor_id": "B0163",
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "Anusha Test",
+                        "email_address": "anusha.k+buyer1@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218755348
+                    },
+                    {
+                      "_id": "6697b60cb05b49ee3425ee13",
+                      "actor_id": "B0347",
+                      "updated_by": {
+                        "type": "Buyer",
+                        "name": "Sandhyashri s",
+                        "email_address": "sandhyashri+b1@7edge.com"
+                      },
+                      "section": {
+                        "name": "Bidder Management",
+                        "action": "Login"
+                      },
+                      "updated_at": 1721218572832
+                    }
+                  ],
+                  "total_pages": 79,
+                  "total_records": 784,
+                  "current_page": 1,
+                  "download_link": null
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SIte Banner Notification list Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccessLogsResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccessLog"
+            }
+          },
+          "total_pages": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "total_records": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "current_page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "download_link": {
+            "type": ["string", "null"]
+          }
+        },
+        "required": ["data", "total_pages", "total_records", "current_page", "download_link"]
+      },
+      "AccessLog": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "actor_id": {
+            "type": ["string", "null"]
+          },
+          "updated_by": {
+            "type": "object",
+            "properties": {
+              "type": {"type": "string"},
+              "name": {"type": "string"},
+              "email_address": {"type": "string"}
+            },
+            "required": ["type", "name", "email_address"],
+            "additionalProperties": true
+          },
+          "section": {
+            "type": "object",
+            "properties": {
+              "name": {"type": "string"},
+              "action": {"type": "string"}
+            },
+            "required": ["name", "action"],
+            "additionalProperties": true
+          },
+          "updated_at": {
+            "type": "integer"
+          }
+        },
+        "required": ["_id", "updated_by", "section", "updated_at"],
+        "additionalProperties": true
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}
