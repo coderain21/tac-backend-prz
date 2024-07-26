@@ -61,11 +61,13 @@ let connection = null
  * @returns the encrypted data as a hexadecimal string.
  */
 function encryptWithTimeValidation(data, secretKey) {
-    const timestamp = Date.now().toString()
-    const cipher = crypto.createCipher('aes-256-cbc', secretKey)
-    let encryptedData = cipher.update(timestamp + JSON.stringify(data), 'utf8', 'hex')
-    encryptedData += cipher.final('hex')
-    return encryptedData
+    const timestamp = Date.now().toString();
+    const iv = crypto.randomBytes(16);
+    const key = crypto.createHash('sha256').update(String(secretKey)).digest('base64').substr(0, 32);
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    let encryptedData = cipher.update(timestamp + JSON.stringify(data), 'utf8', 'hex');
+    encryptedData += cipher.final('hex');
+    return iv.toString('hex') + encryptedData;
 }
 
 /**
