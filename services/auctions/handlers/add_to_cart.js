@@ -49,7 +49,6 @@ module.exports.handler = async (event) => {
     try {
         console.log('even', event)
         if (connection === null || !connection.readyState) {
-            console.log('not connected')
             connection = await mongodbHelper.connect()
         }
         const currentTimestamp = new Date(Date.now()).getTime()

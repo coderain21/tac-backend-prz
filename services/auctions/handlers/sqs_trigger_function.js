@@ -183,7 +183,6 @@ module.exports.sqsTriggerFunction = async (event) => {
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
-        // const lastLot = get_lot[get_lot.length - 1]
         if (getBidders.length > 0) {
         // Loop through bidders
             for (const user of getBidders) {
@@ -238,7 +237,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                 }
                 // If the user didn't win any lots, change the email subject
                 const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
-                console.log('winningLot', winningLot)
                 const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
                 let totalBidAmount = 0
                 if (winningLot.length > 0) {

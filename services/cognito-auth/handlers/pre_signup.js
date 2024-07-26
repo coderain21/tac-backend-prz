@@ -58,10 +58,7 @@ exports.handler = async (event, context, callback) => {
                     await linkUser(result.Users[0].Username, event)
                     return result
                 }
-                console.log('2222222222222222222222222222')
                 let newPassword = process.env.SELLER_GOOGLE_PASSWORD// Change the length as needed
-                console.log('newPassword', newPassword)
-                console.log('skey', process.env.PASSWORD_SECRET_KEY)
                 newPassword = await CryptoJS.AES.encrypt(newPassword, process.env.PASSWORD_SECRET_KEY).toString()
                 // console.log('event - >', event)
 
@@ -70,7 +67,6 @@ exports.handler = async (event, context, callback) => {
                     { $inc: { starting_sequence: 1 } },
                     { returnDocument: 'after', upsert: true },
                 )
-                console.log('counter', counter)
                 const updateValue = {
                     auctions_count: helpers.leftPad(counter.starting_sequence, 1),
                 }

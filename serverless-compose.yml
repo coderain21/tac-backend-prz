@@ -50,3 +50,7 @@ services:
   access-logs:
     path: services/access-logs
     config: ${env:config}
+  quicksight-dashboards:
+    path: services/quicksight-dashboards
+    config: ${env:config}
+  
