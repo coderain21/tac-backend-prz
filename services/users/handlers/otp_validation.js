@@ -70,9 +70,9 @@ async function decryptWithTimeValidation(encryptedData, secretKey, maxAge) {
         const encryptedPayload = JSON.parse(decryptedData.slice(13))
 
         if (Date.now() - parseInt(timestamp, 10) <= maxAge) {
-            return encryptedPayload
+            return encryptedPayload;
         }
-        return false
+        return false;
     } catch (error) {
         console.log('Error decrypting data:', error)
         return false
@@ -128,7 +128,9 @@ module.exports.otpValidation = async (event, _context, callback) => {
         if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
+                // const iv = Buffer.from(userData.iv, 'hex')
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
+                console.log('data', data)
                 const OTP = userData.otp
                 if (data === false) {
                     return {
@@ -177,6 +179,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     body: JSON.stringify({ message: 'Invalid OTP' }),
                 }
             } catch (err) {
+                console.log('Error', err)
                 return {
                     statusCode: 400,
                     headers: await helpers.getHeaders(),
