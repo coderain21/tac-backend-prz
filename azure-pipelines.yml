@@ -181,10 +181,8 @@ stages:
               git config --global advice.detachedHead false
               docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
               cd $(System.DefaultWorkingDirectory)
-              ls
               export $(grep -v '^#' .env | xargs)
               source .env
-              cat .env
               # Print environment variables to verify they are set correctly
               pip3 install gitpython
               pip3 install boto3

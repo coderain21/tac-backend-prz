@@ -46,12 +46,10 @@ async def run_dast_for_swagger(url, api_token):
         raise
     return None
 
-
 async def generate_cognito_token(user_type):
     try:
         
         if user_type == 'USER':
-            print("here")
             user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
             client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
             username = os.environ['API_USERNAME']
@@ -86,7 +84,6 @@ async def generate_cognito_token(user_type):
 
         if 'AuthenticationResult' in response:
             token = response['AuthenticationResult']['IdToken']
-            
         else:
             token = response['Session']
 
@@ -129,24 +126,28 @@ async def main():
             # Collect all the commits of the current branch
             commits = list(repo.iter_commits('HEAD'))
 
-            swagger_files = []
+            changed_swagger_files = set()
             for commit in commits:
                 try:
                     changed_files_output = subprocess.check_output(['git', 'show', '--name-only', commit.hexsha], text=True)
                     changed_files = changed_files_output.strip().split('\n')
-                    swagger_files.extend([file for file in changed_files if file.endswith('.json') and 'swagger' in file])
+                    changed_swagger_files.update(
+                        file for file in changed_files if file.endswith('.json') and 'swagger' in file
+                    )
                 except subprocess.CalledProcessError as e:
                     print(f"Error when running 'git show' for {commit.hexsha}:", e)
 
-            swagger_files = list(set(swagger_files))  # Remove duplicates
-            print("Swagger files:")
-            print(swagger_files)
-            for service_dir in find_swagger_files(repo_path):
-                if any(service_dir in changed_file for changed_file in swagger_files):
+            print("Changed Swagger files:")
+            print(changed_swagger_files)
+
+            if changed_swagger_files:
+                for service_dir in changed_swagger_files:
                     for service_directory, token in tokens.items():
                         if service_directory in service_dir:
                             await run_dast_for_swagger(service_dir, token)
                             break  # Break the loop after finding and using the correct token
+            else:
+                print("No changed Swagger files found.")
         else:
             print("Token generation failed")
     except Exception as e:
