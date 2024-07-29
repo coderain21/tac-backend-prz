@@ -160,7 +160,7 @@ resource "aws_iam_role" "quicksight_access_role" {
       {
         Effect = "Allow",
         Principal = {
-          AWS = "arn:aws:iam::${var.ACCOUNT_ID}:root"
+          AWS = "arn:aws:iam::${var.ACCOUNT_ID_DEV}:root"
         },
         Action = "sts:AssumeRole"
       }
@@ -170,7 +170,7 @@ resource "aws_iam_role" "quicksight_access_role" {
 # IAM Policy in Dev Account
 resource "aws_iam_policy" "quicksight_access_policy" {
   provider = aws.deployment-main
-  name     = "quicksight-access-policy"
+  name     = "quicksight-access-policy-main"
 
   policy = jsonencode({
     Version = "2012-10-17",

@@ -58,17 +58,27 @@ AWS.config.update({ region: process.env.REGION })
 
 async function decryptWithTimeValidation(encryptedData, secretKey, maxAge) {
     try {
-        const decipher = crypto.createDecipher('aes-256-cbc', secretKey)
-        let decryptedData = decipher.update(encryptedData, 'hex', 'utf8')
+        console.log('encryptedData', encryptedData, secretKey)
+        // Ensure the key is 32 bytes long
+        const key = crypto.createHash('sha256').update(String(secretKey)).digest('base64').substr(0, 32)
+
+        // Generate IV from the first 16 bytes of the encrypted data
+        const iv = Buffer.from(encryptedData.slice(0, 32), 'hex')
+        const actualEncryptedData = encryptedData.slice(32)
+
+        const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+        let decryptedData = decipher.update(actualEncryptedData, 'hex', 'utf8')
         decryptedData += decipher.final('utf8')
+
         const timestamp = decryptedData.slice(0, 13)
         const encryptedPayload = JSON.parse(decryptedData.slice(13))
+
         if (Date.now() - parseInt(timestamp, 10) <= maxAge) {
             return encryptedPayload
         }
         return false
     } catch (error) {
-        console.log(error)
+        console.log('Error decrypting data:', error)
         return false
     }
 }
@@ -95,7 +105,9 @@ module.exports.otpValidation = async (event, _context, callback) => {
         if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
+                // const iv = Buffer.from(userData.iv, 'hex')
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
+                console.log('data', data)
                 const OTP = userData.otp
                 if (data === false) {
                     return {
@@ -147,6 +159,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     body: JSON.stringify({ message: 'Invalid OTP' }),
                 }
             } catch (err) {
+                console.log('Error', err)
                 return {
                     statusCode: 400,
                     headers: await helpers.getHeaders(),
