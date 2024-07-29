@@ -5,13 +5,16 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
-
 # Determine the repository path using pathlib
 repo_path = git.Repo('.', search_parent_directories=True).working_tree_dir
 print(repo_path, 'repo path')
 
 # Create a Git repository object
 repo = git.Repo(repo_path)
+
+# Get the name of the current branch
+current_branch = repo.active_branch.name
+print(f"Current branch: {current_branch}")
 
 # Initialize the Cognito client
 client = boto3.client('cognito-idp', region_name='eu-west-2')
@@ -123,38 +126,34 @@ async def main():
                 # Add other service directories and their corresponding tokens here
             }
 
-            # Collect all the commits of the current branch
-            commits = list(repo.iter_commits('HEAD'))
-            
-            print("Commits in the current branch:")
-            for commit in commits:
-                print(f"Commit {commit.hexsha}: {commit.message.strip()}")
+            # Get the list of commits unique to the current branch
+            base_branch = repo.merge_base(current_branch, 'origin/main')[0]
+            commits = list(repo.iter_commits(f'{base_branch.hexsha}..HEAD'))
 
-            changed_swagger_files = set()
+            # Print the commits of the current branch
+            print(f"Commits in branch {current_branch}:")
+            for commit in commits:
+                print(f"Commit: {commit.hexsha}\nMessage: {commit.message}\n")
+
+            swagger_files = []
             for commit in commits:
                 try:
                     changed_files_output = subprocess.check_output(['git', 'show', '--name-only', commit.hexsha], text=True)
                     changed_files = changed_files_output.strip().split('\n')
-                    print(f"Changed files in commit {commit.hexsha}:")
-                    for file in changed_files:
-                        print(file)
-                    changed_swagger_files.update(
-                        file for file in changed_files if file.endswith('.json') and 'swagger' in file
-                    )
+                    print(f"Commit: {commit.hexsha}\nChanged files: {changed_files}\n")
+                    swagger_files.extend([file for file in changed_files if file.endswith('.json') and 'swagger' in file])
                 except subprocess.CalledProcessError as e:
                     print(f"Error when running 'git show' for {commit.hexsha}:", e)
 
-            print("Changed Swagger files:")
-            print(changed_swagger_files)
-
-            # if changed_swagger_files:
-            #     for service_dir in changed_swagger_files:
-            #         for service_directory, token in tokens.items():
-            #             if service_directory in service_dir:
-            #                 await run_dast_for_swagger(service_dir, token)
-            #                 break  # Break the loop after finding and using the correct token
-            # else:
-            #     print("No changed Swagger files found.")
+            swagger_files = list(set(swagger_files))  # Remove duplicates
+            print("Swagger files:")
+            print(swagger_files)
+        #     for service_dir in find_swagger_files(repo_path):
+        #         if any(service_dir in changed_file for changed_file in swagger_files):
+        #             for service_directory, token in tokens.items():
+        #                 if service_directory in service_dir:
+        #                     await run_dast_for_swagger(service_dir, token)
+        #                     break  # Break the loop after finding and using the correct token
         else:
             print("Token generation failed")
     except Exception as e:
