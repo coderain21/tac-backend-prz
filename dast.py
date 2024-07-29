@@ -125,12 +125,19 @@ async def main():
 
             # Collect all the commits of the current branch
             commits = list(repo.iter_commits('HEAD'))
+            
+            print("Commits in the current branch:")
+            for commit in commits:
+                print(f"Commit {commit.hexsha}: {commit.message.strip()}")
 
             changed_swagger_files = set()
             for commit in commits:
                 try:
                     changed_files_output = subprocess.check_output(['git', 'show', '--name-only', commit.hexsha], text=True)
                     changed_files = changed_files_output.strip().split('\n')
+                    print(f"Changed files in commit {commit.hexsha}:")
+                    for file in changed_files:
+                        print(file)
                     changed_swagger_files.update(
                         file for file in changed_files if file.endswith('.json') and 'swagger' in file
                     )
@@ -140,14 +147,14 @@ async def main():
             print("Changed Swagger files:")
             print(changed_swagger_files)
 
-            if changed_swagger_files:
-                for service_dir in changed_swagger_files:
-                    for service_directory, token in tokens.items():
-                        if service_directory in service_dir:
-                            await run_dast_for_swagger(service_dir, token)
-                            break  # Break the loop after finding and using the correct token
-            else:
-                print("No changed Swagger files found.")
+            # if changed_swagger_files:
+            #     for service_dir in changed_swagger_files:
+            #         for service_directory, token in tokens.items():
+            #             if service_directory in service_dir:
+            #                 await run_dast_for_swagger(service_dir, token)
+            #                 break  # Break the loop after finding and using the correct token
+            # else:
+            #     print("No changed Swagger files found.")
         else:
             print("Token generation failed")
     except Exception as e:
