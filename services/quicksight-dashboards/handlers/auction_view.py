@@ -15,14 +15,12 @@ headers = {
 from botocore.exceptions import ClientError
 
 def check_user(client, aws_account_id, user_name):
-    print('in check user')
     try:
         response = client.describe_user(
             AwsAccountId=aws_account_id,
             Namespace='default',
             UserName=user_name
         )
-        print('after')
         # User exists, return user details
         return response['User']
     except ClientError as e:
@@ -47,6 +45,7 @@ def get_auction_dashboard(event, context):
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
         print('account id', aws_account_id)
         dashboard_id = os.environ['QUICKSIGHT_AUCTION_DASHBOARD_ID']
+        print('dashboard id', dashboard_id)
         user_name = email_address
         print(user_name,"user_name")
 
@@ -75,7 +74,6 @@ def get_auction_dashboard(event, context):
             session = boto3.Session()
 
         quicksight_client = session.client('quicksight')
-        print("here")
 
         user_exists = check_user(quicksight_client, aws_account_id, user_name)
 
