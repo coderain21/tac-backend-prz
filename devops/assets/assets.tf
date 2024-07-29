@@ -576,7 +576,7 @@ resource "aws_ssm_parameter" "quicksight_dashboard_id" {
 resource "aws_ssm_parameter" "quicksight_auction_dashboard_id" {
   name  = "QUICKSIGHT_AUCTION_DASHBOARD_ID"
   type  = "String"
-  value = var.QUICKSIGHT_DASHBOARD_ID
+  value = var.QUICKSIGHT_AUCTION_DASHBOARD_ID
   provider = aws.deployment-eu
   overwrite = true
 }
