@@ -70,9 +70,9 @@ async function decryptWithTimeValidation(encryptedData, secretKey, maxAge) {
         const encryptedPayload = JSON.parse(decryptedData.slice(13))
 
         if (Date.now() - parseInt(timestamp, 10) <= maxAge) {
-            return encryptedPayload;
+            return encryptedPayload
         }
-        return false;
+        return false
     } catch (error) {
         console.log('Error decrypting data:', error)
         return false
