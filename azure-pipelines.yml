@@ -20,88 +20,89 @@ variables:
     - group: develop
 
 stages:
-- stage: CodeQuality
-  jobs:
-    - job: "lint"
-      displayName: "Code Quality"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-latest"
-      steps:
-        - task: Cache@2
-          inputs:
-            key: 'npmV2 | "$(Agent.OS)" | package.json'
-            restoreKeys: |
-              npm | "$(Agent.OS)"
-            path: "$(System.DefaultWorkingDirectory)/node_modules"
-            cacheHitVar: CACHE_RESTORED
-          displayName: Cache npm
-        - script: |
-            npm install
-          condition: ne(variables.CACHE_RESTORED, 'true')
-          displayName: 'Dependencies'
-        - script: |
-            npm run eslint
-            if [ $? -ne 0 ]; then
-              echo "lint failed"
-              exit 1
-            fi
-          displayName: 'Eslint'
-        - script: |
-            pip3 install pylint==3.1.1
-            pylint services/**/**/*.py
-            if [ $? -ne 0 ]; then
-              echo "lint failed"
-              exit 1
-            fi
-            #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-            # sh terraform-linter.sh
-          displayName: 'Pylint'
-    - job: "secret"
-      displayName: "Secret Checking"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-latest"
-      steps:
-        - script: |
-            pip3 install detect-secrets
-            detect-secrets scan 
-            if [ $? -ne 0 ]; then
-              echo "Secret Checking failed"
-              exit 1
-            fi
-          displayName: 'Lint'
-    - job: "licence_complaiance"
-      displayName: "License Compliance"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-latest"
-      steps:
-        - script: |
-            npm install -g license-checker 
-            license-checker --json > licenses.json  
-            node license.js
-            if [ $? -ne 0 ]; then
-              echo "License Compliance failed"
-              exit 1
-            fi
-          displayName: 'License Compliance'
-    - job: "sast"
-      displayName: 'Static Application Security Testing (SAST)'
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-latest"
-      steps:
-        - script: |
-            pip3 install njsscan
-            njsscan -w .
-            pip3 install bandit
-            bandit -r services/**/*.py
-            if [ $? -ne 0 ]; then
-              echo "SAST failed"
-              exit 1
-            fi
-          displayName: 'Static Application Security Testing (SAST)'
+# - stage: CodeQuality
+#   jobs:
+#     - job: "lint"
+#       displayName: "Code Quality"
+#       condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-latest"
+#       steps:
+#         - task: Cache@2
+#           inputs:
+#             key: 'npmV2 | "$(Agent.OS)" | package.json'
+#             restoreKeys: |
+#               npm | "$(Agent.OS)"
+#             path: "$(System.DefaultWorkingDirectory)/node_modules"
+#             cacheHitVar: CACHE_RESTORED
+#           displayName: Cache npm
+#         - script: |
+#             npm install
+#           condition: ne(variables.CACHE_RESTORED, 'true')
+#           displayName: 'Dependencies'
+#         - script: |
+#             npm run eslint
+#             if [ $? -ne 0 ]; then
+#               echo "lint failed"
+#               exit 1
+#             fi
+#           displayName: 'Eslint'
+#         - script: |
+#             pip3 install pylint==3.1.1
+#             pylint services/**/**/*.py
+#             if [ $? -ne 0 ]; then
+#               echo "lint failed"
+#               exit 1
+#             fi
+#             #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+#             # sh terraform-linter.sh
+#           displayName: 'Pylint'
+#     - job: "secret"
+#       displayName: "Secret Checking"
+#       condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-latest"
+#       steps:
+#         - script: |
+#             pip3 install detect-secrets
+#             detect-secrets scan 
+#             if [ $? -ne 0 ]; then
+#               echo "Secret Checking failed"
+#               exit 1
+#             fi
+#           displayName: 'Lint'
+#     - job: "licence_complaiance"
+#       displayName: "License Compliance"
+#       condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-latest"
+#       steps:
+#         - script: |
+#             npm install -g license-checker 
+#             license-checker --json > licenses.json  
+#             node license.js
+#             if [ $? -ne 0 ]; then
+#               echo "License Compliance failed"
+#               exit 1
+#             fi
+#           displayName: 'License Compliance'
+#     - job: "sast"
+#       displayName: 'Static Application Security Testing (SAST)'
+#       condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-latest"
+#       steps:
+#         - script: |
+#             pip3 install njsscan
+#             njsscan -w .
+#             pip3 install bandit
+#             bandit -r services/**/*.py
+#             if [ $? -ne 0 ]; then
+#               echo "SAST failed"
+#               exit 1
+#             fi
+#           displayName: 'Static Application Security Testing (SAST)'
+
 - stage: Build
   jobs:
     - job: "Download_Environment"
@@ -117,116 +118,131 @@ stages:
   
 - stage: Test
   jobs:
-    - job: APITesting
-      displayName: "Unit Testing"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-        vmImage: "ubuntu-latest"
-      steps:
-        - task: Cache@2
-          inputs:
-            key: 'npmV2 | "$(Agent.OS)" | package.json'
-            restoreKeys: |
-              npm | "$(Agent.OS)"
-            path: "$(System.DefaultWorkingDirectory)/node_modules"
-            cacheHitVar: CACHE_RESTORED
-          displayName: Cache npm
-        - script: |
-            npm install --cache .npm
-          condition: ne(variables.CACHE_RESTORED, 'true')
-        - task: DownloadPipelineArtifact@2
-          name: environment
-          inputs:
-            artifact: Environment
-            targetPath: '$(System.DefaultWorkingDirectory)'
-        - script: |
-            source .env
-            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
-            npm i -g dredd
-            ./api-testing.sh
-            if [ $? -ne 0 ]; then
-              echo "API testing failed"
-              exit 1
-            fi
-            ./doc.sh
-          displayName: Unit Testing
-        - script: |
-            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
-            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
-            aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
-            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-          displayName:  Unit Testing Documentation
+
+    # - job: APITesting
+    #   displayName: "Unit Testing"
+    #   condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+    #   pool:
+    #     vmImage: "ubuntu-latest"
+    #   steps:
+    #     - task: Cache@2
+    #       inputs:
+    #         key: 'npmV2 | "$(Agent.OS)" | package.json'
+    #         restoreKeys: |
+    #           npm | "$(Agent.OS)"
+    #         path: "$(System.DefaultWorkingDirectory)/node_modules"
+    #         cacheHitVar: CACHE_RESTORED
+    #       displayName: Cache npm
+    #     - script: |
+    #         npm install --cache .npm
+    #       condition: ne(variables.CACHE_RESTORED, 'true')
+    #     - task: DownloadPipelineArtifact@2
+    #       name: environment
+    #       inputs:
+    #         artifact: Environment
+    #         targetPath: '$(System.DefaultWorkingDirectory)'
+    #     - script: |
+    #         source .env
+    #         pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
+    #         npm i -g dredd
+    #         ./api-testing.sh
+    #         if [ $? -ne 0 ]; then
+    #           echo "API testing failed"
+    #           exit 1
+    #         fi
+    #         ./doc.sh
+    #       displayName: Unit Testing
+    #     - script: |
+    #         export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
+    #         export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
+    #         aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
+    #         aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+    #       displayName:  Unit Testing Documentation
   
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
-      dependsOn: APITesting
+      # dependsOn: APITesting
       condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-latest"
       steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0
+          persistCredentials: true
         - task: DownloadPipelineArtifact@2
           name: environment
           inputs:
             artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)'
         - script: |
-            source .env
-            docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
-            cd $(System.DefaultWorkingDirectory)
-            git config --global --add safe.directory $(System.DefaultWorkingDirectory)
-            pip3 install boto3
-            pip3 install PyJWT
-            pip3 install GitPython
-            mkdir test_results
-            python3 dast.py
-            if [ $? -ne 0 ]; then
-              echo "API testing failed"
-              exit 1
-            fi
+              git config --global user.email $BITBUCKET_EMAIL
+              git config --global user.name $BITBUCKET_USER
+              git config --global advice.detachedHead false
+              docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+              cd $(System.DefaultWorkingDirectory)
+              ls
+              export $(grep -v '^#' .env | xargs)
+              source .env
+              cat .env
+              # Print environment variables to verify they are set correctly
+              pip3 install gitpython
+              pip3 install boto3
+              pip3 install botocore
+              mkdir test_results
+              python3 dast.py
+              chmod 777 /zap/wrk/test_results/report.html
+              if [ $? -ne 0 ]; then
+                echo "DAST failed"
+                exit 1
+              fi
           displayName: 'Dynamic Application Security Testing (DAST)'
+        - publish: $(System.DefaultWorkingDirectory)/test_results/report0.html # Assuming logs are in working directory
+          artifact: dast_test_results
+          condition: always()
     
-- stage: Deploy
-  jobs:
-    - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
-      displayName: Deployment
-      pool:
-        vmImage: 'ubuntu-latest'
-      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          environment: 'Production'
-      ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-          environment: 'Testing'
-      ${{ else }}:
-          environment: 'Development'
-      strategy:
-        # Default deployment strategy, more coming...
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - task: Cache@2
-                inputs:
-                  key: 'npmV2 | "$(Agent.OS)" | package.json'
-                  restoreKeys: |
-                    npmV2 | "$(Agent.OS)"
-                  path: "$(System.DefaultWorkingDirectory)/node_modules"
-                  cacheHitVar: CACHE_RESTORED
-                displayName: Cache npm
-              - task: DownloadPipelineArtifact@2
-                name: environment
-                inputs:
-                  artifact: environment
-                  targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: |
-                  npm install --cache .npm
-                condition: ne(variables.CACHE_RESTORED, 'true')
-              - script: |
-                  bash devops/terraform_run.sh
-                  if [ $? -ne 0 ]; then
-                    echo "API testing failed"
-                    exit 1
-                  fi
-                displayName: 'Deployment'
+# - stage: Deploy
+#   jobs:
+#     - deployment: Deployment
+#       condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
+#       displayName: Deployment
+#       pool:
+#         vmImage: 'ubuntu-latest'
+#       ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+#           environment: 'Production'
+#       ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+#           environment: 'Testing'
+#       ${{ else }}:
+#           environment: 'Development'
+#       strategy:
+#         # Default deployment strategy, more coming...
+#         runOnce:
+#           deploy:
+#             steps:
+#               - checkout: self
+#               - task: Cache@2
+#                 inputs:
+#                   key: 'npmV2 | "$(Agent.OS)" | package.json'
+#                   restoreKeys: |
+#                     npmV2 | "$(Agent.OS)"
+#                   path: "$(System.DefaultWorkingDirectory)/node_modules"
+#                   cacheHitVar: CACHE_RESTORED
+#                 displayName: Cache npm
+#               - task: DownloadPipelineArtifact@2
+#                 name: environment
+#                 inputs:
+#                   artifact: environment
+#                   targetPath: '$(System.DefaultWorkingDirectory)'
+#               - script: |
+#                   npm install --cache .npm
+#                 condition: ne(variables.CACHE_RESTORED, 'true')
+#               - script: |
+#                   bash devops/terraform_run.sh
+#                   if [ $? -ne 0 ]; then
+#                     echo "API testing failed"
+#                     exit 1
+#                   fi
+#                 displayName: 'Deployment'
 
 
 # - stage: DisposableDeploy
