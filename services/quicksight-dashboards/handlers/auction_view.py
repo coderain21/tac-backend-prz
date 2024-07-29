@@ -32,7 +32,7 @@ def check_user(client, aws_account_id, user_name):
         else:
             raise
 
-def get_dashboard(event, context):
+def get_auction_dashboard(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
@@ -42,11 +42,17 @@ def get_dashboard(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+
+
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
         print('account id', aws_account_id)
-        dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
+        dashboard_id = os.environ['QUICKSIGHT_AUCTION_DASHBOARD_ID']
         user_name = email_address
         print(user_name,"user_name")
+
+        data = event['queryStringParameters']
+        auction_id = data['auction_id']
+        print('auction_id',auction_id)
 
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-prod':
             sts_client = boto3.client('sts')
@@ -99,6 +105,7 @@ def get_dashboard(event, context):
                 update_response = quicksight_client.update_user(**update_params)  # Update the user in QuickSight
                 print('updated user', update_response)
 
+
             except Exception as e:
                 print('eeeeee')
                 print('Error:', str(e))
@@ -122,10 +129,12 @@ def get_dashboard(event, context):
 
         embed_url = response['EmbedUrl']
 
+        final_embed_url = f'{embed_url}#p.id={auction_id}'
+
         return {
             'statusCode': 200,
             'headers': headers,
-            'body': json.dumps({'embed_url': embed_url})
+            'body': json.dumps({'embed_url': final_embed_url})
         }
 
     except Exception as e:
