@@ -5,21 +5,7 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 import sys
-
-# Determine the repository path
-repo_path = git.Repo('.', search_parent_directories=True).working_tree_dir
-print(repo_path, 'repo path')
-
-# Create a Git repository object
-repo = git.Repo(repo_path)
-
-# Get the branch name from the command-line argument
-if len(sys.argv) < 2:
-    print("Branch name not provided")
-    sys.exit(1)
-
-branch_name = sys.argv[1]
-print(f"Branch name: {branch_name}")
+import argparse
 
 # Initialize the Cognito client
 client = boto3.client('cognito-idp', region_name='eu-west-2')
@@ -100,7 +86,7 @@ async def generate_cognito_token(user_type):
         print(e)
     return None
 
-async def main():
+async def main(changed_files):
     try:
         users_token = await generate_cognito_token('USER')
         buyers_token = await generate_cognito_token('BUYERS')
@@ -129,39 +115,20 @@ async def main():
                 # Add other service directories and their corresponding tokens here
             }
 
-            # Get the list of commits unique to the current branch
-            base_branch = repo.merge_base(branch_name, 'origin/main')[0]
-            commits = list(repo.iter_commits(f'{base_branch.hexsha}..{branch_name}'))
-
-            # Print the commits of the current branch
-            print(f"Commits in branch {branch_name}:")
-            for commit in commits:
-                print(f"Commit: {commit.hexsha}\nMessage: {commit.message}\n")
-
-            swagger_files = []
-            for commit in commits:
-                try:
-                    changed_files_output = subprocess.check_output(['git', 'show', '--name-only', commit.hexsha], text=True)
-                    changed_files = changed_files_output.strip().split('\n')
-                    print(f"Commit: {commit.hexsha}\nChanged files: {changed_files}\n")
-                    swagger_files.extend([file for file in changed_files if file.endswith('.json') and 'swagger' in file])
-                except subprocess.CalledProcessError as e:
-                    print(f"Error when running 'git show' for {commit.hexsha}:", e)
-
-            swagger_files = list(set(swagger_files))  # Remove duplicates
-            print("Swagger files:")
-            print(swagger_files)
-            for service_dir in find_swagger_files(repo_path):
-                if any(service_dir in changed_file for changed_file in swagger_files):
-                    for service_directory, token in tokens.items():
-                        if service_directory in service_dir:
-                            await run_dast_for_swagger(service_dir, token)
-                            break  # Break the loop after finding and using the correct token
+            for service_dir in changed_files:
+                for service_directory, token in tokens.items():
+                    if service_directory in service_dir:
+                        await run_dast_for_swagger(service_dir, token)
+                        break  # Break the loop after finding and using the correct token
         else:
             print("Token generation failed")
     except Exception as e:
         print("Error in the main function:", str(e))
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Run DAST for changed Swagger files.')
+    parser.add_argument('changed_files', metavar='N', type=str, nargs='+', help='List of changed Swagger files')
+    args = parser.parse_args()
+
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    loop.run_until_complete(main(args.changed_files))
