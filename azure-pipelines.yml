@@ -189,10 +189,16 @@ stages:
               pip3 install botocore
               mkdir test_results
               git fetch origin
-              changed_files=$(git diff --name-only HEAD^1 HEAD | grep -E '.*-swagger.json$' | tr '\n' ' ')
+    
+              # Get the list of changed files ending with -swagger.json
+              changed_files=$(git diff --name-only HEAD^1 HEAD | grep -E '.*-swagger.json$' | awk -F'/' '{print $(NF-1)"/"$NF}' | tr '\n' ' ')
+              
+              # Print the changed files
               echo "Changed Swagger files: $changed_files"
+              
+              # Export the changed files as an output variable
               echo "##vso[task.setvariable variable=changedSwaggerFiles;isOutput=true]$changed_files"
-              python dast.py $(changedSwaggerFiles)```
+              python dast.py $(changedSwaggerFiles)
           displayName: 'Dynamic Application Security Testing (DAST)'
         - publish: $(System.DefaultWorkingDirectory)/test_results/report0.html # Assuming logs are in working directory
           artifact: dast_test_results
