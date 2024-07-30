@@ -53,9 +53,8 @@ def find_swagger_files(root_dir):
     return swagger_files
 
 async def run_dast_for_swagger(url, api_token):
-    command = f"docker run --user=root -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t '{url}' -f openapi -r test_results/report.html"
+    command = f"docker run --user=root -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t \"{url}\" -f openapi -r test_results/report.html"
     try:
-        print(command)
         process = await asyncio.create_subprocess_shell(
             command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
