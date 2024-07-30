@@ -16,7 +16,7 @@
       "description": "APIs to manage the Admin"
     }
   ],
-  
+
   "paths": {
     "/auctions": {
       "get": {
@@ -89,6 +89,7 @@
             },
             "example": 1
           },
+          
           {
             "name": "keyword",
             "in": "query",

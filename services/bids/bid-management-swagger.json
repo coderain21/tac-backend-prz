@@ -10,6 +10,7 @@
         "url": "https://apis.dev.indyauction.net/v1/bids"
       }
     ],
+    
     "tags": [
       {
           "name": "Bidders Management",
