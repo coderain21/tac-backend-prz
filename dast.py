@@ -74,22 +74,27 @@ async def generate_cognito_token(user_type):
     try:
         
         if user_type == 'USER':
-            user_pool_id = 'your_seller_cognito_userpool_id'
-            client_id = 'your_seller_cognito_client_id'
-            username = 'your_api_username'
-            password = 'your_password'
+            print("here")
+            user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
+            client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
+            username = os.environ['API_USERNAME']
+            password = os.environ['PASSWORD']
         elif user_type == 'BUYERS':
-            user_pool_id = 'your_buyer_cognito_userpool_id'
-            client_id = 'your_buyer_cognito_client_id'
-            username = 'your_buyer_api_username'
-            password = 'your_buyer_password'
+            user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
+            client_id = os.environ['BUYER_COGNITO_CLIENT_ID']
+            username = os.environ['BUYER_API_USERNAME']
+            password = os.environ['BUYER_PASSWORD']
         elif user_type == 'ADMIN':
-            user_pool_id = 'your_admin_cognito_userpool_id'
-            client_id = 'your_admin_cognito_client_id'
-            username = 'your_admin_username'
-            password = 'your_admin_password'
+            user_pool_id = os.environ['ADMIN_COGNITO_USERPOOL_ID']
+            client_id = os.environ['ADMIN_COGNITO_CLIENT_ID']
+            username = os.environ['ADMIN_USERNAME']
+            password = os.environ['ADMIN_PASSWORD']
         else:
             print("Invalid user type specified.")
+            return
+
+        if user_pool_id is None or client_id is None or username is None or password is None:
+            print("Required environment variables are not set.")
             return
 
         response = client.admin_initiate_auth(
