@@ -192,12 +192,16 @@ stages:
               changed_files=$(git diff --name-only HEAD^1 HEAD | grep -E '.*-swagger.json$' | tr '\n' ' ')
               echo "Changed Swagger files: $changed_files"
               echo "##vso[task.setvariable variable=changedSwaggerFiles;isOutput=true]$changed_files"
-              python3 dast.py $changed_files
-              chmod 777 /zap/wrk/test_results/report.html
-              if [ $? -ne 0 ]; then
-                echo "DAST failed"
-                exit 1
-              fi
+          displayName: 'Detect changed swagger files'
+        - script: |
+            # Check if there are any changed swagger files
+            if [ -z "$(changedSwaggerFiles)" ]; then
+              echo "No changed swagger files detected."
+              exit 0
+            fi
+            
+            # Run the Python script with the changed files as arguments
+            python dast.py $(changedSwaggerFiles)```
           displayName: 'Dynamic Application Security Testing (DAST)'
         - publish: $(System.DefaultWorkingDirectory)/test_results/report0.html # Assuming logs are in working directory
           artifact: dast_test_results
