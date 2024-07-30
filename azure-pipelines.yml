@@ -188,7 +188,11 @@ stages:
               pip3 install boto3
               pip3 install botocore
               mkdir test_results
-              python3 dast.py
+              git fetch --unshallow
+              sourceBranchFullName=$(Build.SourceBranch)
+              branchName=${sourceBranchFullName#refs/heads/}
+              echo $branchName
+              python3 dast.py $branchName
               chmod 777 /zap/wrk/test_results/report.html
               if [ $? -ne 0 ]; then
                 echo "DAST failed"
