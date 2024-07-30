@@ -24,19 +24,10 @@ print(last_commit_sha, 'last commit')
 # Get the parent commit SHAs of the last commit
 parent_commit_shas = [parent.hexsha for parent in repo.commit(last_commit_sha).parents]
 print("Parent commit SHAs:", parent_commit_shas)
-aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
-aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
-region = os.environ['AWS_REGION']
 
-# Initialize a boto3 session with your AWS credentials
-session = boto3.Session(
-    aws_access_key_id = aws_access_key_id, #os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = aws_secret_access_key,#os.environ.get('AWS_SECRET_ACCESS_KEY')
-    region_name = region
-)
 
 # Initialize the Cognito client
-client = session.client('cognito-idp')
+client = boto3.client('cognito-idp',region_name='eu-west-2')
 
 # Function to find Swagger files in the repository
 def find_swagger_files(root_dir):
