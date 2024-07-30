@@ -12,9 +12,17 @@ print(repo_path, 'repo path')
 # Create a Git repository object
 repo = git.Repo(repo_path)
 
-# Get the name of the current branch
-current_branch = repo.active_branch.name
-print(f"Current branch: {current_branch}")
+# Function to get the current branch name or detached HEAD commit
+def get_current_branch_or_commit(repo):
+    try:
+        branch_name = repo.active_branch.name
+        return branch_name
+    except TypeError:
+        # Handle detached HEAD state
+        return repo.head.commit.hexsha
+
+current_branch_or_commit = get_current_branch_or_commit(repo)
+print(f"Current branch or commit: {current_branch_or_commit}")
 
 # Initialize the Cognito client
 client = boto3.client('cognito-idp', region_name='eu-west-2')
@@ -22,7 +30,6 @@ client = boto3.client('cognito-idp', region_name='eu-west-2')
 # Function to find Swagger files in the repository
 def find_swagger_files(root_dir):
     swagger_files = []
-
     service_dir = os.path.join(root_dir, 'services')
     for dirpath, dirnames, filenames in os.walk(service_dir):
         for filename in filenames:
@@ -51,8 +58,8 @@ async def run_dast_for_swagger(url, api_token):
 
 async def generate_cognito_token(user_type):
     try:
-        
         if user_type == 'USER':
+            print("here")
             user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
             client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
             username = os.environ['API_USERNAME']
@@ -94,7 +101,6 @@ async def generate_cognito_token(user_type):
         return token
     except ClientError as e:
         print(e)
-
     return None
 
 async def main():
@@ -126,12 +132,12 @@ async def main():
                 # Add other service directories and their corresponding tokens here
             }
 
-            # Get the list of commits unique to the current branch
-            base_branch = repo.merge_base(current_branch, 'origin/main')[0]
+            # Get the list of commits unique to the current branch or detached HEAD
+            base_branch = repo.merge_base(current_branch_or_commit, 'origin/main')[0]
             commits = list(repo.iter_commits(f'{base_branch.hexsha}..HEAD'))
 
-            # Print the commits of the current branch
-            print(f"Commits in branch {current_branch}:")
+            # Print the commits of the current branch or detached HEAD
+            print(f"Commits in branch {current_branch_or_commit}:")
             for commit in commits:
                 print(f"Commit: {commit.hexsha}\nMessage: {commit.message}\n")
 
@@ -156,9 +162,3 @@ async def main():
         #                     break  # Break the loop after finding and using the correct token
         else:
             print("Token generation failed")
-    except Exception as e:
-        print("Error in the main function:", str(e))
-
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
