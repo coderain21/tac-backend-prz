@@ -3,6 +3,8 @@ import boto3
 import json
 import os
 
+from pymongo import MongoClient
+
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -10,6 +12,13 @@ headers = {
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*'
 }
+
+client = MongoClient(
+                      os.environ['MONGO_CLIENT'],
+                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 
 from botocore.exceptions import ClientError
@@ -52,6 +61,11 @@ def get_auction_dashboard(event, context):
         data = event['queryStringParameters']
         auction_id = data['auction_id']
         print('auction_id',auction_id)
+
+        auctions_data = auction_collection.find_one({"auction_id":auction_id, "seller_email":email_address})
+
+        print("auctions_data",auctions_data)
+        a_id = auctions_data['_id']
 
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-prod':
             sts_client = boto3.client('sts')
@@ -127,7 +141,7 @@ def get_auction_dashboard(event, context):
 
         embed_url = response['EmbedUrl']
 
-        final_embed_url = f'{embed_url}#p.id={auction_id}'
+        final_embed_url = f'{embed_url}#p.id={auction_id}&p.auctionid={a_id}'
 
         return {
             'statusCode': 200,
