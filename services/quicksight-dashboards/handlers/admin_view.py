@@ -44,7 +44,7 @@ def admin_get_dashboard(event, context):
             }
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
         print('account id', aws_account_id)
-        dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
+        dashboard_id = os.environ['ADMIN_DASHBOARD_ID']
         user_name = email_address
         print(user_name,"user_name")
 
