@@ -148,6 +148,9 @@
                         "show_bidder_location_in_bidder_history": {
                           "type": "string"
                         },
+                        "show_bidding_history": {
+                          "type": "string"
+                        },
                         "publish_auction_results": {
                           "type": "string"
                         }
@@ -202,6 +205,7 @@
                     "terms_and_condition": "By participating, you agree to our terms.",
                     "publish_auction_results": true,
                     "show_bidder_location_in_bidder_history": true,
+                    "show_bidding_history": true,
                     "make_your_auction_private": true,
                     "font": {
                       "hearder_font": "Arial",
@@ -2618,6 +2622,9 @@
             "type": "boolean"
           },
           "show_bidder_location_in_bidder_history": {
+            "type": "boolean"
+          },
+          "show_bidding_history": {
             "type": "boolean"
           },
           "make_your_auction_private": {
