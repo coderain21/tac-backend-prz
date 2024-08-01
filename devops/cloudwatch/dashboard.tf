@@ -50,7 +50,7 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
   provider = aws.deployment-eu
 }
 
-#Creating alarm for Process cart error
+#Creating alarm for process cart  ucntion 5xx 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_process_cart_500_status_code" {
   provider = aws.deployment-eu
   alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Process Cart"
