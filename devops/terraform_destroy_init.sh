@@ -66,7 +66,8 @@ cd services/cognito-auth
 sls remove --region $REGION --stage $STAGE
 cd ../..
 
-
+terraform -chdir=devops/secret_manager init
+terraform -chdir=devops/secret_manager destroy -auto-approve
 terraform -chdir=devops/stripe_webhook init && terraform -chdir=devops/stripe_webhook destroy -auto-approve & terraform -chdir=devops/budgets init && terraform -chdir=devops/budgets destroy -auto-approve 
 terraform -chdir=devops/redis-cluster init && terraform -chdir=devops/redis-cluster destroy -auto-approve & terraform -chdir=devops/ecs init && terraform -chdir=devops/ecs destroy -auto-approve 
 terraform -chdir=devops/cloudwatch_alarms init && terraform -chdir=devops/cloudwatch_alarms destroy -auto-approve

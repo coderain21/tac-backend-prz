@@ -1,4 +1,5 @@
 '''this api updates the current password'''
+import datetime
 import json
 import os
 import boto3
@@ -23,6 +24,8 @@ db = client[os.environ['DATABASE']]
 user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+
 
 def hash_password(password):
     """Generate a salt and hash the provided password using Passlib's pbkdf2_sha256.
@@ -116,18 +119,21 @@ def update_password(event, context):
     depends on the conditions and logic within the function.
     """
     try:
+        print('event', event['requestContext']['authorizer']['claims'] )
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            cognito_data = json.loads(json.dumps(
+                event['requestContext']['authorizer']['claims']))
+            print('cognito data', cognito_data)
+            email_address = cognito_data['email']
             print('email', email_address)
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                print('here in first')
+            if "cognito:groups" not in cognito_data :
                 return {
                     "statusCode": 403,
                     "headers": headers,
                     "body": json.dumps({"message": "You do not have access to perform this API action"})
                 }
-        except:
-            print('here in second')
+        except Exception as e:
+            print('error', e)
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -187,6 +193,30 @@ def update_password(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "there was some error while updating"})
             }
+
+        # Get the current timestamp in seconds and convert to milliseconds
+        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+
+        # Convert to float and format as a string with '.0'
+        formatted_timestamp = float(timestamp_ms)
+
+        #adding logs of password update
+        access_logs = {
+            "actor_id": buyer.get('buyer_id'),
+            "updated_by": {
+                "type": 'Buyer',
+                "name": ' '.join(filter(None, [buyer.get('first_name'), buyer.get('last_name')])),
+                "email_address": email_address,
+            },
+            "section": {
+                "name": 'Bidder Management',
+                "action": 'Update Password'
+            },
+            "updated_at": formatted_timestamp
+        }
+        access_logs_collection.insert_one(access_logs)
+
+
         return {
                 "statusCode": 204,
                 "headers": headers,
