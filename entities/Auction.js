@@ -106,9 +106,6 @@ const AuctionSchema = new Schema({
     publish_auction_results: {
         type: Boolean, trim: true,
     },
-    show_bidding_history:{
-        type: Boolean, trim: true,
-    },
     show_bidder_location_in_bidder_history: {
         type: Boolean, trim: true,
     },

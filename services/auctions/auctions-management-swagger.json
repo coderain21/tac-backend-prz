@@ -74,8 +74,7 @@
               "time_zone": "UTC+5:30",
               "terms_and_condition": "By participating, you agree to our terms.",
               "publish_auction_results": true,
-              "show_bidder_location_in_bidder_history": true,
-              "show_bidding_history": true,
+              "show_bidder_location_in_bidder_history": true, 
               "make_your_auction_private": true,
               "passcode": "1234",
               "font": {
@@ -2172,9 +2171,6 @@
             "type": "string"
           },
           "publish_auction_result":{
-            "type": "boolean"
-          },
-          "show_bidding_history":{
             "type": "boolean"
           },
           "show_bidder_location_in_bidder_history":{
