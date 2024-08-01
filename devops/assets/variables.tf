@@ -167,3 +167,8 @@ variable "QUICKSIGHT_AUCTION_DASHBOARD_ID" {
   type        = string
   description = "Description of the variable"
 }
+
+variable "ADMIN_DASHBOARD_ID" {
+  type        = string
+  description = "Description of the variable"
+}
