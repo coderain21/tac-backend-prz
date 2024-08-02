@@ -170,7 +170,7 @@ resource "aws_iam_role" "quicksight_access_role" {
 # IAM Policy in Dev Account
 resource "aws_iam_policy" "quicksight_access_policy" {
   provider = aws.deployment-main
-  name     = "quicksight-access-policy-main"
+  name     = "${var.STAGE}-quicksight-access-policy-main"
 
   policy = jsonencode({
     Version = "2012-10-17",

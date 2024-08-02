@@ -102,6 +102,7 @@ stages:
               exit 1
             fi
           displayName: 'Static Application Security Testing (SAST)'
+
 - stage: Build
   jobs:
     - job: "Download_Environment"
@@ -164,26 +165,31 @@ stages:
       pool:
           vmImage: "ubuntu-latest"
       steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0
+          persistCredentials: true
         - task: DownloadPipelineArtifact@2
           name: environment
           inputs:
             artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)'
         - script: |
-            source .env
-            docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
-            cd $(System.DefaultWorkingDirectory)
-            git config --global --add safe.directory $(System.DefaultWorkingDirectory)
-            pip3 install boto3
-            pip3 install PyJWT
-            pip3 install GitPython
-            mkdir test_results
-            python3 dast.py
-            if [ $? -ne 0 ]; then
-              echo "API testing failed"
-              exit 1
-            fi
+              git config --global user.email $BITBUCKET_EMAIL
+              git config --global user.name $BITBUCKET_USER
+              git config --global advice.detachedHead false
+              docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+              cd $(System.DefaultWorkingDirectory)
+              export $(grep -v '^#' .env | xargs)
+              source .env
+              # Print environment variables to verify they are set correctly
+              pip3 install gitpython
+              pip3 install boto3
+              pip3 install botocore
+              mkdir test_results
+              python dast.py 
           displayName: 'Dynamic Application Security Testing (DAST)'
+
     
 - stage: Deploy
   jobs:

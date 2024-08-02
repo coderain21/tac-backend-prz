@@ -24,19 +24,10 @@ print(last_commit_sha, 'last commit')
 # Get the parent commit SHAs of the last commit
 parent_commit_shas = [parent.hexsha for parent in repo.commit(last_commit_sha).parents]
 print("Parent commit SHAs:", parent_commit_shas)
-aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
-aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
-region = os.environ['AWS_REGION']
 
-# Initialize a boto3 session with your AWS credentials
-session = boto3.Session(
-    aws_access_key_id = aws_access_key_id, #os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret_access_key = aws_secret_access_key,#os.environ.get('AWS_SECRET_ACCESS_KEY')
-    region_name = region
-)
 
 # Initialize the Cognito client
-client = session.client('cognito-idp')
+client = boto3.client('cognito-idp',region_name='eu-west-2')
 
 # Function to find Swagger files in the repository
 def find_swagger_files(root_dir):
@@ -53,9 +44,8 @@ def find_swagger_files(root_dir):
     return swagger_files
 
 async def run_dast_for_swagger(url, api_token):
-    command = f"docker run -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t '{url}' -f openapi -r test_results/report.html"
+    command = f"docker run --user=root -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t \"{url}\" -f openapi -r test_results/report.html"
     try:
-        print(command)
         process = await asyncio.create_subprocess_shell(
             command, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
         )
@@ -74,16 +64,25 @@ async def generate_cognito_token(user_type):
     try:
         
         if user_type == 'USER':
-            user_pool_id = os.environ['COGNITO_USER_POOL_ID']
-            client_id = os.environ['COGNITO_SELLER_CLIENT_ID']
-            username = 'anusha.k+indyauction@7edge.com'
+            print("here")
+            user_pool_id = os.environ['SELLER_COGNITO_USERPOOL_ID']
+            client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
+            username = os.environ['API_USERNAME']
             password = os.environ['PASSWORD']
-
-        if user_type == 'BUYERS':
-            user_pool_id = os.environ['BUYER_COGNITO_USER_POOL_ID']
-            client_id = os.environ['BUYER_COGNITO_SELLER_CLIENT_ID']
+        elif user_type == 'BUYERS':
+            user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
+            client_id = os.environ['BUYER_COGNITO_CLIENT_ID']
             username = os.environ['BUYER_API_USERNAME']
             password = os.environ['BUYER_PASSWORD']
+        elif user_type == 'ADMIN':
+            user_pool_id = os.environ['ADMIN_COGNITO_USERPOOL_ID']
+            client_id = os.environ['ADMIN_COGNITO_CLIENT_ID']
+            username = os.environ['ADMIN_USERNAME']
+            password = os.environ['ADMIN_PASSWORD']
+        else:
+            print("Invalid user type specified.")
+            return
+
         if user_pool_id is None or client_id is None or username is None or password is None:
             print("Required environment variables are not set.")
             return
@@ -115,13 +114,27 @@ async def main():
     try:
         users_token = await generate_cognito_token('USER')
         buyers_token = await generate_cognito_token('BUYERS')
+        admin_token = await generate_cognito_token('ADMIN')
 
-        if users_token and buyers_token:
+        if users_token and buyers_token and admin_token:
             tokens = {
-                'services/auctions': buyers_token,
-                'services/users': users_token,
-                'services/buyers': users_token,
-                'services/address-management': buyers_token
+                'admin-buyer-management': admin_token,
+                'users': users_token,
+                'buyers': users_token,
+                'address-management': buyers_token,
+                'access-logs': admin_token,
+                'admin-management': admin_token,
+                'buyer-wishlist': buyers_token,
+                'cart-management': buyers_token,
+                'lot-bid-history': users_token,
+                'newsletter': users_token,
+                'order-management': users_token,
+                'payments': buyers_token,
+                'paypal': users_token,
+                'quicksight-dashboards': users_token,
+                'seller-bidder-management': users_token,
+                'site-banner': admin_token,
+                'subdomain': users_token
                 # Add other service directories and their corresponding tokens here
             }
 
