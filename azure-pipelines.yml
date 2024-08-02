@@ -12,12 +12,20 @@ variables:
   - group: general
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - group: master
+    - name: ENV
+      value: 'Production'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
     - group: qa
+    - name: ENV
+      value: 'Testing'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-production') }}:
     - group: pre-production
+    - name: ENV
+      value: 'Production'
   - ${{ if or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')) }}:
     - group: develop
+    - name: ENV
+      value: 'Development'
 
 stages:
 - stage: CodeQuality
@@ -164,12 +172,7 @@ stages:
       displayName: Deployment
       pool:
         vmImage: 'ubuntu-latest'
-      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          environment: 'Production'
-      ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-          environment: 'Testing'
-      ${{ else }}:
-          environment: 'Development'
+      environment: ${{variables.ENV}}
       strategy:
         # Default deployment strategy, more coming...
         runOnce:
