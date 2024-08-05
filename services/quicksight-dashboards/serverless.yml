@@ -135,6 +135,43 @@ functions:
             authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
+  admin-view:
+      handler: handlers/admin_view.admin_get_dashboard
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /admin-view
+            method: get
+            authorizer:
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  admin-auction-view:
+      handler: handlers/admin_auction_view.admin_get_dashboard
+      timeout: 30
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /admin-auction-view
+            method: get
+            authorizer:
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
 resources:
   Resources:
