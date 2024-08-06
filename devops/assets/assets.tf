@@ -581,6 +581,14 @@ resource "aws_ssm_parameter" "quicksight_auction_dashboard_id" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "admin_dashboard_id" {
+  name  = "ADMIN_DASHBOARD_ID"
+  type  = "String"
+  value = var.ADMIN_DASHBOARD_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
 
 
 
