@@ -7,6 +7,9 @@ from bson import ObjectId
 from lib.helper_python import send_pinpoint_email
 from datetime import datetime
 import pytz
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
+
 #from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
@@ -91,8 +94,8 @@ def register_auction(event, context):
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-        except:
-            print('here in second')
+        except Exception as e:
+            print('error', e)
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -216,9 +219,27 @@ def register_auction(event, context):
                             "auction_start_time":str(start_time),
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
-                            "img":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
-                                template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
+                            "logo":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful",
+                            "Seller_email": seller_email,
+                            "domainURL": domain_url
+            }
+            # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
+            #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
+
+            # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
+                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                print(response)
+                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+            except ApiClientError as error:
+                template_name = 'buyer_default_paddle_template'
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
+
             data_to_insert= {
                         'first_name': first_name,
                         'last_name': last_name,
