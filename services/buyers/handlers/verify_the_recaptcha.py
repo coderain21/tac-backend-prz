@@ -8,7 +8,10 @@ from bson import ObjectId
 import requests
 from pymongo import MongoClient
 from botocore.exceptions import ClientError
-from lib.helper_python import encrypt_with_time_validation,    send_pinpoint_email
+from lib.helper_python import encrypt_with_time_validation
+from lib.email_helper import send_mailchimp_email
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
 
 headers = {
     'Content-Type': 'application/json',
@@ -158,8 +161,24 @@ def verify(event, context):
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
-        email_status = send_pinpoint_email(data['email_address'], os.environ["SES_SENDER_EMAIL_ID"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
-                                        os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
+        
+        # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
+        try:
+            mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+            response = client.templates.info({"name": seller_details['seller_id']-OTP-GENERATION})
+            return {success: True} 
+            print(response)
+        except ApiClientError as error:
+            print("An exception occurred: {}".format(error.text))
+            return {success: False} 
+        if success:
+            template_name =  seller_details['seller_id']-OTP-GENERATION
+        else:
+            template_name = 'buyer-default-otp-template'
+
+        send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
+                                        os.environ["SES_SENDER_EMAIL_ID"])
+
         return {
             'statusCode': 201,
             'headers': headers,
