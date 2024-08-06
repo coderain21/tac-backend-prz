@@ -29,6 +29,7 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 user_collection = db[os.environ["BUYER_COLLECTION"]]
+collection_seller = db[os.environ["SELLERS_TABLE"]]
 template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
@@ -109,6 +110,8 @@ def verify(event, context):
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
+        seller_data = collection_seller.find_one({"email_address": seller_details['seller_email']}, {"_id": 0})
+
         user_exist = check_user_in_cognito(data['email_address'])
 
         if user_exist is True:
@@ -156,16 +159,13 @@ def verify(event, context):
         # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
         try:
             mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-            response = client.templates.info({"name": seller_details['seller_id']-OTP-GENERATION})
-            return {success: True} 
-            print(response)
+            response = mailchimp.templates.info({"name": seller_data['seller_id'] + '-OTP-GENERATION'})
+            template_name = seller_data['seller_id'] + '-OTP-GENERATION'
         except ApiClientError as error:
-            print("An exception occurred: {}".format(error.text))
-            return {success: False} 
-        if success:
-            template_name =  seller_details['seller_id']-OTP-GENERATION
-        else:
             template_name = 'buyer-default-otp-template'
+            print("An exception occurred: {}".format(error.text))
+
+        print('template_name', template_name)
 
         send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
                                         os.environ["SES_SENDER_EMAIL_ID"])
