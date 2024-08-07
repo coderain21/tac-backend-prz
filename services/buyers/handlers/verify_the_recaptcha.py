@@ -10,6 +10,8 @@ from pymongo import MongoClient
 from botocore.exceptions import ClientError
 from lib.helper_python import encrypt_with_time_validation
 from lib.email_helper import send_mailchimp_email
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
 
 headers = {
     'Content-Type': 'application/json',
@@ -27,6 +29,7 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 user_collection = db[os.environ["BUYER_COLLECTION"]]
+collection_seller = db[os.environ["SELLERS_TABLE"]]
 template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
@@ -107,6 +110,8 @@ def verify(event, context):
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
+        seller_data = collection_seller.find_one({"email_address": seller_details['seller_email']}, {"_id": 0})
+
         user_exist = check_user_in_cognito(data['email_address'])
 
         if user_exist is True:
@@ -150,11 +155,17 @@ def verify(event, context):
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
-        template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
-        if template is None:
+
+        # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
+        try:
+            mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+            response = mailchimp.templates.info({"name": seller_data['seller_id'] + '-OTP-VALIDATION'})
+            template_name = seller_data['seller_id'] + '-OTP-VALIDATION'
+        except ApiClientError as error:
             template_name = 'buyer-default-otp-template'
-        else:
-            template_name = template['name']
+            print("An exception occurred: {}".format(error.text))
+
+        print('template_name', template_name)
 
         send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
                                         os.environ["SES_SENDER_EMAIL_ID"])
