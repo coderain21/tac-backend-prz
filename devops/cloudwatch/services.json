@@ -220,34 +220,6 @@
         {
             "height": 4,
             "width": 12,
-            "y": 15,
-            "x": 12,
-            "type": "metric",
-            "properties": {
-                "metrics": [
-                    [
-                        {
-                            "expression": "SORT(SEARCH('{AWS/Lambda,FunctionName} FunctionName=\"dev-athena\" MetricName=\"Errors\"', 'Sum', 300), SUM, DESC)",
-                            "id": "e1",
-                            "period": 86400,
-                            "stat": "Sum",
-                            "label": "test [Count:${SUM}]"
-                        }
-                    ]
-                ],
-                "legend": {
-                    "position": "right"
-                },
-                "region": "eu-west-2",
-                "liveData": false,
-                "timezone": "UTC",
-                "title": "Test"
-            }
-        },
-        
-        {
-            "height": 4,
-            "width": 12,
             "y": 11,
             "x": 0,
             "type": "metric",
