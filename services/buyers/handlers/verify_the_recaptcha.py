@@ -159,8 +159,8 @@ def verify(event, context):
         # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
         try:
             mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-            response = mailchimp.templates.info({"name": seller_data['seller_id'] + '-OTP-GENERATION'})
-            template_name = seller_data['seller_id'] + '-OTP-GENERATION'
+            response = mailchimp.templates.info({"name": seller_data['seller_id'] + '-OTP-VALIDATION'})
+            template_name = seller_data['seller_id'] + '-OTP-VALIDATION'
         except ApiClientError as error:
             template_name = 'buyer-default-otp-template'
             print("An exception occurred: {}".format(error.text))
