@@ -50,27 +50,124 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
   provider = aws.deployment-eu
 }
 
-#Creating alarm for process cart  ucntion 5xx 
-resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_process_cart_500_status_code" {
-  provider = aws.deployment-eu
-  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Process Cart"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/Lambda"
-  period              = 300  # 5 min (adjust based on your desired granularity)
-  statistic           = "Sum"
-  
-  # Set your desired reputation threshold (e.g., 90 for 90%)
-  threshold = 1
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-   
-   
-  dimensions = {
-    FunctionName = "auctions-${var.STAGE}-process-cart"
+
+# Create CloudWatch Log Metric Filter
+resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
+  name           = "Process Cart Logs Error"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-process-cart"
+  pattern        = "\"TypeError: Cannot read properties of\""
+
+  metric_transformation {
+    name      = "ProcessCartErrorCount"
+    namespace = "ProcessCartError"
+    value     = "1"
   }
 }
+
+# Create CloudWatch Alarm for process cart logs
+resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
+  alarm_name          = "Process Cart Logs Error Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alarm when Lambda logs contain 'TypeError: Cannot read properties of'"
+
+  # Actions
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+}
+
+
+
+resource "aws_cloudwatch_log_metric_filter" "sqs_lambda_error_metric_filter" {
+  count          = length([
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ])
+  name           = "SQS Lot Update Error ${count.index}"
+  log_group_name = [
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ][count.index]
+  pattern        = "\"ERROR	Error: TypeError: Cannot read properties of\""
+
+  metric_transformation {
+    name      = "LambdaErrorCount_${count.index}"
+    namespace = "LambdaErrors"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
+  count                 = length([
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ])
+  alarm_name            = "SQS Lot Update Error Alarm ${count.index}"
+  comparison_operator   = "GreaterThanOrEqualToThreshold"
+  evaluation_periods    = 1
+  metric_name           = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].name
+  namespace             = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].namespace
+  period                = 300
+  statistic             = "Sum"
+  threshold             = 1
+  alarm_description     = "Alarm when Lambda logs contain 'ERROR	Error: TypeError: Cannot read properties of' in log group ${[
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ][count.index]}"
+
+  # Actions
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+}
+resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_filter" {
+  name           = "Save To Cache Logs Error"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-save-to-cache"
+  pattern        = "\"getRedisClient: error occurred for  ClusterAllFailedError: Failed to refresh slots cache\""
+
+  metric_transformation {
+    name      = "SaveToCacheErrorCount"
+    namespace = "SaveToCacheError"
+    value     = "1"
+  }
+}
+
+# Create CloudWatch Alarm for process cart logs
+resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
+  alarm_name          = "Save To Cache Logs Error Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alarm when Lambda logs contain 'getRedisClient: error occurred for  ClusterAllFailedError: Failed to refresh slots cache'"
+
+  # Actions
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+}
+
+
 
 
 #Creating alarm for Admin web application erros 
@@ -300,6 +397,12 @@ resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
   protocol  = "email"
   endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
 }
+# resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
+#   provider = aws.deployment-eu
+#   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
+#   protocol  = "email"
+#   endpoint  = "ibrahim.khaleel@7edge.com"  # Replace with your email address
+# }
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
   provider = aws.deployment-eu
   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
