@@ -166,7 +166,7 @@ def verify(event, context):
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
-        
+
         # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
         try:
             mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
