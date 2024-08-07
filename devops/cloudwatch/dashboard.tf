@@ -397,15 +397,15 @@ resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
   protocol  = "email"
   endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
 }
-resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
-  provider = aws.deployment-eu
-  topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
-  protocol  = "email"
-  endpoint  = "ibrahim.khaleel@7edge.com"  # Replace with your email address
-}
 # resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
 #   provider = aws.deployment-eu
 #   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
 #   protocol  = "email"
-#   endpoint  = "admin@indy.auction"  # Replace with your email address
+#   endpoint  = "ibrahim.khaleel@7edge.com"  # Replace with your email address
 # }
+resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
+  provider = aws.deployment-eu
+  topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
+  protocol  = "email"
+  endpoint  = "admin@indy.auction"  # Replace with your email address
+}
