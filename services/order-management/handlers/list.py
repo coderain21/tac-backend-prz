@@ -72,8 +72,8 @@ def list_orders(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         try:
-           email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-           print('email', email_address)
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            print('email', email_address)
         except:
             print('here in second')
             return {
@@ -81,12 +81,6 @@ def list_orders(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        orders_collection = db[os.environ['ORDERS_COLLECTION']]
 
         data = event['queryStringParameters']
         sort_by = data.get('sort_by', 'created_at')
