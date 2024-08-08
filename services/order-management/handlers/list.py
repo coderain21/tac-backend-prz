@@ -55,32 +55,32 @@ def list_orders(event, context):
         dict: A dictionary containing the response with order information.
     """
     try:
-        print('event', event['requestContext']['authorizer']['claims'] )
+        # try:
+        #     cognito_data = json.loads(
+        #         event['requestContext']['authorizer']['data'])
+        #     email_address = cognito_data['email']
+        #     if "cognito:groups" not in cognito_data :
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         try:
-            cognito_data = json.loads(json.dumps(
-                event['requestContext']['authorizer']['claims']))
-            print('cognito data', cognito_data)
-            email_address = cognito_data['email']
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" not in cognito_data :
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except Exception as e:
-            print('error', e)
+        except:
+            print('here in second')
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
-        orders_collection = db[os.environ['ORDERS_COLLECTION']]
 
         data = event['queryStringParameters']
         sort_by = data.get('sort_by', 'created_at')

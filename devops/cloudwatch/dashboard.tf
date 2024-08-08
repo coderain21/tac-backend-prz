@@ -50,7 +50,27 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
   provider = aws.deployment-eu
 }
 
+#Creating alarm for process cart  ucntion 5xx 
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_process_cart_500_status_code" {
+  provider = aws.deployment-eu
+  alarm_name     = "indyauction-${var.STAGE}-Stauscode 5xx Process Cart"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Http5xxCount"
+  namespace           = "AWS/Lambda"
+  period              = 300  # 5 min (adjust based on your desired granularity)
+  statistic           = "Sum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 1
 
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+   
+  dimensions = {
+    FunctionName = "auctions-${var.STAGE}-process-cart"
+  }
+}
 
 # Create CloudWatch Log Metric Filter
 resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
