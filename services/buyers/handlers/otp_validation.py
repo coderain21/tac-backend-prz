@@ -92,8 +92,8 @@ def admin_create_user(userData, userpool_id,seller_email,default):
         cognito_client.admin_set_user_password(**password_params)
         if user:
             roles = [group_name, userData["user_type"]]
-            for role in roles:
-                print('roles', role)
+            # for role in roles:
+            #     print('roles', role)
                 # try:
                 #     # Define the parameters for the API call
                 #     params = {
