@@ -61,21 +61,36 @@ def update_user(event, context):
         dict: A dictionary containing the API Gateway response.
     """
     try:
-        print('event', event['requestContext']['authorizer']['claims'] )
+        # try:
+        #     cognito_data = json.loads(
+        #         event['requestContext']['authorizer']['data'])
+        #     email_address = cognito_data['email']
+        #     if "cognito:groups" not in cognito_data :
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         try:
-            cognito_data = json.loads(json.dumps(
-                event['requestContext']['authorizer']['claims']))
-            print('cognito data', cognito_data)
-            email_address = cognito_data['email']
+            # email_address = event['requestContext']['authorizer']['claims']['email']
+            # print('email', email_address)
+            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            #     print('here in first')
+            #     return {
+            #         "statusCode": 403,
+            #         "headers": headers,
+            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+            #     }
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" not in cognito_data :
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except Exception as e:
-            print('error', e)
+        except:
+            print('here in second')
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -97,12 +112,12 @@ def update_user(event, context):
         new = data.get("new",False)
         seller_email = fetch_seller_email_from_auction(auction_id)
         # Add user to the specified Cognito group
-        x = cognito_client.admin_add_user_to_group(
-            GroupName= group.split('@')[0],
-            UserPoolId=os.environ["DEFAULT_USERPOOL_ID"],
-            Username=email_address
-        )
-        print('xxxx', x)
+        # x = cognito_client.admin_add_user_to_group(
+        #     GroupName= group.split('@')[0],
+        #     UserPoolId=os.environ["DEFAULT_USERPOOL_ID"],
+        #     Username=email_address
+        # )
+        # print('xxxx', x)
 
         if seller_email is not None:
             buyer_data_to_add = {

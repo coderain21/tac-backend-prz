@@ -8,6 +8,9 @@ from bson import ObjectId
 from lib.email_helper import send_mailchimp_email
 from datetime import datetime
 import pytz
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
+
 #from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
@@ -71,21 +74,27 @@ def register_auction(event, context):
         Exception: If an internal server error occurs.
     """
     try:
-        print('event', event['requestContext']['authorizer']['claims'] )
+        # try:
+        #     cognito_data = json.loads(
+        #         event['requestContext']['authorizer']['data'])
+        #     email_address = cognito_data['email']
+        #     if "cognito:groups" not in cognito_data :
+        #         return {
+        #             "statusCode": 403,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #         }
+        # except:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
         try:
-            cognito_data = json.loads(json.dumps(
-                event['requestContext']['authorizer']['claims']))
-            print('cognito data', cognito_data)
-            email_address = cognito_data['email']
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" not in cognito_data :
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except Exception as e:
-            print('error', e)
+        except:
+            print('here in second')
             return {
                 "statusCode": 403,
                 "headers": headers,
@@ -232,11 +241,18 @@ def register_auction(event, context):
             # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
             #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
 
-            template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
-            if template is None:
+            # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
+                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                print(response)
+                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+            except ApiClientError as error:
                 template_name = 'buyer_default_paddle_template'
-            else:
-                template_name = template['name']
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
             send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
 
             data_to_insert= {
