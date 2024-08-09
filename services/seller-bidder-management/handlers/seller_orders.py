@@ -8,7 +8,8 @@ from lib.common_helper import Encoder
 import math
 import csv
 import boto3
-from datetime import datetime
+import tempfile
+import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -86,6 +87,10 @@ def list_orders(event, context):
         payment_status = data.get("payment_status", '')
 
 
+        # export parameter
+        export = data.get("export", False)
+
+
         print('Page:', page)
         print('Limit:', limit)
         print('Start Date:', start_date)
@@ -119,17 +124,25 @@ def list_orders(event, context):
             if start_date and end_date:
                 start_date = int(start_date)
                 end_date = int(end_date)
+                # Adjust start_date to the beginning of the day and end_date to the end of the day
+                # start_datetime = datetime.utcfromtimestamp(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
+                # end_datetime = datetime.utcfromtimestamp(end_date).replace(hour=23, minute=59, second=59, microsecond=999999)
+
+                # start_date = int(start_datetime.timestamp())
+                # end_date = int(end_datetime.timestamp())
                 date_range_condition = {
                     "created_at": {
                         "$gte": start_date,
                         "$lte": end_date
                     }
                 }
-                print(date_range_condition)
+                print('date_range_condition',date_range_condition)
                 query.update(date_range_condition)
 
         if search_query:
-            query.update(search_query)  # Update the query dictionary with search_query
+            query.update(search_query)
+
+        print('Final Query:', query)
 
         orders_list = orders_collection.find(
             query,
@@ -146,13 +159,10 @@ def list_orders(event, context):
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
 
-        # print('Orders List:', list(orders_list))
-
-        # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
         total_pages = math.ceil(total_records / limit)
 
-        if orders_list is None:
+        if not orders_list:
             return {
                 "statusCode": 404,
                 "headers": headers,
@@ -162,10 +172,23 @@ def list_orders(event, context):
             "data": list(orders_list),
             "total_pages": total_pages,
             "total_records": total_records,
-            "current_page": page
-            # "total_orders": total_records
+            "current_page": page,
+            "download_link": None
         }
-        # print(body)
+
+        if export:
+            body["download_link"] = export_as_csv(orders_collection.find(query, {
+                "_id": 1,
+                "name": 1,
+                "created_at": 1,
+                "order_number": 1,
+                "payment_status": 1,
+                "payment": 1,
+                "amount": 1,
+                "currency": 1,
+                "auction_title": 1
+            }).sort(sort_criteria), email_address)
+
         return {
             "statusCode": 200,
             "headers": headers,
@@ -181,6 +204,39 @@ def list_orders(event, context):
 
 
 
+def format_date(date_value):
+    try:
+        if isinstance(date_value, int):
+            # Treat the value as a Unix timestamp (seconds since epoch)
+            date_obj = datetime.datetime.fromtimestamp(date_value)
+        else:
+            # Treat the value as a formatted string
+            date_obj = datetime.datetime.strptime(date_value, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+        # Format the datetime object as "03 June 2024"
+        formatted_date = date_obj.strftime('%d %B %Y')
+
+        return formatted_date
+
+    except Exception as e:
+        print("Error:", e)
+        return None
+
+
+
+
+currencySymbolMapping = {
+    "GBP": '£',
+    "USD": '$',
+    "EUR": '€',
+    "HKD": 'HK$',
+    "JPY": '¥',
+    "CHF": 'Fr',
+    "SGD": 'S$',
+    "AUD": 'A$',
+    "CAD": 'C$',
+    "INR": '₹',
+}
 
 
 
@@ -190,8 +246,7 @@ def list_orders(event, context):
 
 
 
-
-def export_as_csv(sales):
+def export_as_csv(sales, email_address):
     """
     Exports a list of auctions as a CSV file and uploads it to an S3 bucket.
 
@@ -205,29 +260,36 @@ def export_as_csv(sales):
         Exception: If an error occurs during the export and upload process.
     """
     try:
-        # Export QR codes as CSV and upload to S3
-        csv_file = os.environ["SALES_CSV_FILE"]
-        s3_key = f"exports/{csv_file}"
+        filename = "Orders"
+        seller_email = email_address
+        temp_dir = tempfile.mkdtemp()
+        csv_file = os.path.join(temp_dir, f'{filename}.csv')
+
+        s3_key = f"exports/seller/{seller_email}/{filename}.csv"
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date","Payment Type", "Payment Status"])
+            writer = csv.DictWriter(file, ["Order number", "Customer name", "Auction name","Date","Result", "Payment type", "Payment status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
-                date = datetime.fromtimestamp(sale['created_at'])
+                currency = sale.get("currency", "")
+                if currency in currencySymbolMapping:
+                    currency = currencySymbolMapping.get(currency, "")
+                date = format_date(int(sale['created_at']))
                 # Format the date as a string with only the date
-                formatted_date = date.strftime('%Y-%m-%d')
-                shipping_address = sale['shipping_address']
-                full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
-                modified_sales["ORDER ID"] = sale["order_number"]
-                modified_sales["Customer Name"] = full_name
-                modified_sales["Auction Name"] = sale['auction_title']
-                modified_sales["Order Date"] = formatted_date
-                modified_sales["Payment Status"] = sale["payment_status"]
-                modified_sales["Payment Type"]= sale["payment"]
+                formatted_date = date
+                # shipping_address = sale['shipping_address']
+                full_name = sale['name']
+                modified_sales["Order number"] = sale["order_number"]
+                modified_sales["Customer name"] = full_name
+                modified_sales["Auction name"] = sale['auction_title']
+                modified_sales["Date"] = formatted_date
+                modified_sales["Result"] = currency + str(sale["amount"])
+                modified_sales["Payment status"] = sale["payment_status"]
+                modified_sales["Payment type"]= sale["payment"]
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
