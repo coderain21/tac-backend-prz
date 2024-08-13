@@ -588,6 +588,13 @@ resource "aws_ssm_parameter" "admin_dashboard_id" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "mailchimp_address" {
+  name  = "MAILCHIMP_ADDRESS"
+  type  = "String"
+  value = var.MAILCHIMP_ADDRESS
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
 
