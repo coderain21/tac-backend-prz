@@ -12,12 +12,20 @@ variables:
   - group: general
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - group: master
+    - name: ENV
+      value: 'Production'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
     - group: qa
+    - name: ENV
+      value: 'Testing'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-production') }}:
     - group: pre-production
+    - name: ENV
+      value: 'Production'
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     - group: develop
+    - name: ENV
+      value: 'Development'
 
 stages:
 - stage: CodeQuality
