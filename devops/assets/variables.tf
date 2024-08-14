@@ -172,3 +172,7 @@ variable "ADMIN_DASHBOARD_ID" {
   type        = string
   description = "Description of the variable"
 }
+variable "MAILCHIMP_ADDRESS" {
+  type        = string
+  description = "Description of the variable"
+}

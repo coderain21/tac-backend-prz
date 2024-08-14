@@ -74,15 +74,13 @@ def update_lot(event):
             "auction_id": auction_id},
         {"$set": update_data}
     )
-    print('collection_auction', collection_auction)
     auction_record = collection_auction.find_one(
             {"auction_id": auction_id, "seller_email": seller_email})
     lot_information = collection.find_one(
             {"auction_id": auction_id, "seller_email": seller_email, "lot_number": lot_number})
     lot_information = json.loads(json.dumps(lot_information, cls= Encoder))
-    print('lot_information', lot_information)
     lot_id = str(lot_information['_id'])
-    if auction_record['status']== 'Accepting bids':
+    if auction_record['status'] in ['Accepting bids' , 'Published']:
         update = update_lot_data(request_body, lot_id)
     # client.close()
     return (204, {})
