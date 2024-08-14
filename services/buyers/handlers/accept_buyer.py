@@ -4,9 +4,12 @@ import os
 import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.helper_python import send_pinpoint_email
+# from lib.helper_python import send_pinpoint_email
+from lib.email_helper import send_mailchimp_email
 from datetime import datetime
 import pytz
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
 
 headers = {
     'Content-Type': 'application/json',
@@ -134,18 +137,33 @@ def accept_buyer(event, context):
                 logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img = os.environ["CDN_LINK"] + registration_type["logo_image"]
-            template_data = json.dumps({"paddle": paddle['starting_sequence'],
+            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+            template_data = {"paddle": paddle['starting_sequence'],
                             "Seller_name": seller_name, "user_first_name": first_name,
                             "Auction_title": title, "auction_start_date": str(start_date),
                             "auction_start_time": str(start_time),
                             "color": paddle_text_color,
                             "background_color": paddle_background_color,
                             "img": logo_img,
-                            "subject": "Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address, os.environ['SES_SENDER_EMAIL_ID'],
-                                template_data,
-                                os.environ['TEMPLATE_ARN_PADDLE']
-                                )
+                            "auction_image": auction_image,
+                            "subject": "Indy.auction-Your Paddle Number Awaits: Registration Successful"}
+
+            # Checking mailchimp for template existence
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
+                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                print(response)
+                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+            except ApiClientError as error:
+                template_name = 'buyer_default_paddle_template'
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
+
+
+
             auction_register.update_one({"auction_id": auction_id, 'email_address': email_address, 'seller_email': seller_email},
                                     {"$set": {"status": register_status, 'paddle': paddle['starting_sequence']}})
         elif status == 'Rejected':
