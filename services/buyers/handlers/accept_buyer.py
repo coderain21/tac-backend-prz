@@ -4,9 +4,12 @@ import os
 import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.helper_python import send_pinpoint_email
+# from lib.helper_python import send_pinpoint_email
+from lib.email_helper import send_mailchimp_email
 from datetime import datetime
 import pytz
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
 
 headers = {
     'Content-Type': 'application/json',
