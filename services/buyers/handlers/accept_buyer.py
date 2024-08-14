@@ -142,10 +142,23 @@ def accept_buyer(event, context):
                             "background_color": paddle_background_color,
                             "img": logo_img,
                             "subject": "Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address, os.environ['SES_SENDER_EMAIL_ID'],
-                                template_data,
-                                os.environ['TEMPLATE_ARN_PADDLE']
-                                )
+
+            # Checking mailchimp for template existence
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
+                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                print(response)
+                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+            except ApiClientError as error:
+                template_name = 'buyer_default_paddle_template'
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
+
+
+
             auction_register.update_one({"auction_id": auction_id, 'email_address': email_address, 'seller_email': seller_email},
                                     {"$set": {"status": register_status, 'paddle': paddle['starting_sequence']}})
         elif status == 'Rejected':
