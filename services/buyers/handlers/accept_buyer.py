@@ -137,6 +137,7 @@ def accept_buyer(event, context):
                 logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img = os.environ["CDN_LINK"] + registration_type["logo_image"]
+            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
             template_data = {"paddle": paddle['starting_sequence'],
                             "Seller_name": seller_name, "user_first_name": first_name,
                             "Auction_title": title, "auction_start_date": str(start_date),
@@ -144,6 +145,7 @@ def accept_buyer(event, context):
                             "color": paddle_text_color,
                             "background_color": paddle_background_color,
                             "img": logo_img,
+                            "auction_image": auction_image,
                             "subject": "Indy.auction-Your Paddle Number Awaits: Registration Successful"}
 
             # Checking mailchimp for template existence
