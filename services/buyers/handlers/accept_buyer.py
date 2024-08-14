@@ -145,7 +145,7 @@ def accept_buyer(event, context):
                             "background_color": paddle_background_color,
                             "img": logo_img,
                             "subject": "Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            
+
             # Checking mailchimp for template existence
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
