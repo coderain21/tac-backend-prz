@@ -39,7 +39,7 @@ def delete_buyer(event, context):
         
         if result:
             email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], {"buyer_email": buyer_email},
-                                        os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
+                                        os.environ["TEMPLATE_ARN_ADMIN_DELETE_BUYER"])
             print('email_status', email_status)
             if email_status:
                 return {

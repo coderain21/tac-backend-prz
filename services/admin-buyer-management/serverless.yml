@@ -44,8 +44,6 @@ provider:
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
-<<<<<<< Updated upstream
-=======
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     TEMPLATE_ARN_ADMIN_DELETE_BUYER: 
       Fn::Join:
@@ -56,8 +54,6 @@ provider:
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-admin-delete-buyer-template/EMAIL"
->>>>>>> Stashed changes
-    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
     
   http:
