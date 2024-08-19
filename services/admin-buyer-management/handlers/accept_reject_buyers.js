@@ -11,6 +11,8 @@ const mailchimp = require('@mailchimp/mailchimp_transactional')
 
 const Auction = require('../entities/Auction')
 const Counter = require('../entities/Counter')
+const Subdomain = require('../entities/SubDomain')
+const Users = require('../entities/Users')
 
 const helpers = require('../lib/helper')
 const RegisteredUser = require('../entities/RegisteredUser')
@@ -107,7 +109,8 @@ module.exports.handler = async (event) => {
             // Use toLocaleTimeString() to get a formatted time string based on the user's locale
             const formattedStartTime = startDate.toLocaleTimeString()
             const formattedEndTime = endDate.toLocaleTimeString()
-            const url = `https://${subdomain.subdomain}.${os.environ.AMPLIFY_DOMAIN_NAME}/auctions/${auction_id}`
+            const subdomain = await mongodbHelper.getSubdomain({ seller_email: requestBody.seller_email }, Subdomain)
+            const url = `https://${subdomain.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${getAuction[0]._id}`
             const template_data = {
                 Seller_name: 'Admin',
                 paddle: getPaddle.starting_sequence,
@@ -117,19 +120,22 @@ module.exports.handler = async (event) => {
                 auction_start_time: formattedStartTime,
                 auction_end_date: formattedEndDate,
                 auction_end_time: formattedEndTime,
-                auction_image: `${process.environ.CDN_LINK}${getAuction[0].auction_image}`,
+                auction_image: `${process.env.CDN_LINK}${getAuction[0].auction_image}`,
                 color: getAuction[0].paddle.text_color === '' ? '#FFFFFF' : getAuction[0].paddle.text_color,
                 background_color: getAuction[0].paddle.background_color === '' ? '#000000' : getAuction[0].paddle.background_color,
                 // img: getAuction[0].logo_image === '' ? `${os.environ.CDN_LINK}Logo.png` : `${os.environ.CDN_LINK}${getAuction[0].logo_image}`,
                 subject: 'Indy.auction-Your Paddle Number Awaits: Registration Successful',
-                logo: getAuction[0].logo_image === '' ? `${process.environ.CDN_LINK}Logo.png` : `${process.environ.CDN_LINK}${getAuction[0].logo_image}`,
+                logo: getAuction[0].logo_image === '' ? `${process.env.CDN_LINK}Logo.png` : `${process.env.CDN_LINK}${getAuction[0].logo_image}`,
                 Seller_email: requestBody.seller_email,
                 domainURL: url,
             }
 
-            const seller = await mongodbHelper.getUser({ email_address: requestBody.seller_email })
-            let templateName = `${seller.seller_id}-PADDLE-GENERATION`
-            const mailchimpClient = mailchimp.Client(process.env.MAILCHIMP_SECRET_KEY)
+            const seller = await mongodbHelper.getUser({ email_address: requestBody.seller_email }, Users)
+            console.log('seller', seller)
+            const sellerId = seller[0].seller_id
+            let templateName = `${sellerId}-PADDLE-GENERATION`
+            console.log('template', templateName)
+            const mailchimpClient = await mailchimp(process.env.MAILCHIMP_SECRET_KEY)
             try {
                 const response = await mailchimpClient.templates.info({ name: templateName })
                 console.log('Mailchimp template response:', response)
@@ -138,7 +144,7 @@ module.exports.handler = async (event) => {
                 templateName = 'buyer_default_paddle_template'
             }
 
-            await mailchimpHelper.sendMailchimpEmail(requestBody.email_address, templateName, template_data, process.env.SES_SENDER_EMAIL_ID)
+            await mailchimpHelper.sendMailchimpEmail(requestBody.email_address, templateName, template_data, process.env.MAILCHIMP_ADDRESS)
             requestBody.paddle = getPaddle.starting_sequence
         }
         const updateStatus = await mongodbHelper.commonUpdate(RegisteredUser, query, requestBody)
