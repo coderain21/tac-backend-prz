@@ -153,8 +153,7 @@ def import_lots(event, context):
             }
         start_date=auction_record['start_date']
         end_date= auction_record['end_date']
-        print(123,auction_record)
-        print(3333, start_date, end_date)
+        print('endadte', end_date)
         additional_fields = {
             "auction_id": auction_id,
             "seller_email": email_address,
@@ -177,12 +176,11 @@ def import_lots(event, context):
                 "starting_sequence": last_lot_number
             }
             result = counter_collection.insert_one(counter_record)
-        extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        extension_time_str = auction_record.get('extension_time_between_lots', '')
         if extension_time_str != '':
             extension_time = int(extension_time_str[:1])
         else:
-            extension_time=0
-        print(counter_record)
+            extension_time=2
         last_lot_number = counter_record["starting_sequence"]
         try:
             count_import = 1
@@ -193,6 +191,7 @@ def import_lots(event, context):
                 dict1["lot_number"] = last_lot_number
                 if end_date is not None:
                     if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+                        print('inside otherthan ')
                         dict1['start_date'] = start_date
                         if dict1['lot_number'] == 1:
                             dict1['end_date'] = end_date
