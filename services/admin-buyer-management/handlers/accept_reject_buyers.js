@@ -7,6 +7,8 @@ const { ObjectId } = require('mongodb')
 
 const Joi = require('joi')
 
+const mailchimp = require('@mailchimp/mailchimp_transactional')
+
 const Auction = require('../entities/Auction')
 const Counter = require('../entities/Counter')
 
@@ -14,6 +16,7 @@ const helpers = require('../lib/helper')
 const RegisteredUser = require('../entities/RegisteredUser')
 
 const mongodbHelper = require('../lib/mongodb_helper')
+const mailchimpHelper = require('../lib/mailchimp_helper')
 
 const schema = Joi.object().keys({
     status: Joi.string().required().messages({
@@ -85,50 +88,57 @@ module.exports.handler = async (event) => {
             }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
 
             // const getPaddle = await mongodbHelper.view(Counter, query2)
-            const date = new Date(getAuction[0].start_date)
+            const startDate = new Date(getAuction[0].start_date)
+            const endDate = new Date(getAuction[0].end_date)
 
             // Get individual components of the date
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based, so add 1
-            const day = String(date.getDate()).padStart(2, '0')
+            const startYear = startDate.getFullYear()
+            const startMonth = String(startDate.getMonth() + 1).padStart(2, '0') // Months are zero-based, so add 1
+            const startDay = String(startDate.getDate()).padStart(2, '0')
+
+            const endYear = endDate.getFullYear()
+            const endMonth = String(endDate.getMonth() + 1).padStart(2, '0') // Months are zero-based, so add 1
+            const endDay = String(endDate.getDate()).padStart(2, '0')
 
             // Construct the date string with hyphens
-            const formattedDate = `${year}-${month}-${day}`
+            const formattedStartDate = `${startYear}-${startMonth}-${startDay}`
+            const formattedEndDate = `${endYear}-${endMonth}-${endDay}`
 
             // Use toLocaleTimeString() to get a formatted time string based on the user's locale
-            const formattedTime = date.toLocaleTimeString()
-            url = `https://${subdomain['subdomain']}.${os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/${auction_id}`
+            const formattedStartTime = startDate.toLocaleTimeString()
+            const formattedEndTime = endDate.toLocaleTimeString()
+            const url = `https://${subdomain.subdomain}.${os.environ.AMPLIFY_DOMAIN_NAME}/auctions/${auction_id}`
             const template_data = {
                 Seller_name: 'Admin',
                 paddle: getPaddle.starting_sequence,
                 user_first_name: requestBody.first_name,
                 Auction_title: getAuction[0].title,
-                auction_start_date: formattedDate,
-                auction_start_time: formattedTime,
-                auction_end_date: formattedDate,
-                auction_end_time: formattedTime,
-                auction_image: getAuction[0].image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].image}`,
+                auction_start_date: formattedStartDate,
+                auction_start_time: formattedStartTime,
+                auction_end_date: formattedEndDate,
+                auction_end_time: formattedEndTime,
+                auction_image: `${process.environ.CDN_LINK}${getAuction[0].auction_image}`,
                 color: getAuction[0].paddle.text_color === '' ? '#FFFFFF' : getAuction[0].paddle.text_color,
                 background_color: getAuction[0].paddle.background_color === '' ? '#000000' : getAuction[0].paddle.background_color,
-                img: getAuction[0].logo_image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].logo_image}`,
+                // img: getAuction[0].logo_image === '' ? `${os.environ.CDN_LINK}Logo.png` : `${os.environ.CDN_LINK}${getAuction[0].logo_image}`,
                 subject: 'Indy.auction-Your Paddle Number Awaits: Registration Successful',
-                logo: getAuction[0].logo_image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].logo_image}`,
+                logo: getAuction[0].logo_image === '' ? `${process.environ.CDN_LINK}Logo.png` : `${process.environ.CDN_LINK}${getAuction[0].logo_image}`,
                 Seller_email: requestBody.seller_email,
                 domainURL: url,
             }
-            {"paddle":paddle['starting_sequence'],
-                "Seller_name": seller_name,"user_first_name": first_name,
-                "Auction_title":title, "auction_start_date":str(start_date) ,
-                "auction_start_time":str(start_time),
-                "auction_end_date":str(end_date), "auction_end_time":str(end_time),
-                "auction_image": auction_image,
-                "color":paddle_text_color,
-                "background_color":paddle_background_color,
-                "logo":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful",
-                "Seller_email": seller_email,
-                "domainURL": domain_url
-}
-            await helpers.sendPinpointEmail(requestBody.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_PADDLE)
+
+            const seller = await mongodbHelper.getUser({ email_address: requestBody.seller_email })
+            let templateName = `${seller.seller_id}-PADDLE-GENERATION`
+            const mailchimpClient = mailchimp.Client(process.env.MAILCHIMP_SECRET_KEY)
+            try {
+                const response = await mailchimpClient.templates.info({ name: templateName })
+                console.log('Mailchimp template response:', response)
+            } catch (error) {
+                console.error('Error getting Mailchimp template:', error)
+                templateName = 'buyer_default_paddle_template'
+            }
+
+            await mailchimpHelper.sendMailchimpEmail(requestBody.email_address, templateName, template_data, process.env.SES_SENDER_EMAIL_ID)
             requestBody.paddle = getPaddle.starting_sequence
         }
         const updateStatus = await mongodbHelper.commonUpdate(RegisteredUser, query, requestBody)
