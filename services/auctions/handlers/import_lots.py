@@ -69,7 +69,6 @@ def import_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -93,7 +92,6 @@ def import_lots(event, context):
         collection = os.environ['SELLERS_TABLE']
         user_info = get_by_email(
             email_address, collection)
-        print(user_info)
         plan_type = user_info.get("plan_type")
         free_user = user_info.get("free_user")
         if plan_type == "Free" or free_user == True:
@@ -103,7 +101,6 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to Import lots"})
             }
 
-        print("plan_type", plan_type)
 
         # Expected column headers as set
         expected_headers = [
@@ -153,10 +150,6 @@ def import_lots(event, context):
             }
         start_date=auction_record['start_date']
         end_date= auction_record['end_date']
-        print(123,auction_record)
-        print(3333, start_date, end_date)
-        static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
-        static_image_data = [{"url": static_image_url, "featured": True}]
         additional_fields = {
             "auction_id": auction_id,
             "seller_email": email_address,
@@ -178,12 +171,11 @@ def import_lots(event, context):
                 "starting_sequence": last_lot_number
             }
             result = counter_collection.insert_one(counter_record)
-        extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        extension_time_str = auction_record.get('extension_time_between_lots', '')
         if extension_time_str != '':
             extension_time = int(extension_time_str[:1])
         else:
-            extension_time=0
-        print(counter_record)
+            extension_time=2
         last_lot_number = counter_record["starting_sequence"]
         try:
             count_import = 1
@@ -271,7 +263,6 @@ def import_lots(event, context):
             "starting_sequence": last_lot_number
         }
 
-        print("latest lot number", last_lot_number)
         counter_collection.update_one({"auction_id": auction_id,
                                        "seller_email": email_address,
                                        "record_type": "Lots"}, {
