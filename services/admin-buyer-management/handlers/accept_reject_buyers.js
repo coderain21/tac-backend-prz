@@ -97,6 +97,7 @@ module.exports.handler = async (event) => {
 
             // Use toLocaleTimeString() to get a formatted time string based on the user's locale
             const formattedTime = date.toLocaleTimeString()
+            url = `https://${subdomain['subdomain']}.${os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/${auction_id}`
             const template_data = {
                 Seller_name: 'Admin',
                 paddle: getPaddle.starting_sequence,
@@ -104,11 +105,29 @@ module.exports.handler = async (event) => {
                 Auction_title: getAuction[0].title,
                 auction_start_date: formattedDate,
                 auction_start_time: formattedTime,
+                auction_end_date: formattedDate,
+                auction_end_time: formattedTime,
+                auction_image: getAuction[0].image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].image}`,
                 color: getAuction[0].paddle.text_color === '' ? '#FFFFFF' : getAuction[0].paddle.text_color,
                 background_color: getAuction[0].paddle.background_color === '' ? '#000000' : getAuction[0].paddle.background_color,
                 img: getAuction[0].logo_image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].logo_image}`,
                 subject: 'Indy.auction-Your Paddle Number Awaits: Registration Successful',
+                logo: getAuction[0].logo_image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].logo_image}`,
+                Seller_email: requestBody.seller_email,
+                domainURL: url,
             }
+            {"paddle":paddle['starting_sequence'],
+                "Seller_name": seller_name,"user_first_name": first_name,
+                "Auction_title":title, "auction_start_date":str(start_date) ,
+                "auction_start_time":str(start_time),
+                "auction_end_date":str(end_date), "auction_end_time":str(end_time),
+                "auction_image": auction_image,
+                "color":paddle_text_color,
+                "background_color":paddle_background_color,
+                "logo":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful",
+                "Seller_email": seller_email,
+                "domainURL": domain_url
+}
             await helpers.sendPinpointEmail(requestBody.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_PADDLE)
             requestBody.paddle = getPaddle.starting_sequence
         }
