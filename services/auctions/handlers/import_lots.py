@@ -69,7 +69,6 @@ def import_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -93,7 +92,6 @@ def import_lots(event, context):
         collection = os.environ['SELLERS_TABLE']
         user_info = get_by_email(
             email_address, collection)
-        print(user_info)
         plan_type = user_info.get("plan_type")
         free_user = user_info.get("free_user")
         if plan_type == "Free" or free_user == True:
@@ -103,7 +101,6 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to Import lots"})
             }
 
-        print("plan_type", plan_type)
 
         # Expected column headers as set
         expected_headers = [
@@ -153,7 +150,6 @@ def import_lots(event, context):
             }
         start_date=auction_record['start_date']
         end_date= auction_record['end_date']
-        print('endadte', end_date)
         additional_fields = {
             "auction_id": auction_id,
             "seller_email": email_address,
@@ -190,7 +186,6 @@ def import_lots(event, context):
                 dict1["lot_number"] = last_lot_number
                 if end_date is not None:
                     if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
-                        print('inside otherthan ')
                         dict1['start_date'] = start_date
                         if dict1['lot_number'] == 1:
                             dict1['end_date'] = end_date
@@ -268,7 +263,6 @@ def import_lots(event, context):
             "starting_sequence": last_lot_number
         }
 
-        print("latest lot number", last_lot_number)
         counter_collection.update_one({"auction_id": auction_id,
                                        "seller_email": email_address,
                                        "record_type": "Lots"}, {
