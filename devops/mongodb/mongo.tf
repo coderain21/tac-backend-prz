@@ -83,6 +83,9 @@ resource "aws_route_table" "instance" {
     cidr_block = "0.0.0.0/0"
     nat_gateway_id = aws_nat_gateway.nat_gateway.id
   }
+  lifecycle {
+    ignore_changes = [route]
+  }
   provider = aws.deployment-eu
 }
 
@@ -180,6 +183,9 @@ resource "aws_security_group" "ssh_sg_1" {
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+  }
+  lifecycle {
+    ignore_changes = [egress]
   }
   provider = aws.deployment-eu
 }
@@ -289,6 +295,14 @@ resource "aws_ssm_parameter" "ec2_instance_id" {
   name  = "EC2_INSTANCE_ID"
   type  = "String"
   value = resource.aws_instance.ssh_tunnel.id
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "mongodb_password" {
+  name  = "MONGO_PASSWORD"
+  type  = "String"
+  value = random_password.password.result
   provider = aws.deployment-eu
   overwrite = true
 }

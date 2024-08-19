@@ -1,0 +1,204 @@
+service: quicksight-dashboards
+frameworkVersion: "3"
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  -
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  versionFunctions: false
+  layers: ${ssm:COMMON_LIB_ARN}
+  environment:
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
+    ADMIN_COGNITO_AUTH_ARN: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+    ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
+    COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    ADMIN_COGNITO_USERPOOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
+    QUICKSIGHT_ASSUME_ROLE_ARN: ${ssm:QUICKSIGHT_ASSUME_ROLE_ARN}
+    QUICKSIGHT_ACCOUNT_ID: ${ssm:QUICKSIGHT_ACCOUNT_ID}
+    QUICKSIGHT_DASHBOARD_ID: ${ssm:QUICKSIGHT_DASHBOARD_ID}
+    S3_BUCKET_URL: ${ssm:CDN_URL}
+    SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
+    QUICKSIGHT_AUCTION_DASHBOARD_ID: ${ssm:QUICKSIGHT_AUCTION_DASHBOARD_ID}
+    ADMIN_DASHBOARD_ID: ${ssm:ADMIN_DASHBOARD_ID}
+
+
+
+  http:
+    cors: true
+    authorizers:
+      cognito-auth:
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:ADMIN_COGNITO_USERPOOL_ID}
+        audience: ${ssm:ADMIN_COGNITO_CLIENT_ID}
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+            - mobiletargeting:*
+            - dynamodb:*
+            - execute-api:*
+            - states:*
+            - sqs:*
+            - sts:*
+          Resource: "*"
+
+package:
+  patterns:
+    - "!./node_modules/**"
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+
+custom:
+  packageExternal:
+    external:
+      - "../../lib"
+      - "../../entities"
+
+  customDomain:
+    rest:
+      domainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+
+  serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
+
+
+functions:
+  view:
+      handler: handlers/view.get_dashboard
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /
+            method: get
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  auction-view:
+      handler: handlers/auction_view.get_auction_dashboard
+      timeout: 30
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /auction-view
+            method: get
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  admin-view:
+      handler: handlers/admin_view.admin_get_dashboard
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /admin-view
+            method: get
+            authorizer:
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  admin-auction-view:
+      handler: handlers/admin_auction_view.admin_get_dashboard
+      timeout: 30
+      runtime: python3.8
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN_PYTHON}
+      role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
+      events:
+        - http:
+            cors: true
+            path: /admin-auction-view
+            method: get
+            authorizer:
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
+resources:
+  Resources:
+    GatewayResponseDefault4XX:
+      Type: "AWS::ApiGateway::GatewayResponse"
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: "ApiGatewayRestApi"
+
+
+    # UpdatePassword:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/update_password.html)}
+    #     Subject: Indy.auction - Password Update Confirmation
+    #     TemplateName: ${self:provider.stage}-admin-update-password-template
+
+
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
+  - serverless-plugin-ifelse
+  - serverless-step-functions
+

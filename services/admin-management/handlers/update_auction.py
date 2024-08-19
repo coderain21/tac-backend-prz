@@ -28,6 +28,9 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
+
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
@@ -104,7 +107,6 @@ def update_auction(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -113,6 +115,7 @@ def update_auction(event, context):
             }
 
         request_body = json.loads(event['body'])
+        admin_record = admin_collection.find_one({"email_address": email_address})
         end_date = request_body.get('end_date', None)
         auction_id = event['pathParameters']['auction_id']
         seller_email = event['queryStringParameters']['seller_email']
@@ -151,13 +154,6 @@ def update_auction(event, context):
             }
 
         if published_status == 'true':
-            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            # if kyc_kyb_review is not True:
-            #     return {
-            #             "statusCode": 400,
-            #             'headers': headers,
-            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
-            #         }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
@@ -229,46 +225,6 @@ def update_auction(event, context):
                     step_request['auction_id'] = auction_id
                     step_request['seller_email'] = seller_email
                     inserted = collectionArn.insert_one(step_request)
-                # auction_data_sqs = {
-                #     'extension_time': auction_record.get('extension_time'),
-                #     'seller_email': auction_record.get('seller_email'),
-                #     'auction_id': auction_record.get('auction_id'),
-                # }
-                # auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
-                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
-                # # total_lots = len(json_serializable_list)
-                # batch_size_lots = 50  # Batch size for lots
-                # batch_size_queue = 3  # Number of batches to send at once
-                # total_lots = len(json_serializable_list)
-                # user_batches = []
-                # # Batch lots by 30
-                # for i in range(0, total_lots, batch_size_lots):
-                #     batch_end = min(i + batch_size_lots, total_lots)
-                #     user_batches.append(json_serializable_list[i:batch_end])
-                # # Send batches of 3 to the queue
-                # for i in range(0, len(user_batches), batch_size_queue):
-                #     # Get a sublist containing at most 3 batches
-                #     send_batches = user_batches[i:i+batch_size_queue]
-                #     # Prepare entries for each batch in send_batches
-                #     entries = []
-                #     for item in send_batches:
-                #         message_body = 'update status'
-                #         message_attributes = {
-                #         'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
-                #         'auction': {'DataType': 'String', 'StringValue': auction_record_str},
-                #         'type': {'DataType': 'String', 'StringValue': 'published'},
-                #         }
-                #         entries.append(
-                #             {'Id': str(uuid.uuid4()),
-                #              'MessageBody': message_body,
-                #             'MessageAttributes': message_attributes
-                #             })
-                #     # Send the batch of entries to the queue
-                #     cc = sqs.send_message_batch(
-                #         QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
-                #         Entries=entries
-                #     )
-                #     print('cc', cc)
 
                 return {
                     "statusCode": 204,
@@ -424,15 +380,26 @@ def update_auction(event, context):
                         Entries=entries
                     )
                     print('cc', cc)
-                # update in the mongodb database
-                # Modify start_date and end_date before sending SQS
-        # additional_time_ms = end_date + existing_lots_count * extension_time * 60 * 1000
-        # update_data ['end_date'] = additional_time_ms
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
+        access_logs = {
+            "actor_id": admin_record.get('user_id'),
+            "updated_by": {
+                "type": 'Admin',
+                "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
+                "email_address": email_address,
+            },
+            "section": {
+                "name": 'Auctions Management',
+                "action": 'Update',
+                "auction_id": auction_id,
+                "updated": update_data
+            },
+        }
+        access_logs_collection.insert_one(access_logs)
         return {
             "headers": headers,
             'statusCode': 204,

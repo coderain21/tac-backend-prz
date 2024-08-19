@@ -57,6 +57,7 @@ provider:
           - !Ref "AWS::AccountId"
           - "templates/${self:provider.stage}-admin-delete-buyer-template/EMAIL"
 >>>>>>> Stashed changes
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
     
   http:
