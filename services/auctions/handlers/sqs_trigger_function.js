@@ -31,7 +31,6 @@ const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
 const Lot = require('../entities/Lot')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
-const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
 // const pinpoint = new PinpointEmail()
 let connection = null
