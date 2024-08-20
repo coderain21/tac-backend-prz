@@ -17,6 +17,9 @@
 // const {
 //     PinpointEmail,
 // } = require('aws-sdk')
+// const {
+//     PinpointEmail,
+// } = require('aws-sdk')
 const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
@@ -254,7 +257,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                 const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
                 const auctionId = auctionData._id.toString()
                 const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
-
                 // Create the email data
                 const template_data = {
                     winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
@@ -268,6 +270,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     seller_email: auctionData.seller_email,
                     subject: subjectDescription,
                     paymentContent,
+                    seller_id: sellerInformation[0].seller_id,
                     total_amount: totalBidAmount,
                     checkout_url: checkoutURL,
                 }
