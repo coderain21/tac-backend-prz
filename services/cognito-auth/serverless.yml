@@ -758,6 +758,13 @@ resources:
         Subject: Indy.auction - Your Account Deactivation Notification
         TemplateName: ${self:provider.stage}-admin-deactivate-seller-template
 
+    DeleteBuyer:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/delete_buyer.html)}
+        Subject: Indy.auction - Your Account Deactivation Notification
+        TemplateName: ${self:provider.stage}-admin-delete-buyer-template
+
 
 
             
