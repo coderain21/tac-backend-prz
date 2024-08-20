@@ -148,6 +148,9 @@
                         "show_bidder_location_in_bidder_history": {
                           "type": "string"
                         },
+                        "show_bidding_history": {
+                          "type": "string"
+                        },
                         "publish_auction_results": {
                           "type": "string"
                         }
@@ -2618,6 +2621,9 @@
             "type": "boolean"
           },
           "show_bidder_location_in_bidder_history": {
+            "type": "boolean"
+          },
+          "show_bidding_history": {
             "type": "boolean"
           },
           "make_your_auction_private": {
