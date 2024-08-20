@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import json
 import pymongo
 import os
@@ -16,6 +17,8 @@ client = pymongo.MongoClient(os.environ['MONGO_CLIENT'],
                              maxIdleTimeMS=60000)
 db = client[os.environ['DATABASE']]
 buyer_collection = db[os.environ['BUYER_COLLECTION']]
+access_log_collection = db[os.environ['ACCESS_LOG_COLLECTION']]
+admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 def delete_buyer(event, context):
@@ -33,14 +36,30 @@ def delete_buyer(event, context):
         buyer_email = event['queryStringParameters']['buyer_email']
         print('buyer_email', buyer_email)
         result = buyer_collection.delete_many({"email_address": buyer_email})
+        admin_record = admin_collection.find_one({"email_address": email_address})
         cognito_delete = cognito_client.admin_delete_user(UserPoolId=os.environ["BUYER_COGNITO_USERPOOL_ID"], Username=buyer_email)
         print('cognito_delete', cognito_delete)
         print('result', result)
+        access_log_data = {
+            "actor_id": admin_record.get('user_id'),
+            "updated_by": {
+                "type": 'Admin',
+                "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
+                "email_address": email_address,
+            },
+            "section": {
+                "name": 'Bidder Management',
+                "action": 'Delete',
+                "buyer_email": buyer_email,
+            },
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
         
         if result:
-            email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], {"buyer_email": buyer_email},
+            email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], json.dumps({"buyer_email": buyer_email}),
                                         os.environ["TEMPLATE_ARN_ADMIN_DELETE_BUYER"])
             print('email_status', email_status)
+            access_log_collection.insert_one(access_log_data)
             if email_status:
                 return {
                     "statusCode": 200,

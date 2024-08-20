@@ -36,6 +36,8 @@ provider:
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
+    ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
+    ADMIN_USER_COLLECTION: ${opt:stage, self:provider.stage}-admin-users
     SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL_ADDRESS}
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     CSV_FILE:  /tmp/Auctions.csv
