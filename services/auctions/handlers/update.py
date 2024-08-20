@@ -301,7 +301,6 @@ def update_auction(event, context):
                             # Add more required fields as needed
                         }
                     allLots.append(required_fields)
-                print('allLots', allLots)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
                 # total_lots = len(json_serializable_list)
@@ -386,34 +385,23 @@ def update_auction(event, context):
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
         documents = []
-        extension_time_str = auction_record.get('extension_time_between_lots', '0')
-        if extension_time_str != '':
+        extension_time_str = auction_record.get('extension_time_between_lots', 2)
+        if extension_time_str:
             extension_time = int(extension_time_str[:1])
         else:
-            extension_time=0
-
-        # if auction_extension_type or auction_extension_between_lots:
-        #     if auction_extension_type and not auction_extension_between_lots:
-        #         extension_time_str = auction_record.get('extension_time_between_lots', '0')
-        #         extension_time = int(extension_time_str[:1])
-        #     elif auction_extension_between_lots and not auction_extension_type:
-        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
-        #         extension_time = int(extension_time_str[:1])
-        #     elif auction_extension_type and auction_extension_between_lots:
-        #         extension_time_str = request_body.get('extension_time_between_lots', '0')
-        #         extension_time = int(extension_time_str[:1])
-
+            extension_time=2
         if auction_extension_type or auction_extension_between_lots:
             if auction_extension_type and not auction_extension_between_lots:
-                extension_time_str = auction_record.get('extension_time_between_lots', '0')
+                extension_time_str = auction_record.get('extension_time_between_lots', 2)
             elif auction_extension_between_lots and not auction_extension_type:
-                extension_time_str = request_body.get('extension_time_between_lots', '0')
+                extension_time_str = request_body.get('extension_time_between_lots', 2)
             elif auction_extension_type and auction_extension_between_lots:
-                extension_time_str = request_body.get('extension_time_between_lots', '0')
+                extension_time_str = request_body.get('extension_time_between_lots', 2)
             try:
-                extension_time = int(extension_time_str[:1]) if extension_time_str else 0
+                extension_time = int(extension_time_str[:1]) if extension_time_str else 2
             except ValueError:
                 extension_time = 0
+        print('extension time', extension_time)
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if auction_end_date != None:
@@ -524,7 +512,6 @@ def update_auction(event, context):
                             # Add more required fields as needed
                         }
                     else:
-                        print('no from existing')
                         required_fields = {
                                 '_id': item.get('_id'),
                                 'start_date': item.get('start_date'),
