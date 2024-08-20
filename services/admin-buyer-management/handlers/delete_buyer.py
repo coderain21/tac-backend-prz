@@ -1,3 +1,4 @@
+'''This api is used to delete the buyer by admin'''
 from datetime import datetime, timezone
 import json
 import pymongo
@@ -54,7 +55,7 @@ def delete_buyer(event, context):
             },
             "updated_at": datetime.now(timezone.utc).isoformat(),
         }
-        
+
         if result:
             email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], json.dumps({"buyer_email": buyer_email}),
                                         os.environ["TEMPLATE_ARN_ADMIN_DELETE_BUYER"])
