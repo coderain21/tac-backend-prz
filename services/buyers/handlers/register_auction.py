@@ -4,9 +4,13 @@ import os
 import pymongo
 from pymongo import MongoClient
 from bson import ObjectId
-from lib.helper_python import send_pinpoint_email
+# from lib.helper_python import send_pinpoint_email
+from lib.email_helper import send_mailchimp_email
 from datetime import datetime
 import pytz
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
+
 #from lib.common_helper import Encoder
 headers = {
     'Content-Type': 'application/json',
@@ -28,6 +32,8 @@ auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
+subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
+template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
 
@@ -46,10 +52,6 @@ TIMEZONE_MAPPING = {
         'CST - Central Standard Time (US)': 'America/Chicago',
         'EST - Eastern Standard Time (US)': 'America/New_York',
     }
-
-
-
-
 
 
 def register_auction(event, context):
@@ -89,15 +91,8 @@ def register_auction(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                print('here in first')
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
         except:
             print('here in second')
             return {
@@ -151,6 +146,16 @@ def register_auction(event, context):
         start_date_time_local = start_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
         start_date = start_date_time_local.date()
         start_time = start_date_time_local.time().strftime('%H:%M:%S')
+
+        print('Start date:', start_date, 'Start time:', start_time)
+
+
+
+        end_date_time_in_milliseconds = registration_type.get('end_date', datetime.utcnow().timestamp() * 1000)
+        end_date_time_utc = datetime.utcfromtimestamp(end_date_time_in_milliseconds / 1000)
+        end_date_time_local = end_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
+        end_date = end_date_time_local.date()
+        end_time = end_date_time_local.time().strftime('%H:%M:%S')
 
         print('Start date:', start_date, 'Start time:', start_time)
 
@@ -217,15 +222,39 @@ def register_auction(event, context):
                                 'starting_sequence': 1}},
                             return_document=pymongo.ReturnDocument.AFTER,
                             upsert=True)
-            template_data = json.dumps({"paddle":paddle['starting_sequence'],
+            subdomain = subdomain_collection.find_one({"seller_email": seller_email})
+            domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
+
+            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+            template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
                             "auction_start_time":str(start_time),
+                            "auction_end_date":str(end_date), "auction_end_time":str(end_time),
+                            "auction_image": auction_image,
                             "color":paddle_text_color,
                             "background_color":paddle_background_color,
-                            "img":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful"})
-            send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
-                                template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
+                            "logo":logo_img,"subject":"Indy.auction-Your Paddle Number Awaits: Registration Successful",
+                            "Seller_email": seller_email,
+                            "domainURL": domain_url
+            }
+            # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
+            #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
+
+            # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
+                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                print(response)
+                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+            except ApiClientError as error:
+                template_name = 'buyer_default_paddle_template'
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+
             data_to_insert= {
                         'first_name': first_name,
                         'last_name': last_name,
