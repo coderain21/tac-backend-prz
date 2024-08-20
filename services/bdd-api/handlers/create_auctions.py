@@ -127,6 +127,7 @@ def create(event, context):
         request_body['terms_and_condition'] = ''
         request_body['publish_auction_results'] = False
         request_body['show_bidder_location_in_bidder_history'] = False
+        request_body['show_bidding_history'] = False
         request_body['make_your_auction_private'] = False
         request_body['passcode'] = ''
         request_body['font'] = {
