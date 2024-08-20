@@ -178,7 +178,7 @@ def accept_buyer(event, context):
                 print("An exception occurred: {}".format(error.text))
 
             print('template_name', template_name)
-            send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_'])
 
 
 
