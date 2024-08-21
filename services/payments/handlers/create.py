@@ -215,15 +215,6 @@ def create_intent(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        db = client[os.environ['DATABASE']]
-        buyer_collection = db[os.environ['BUYERS_COLLECTION']]
-        buyer_details = buyer_collection.find_one({'email_address':email_address})
-        if buyer_details is None:
-            return {
-                "statusCode": 404,
-                "headers": headers,
-                "body": json.dumps({"message": "Buyer doesn't exist"})
-            }
 
         data = event['queryStringParameters']
         expected_fields = ["id", "domain", "amount","billing","shipping","timestamp"]
