@@ -359,6 +359,8 @@ resources:
         #   - SOFTWARE_TOKEN_MFA
         EmailConfiguration:
           EmailSendingAccount: COGNITO_DEFAULT
+        UsernameAttributes:
+          - email
         UsernameConfiguration:
           CaseSensitive: true
         AccountRecoverySetting:
