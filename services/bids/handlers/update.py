@@ -78,15 +78,17 @@ def update_user(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            # email_address = event['requestContext']['authorizer']['claims']['email']
+            # print('email', email_address)
+            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            #     print('here in first')
+            #     return {
+            #         "statusCode": 403,
+            #         "headers": headers,
+            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+            #     }
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                print('here in first')
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
         except:
             print('here in second')
             return {
@@ -110,12 +112,12 @@ def update_user(event, context):
         new = data.get("new",False)
         seller_email = fetch_seller_email_from_auction(auction_id)
         # Add user to the specified Cognito group
-        x = cognito_client.admin_add_user_to_group(
-            GroupName= group.split('@')[0],
-            UserPoolId=os.environ["DEFAULT_USERPOOL_ID"],
-            Username=email_address
-        )
-        print('xxxx', x)
+        # x = cognito_client.admin_add_user_to_group(
+        #     GroupName= group.split('@')[0],
+        #     UserPoolId=os.environ["DEFAULT_USERPOOL_ID"],
+        #     Username=email_address
+        # )
+        # print('xxxx', x)
 
         if seller_email is not None:
             buyer_data_to_add = {

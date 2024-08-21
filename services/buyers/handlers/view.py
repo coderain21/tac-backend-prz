@@ -93,6 +93,7 @@ def view(event, context):
             "faq": 1,
             "terms_and_condition": 1,
             "paddle": 1,
+            "show_bidding_history": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,
             "passcode": 1,

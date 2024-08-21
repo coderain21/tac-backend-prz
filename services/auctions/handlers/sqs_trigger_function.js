@@ -14,9 +14,12 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-await-in-loop */
 
-const {
-    PinpointEmail,
-} = require('aws-sdk')
+// const {
+//     PinpointEmail,
+// } = require('aws-sdk')
+// const {
+//     PinpointEmail,
+// } = require('aws-sdk')
 const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
@@ -26,8 +29,10 @@ const BidInformation = require('../entities/BidInformation')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
+const Lot = require('../entities/Lot')
+const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
-const pinpoint = new PinpointEmail()
+// const pinpoint = new PinpointEmail()
 let connection = null
 
 /**
@@ -78,7 +83,6 @@ async function lotDetails(rediskey, client) {
  * @returns {string} The formatted currency string
  */
 function formatCurrency(amount, currencyCode) {
-    console.log('amount', amount)
     try {
         // Convert amount to a string
         const amountString = String(amount)
@@ -117,35 +121,35 @@ function formatCurrency(amount, currencyCode) {
  * @param {string} templateData The data to pass to the email template
  * @param {string} templateArn The ARN of the email template to use
  */
-async function sendMail(destinationId, sourceId, templateData, templateArn) {
-    const params = {
-        // The content of the email
-        Content: {
-            // The template to use
-            Template: {
-                // The ARN of the email template to use
-                TemplateArn: templateArn,
-                // The data to pass to the email template
-                TemplateData: templateData,
-            },
-        },
-        // The email address the email is from
-        FromEmailAddress: process.env.SENDER_EMAIL,
-        // The email address to send the email to
-        Destination: {
-            // An array of email addresses to send the email to
-            ToAddresses: [destinationId],
-        },
-    }
-    try {
-        // Send the email using the AWS Pinpoint service
-        const sendEmail = await pinpoint.sendEmail(params).promise()
-        console.log('sendEmail', sendEmail)
-    } catch (error) {
-        // Log any errors that occur
-        console.error('Failed to send email:', error)
-    }
-}
+// async function sendMail(destinationId, sourceId, templateData, templateArn) {
+//     const params = {
+//         // The content of the email
+//         Content: {
+//             // The template to use
+//             Template: {
+//                 // The ARN of the email template to use
+//                 TemplateArn: templateArn,
+//                 // The data to pass to the email template
+//                 TemplateData: templateData,
+//             },
+//         },
+//         // The email address the email is from
+//         FromEmailAddress: process.env.SENDER_EMAIL,
+//         // The email address to send the email to
+//         Destination: {
+//             // An array of email addresses to send the email to
+//             ToAddresses: [destinationId],
+//         },
+//     }
+//     try {
+//         // Send the email using the AWS Pinpoint service
+//         const sendEmail = await pinpoint.sendEmail(params).promise()
+//         console.log('sendEmail', sendEmail)
+//     } catch (error) {
+//         // Log any errors that occur
+//         console.error('Failed to send email:', error)
+//     }
+// }
 
 /**
  * Handle the AWS SQS trigger event for the auction completion job
@@ -171,6 +175,13 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Initialize empty array to store promiseList
         const promiseList = []
         const auctionData = await mongodbHelper.getAuction(event, Auction)
+        const payload = {
+            seller_email: auctionData.seller_email,
+            auction_id: auctionData.auction_id,
+        }
+        const getAuctionLots = await mongodbHelper.getAuctionLots(payload, Lot)
+        const lastRecord = getAuctionLots[getAuctionLots.length - 1]
+        console.log(lastRecord)
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         const getAllLots = await getLot('lot', client, event)
@@ -246,7 +257,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                 const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
                 const auctionId = auctionData._id.toString()
                 const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
-
                 // Create the email data
                 const template_data = {
                     winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
@@ -260,12 +270,14 @@ module.exports.sqsTriggerFunction = async (event) => {
                     seller_email: auctionData.seller_email,
                     subject: subjectDescription,
                     paymentContent,
+                    seller_id: sellerInformation[0].seller_id,
                     total_amount: totalBidAmount,
                     checkout_url: checkoutURL,
                 }
 
                 // Send email
-                promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+                // promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+                promiseList.push(sendTemplateEmails(user.email_address, template_data))
             }
 
             // Run all the promises in parallel

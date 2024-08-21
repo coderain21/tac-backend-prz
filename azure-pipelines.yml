@@ -22,7 +22,7 @@ variables:
     - group: pre-production
     - name: ENV
       value: 'Production'
-  - ${{ if or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')) }}:
+  - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     - group: develop
     - name: ENV
       value: 'Development'
@@ -32,7 +32,7 @@ stages:
   jobs:
     - job: "lint"
       displayName: "Code Quality"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-latest"
       steps:
@@ -50,22 +50,38 @@ stages:
           displayName: 'Dependencies'
         - script: |
             npm run eslint
-            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            if [ $? -ne 0 ]; then
+              echo "lint failed"
+              exit 1
+            fi
+          displayName: 'Eslint'
+        - script: |
+            pip3 install pylint==3.1.1
+            pylint services/**/**/*.py
+            if [ $? -ne 0 ]; then
+              echo "lint failed"
+              exit 1
+            fi
+            #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
             # sh terraform-linter.sh
-          displayName: 'Lint'
+          displayName: 'Pylint'
     - job: "secret"
       displayName: "Secret Checking"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-latest"
       steps:
         - script: |
             pip3 install detect-secrets
             detect-secrets scan 
+            if [ $? -ne 0 ]; then
+              echo "Secret Checking failed"
+              exit 1
+            fi
           displayName: 'Lint'
     - job: "licence_complaiance"
       displayName: "License Compliance"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-latest"
       steps:
@@ -73,10 +89,14 @@ stages:
             npm install -g license-checker 
             license-checker --json > licenses.json  
             node license.js
+            if [ $? -ne 0 ]; then
+              echo "License Compliance failed"
+              exit 1
+            fi
           displayName: 'License Compliance'
     - job: "sast"
       displayName: 'Static Application Security Testing (SAST)'
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-latest"
       steps:
@@ -85,7 +105,12 @@ stages:
             njsscan -w .
             pip3 install bandit
             bandit -r services/**/*.py
+            if [ $? -ne 0 ]; then
+              echo "SAST failed"
+              exit 1
+            fi
           displayName: 'Static Application Security Testing (SAST)'
+
 - stage: Build
   jobs:
     - job: "Download_Environment"
@@ -103,7 +128,7 @@ stages:
   jobs:
     - job: APITesting
       displayName: "Unit Testing"
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
         vmImage: "ubuntu-latest"
       steps:
@@ -128,42 +153,51 @@ stages:
             pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
             npm i -g dredd
             ./api-testing.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
             ./doc.sh
+          displayName: Unit Testing
+        - script: |
             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
             aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
-          displayName: Unit Testing
-        - script: |
-            if [ $? -ne 0 ]; then
-              echo "Unit Testing failed"
-              exit 1
-            fi
-          displayName: Check Unit Testing Status
+          displayName:  Unit Testing Documentation
   
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
       dependsOn: APITesting
-      condition: and(or(contains(variables['build.SourceBranch'], 'feature'), contains(variables['build.SourceBranch'], 'bugfix'), contains(variables['build.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-latest"
       steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0
+          persistCredentials: true
         - task: DownloadPipelineArtifact@2
           name: environment
           inputs:
             artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)'
         - script: |
-            source .env
-            docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
-            cd $(System.DefaultWorkingDirectory)
-            git config --global --add safe.directory $(System.DefaultWorkingDirectory)
-            pip3 install boto3
-            pip3 install PyJWT
-            pip3 install GitPython
-            mkdir test_results
-            python3 dast.py
+              git config --global user.email $BITBUCKET_EMAIL
+              git config --global user.name $BITBUCKET_USER
+              git config --global advice.detachedHead false
+              docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+              cd $(System.DefaultWorkingDirectory)
+              export $(grep -v '^#' .env | xargs)
+              source .env
+              # Print environment variables to verify they are set correctly
+              pip3 install gitpython
+              pip3 install boto3
+              pip3 install botocore
+              mkdir test_results
+              python dast.py 
           displayName: 'Dynamic Application Security Testing (DAST)'
+
     
 - stage: Deploy
   jobs:
@@ -197,6 +231,10 @@ stages:
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - script: |
                   bash devops/terraform_run.sh
+                  if [ $? -ne 0 ]; then
+                    echo "API testing failed"
+                    exit 1
+                  fi
                 displayName: 'Deployment'
 
 
