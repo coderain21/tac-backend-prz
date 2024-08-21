@@ -38,6 +38,7 @@ provider:
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
     ADMIN_USER_COLLECTION: ${opt:stage, self:provider.stage}-admin-users
+    BUYER_WISHLIST_TABLE_NAME: ${opt:stage, self:provider.stage}-buyer-wishlists
     SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL_ADDRESS}
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     CSV_FILE:  /tmp/Auctions.csv

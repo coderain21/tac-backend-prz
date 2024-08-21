@@ -78,9 +78,12 @@ module.exports.handler = async (event) => {
         if (auctionData.status !== 'Cancelled') {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
                 const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
-                lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
-                lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
-                await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+                console.log('getBuyerData', getBuyerData)
+                if (getBuyerData !== null && getBuyerData.length > 0) {
+                    lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
+                    lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
+                    await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+                }
                 await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
                 // const callSQS = await sqsTriggerFunction(event)
                 if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
