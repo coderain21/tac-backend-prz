@@ -297,7 +297,7 @@ def register_auction(event, context):
                 print("An exception occurred: {}".format(error.text))
 
             print('template_name', template_name)
-            send_mailchimp_email(email_address, template_name, template_data, os.environ['SES_SENDER_EMAIL_ID'])
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
 
             data_to_insert= {
                         'first_name': first_name,

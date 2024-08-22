@@ -180,7 +180,7 @@ def verify(event, context):
         print('template_name', template_name)
 
         send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
-                                        os.environ["SES_SENDER_EMAIL_ID"])
+                                        os.environ["MAILCHIMP_ADDRESS"])
 
         return {
             'statusCode': 201,
