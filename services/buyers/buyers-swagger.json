@@ -307,7 +307,8 @@
                 }
               }
             }
-          },
+          }
+        },
           "404": {
             "description": "Not found",
             "content": {
