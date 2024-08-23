@@ -79,7 +79,8 @@ module.exports.handler = async (event) => {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
                 const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
                 console.log('getBuyerData', getBuyerData)
-                if (getBuyerData !== null && getBuyerData.length > 0) {
+                if (getBuyerData && Object.keys(getBuyerData).length > 0) {
+                    console.log('here inside the condition')
                     lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
                     lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
                     await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
