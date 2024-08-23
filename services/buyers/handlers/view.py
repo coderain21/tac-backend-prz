@@ -152,18 +152,6 @@ def view(event, context):
                 "statusCode": 400,
                 "body": json.dumps({"message": "Timezone is missing for this auction."})
             }
-        # if start_time <= current_time < end_time:
-        #     # Auction is currently accepting bids
-        #     updated_status = "Accepting bids"
-        # elif current_time >= end_time:
-        #     # Auction has ended
-        #     updated_status = "Completed"
-        # else:
-        #     updated_status = result["status"]  # No change in status
-
-        # # Update the status in the database
-        # collection.update_one({"_id": auction_id}, {
-        #                       "$set": {"status": updated_status}})
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
         # client.close()
@@ -175,13 +163,16 @@ def view(event, context):
             data["font"] = result.get("font")
             data["buttons"] = result.get("buttons")
             data['title'] = result.get("title")
+            data['content_area'] = result.get("content_area")
+            object_id = result.get("_id")
+            data['_id'] = str(object_id) if isinstance(object_id, ObjectId) else object_id
             if domain_data is not None:
                 data["sub_domain"] = domain_data["subdomain"]
             return {
                 "headers": headers,
                 "statusCode": 400,
                 "body": json.dumps({"message":"This is a private auction,please provide passcode",
-                                    "data": data})
+                                    "data": data, })
             }
         elif result["make_your_auction_private"] is True and passcode is not None:
             if result["passcode"] != str(passcode):
