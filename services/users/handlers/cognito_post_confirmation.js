@@ -1,24 +1,15 @@
-/* eslint-disable camelcase */
-/* eslint-disable no-console */
-/* eslint-disable import/extensions */
-/* eslint-disable import/no-unresolved */
-const AWS = require('aws-sdk')
+/* eslint-disable no-unused-vars */
+// Handler for the Post Confirmation Lambda trigger
+exports.handler = async (event, context) => {
+    console.log(event)
+    // const userEmail = event.request.userAttributes.email
 
-AWS.config.update({ region: process.env.REGION })
-
-/**
- * Function to handle  cognito post challenge event
- * @param {Object} event
- * @param {Object} _context
- * @param {Object} callback
- * @returns returns event object
- */
-exports.handler = async (event, _context, callback) => {
-    try {
-        console.log('event', event, event.identities[0].email)
-        // callback(null, event)
-    } catch (error) {
-        console.log(error)
-        callback(error, event)
-    }
+    // try {
+    //     await createMailchimpTemplate(userEmail)
+    //     // Additional logic to handle post-confirmation actions...
+    //     console.log('Mailchimp template creation completed.')
+    // } catch (error) {
+    //     console.error('Error creating Mailchimp template:', error)
+    //     // Handle error appropriately...
+    // }
 }
