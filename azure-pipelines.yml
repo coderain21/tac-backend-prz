@@ -202,7 +202,7 @@ stages:
 - stage: Deploy
   jobs:
     - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
+      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
       displayName: Deployment
       pool:
         vmImage: 'ubuntu-latest'
