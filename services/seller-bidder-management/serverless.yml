@@ -102,7 +102,7 @@ functions:
   list:
     handler: handlers/list_of_bidders.list_bidders
     timeout: 60
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
