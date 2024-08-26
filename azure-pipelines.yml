@@ -19,7 +19,7 @@ variables:
     - name: ENV
       value: 'Testing'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-prod') }}:
-    - group: pre-prod
+    - group: pre-production
     - name: ENV
       value: 'Production'
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
