@@ -201,7 +201,7 @@ custom:
 functions:
   list-auction:
     handler: handlers/list_auction.list_auction
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -228,7 +228,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   list-buyers:
     handler: handlers/list_buyers.list_buyers
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -255,7 +255,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   buyer-details:
     handler: handlers/buyer_detail.buyer_detail
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -282,7 +282,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   buyer-view-auction:
     handler: handlers/buyer_list_auction.buyer_list_auction
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -309,7 +309,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   purchase-list:
     handler: handlers/list_purchases.list_purchases
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -336,7 +336,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   clone_auction:
     handler: handlers/clone_auction.clone_auction
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -363,7 +363,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   order-details:
     handler: handlers/order_details.order_detail
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -391,7 +391,7 @@ functions:
 
   auction-purchases:
     handler: handlers/auction_purchases.list_purchases
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -418,7 +418,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   auction-details:
     handler: handlers/auction_details.auction_details
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -446,7 +446,7 @@ functions:
 
   all-purchases:
     handler: handlers/all_accounting.list_all_purchases
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -473,7 +473,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   list-sellers:
     handler: handlers/list_sellers.list_sellers
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -500,7 +500,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   seller-details:
     handler: handlers/seller_details.seller_details
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -527,7 +527,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   update-seller-status:
     handler: handlers/update_seller_status.update_seller_status
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -555,7 +555,7 @@ functions:
             
   unpublish_auction:
     handler: handlers/unpublish_auction.handler
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -609,7 +609,7 @@ functions:
               arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   update_auction:
       handler: handlers/publish_auction.update_auction
-      runtime: python3.8
+      runtime: python3.9
       memorySize: 128
       vpc:
         securityGroupIds:
@@ -628,7 +628,7 @@ functions:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   admin-sub-domain:
     handler: handlers/subdomain.subdomain
-    runtime: python3.8
+    runtime: python3.9
     # timeout: 100
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -647,7 +647,7 @@ functions:
   
   edit_auction:
       handler: handlers/update_auction.update_auction
-      runtime: python3.8
+      runtime: python3.9
       memorySize: 2048
       vpc:
         securityGroupIds:
@@ -667,7 +667,7 @@ functions:
 
   admin_update_lot:
       handler: handlers/admin_update_lot.update
-      runtime: python3.8
+      runtime: python3.9
       memorySize: 128
       vpc:
         securityGroupIds:

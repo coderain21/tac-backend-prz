@@ -127,7 +127,7 @@ custom:
 functions:
   list_orders:
     handler: handlers/list.list_orders
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -154,7 +154,7 @@ functions:
   
   order_detail:
     handler: handlers/order_detail.order_detail
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -180,7 +180,7 @@ functions:
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   sales_details:
     handler: handlers/sales_details.sales_details
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -208,7 +208,7 @@ functions:
           
   seller_list_orders:
     handler: handlers/sellers_list.list_orders
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
