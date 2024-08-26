@@ -128,7 +128,9 @@ module.exports.otpValidation = async (event, _context, callback) => {
         if (userData.session_token !== '') {
             try {
                 const sender_email = process.env.CUSTOMER_SESSION_TOKEN_SECRET
+                // const iv = Buffer.from(userData.iv, 'hex')
                 const data = await decryptWithTimeValidation(userData.session_token, sender_email, 600000)
+                console.log('data', data)
                 const OTP = userData.otp
                 if (data === false) {
                     return {
@@ -164,7 +166,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                         url: process.env.DASHBOARD_URL,
                     }
                     await helpers.sendPinpointEmail(userData.email_address, process.env.SES_SENDER_EMAIL_ID, JSON.stringify(template_data), process.env.TEMPLATE_ARN_WELCOME_EMAIL)
-
+                    // await mailchimpHelper.createTemplate(userData)
                     return {
                         statusCode: 201,
                         headers: await helpers.getHeaders(),
@@ -177,6 +179,7 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     body: JSON.stringify({ message: 'Invalid OTP' }),
                 }
             } catch (err) {
+                console.log('Error', err)
                 return {
                     statusCode: 400,
                     headers: await helpers.getHeaders(),

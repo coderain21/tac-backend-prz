@@ -118,3 +118,7 @@ variable "GOOGLE_API" {
   type        = string
   description = "Description of the variable"
 }
+variable "MAILCHIMP_ADDRESS" {
+  type        = string
+  description = "Description of the variable"
+}
