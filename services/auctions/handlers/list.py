@@ -23,6 +23,9 @@ client = MongoClient(
                         )
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+collection_seller = db[os.environ["SELLERS_TABLE"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+
 
 def prepend_backslash(text):
     # Define a regular expression pattern to match special characters
@@ -132,10 +135,31 @@ def list_auction(event, context):
             "faq": 1,
             "terms_and_condition": 1,
             "paddle": 1,
+            "show_bidding_history": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1
         }
         if export is not None and export == 1:
+            # Get the current timestamp in seconds and convert to milliseconds
+            timestamp_ms = int(datetime.now().timestamp() * 1000)
+
+            # Convert to float and format as a string with '.0'
+            formatted_timestamp = float(timestamp_ms)
+            seller_data = collection_seller.find_one({"email_address": email_address}, {"_id": 0})
+            access_logs = {
+                "actor_id": seller_data.get('seller_id'),
+                "updated_by": {
+                    "type": 'Seller',
+                    "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+                    "email_address": email_address,
+                },
+                "section": {
+                    "name": 'Auction Management',
+                    "action": 'Export',
+                },
+                "updated_at": formatted_timestamp
+            }
+            access_logs_collection.insert_one(access_logs)
             projection_for_export = {
                 "_id": 0,  # Exclude the ObjectId field
                 "auction_id": 1,
@@ -315,7 +339,12 @@ def export_as_csv(auctions):
                     modified_auction["Registration Type"] = auction["registration_type"]
                     modified_auction["Currency"] = auction["currency"]
                     modified_auction["Extension Type"] = auction["extension_type"]
-                    modified_auction["Extension mins"] = "" if len(auction["extension_time"]) == 0 else auction["extension_time"]+" minutes"
+                    if isinstance(auction["extension_time"], (str, list)):
+                        extension_time_len = len(auction["extension_time"])
+                    else:
+                        extension_time_len = 0
+                    modified_auction["Extension mins"] = "" if extension_time_len == 0 else str(auction["extension_time"]) + " minutes"
+                    # modified_auction["Extension mins"] = "" if len(auction["extension_time"]) == 0 else auction["extension_time"]+" minutes"
                     modified_auction["Number of Lots"] = auction.get(
                         "total_lots", 0)
                     modified_auction["Status"] = auction["status"]

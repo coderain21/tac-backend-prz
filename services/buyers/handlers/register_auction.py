@@ -54,50 +54,6 @@ TIMEZONE_MAPPING = {
     }
 
 
-# import mailchimp_transactional
-# from mailchimp_transactional.api_client import ApiClientError
-
-# client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-
-
-# def send_email(email, template_name, template_data, seller_email):
-#     try:
-#         print('here in mailchimp')
-#         response = client.messages.send_template(
-#             {
-#                 "template_name": template_name,
-#                 "template_content": [],
-#                 "message": {
-#                     "to": [{"email": email, "type": "to"}],
-#                     "from": 'no-reply@indy.auction',
-#                     "global_merge_vars": [
-#                         {"name": key, "content": value}
-#                         for key, value in template_data.items()
-#                     ]
-#                 }
-#             }
-#         )
-#         print('response', response)
-#         # response = client.messages.send_template(
-#         #     {
-#         #         "template_name": template_name,
-#         #         "template_content": [],
-#         #         "message": {
-#         #             "to": [{"email": email, "type": "to"}],
-#         #             "subject": 'testing'
-#         #         }
-#         #     }
-#         # )
-#         # print('response', response)
-#         return response
-#     except ApiClientError as e:
-#         print("An error occurred: {}".format(e))
-#         return False
-
-
-
-
-
 def register_auction(event, context):
     """
     Register an auction for a buyer.
@@ -137,8 +93,8 @@ def register_auction(event, context):
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-        except Exception as e:
-            print('error', e)
+        except:
+            print('here in second')
             return {
                 "statusCode": 403,
                 "headers": headers,

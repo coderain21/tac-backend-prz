@@ -23,6 +23,7 @@ provider:
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    BUYER_COGNITO_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     REGION: ${env:REGION}
@@ -34,6 +35,9 @@ provider:
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-bid-informations
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
+    ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
+    ADMIN_USER_COLLECTION: ${opt:stage, self:provider.stage}-admin-users
     SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL_ADDRESS}
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     CSV_FILE:  /tmp/Auctions.csv
@@ -42,9 +46,19 @@ provider:
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
+    TEMPLATE_ARN_ADMIN_DELETE_BUYER: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-admin-delete-buyer-template/EMAIL"
 
     
   http:
@@ -183,6 +197,24 @@ functions:
           cors: true
           path: /admin/lots
           method: GET
+          authorizer:
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  delete-buyer:
+    handler: handlers/delete_buyer.delete_buyer
+    timeout: 60
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /delete-buyer
+          method: DELETE
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 

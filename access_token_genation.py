@@ -21,7 +21,6 @@ def generate_token(user_type):
             client_id = os.environ['SELLER_COGNITO_CLIENT_ID']
             username = os.environ['API_USERNAME']
             password = os.environ['PASSWORD']
-            print(user_pool_id,client_id, username, password)
         if user_type == 'BUYERS':
             user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
             client_id = os.environ['BUYER_COGNITO_CLIENT_ID']
