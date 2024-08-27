@@ -129,7 +129,7 @@ custom:
 functions:   
   add_shipping_address:
     handler: handlers/add_shipping_address.add_shipping_address
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -155,7 +155,7 @@ functions:
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   view_address:
     handler: handlers/view_address.view_address
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -181,7 +181,7 @@ functions:
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}    #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   update_address:
     handler: handlers/update_address.update_address
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:

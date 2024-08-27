@@ -34,6 +34,8 @@ counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
 subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
 template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
+subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
+template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
 
@@ -93,8 +95,8 @@ def register_auction(event, context):
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-        except:
-            print('here in second')
+        except Exception as e:
+            print('error', e)
             return {
                 "statusCode": 403,
                 "headers": headers,

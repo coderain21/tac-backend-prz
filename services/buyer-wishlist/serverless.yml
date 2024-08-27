@@ -131,7 +131,7 @@ functions:
 
   create:
     handler: handlers/add_to_wishlist.create
-    runtime: python3.8
+    runtime: python3.9
     memorySize: 128
     layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -159,7 +159,7 @@ functions:
 
   remove_wishlist:
     handler: handlers/remove_wishlist.remove
-    runtime: python3.8
+    runtime: python3.9
     memorySize: 128
     layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -186,7 +186,7 @@ functions:
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}                         #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   wishlist-listing:
     handler: handlers/wishlist_list.wishlist_list
-    runtime: python3.8
+    runtime: python3.9
     memorySize: 128
     layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
