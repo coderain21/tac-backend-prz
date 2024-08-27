@@ -16,7 +16,6 @@
       "description": "APIs to manage the address"
     }
   ],
-
   "paths": {
     "/address": {
       "post": {

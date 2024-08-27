@@ -72,6 +72,9 @@ def paddle_number(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+
+
+
         # Parse query parameters from the event
         data = event['queryStringParameters']
         if data is None or "auction_id" not in data:

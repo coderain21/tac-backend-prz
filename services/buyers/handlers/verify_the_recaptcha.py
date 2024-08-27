@@ -108,14 +108,6 @@ def verify(event, context):
         password = data.get("password")
         confirm_password = data.get("confirm_password")
         is_password_valid = False
-
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        # user_collection = db[os.environ["BUYER_COLLECTION"]]
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
@@ -151,10 +143,7 @@ def verify(event, context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
         hostname = data['hostname']
-
-        print('Before captcha verification')
         captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
-        print('After captcha verification')
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
         if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
