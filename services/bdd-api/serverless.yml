@@ -139,7 +139,7 @@ functions:
   create_auction:
     handler: handlers/create_auctions.create
     timeout: 30
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
@@ -166,7 +166,7 @@ functions:
   
   publish_auction:
       handler: handlers/publish_auction.publish
-      runtime: python3.8
+      runtime: python3.9
       memorySize: 2048
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
