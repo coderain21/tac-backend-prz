@@ -152,7 +152,7 @@ exports.handler = async (event, context, callback) => {
                 email_address: result.user.email_address,
                 seller_id: result.user.seller_id,
             }
-            const mailChimpCreation = await mailchimpHelper.createTemplate(userData)
+            // const mailChimpCreation = await mailchimpHelper.createTemplate(userData)
             callback(null, event)
         } catch (error) {
             // In case of error, we should probably not proceed with sign-up
