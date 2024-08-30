@@ -7,8 +7,28 @@ events received from the Stripe payment system.
 """
 import json
 import os
-import stripe
+import stripe # type: ignore
+from bson import ObjectId
 from pymongo import MongoClient
+from lib.email_helper import send_mailchimp_payment_email
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
+from datetime import datetime
+import pytz
+
+
+  # MongoDB configuration
+client = MongoClient(
+                      os.environ['MONGO_CLIENT']
+                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
+                        )
+db = client[os.environ['DATABASE']]
+user_collection = db[os.environ["MONGODB_COLLECTION_NAME"]]
+buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
+
+
 
 stripe.api_key = os.environ["STRIPE_API_KEY"]
 headers = {
@@ -18,6 +38,21 @@ headers = {
 }
 # This is your Stripe CLI webhook secret for testing your endpoint locally.
 endpoint_secret = os.environ['STRIPE_ENDPOINT_SECRET']
+
+TIMEZONE_MAPPING = {
+    'UTC - Coordinated Universal Time': 'Etc/UTC',
+    'GMT - Greenwich Mean Time': 'Etc/GMT',
+    'BST - British Summer Time': 'Europe/London',
+    'CET - Central European Time': 'Europe/Paris',
+    'IST - India Standard Time': 'Asia/Kolkata',
+    'CST - China Standard Time': 'Asia/Shanghai',
+    'JST - Japan Standard Time': 'Asia/Tokyo',
+    'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
+    'NZST - New Zealand Standard Time': 'Pacific/Auckland',
+    'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
+    'MST - Mountain Standard Time (US)': 'America/Denver',
+    'CST - Central Standard Time (US)': 'America/Chicago',
+}
 
 def update_payment_data(payment_intent_id,update_data):
     """
@@ -34,12 +69,6 @@ def update_payment_data(payment_intent_id,update_data):
     - BaseException: Any unexpected error during the update operation
     """
     try:
-        # MongoDB configuration
-        client = MongoClient(
-                      os.environ['MONGO_CLIENT']
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
-        db = client[os.environ['DATABASE']]
         temp_payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         payments_collection = db[os.environ['ORDERS_COLLECTION']]
         cart_collection = db[os.environ['CART_COLLECTION']]
@@ -65,6 +94,7 @@ def update_payment_data(payment_intent_id,update_data):
 
             # Check if the payment status is "Paid"
             if update_data.get("payment_status") == "Paid":
+                print('inside payment paiddd')
 
                 combined_data = {**temp_payment_details, **update_data}
 
@@ -72,8 +102,51 @@ def update_payment_data(payment_intent_id,update_data):
                 insert_result = create_order(combined_data)
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
                 print('here')
-                # Delete the cart data
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
+                print('seller', seller)
+                buyer = buyer_collection.find_one({'email_address': buyer_email, "seller_email": seller_email})
+                print('buyer', buyer)
+                auction_data = auction.find_one({'_id': ObjectId(auction_id)})
+                print('auction_data', auction_data)
+                get_winning_lot = cart_collection.find_one({'buyer_id': str(buyer['_id'])}, {'_id': 0})
+                print('get_winning_lot', get_winning_lot)
+                common_time_zone = auction_data.get('time_zone', 'UTC')
+                time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')  # Default to UTC if not mapped
+                try:
+                    tz = pytz.timezone(time_zone)
+                except pytz.UnknownTimeZoneError:
+                    tz = pytz.utc  # Default to UTC if timezone is unknown
+                end_date_time_in_milliseconds = auction_data.get('end_date', datetime.utcnow().timestamp() * 1000)
+                end_date_time_utc = datetime.utcfromtimestamp(end_date_time_in_milliseconds / 1000)
+                end_date_time_local = end_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
+                end_date = end_date_time_local.date()
+                end_time = end_date_time_local.time().strftime('%H:%M:%S')
+                print('auction ends', end_date, end_time)
+                template_data = {
+                    "auction_title":temp_payment_details['auction_title'],
+                    "auction_end_date": end_time,
+                    "account_name": buyer['first_name'] ,
+                    "billing_address": temp_payment_details['billing_address']['address_line1'],
+                    "email_address": buyer_email,
+                    "seller_email": seller_email,
+                    "lots": get_winning_lot,
+                }
+                print('template_data', template_data)
+                # Checking mailchimp for template existence
+                try:
+                    mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                    response = mailchimp.templates.info({"name": seller['seller_id'] + '-PAYMENT-RECEIPT'})
+                    print('name of the templatee', seller['seller_id'] + '-PAYMENT-RECEIPT')
+                    print(response)
+                    template_name = seller['seller_id'] + '-PAYMENT-RECEIPT'
+                except ApiClientError as error:
+                    template_name = 'default_payment-receipt'
+                    print("An exception occurred: {}".format(error.text))
+
+                print('template_name', template_name)
+                send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                
             elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
                 combined_data = {**temp_payment_details, **update_data}
@@ -82,14 +155,12 @@ def update_payment_data(payment_intent_id,update_data):
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
                 print('here')
                 # Delete the cart data
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-                print('after')
-            client.close()
+                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                # print('after')
             return update_result
 
         else:
             # If payment details are not found, return None
-            client.close()
             return None
 
 
@@ -98,7 +169,6 @@ def update_payment_data(payment_intent_id,update_data):
         #     return update_result
         # return None
     except BaseException as err:
-        client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 
@@ -125,7 +195,6 @@ def create_order(insert_data):
         insert_result = orders_collection.insert_one(insert_data)
         if insert_result:
             print("order created")
-        client.close()
 
         if insert_result:
             return insert_result
@@ -133,7 +202,6 @@ def create_order(insert_data):
         return None
 
     except BaseException as err:
-        client.close()
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 
@@ -188,11 +256,6 @@ def update(event, context):
         # Handle the event
         if data["object"]["object"] == "payment_intent":
             payment_id = data["object"]["id"]
-            payment_method = data["object"]["payment_method"]
-            # if payment_method is not None:
-            #     payment_method = stripe.PaymentMethod.retrieve(payment_id,
-                                                    #   stripe_account = account_id)
-                # print(payment_method)
             update_data= {
                 "status": data["object"]["status"],
                 "payment_status": "Paid" if data["object"]["status"] == "succeeded" else "Unpaid",
@@ -205,6 +268,9 @@ def update(event, context):
                 }
 
             update_payment_data(payment_id,update_data)
+            print('updatedata', update_data)
+            
+
 
         return {
             "headers": headers,
