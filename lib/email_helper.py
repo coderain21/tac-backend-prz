@@ -15,9 +15,7 @@ client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
 
 def send_mailchimp_email(email, template_name, template_data, sender_email):
     try:
-        print('here in mailchimp')
-        response = client.messages.send_template(
-            {
+        payload = {
                 "template_name": template_name,
                 "template_content": [],
                 "message": {
@@ -28,25 +26,56 @@ def send_mailchimp_email(email, template_name, template_data, sender_email):
                         for key, value in template_data.items()
                     ]
                 }
-            }
-        )
+        }
+        print('payloaddd', payload)
+        response = client.messages.send_template(payload)
         print('response', response)
-        # response = client.messages.send_template(
-        #     {
-        #         "template_name": template_name,
-        #         "template_content": [],
-        #         "message": {
-        #             "to": [{"email": email, "type": "to"}],
-        #             "subject": 'testing'
-        #         }
-        #     }
-        # )
-        # print('response', response)
         return response
     except ApiClientError as e:
-        print("An error occurred: {}".format(e))
+        print('errorrr', e)
         return False
 
+
+def send_mailchimp_payment_email(email, template_name, template_data, sender_email):
+    try:
+        print('here in mailchimp', email, template_name, template_data, sender_email)
+        payload = {
+            "template_name": "default_payment-receipt",
+            "template_content": [],
+            "merge_language": "handlebars",
+            "merge": True,
+            "message": {
+                "from_email": "no-reply@indy.auction",
+                "subject": "Payment Summary",
+                "to": [{"email": email, "type": "to"}],
+                "global_merge_vars": [
+                    {"name": "auction_title", "content": template_data["auction_title"]},
+                    {"name": "auction_end_date", "content": template_data["auction_end_date"]},
+                    {"name": "account_name", "content": template_data["account_name"]},
+                    {"name": "billing_address", "content": template_data["billing_address"]},
+                    {"name": "email_address", "content": template_data["email_address"]},
+                    {"name": "seller_email", "content": template_data["seller_email"]},
+                    {"name": "lots", "content": template_data["lots"]}  # Ensure the format here is correct
+                ]
+            }
+        }
+
+        print('Corrected Payload:', payload)
+
+        response = client.messages.send_template(payload)
+        print('Mailchimp Response:', response)
+        return response
+
+    except ApiClientError as e:
+        # Print the error message and additional details
+        print('ApiClientError occurred:', e)
+        print('Error details:', e.text)  # Access the detailed error message
+        return False
+
+    except Exception as ex:
+        # Catch any other exceptions and print the error details
+        print('An unexpected error occurred:', ex)
+        return False
 
 
 
