@@ -151,6 +151,9 @@
                         "show_bidding_history": {
                           "type": "string"
                         },
+                        "hide_auction_lots": {
+                          "type": "string"
+                        },
                         "publish_auction_results": {
                           "type": "string"
                         }
@@ -2628,6 +2631,9 @@
             "type": "boolean"
           },
           "show_bidding_history": {
+            "type": "boolean"
+          },
+          "hide_auction_lots": {
             "type": "boolean"
           },
           "make_your_auction_private": {
