@@ -110,6 +110,8 @@ def update_payment_data(payment_intent_id,update_data):
                 print('auction_data', auction_data)
                 get_winning_lot = cart_collection.find_one({'buyer_id': str(buyer['_id'])}, {'_id': 0})
                 print('get_winning_lot', get_winning_lot)
+                # Convert the cursor to a list of dictionaries
+                lots_list = [get_winning_lot] if isinstance(get_winning_lot, dict) else get_winning_lot
                 common_time_zone = auction_data.get('time_zone', 'UTC')
                 time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')  # Default to UTC if not mapped
                 try:
@@ -129,7 +131,7 @@ def update_payment_data(payment_intent_id,update_data):
                     "billing_address": temp_payment_details['billing_address']['address_line1'],
                     "email_address": buyer_email,
                     "seller_email": seller_email,
-                    "lots": get_winning_lot,
+                    "lots": lots_list,
                 }
                 print('template_data', template_data)
                 # Checking mailchimp for template existence

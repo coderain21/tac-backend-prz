@@ -35,34 +35,39 @@ def send_mailchimp_email(email, template_name, template_data, sender_email):
         print('errorrr', e)
         return False
 
-
 def send_mailchimp_payment_email(email, template_name, template_data, sender_email):
     try:
         print('here in mailchimp', email, template_name, template_data, sender_email)
-        payload = {
-            "template_name": "default_payment-receipt",
-            "template_content": [],
+
+        # Prepare the message object to match the Node.js example
+        send_message = {
+            "from_email": sender_email,
+            "subject": "Payment Summary",
+            "to": [{"email": email, "type": "to"}],
             "merge_language": "handlebars",
             "merge": True,
-            "message": {
-                "from_email": "no-reply@indy.auction",
-                "subject": "Payment Summary",
-                "to": [{"email": email, "type": "to"}],
-                "global_merge_vars": [
-                    {"name": "auction_title", "content": template_data["auction_title"]},
-                    {"name": "auction_end_date", "content": template_data["auction_end_date"]},
-                    {"name": "account_name", "content": template_data["account_name"]},
-                    {"name": "billing_address", "content": template_data["billing_address"]},
-                    {"name": "email_address", "content": template_data["email_address"]},
-                    {"name": "seller_email", "content": template_data["seller_email"]},
-                    {"name": "lots", "content": template_data["lots"]}  # Ensure the format here is correct
-                ]
-            }
+            "global_merge_vars": [
+                {"name": "auction_title", "content": template_data["auction_title"]},
+                {"name": "auction_end_date", "content": template_data["auction_end_date"]},
+                {"name": "account_name", "content": template_data["account_name"]},
+                {"name": "billing_address", "content": template_data["billing_address"]},
+                {"name": "email_address", "content": template_data["email_address"]},
+                {"name": "seller_email", "content": template_data["seller_email"]},
+                {"name": "lots", "content":template_data["lots"]}  # Assume lots is already a string or formatted correctly
+            ]
         }
 
-        print('Corrected Payload:', payload)
+        # Set the template name directly
+        param = {
+            "template_name": template_name,  # Using the provided template name
+            "template_content": [],
+            "message": send_message,
+        }
 
-        response = client.messages.send_template(payload)
+        print('Corrected Payload:', param)
+
+        # Use the MailChimp client to send the email using the template
+        response = client.messages.send_template(param)
         print('Mailchimp Response:', response)
         return response
 
@@ -76,8 +81,6 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
         # Catch any other exceptions and print the error details
         print('An unexpected error occurred:', ex)
         return False
-
-
 
 
 
