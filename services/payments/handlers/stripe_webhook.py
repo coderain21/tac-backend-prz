@@ -54,6 +54,21 @@ TIMEZONE_MAPPING = {
     'CST - Central Standard Time (US)': 'America/Chicago',
 }
 
+
+currencySymbolMapping = {
+    "GBP": '£',
+    "USD": '$',
+    "EUR": '€',
+    "HKD": 'HK$',
+    "JPY": '¥',
+    "CHF": 'Fr',
+    "SGD": 'S$',
+    "AUD": 'A$',
+    "CAD": 'C$',
+    "INR": '₹',
+}
+
+
 def update_payment_data(payment_intent_id,update_data):
     """
     Update payment data in the MongoDB collection.
@@ -108,10 +123,18 @@ def update_payment_data(payment_intent_id,update_data):
                 print('buyer', buyer)
                 auction_data = auction.find_one({'_id': ObjectId(auction_id)})
                 print('auction_data', auction_data)
-                get_winning_lot = cart_collection.find_one({'buyer_id': str(buyer['_id'])}, {'_id': 0})
-                print('get_winning_lot', get_winning_lot)
-                # Convert the cursor to a list of dictionaries
-                lots_list = [get_winning_lot] if isinstance(get_winning_lot, dict) else get_winning_lot
+                get_winning_lot = cart_collection.find({'buyer_id': str(buyer['_id']), 'auction_id': str(auction_id)}, {'_id': 0})
+                # Check if the result is a cursor or a single document
+                if isinstance(get_winning_lot, list):
+                    lots_list = get_winning_lot
+                elif hasattr(get_winning_lot, '__iter__'):  # Check if it's a cursor
+                    lots_list = list(get_winning_lot)  # Convert cursor to a list of dictionaries
+                else:  # It's a single dictionary
+                    lots_list = [get_winning_lot]
+                
+                print('lots_list', lots_list)
+                
+                
                 common_time_zone = auction_data.get('time_zone', 'UTC')
                 time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')  # Default to UTC if not mapped
                 try:
@@ -124,6 +147,12 @@ def update_payment_data(payment_intent_id,update_data):
                 end_date = end_date_time_local.date()
                 end_time = end_date_time_local.time().strftime('%H:%M:%S')
                 print('auction ends', end_date, end_time)
+
+                currency = temp_payment_details.get("currency", "")
+                if currency in currencySymbolMapping:
+                    currency = currencySymbolMapping.get(currency, "")
+                amount_paid = currency + str(temp_payment_details['amount'])
+
                 template_data = {
                     "auction_title":temp_payment_details['auction_title'],
                     "auction_end_date": end_time,
@@ -131,6 +160,7 @@ def update_payment_data(payment_intent_id,update_data):
                     "billing_address": temp_payment_details['billing_address']['address_line1'],
                     "email_address": buyer_email,
                     "seller_email": seller_email,
+                    "amount_paid": amount_paid,
                     "lots": lots_list,
                 }
                 print('template_data', template_data)
@@ -147,7 +177,7 @@ def update_payment_data(payment_intent_id,update_data):
 
                 print('template_name', template_name)
                 send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
-                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
                 
             elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
