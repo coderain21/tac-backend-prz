@@ -73,25 +73,33 @@ module.exports.handler = async (event) => {
             get_lot.push(JSON.parse(getLotInfo[i]))
         }
         const lotInformation = get_lot[0]
-        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
-            const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
-            lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
-            lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
-            await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
-            await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
-            // const callSQS = await sqsTriggerFunction(event)
-            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                await sqsTriggerFunction(event)
-            }
-            if (getLots.length <= 0) {
-                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+
+        console.log('currentTimestamp', currentTimestamp)
+        if (auctionData.status !== 'Cancelled') {
+            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
+                const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+                console.log('getBuyerData', getBuyerData)
+                if (getBuyerData && Object.keys(getBuyerData).length > 0) {
+                    console.log('here inside the condition')
+                    lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
+                    lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
+                    await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+                }
+                await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
+                // const callSQS = await sqsTriggerFunction(event)
+                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                     await sqsTriggerFunction(event)
                 }
-            } else {
-                console.log('no match')
+                if (getLots.length <= 0) {
+                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                        await sqsTriggerFunction(event)
+                    }
+                } else {
+                    console.log('no match')
+                }
             }
         }
-        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) {
+        if ((lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) || (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user == null)) {
             if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
             }
@@ -99,8 +107,13 @@ module.exports.handler = async (event) => {
                 if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
                     await sqsTriggerFunction(event)
                 }
-            } else {
-                console.log('no match')
+                if (getLots.length <= 0) {
+                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                        await sqsTriggerFunction(event)
+                    }
+                } else {
+                    console.log('no match')
+                }
             }
         }
         return true
