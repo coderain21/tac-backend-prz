@@ -239,7 +239,7 @@ def update_auction(event, context):
                                 "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
                                 "fees", "faq", "time_zone", "terms_and_condition",
-                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
@@ -258,7 +258,7 @@ def update_auction(event, context):
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
                                 "description", "start_date", "end_date",
                                 "faq", "time_zone", "publish_auction_results",
-                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode", "show_bidding_history",
+                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode", "show_bidding_history","hide_auction_lots",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
         else:

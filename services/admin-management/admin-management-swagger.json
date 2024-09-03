@@ -1846,6 +1846,9 @@
                       "show_bidding_history":{
                         "type": "boolean"
                       },
+                      "hide_auction_lots": {
+                        "type": "Boolean"
+                      },
                       "show_bidder_location_in_bidder_history": {
                         "type": "boolean"
                       },
@@ -3372,7 +3375,10 @@
             "type": "boolean"
           },
           "show_bidding_history": {
-            type: "boolean"
+            "type": "boolean"
+          },
+          "hide_auction_lots": {
+            "type": "Boolean"
           },
           "make_your_auction_private":{
             "type": "boolean"

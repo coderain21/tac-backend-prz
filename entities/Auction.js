@@ -109,6 +109,9 @@ const AuctionSchema = new Schema({
     show_bidding_history: {
         type: Boolean, trim: true,
     },
+    hide_auction_lots: {
+        type: Boolean, trim: true,
+    },
     show_bidder_location_in_bidder_history: {
         type: Boolean, trim: true,
     },

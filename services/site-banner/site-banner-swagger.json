@@ -431,6 +431,9 @@
           "make_your_auction_private":{
             "type": "boolean"
           },
+          "hide_auction_lots": {
+            "type": "boolean"
+          },
           "passcode":{
             "type": "string"
           },

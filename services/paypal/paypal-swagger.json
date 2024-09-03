@@ -259,6 +259,9 @@
           "show_bidding_history": {
             "type": "boolean"
           },
+          "hide_auction_lots": {
+            "type": "boolean"
+          },
           "make_your_auction_private": {
             "type": "boolean"
           },
