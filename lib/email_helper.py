@@ -53,7 +53,8 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
                 {"name": "billing_address", "content": template_data["billing_address"]},
                 {"name": "email_address", "content": template_data["email_address"]},
                 {"name": "seller_email", "content": template_data["seller_email"]},
-                {"name": "lots", "content":template_data["lots"]}  # Assume lots is already a string or formatted correctly
+                {"name": "amount_paid", "content": template_data["amount_paid"]},   
+                {"name": "lots", "content":template_data["lots"]}     # Assume lots is already a string or formatted correctly
             ]
         }
 
