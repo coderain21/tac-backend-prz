@@ -131,17 +131,17 @@ def update_payment_data(payment_intent_id,update_data):
                     lots_list = list(get_winning_lot)  # Convert cursor to a list of dictionaries
                 else:  # It's a single dictionary
                     lots_list = [get_winning_lot]
-                    
-                
+
+
                 for lot in lots_list:
                     # Check if 'lot_image' key exists in the document
                     if 'lot_image' in lot:
                         # Append the CDN URL to the lot_image
                         lot['lot_image'] = os.environ.get('CDN_URL') + lot['lot_image']
-                
+
                 # print('lots_list', lots_list)
-                
-                
+
+
                 common_time_zone = auction_data.get('time_zone', 'UTC')
                 time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')  # Default to UTC if not mapped
                 try:
@@ -191,7 +191,7 @@ def update_payment_data(payment_intent_id,update_data):
                 # print('template_name', template_name)
                 send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
                 cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-                
+
             elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
                 combined_data = {**temp_payment_details, **update_data}
@@ -314,7 +314,7 @@ def update(event, context):
 
             update_payment_data(payment_id,update_data)
             print('updatedata', update_data)
-            
+
 
 
         return {
