@@ -92,7 +92,7 @@ def update_payment_data(payment_intent_id,update_data):
         # update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
 
         temp_payment_details = temp_payments_collection.find_one({"payment_intent": payment_intent_id})
-        print('payment_details', temp_payment_details)
+        # print('payment_details', temp_payment_details)
 
         if temp_payment_details:
             # Retrieve seller email, buyer email, and auction ID
@@ -105,7 +105,7 @@ def update_payment_data(payment_intent_id,update_data):
 
             # Update the payment data
             update_result = temp_payments_collection.update_one({"payment_intent": payment_intent_id}, {"$set": update_data})
-            print('update_data', update_data)
+            # print('update_data', update_data)
 
             # Check if the payment status is "Paid"
             if update_data.get("payment_status") == "Paid":
@@ -116,13 +116,13 @@ def update_payment_data(payment_intent_id,update_data):
                 # Create the order using the temporary payment data
                 insert_result = create_order(combined_data)
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
-                print('here')
+                # print('here')
                 seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
-                print('seller', seller)
+                # print('seller', seller)
                 buyer = buyer_collection.find_one({'email_address': buyer_email, "seller_email": seller_email})
-                print('buyer', buyer)
+                # print('buyer', buyer)
                 auction_data = auction.find_one({'_id': ObjectId(auction_id)})
-                print('auction_data', auction_data)
+                # print('auction_data', auction_data)
                 get_winning_lot = cart_collection.find({'buyer_id': str(buyer['_id']), 'auction_id': str(auction_id)}, {'_id': 0})
                 # Check if the result is a cursor or a single document
                 if isinstance(get_winning_lot, list):
@@ -131,8 +131,15 @@ def update_payment_data(payment_intent_id,update_data):
                     lots_list = list(get_winning_lot)  # Convert cursor to a list of dictionaries
                 else:  # It's a single dictionary
                     lots_list = [get_winning_lot]
+                    
                 
-                print('lots_list', lots_list)
+                for lot in lots_list:
+                    # Check if 'lot_image' key exists in the document
+                    if 'lot_image' in lot:
+                        # Append the CDN URL to the lot_image
+                        lot['lot_image'] = os.environ.get('CDN_URL') + lot['lot_image']
+                
+                # print('lots_list', lots_list)
                 
                 
                 common_time_zone = auction_data.get('time_zone', 'UTC')
@@ -152,32 +159,38 @@ def update_payment_data(payment_intent_id,update_data):
                 if currency in currencySymbolMapping:
                     currency = currencySymbolMapping.get(currency, "")
                 amount_paid = currency + str(temp_payment_details['amount'])
+                if not auction_data['logo_image']:
+                    logo_img = f"{os.environ.get('CDN_URL')}Logo.png"
+                else:
+                    logo_img= os.environ["CDN_URL"]+auction_data["logo_image"]
 
                 template_data = {
                     "auction_title":temp_payment_details['auction_title'],
-                    "auction_end_date": end_time,
+                    "logo_image": logo_img,
+                    "auction_end_date": end_date,
                     "account_name": buyer['first_name'] ,
                     "billing_address": temp_payment_details['billing_address']['address_line1'],
                     "email_address": buyer_email,
                     "seller_email": seller_email,
                     "amount_paid": amount_paid,
+                    # "cdn_url": os.environ['CDN_URL'],
                     "lots": lots_list,
                 }
-                print('template_data', template_data)
+                # print('template_data', template_data)
                 # Checking mailchimp for template existence
                 try:
                     mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
                     response = mailchimp.templates.info({"name": seller['seller_id'] + '-PAYMENT-RECEIPT'})
                     print('name of the templatee', seller['seller_id'] + '-PAYMENT-RECEIPT')
-                    print(response)
+                    # print(response)
                     template_name = seller['seller_id'] + '-PAYMENT-RECEIPT'
                 except ApiClientError as error:
                     template_name = 'default_payment-receipt'
                     print("An exception occurred: {}".format(error.text))
 
-                print('template_name', template_name)
+                # print('template_name', template_name)
                 send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
                 
             elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
@@ -284,7 +297,7 @@ def update(event, context):
         data = json.loads(event_body)
         account_id = data["account"]
         data=data["data"]
-        print('data after payment', data)
+        # print('data after payment', data)
         # Handle the event
         if data["object"]["object"] == "payment_intent":
             payment_id = data["object"]["id"]

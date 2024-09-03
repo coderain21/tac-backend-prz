@@ -7,6 +7,7 @@ This module provides functionality to send emails using Amazon SES .
 import os
 import json
 import boto3
+from datetime import date
 import mailchimp_transactional
 from mailchimp_transactional.api_client import ApiClientError
 
@@ -37,7 +38,13 @@ def send_mailchimp_email(email, template_name, template_data, sender_email):
 
 def send_mailchimp_payment_email(email, template_name, template_data, sender_email):
     try:
-        print('here in mailchimp', email, template_name, template_data, sender_email)
+        # print('here in mailchimp', email, template_name, template_data, sender_email)
+        print('template data image ', template_data)
+
+        # Convert auction_end_date to a string if it's a date object
+        auction_end_date = template_data["auction_end_date"]
+        if isinstance(auction_end_date, date):
+            auction_end_date = auction_end_date.strftime('%Y-%m-%d')  # Convert to 'YYYY-MM-DD' string
 
         # Prepare the message object to match the Node.js example
         send_message = {
@@ -48,13 +55,15 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
             "merge": True,
             "global_merge_vars": [
                 {"name": "auction_title", "content": template_data["auction_title"]},
-                {"name": "auction_end_date", "content": template_data["auction_end_date"]},
+                {"name": "logo_image", "content": template_data["logo_image"]},
+                {"name": "auction_end_date", "content": auction_end_date},  # Use the formatted date string
                 {"name": "account_name", "content": template_data["account_name"]},
                 {"name": "billing_address", "content": template_data["billing_address"]},
                 {"name": "email_address", "content": template_data["email_address"]},
                 {"name": "seller_email", "content": template_data["seller_email"]},
-                {"name": "amount_paid", "content": template_data["amount_paid"]},   
-                {"name": "lots", "content":template_data["lots"]}     # Assume lots is already a string or formatted correctly
+                {"name": "amount_paid", "content": template_data["amount_paid"]},
+                # {"name": "cdn_url", "content": template_data["cdn_url"]},
+                {"name": "lots", "content": template_data["lots"]}  # Assuming lots are correctly formatted
             ]
         }
 
@@ -67,8 +76,11 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
 
         print('Corrected Payload:', param)
 
+        # Serialize the payload to ensure it is JSON-compatible
+        param_serialized = json.loads(json.dumps(param, default=str))
+        
         # Use the MailChimp client to send the email using the template
-        response = client.messages.send_template(param)
+        response = client.messages.send_template(param_serialized)
         print('Mailchimp Response:', response)
         return response
 
@@ -82,9 +94,6 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
         # Catch any other exceptions and print the error details
         print('An unexpected error occurred:', ex)
         return False
-
-
-
 
 def send_mail(link, email_template, destination_address, token):
     """
