@@ -58,7 +58,12 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
                 {"name": "logo_image", "content": template_data["logo_image"]},
                 {"name": "auction_end_date", "content": auction_end_date},  # Use the formatted date string
                 {"name": "account_name", "content": template_data["account_name"]},
-                {"name": "billing_address", "content": template_data["billing_address"]},
+                {"name": "billing_address1", "content": template_data["address_line1"]},
+                {"name": "billing_address2", "content": template_data["address_line2"]},
+                {"name": "city", "content": template_data["city"]},
+                {"name": "state", "content": template_data["state"]},
+                {"name": "country", "content": template_data["country"]},
+                {"name": "zip_code", "content": template_data["zip_code"]},
                 {"name": "email_address", "content": template_data["email_address"]},
                 {"name": "seller_email", "content": template_data["seller_email"]},
                 {"name": "amount_paid", "content": template_data["amount_paid"]},
