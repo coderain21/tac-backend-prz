@@ -174,7 +174,7 @@ def update_payment_data(payment_intent_id,update_data):
                     "city": temp_payment_details['billing_address']['city'],
                     "state": temp_payment_details['billing_address']['state'],
                     "country": temp_payment_details['billing_address']['country'],
-                    "zip_code": temp_payment_details['billing_address']['zip_code'],
+                    "zip_code": temp_payment_details['billing_address']['postal_code'],
                     "email_address": buyer_email,
                     "seller_email": seller_email,
                     "amount_paid": amount_paid,
