@@ -169,7 +169,12 @@ def update_payment_data(payment_intent_id,update_data):
                     "logo_image": logo_img,
                     "auction_end_date": end_date,
                     "account_name": buyer['first_name'] ,
-                    "billing_address": temp_payment_details['billing_address']['address_line1'],
+                    "address_line1": temp_payment_details['billing_address']['address_line1'],
+                    "address_line2": temp_payment_details['billing_address']['address_line2'],
+                    "city": temp_payment_details['billing_address']['city'],
+                    "state": temp_payment_details['billing_address']['state'],
+                    "country": temp_payment_details['billing_address']['country'],
+                    "zip_code": temp_payment_details['billing_address']['zip_code'],
                     "email_address": buyer_email,
                     "seller_email": seller_email,
                     "amount_paid": amount_paid,
@@ -200,8 +205,8 @@ def update_payment_data(payment_intent_id,update_data):
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
                 print('here')
                 # Delete the cart data
-                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-                # print('after')
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                print('after')
             return update_result
 
         else:
