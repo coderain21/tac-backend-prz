@@ -247,9 +247,9 @@ def register_auction(event, context):
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
                 response = mailchimp.templates.info({"name": seller['_id'] + '-PADDLE-GENERATION'})        
-                print('name of the templatee', seller['_id'] + '-PADDLE-GENERATION')
+                print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
                 print(response)
-                template_name = seller['_id'] + '-PADDLE-GENERATION'
+                template_name = str(seller['_id']) + '-PADDLE-GENERATION'
             except ApiClientError as error:
                 template_name = 'buyer_default_paddle_template'
                 print("An exception occurred: {}".format(error.text))

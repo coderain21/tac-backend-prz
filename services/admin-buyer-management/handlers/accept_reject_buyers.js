@@ -132,7 +132,7 @@ module.exports.handler = async (event) => {
 
             const seller = await mongodbHelper.getUser({ email_address: requestBody.seller_email }, Users)
             console.log('seller', seller)
-            const sellerId = seller[0].seller_id
+            const sellerId = seller[0]._id.toString()
             let templateName = `${sellerId}-PADDLE-GENERATION`
             console.log('template', templateName)
             const mailchimpClient = await mailchimp(process.env.MAILCHIMP_SECRET_KEY)
