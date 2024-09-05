@@ -10,6 +10,7 @@
         "url": "https://apis.dev.indyauction.net/v1/bids"
       }
     ],
+    
     "tags": [
       {
           "name": "Bidders Management",
@@ -292,7 +293,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "6566d902dc957c0632800f46"
+              "example": "66aa4047222c10d5a2081d16"
             }
           ],
           "responses": {
@@ -529,6 +530,12 @@
               "type": "boolean"
             },
             "show_bidder_location_in_bidder_history":{
+              "type": "boolean"
+            },
+            "show_bidding_history": {
+              "type": "boolean"
+            },
+            "hide_auction_lots": {
               "type": "boolean"
             },
             "make_your_auction_private":{

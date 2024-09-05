@@ -52,15 +52,17 @@ def create(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            # email_address = event['requestContext']['authorizer']['claims']['email']
+            # print('email', email_address)
+            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            #     print('here in first')
+            #     return {
+            #         "statusCode": 403,
+            #         "headers": headers,
+            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+            #     }
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                print('here in first')
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
         except:
             print('here in second')
             return {

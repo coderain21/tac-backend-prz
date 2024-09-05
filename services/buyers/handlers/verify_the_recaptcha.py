@@ -8,7 +8,10 @@ from bson import ObjectId
 import requests
 from pymongo import MongoClient
 from botocore.exceptions import ClientError
-from lib.helper_python import encrypt_with_time_validation,    send_pinpoint_email
+from lib.helper_python import encrypt_with_time_validation
+from lib.email_helper import send_mailchimp_email
+import mailchimp_transactional as MailchimpTransactional
+from mailchimp_transactional.api_client import ApiClientError
 
 headers = {
     'Content-Type': 'application/json',
@@ -26,6 +29,9 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 user_collection = db[os.environ["BUYER_COLLECTION"]]
+collection_seller = db[os.environ["SELLERS_TABLE"]]
+template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
+
 
 
 def is_valid_password(password):
@@ -88,6 +94,7 @@ def check_user_in_cognito(email_address):
 def verify(event, context):
     try:
         data = json.loads(event['body'])
+        print('data', data)
         expected_fields = ["auction_id", "email_address", "first_name", "last_name", "password", "confirm_password",
                            "terms_and_condition", "newsletter_notification", "seller_name", "logo_image", "user_type", "session_token"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
@@ -101,17 +108,11 @@ def verify(event, context):
         password = data.get("password")
         confirm_password = data.get("confirm_password")
         is_password_valid = False
-
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        # user_collection = db[os.environ["BUYER_COLLECTION"]]
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
+        seller_data = collection_seller.find_one({"email_address": seller_details['seller_email']}, {"_id": 0})
+
         user_exist = check_user_in_cognito(data['email_address'])
 
         if user_exist is True:
@@ -142,10 +143,7 @@ def verify(event, context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
         hostname = data['hostname']
-
-        print('Before captcha verification')
         captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
-        print('After captcha verification')
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
         if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
@@ -158,15 +156,27 @@ def verify(event, context):
 
         encrypted_data = encrypt_with_time_validation(
             data, os.environ["ENCRYPTION_SECRET_KEY"])
-        email_status = send_pinpoint_email(data['email_address'], os.environ["SES_SENDER_EMAIL_ID"], json.dumps({'otp': data['otp'], 'seller_name': data['seller_name'], 'logo_image': data['logo_image']}),
-                                        os.environ["BUYER_EMAIL_OTP_TEMPLATE"])
+
+        # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
+        try:
+            mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+            response = mailchimp.templates.info({"name": seller_data['seller_id'] + '-OTP-VALIDATION'})
+            template_name = seller_data['seller_id'] + '-OTP-VALIDATION'
+        except ApiClientError as error:
+            template_name = 'buyer-default-otp-template'
+            print("An exception occurred: {}".format(error.text))
+
+        print('template_name', template_name)
+
+        send_mailchimp_email(data['email_address'], template_name, {'otp': data['otp'], 'logo_image': data['logo_image']},
+                                        os.environ["MAILCHIMP_ADDRESS"])
+
         return {
             'statusCode': 201,
             'headers': headers,
             'body': json.dumps({'encrypted_token': encrypted_data})
         }
     except Exception as e:
-        print('Error:', str(e))
         print('Error:', str(e))
         return {
             'statusCode': 500,

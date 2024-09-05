@@ -100,14 +100,11 @@ def update_lot_data(item, lot_id):
     print('inside update lot redis')
     redis_client = createRedisClient()
     bid_key = f'lot:{lot_id}'
-    print('redis', redis_client)
     existing_record =  redis_client.hget('lot', bid_key)
-    print('existing_record', existing_record)
     if existing_record is None:
         print("No record found for the specified key.")
     else:
         get_lot = json.loads(existing_record)
-        print('get_lot', get_lot)
         if existing_record:
                 get_lot = json.loads(existing_record)
                 
@@ -135,14 +132,11 @@ def update_lot_data(item, lot_id):
 def get_Lot(item, lot_id):
     redis_client = createRedisClient()
     bid_key = f'lot:{lot_id}'
-    print('redis', redis_client)
     existing_record =  redis_client.hget('lot', bid_key)
-    print('existing_record', existing_record)
     if existing_record is None:
         print("No record found for the specified key.")
     else:
         get_lot = json.loads(existing_record)
-        print('get_lot', get_lot)
         if existing_record:
                 get_lot = json.loads(existing_record)
                 

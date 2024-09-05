@@ -92,20 +92,20 @@ def admin_create_user(userData, userpool_id,seller_email,default):
         cognito_client.admin_set_user_password(**password_params)
         if user:
             roles = [group_name, userData["user_type"]]
-            for role in roles:
-                print('roles', role)
-                try:
-                    # Define the parameters for the API call
-                    params = {
-                        'GroupName': role,
-                        'UserPoolId': userpool_id,
-                        'Username': userData['email_address']
-                    }
-                    # Call the admin_add_user_to_group API
-                    cognito_client.admin_add_user_to_group(**params)
-                    print(f"Successfully added user {userData['email_address']} to group {role}")
-                except Exception as e:
-                    print("errrrrr", e)
+            # for role in roles:
+            #     print('roles', role)
+                # try:
+                #     # Define the parameters for the API call
+                #     params = {
+                #         'GroupName': role,
+                #         'UserPoolId': userpool_id,
+                #         'Username': userData['email_address']
+                #     }
+                #     # Call the admin_add_user_to_group API
+                #     cognito_client.admin_add_user_to_group(**params)
+                #     print(f"Successfully added user {userData['email_address']} to group {role}")
+                # except Exception as e:
+                #     print("errrrrr", e)
             # cognito_client.admin_add_user_to_group(
             #     GroupName= group_name,
             #     UserPoolId=userpool_id,

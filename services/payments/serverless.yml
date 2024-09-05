@@ -24,6 +24,8 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
@@ -83,6 +85,7 @@ provider:
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    CDN_URL: ${ssm:CDN_URL}
 
 
     
@@ -139,7 +142,7 @@ custom:
 functions: 
   create_intent:
     handler: handlers/create.create_intent
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -165,7 +168,7 @@ functions:
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}       #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   stripe_payments_webhook:
     handler: handlers/stripe_webhook.update
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
