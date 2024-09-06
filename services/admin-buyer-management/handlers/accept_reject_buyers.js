@@ -7,13 +7,18 @@ const { ObjectId } = require('mongodb')
 
 const Joi = require('joi')
 
+const mailchimp = require('@mailchimp/mailchimp_transactional')
+
 const Auction = require('../entities/Auction')
 const Counter = require('../entities/Counter')
+const Subdomain = require('../entities/SubDomain')
+const Users = require('../entities/Users')
 
 const helpers = require('../lib/helper')
 const RegisteredUser = require('../entities/RegisteredUser')
 
 const mongodbHelper = require('../lib/mongodb_helper')
+const mailchimpHelper = require('../lib/mailchimp_helper')
 
 const schema = Joi.object().keys({
     status: Joi.string().required().messages({
@@ -85,31 +90,62 @@ module.exports.handler = async (event) => {
             }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
 
             // const getPaddle = await mongodbHelper.view(Counter, query2)
-            const date = new Date(getAuction[0].start_date)
+            const startDate = new Date(getAuction[0].start_date)
+            const endDate = new Date(getAuction[0].end_date)
 
             // Get individual components of the date
-            const year = date.getFullYear()
-            const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based, so add 1
-            const day = String(date.getDate()).padStart(2, '0')
+            const startYear = startDate.getFullYear()
+            const startMonth = String(startDate.getMonth() + 1).padStart(2, '0') // Months are zero-based, so add 1
+            const startDay = String(startDate.getDate()).padStart(2, '0')
+
+            const endYear = endDate.getFullYear()
+            const endMonth = String(endDate.getMonth() + 1).padStart(2, '0') // Months are zero-based, so add 1
+            const endDay = String(endDate.getDate()).padStart(2, '0')
 
             // Construct the date string with hyphens
-            const formattedDate = `${year}-${month}-${day}`
+            const formattedStartDate = `${startYear}-${startMonth}-${startDay}`
+            const formattedEndDate = `${endYear}-${endMonth}-${endDay}`
 
             // Use toLocaleTimeString() to get a formatted time string based on the user's locale
-            const formattedTime = date.toLocaleTimeString()
+            const formattedStartTime = startDate.toLocaleTimeString()
+            const formattedEndTime = endDate.toLocaleTimeString()
+            const subdomain = await mongodbHelper.getSubdomain({ seller_email: requestBody.seller_email }, Subdomain)
+            const url = `https://${subdomain.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${getAuction[0]._id}`
             const template_data = {
                 Seller_name: 'Admin',
                 paddle: getPaddle.starting_sequence,
                 user_first_name: requestBody.first_name,
                 Auction_title: getAuction[0].title,
-                auction_start_date: formattedDate,
-                auction_start_time: formattedTime,
+                auction_start_date: formattedStartDate,
+                auction_start_time: formattedStartTime,
+                auction_end_date: formattedEndDate,
+                auction_end_time: formattedEndTime,
+                auction_image: `${process.env.CDN_LINK}${getAuction[0].auction_image}`,
                 color: getAuction[0].paddle.text_color === '' ? '#FFFFFF' : getAuction[0].paddle.text_color,
                 background_color: getAuction[0].paddle.background_color === '' ? '#000000' : getAuction[0].paddle.background_color,
-                img: getAuction[0].logo_image === '' ? 'https://cdn.qa.indyauction.net/public/Logo.png' : `https://cdn.qa.indyauction.net/public/${getAuction[0].logo_image}`,
+                // img: getAuction[0].logo_image === '' ? `${os.environ.CDN_LINK}Logo.png` : `${os.environ.CDN_LINK}${getAuction[0].logo_image}`,
                 subject: 'Indy.auction-Your Paddle Number Awaits: Registration Successful',
+                logo: getAuction[0].logo_image === '' ? `${process.env.CDN_LINK}Logo.png` : `${process.env.CDN_LINK}${getAuction[0].logo_image}`,
+                Seller_email: requestBody.seller_email,
+                domainURL: url,
             }
-            await helpers.sendPinpointEmail(requestBody.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_PADDLE)
+
+            const seller = await mongodbHelper.getUser({ email_address: requestBody.seller_email }, Users)
+            console.log('seller', seller)
+            const sellerId = seller[0].seller_id
+            let templateName = `${sellerId}-PADDLE-GENERATION`
+            console.log('template', templateName)
+            const mailchimpClient = await mailchimp(process.env.MAILCHIMP_SECRET_KEY)
+            const response = await mailchimpClient.templates.info({ name: templateName })
+
+            if (!response || !response.template) {
+                console.log('Mailchimp template not found. Using default template.')
+                templateName = 'buyer_default_paddle_template'
+            } else {
+                console.log('Mailchimp template response:', response)
+            }
+
+            await mailchimpHelper.sendMailchimpEmail(requestBody.email_address, templateName, template_data, process.env.MAILCHIMP_ADDRESS)
             requestBody.paddle = getPaddle.starting_sequence
         }
         const updateStatus = await mongodbHelper.commonUpdate(RegisteredUser, query, requestBody)
