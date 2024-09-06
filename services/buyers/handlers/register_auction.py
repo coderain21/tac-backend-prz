@@ -193,7 +193,7 @@ def register_auction(event, context):
             }
         if registration_type['registration_type'] == 'Email only' or registration_type['registration_type'] == 'Credit (bank) card validation':
             register_status = "Approved"
-            seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
+            seller = user_collection.find_one({"email_address": seller_email}) #, {'_id': 0})
             print('seller 1234', seller)
             # Use mapping to convert common names to pytz names
             # common_time_zone = registration_type.get('time_zone', 'UTC')  # Default to 'UTC' if not specified
@@ -246,10 +246,10 @@ def register_auction(event, context):
             # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
-                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                response = mailchimp.templates.info({"name": seller['_id'] + '-PADDLE-GENERATION'})
+                print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
                 print(response)
-                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+                template_name = str(seller['_id']) + '-PADDLE-GENERATION'
             except ApiClientError as error:
                 template_name = 'buyer_default_paddle_template'
                 print("An exception occurred: {}".format(error.text))
