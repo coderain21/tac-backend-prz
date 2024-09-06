@@ -49,7 +49,7 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
         # Prepare the message object to match the Node.js example
         send_message = {
             "from_email": sender_email,
-            "subject": "Payment Summary",
+            "subject": "Thank You | Payment Receipt",
             "to": [{"email": email, "type": "to"}],
             "merge_language": "handlebars",
             "merge": True,
