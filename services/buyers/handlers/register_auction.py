@@ -246,7 +246,7 @@ def register_auction(event, context):
             # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": seller['_id'] + '-PADDLE-GENERATION'})        
+                response = mailchimp.templates.info({"name": seller['_id'] + '-PADDLE-GENERATION'})
                 print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
                 print(response)
                 template_name = str(seller['_id']) + '-PADDLE-GENERATION'
