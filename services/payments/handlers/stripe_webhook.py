@@ -163,14 +163,11 @@ def update_payment_data(payment_intent_id,update_data):
                     logo_img = f"{os.environ.get('CDN_URL')}Logo.png"
                 else:
                     logo_img= os.environ["CDN_URL"]+auction_data["logo_image"]
-                    
-                    
+
                 if seller['first_name']:
                     seller_name = ' '.join(filter(None, [seller['first_name'], seller['last_name']]))
                 else:
                     seller_name = 'Seller'
-                    
-                    
 
                 template_data = {
                     "auction_title":temp_payment_details['auction_title'],
