@@ -92,7 +92,7 @@ def update_payment_data(payment_intent_id,update_data):
         # update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
 
         temp_payment_details = temp_payments_collection.find_one({"payment_intent": payment_intent_id})
-        # print('payment_details', temp_payment_details)
+        print('payment_details', temp_payment_details)
 
         if temp_payment_details:
             # Retrieve seller email, buyer email, and auction ID
@@ -105,7 +105,7 @@ def update_payment_data(payment_intent_id,update_data):
 
             # Update the payment data
             update_result = temp_payments_collection.update_one({"payment_intent": payment_intent_id}, {"$set": update_data})
-            # print('update_data', update_data)
+            print('update_data', update_data)
 
             # Check if the payment status is "Paid"
             if update_data.get("payment_status") == "Paid":
@@ -117,7 +117,7 @@ def update_payment_data(payment_intent_id,update_data):
                 insert_result = create_order(combined_data)
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
                 # print('here')
-                seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
+                seller = user_collection.find_one({"email_address": seller_email})      #, {'_id': 0})
                 # print('seller', seller)
                 buyer = buyer_collection.find_one({'email_address': buyer_email, "seller_email": seller_email})
                 # print('buyer', buyer)
@@ -156,19 +156,27 @@ def update_payment_data(payment_intent_id,update_data):
                 print('auction ends', end_date, end_time)
 
                 currency = temp_payment_details.get("currency", "")
-                if currency in currencySymbolMapping:
-                    currency = currencySymbolMapping.get(currency, "")
-                amount_paid = currency + str(temp_payment_details['amount'])
+                # if currency in currencySymbolMapping:
+                #     currency = currencySymbolMapping.get(currency, "")
+                amount_paid = currency + ' ' + str(temp_payment_details['amount'])
                 if not auction_data['logo_image']:
                     logo_img = f"{os.environ.get('CDN_URL')}Logo.png"
                 else:
                     logo_img= os.environ["CDN_URL"]+auction_data["logo_image"]
+                    
+                    
+                if seller['first_name']:
+                    seller_name = ' '.join(filter(None, [seller['first_name'], seller['last_name']]))
+                else:
+                    seller_name = 'Seller'
+                    
+                    
 
                 template_data = {
                     "auction_title":temp_payment_details['auction_title'],
                     "logo_image": logo_img,
                     "auction_end_date": end_date,
-                    "account_name": buyer['first_name'] ,
+                    'account_name': ' '.join(filter(None, [temp_payment_details['billing_address']['first_name'], temp_payment_details['billing_address']['last_name']])),    
                     "address_line1": temp_payment_details['billing_address']['address_line1'],
                     "address_line2": temp_payment_details['billing_address']['address_line2'],
                     "city": temp_payment_details['billing_address']['city'],
@@ -176,7 +184,8 @@ def update_payment_data(payment_intent_id,update_data):
                     "country": temp_payment_details['billing_address']['country'],
                     "zip_code": temp_payment_details['billing_address']['postal_code'],
                     "email_address": buyer_email,
-                    "seller_email": seller_email,
+                    "seller_name": seller_name,      
+                    "currency": currency, 
                     "amount_paid": amount_paid,
                     # "cdn_url": os.environ['CDN_URL'],
                     "lots": lots_list,
@@ -185,17 +194,17 @@ def update_payment_data(payment_intent_id,update_data):
                 # Checking mailchimp for template existence
                 try:
                     mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                    response = mailchimp.templates.info({"name": seller['seller_id'] + '-PAYMENT-RECEIPT'})
-                    print('name of the templatee', seller['seller_id'] + '-PAYMENT-RECEIPT')
+                    response = mailchimp.templates.info({"name": str(seller['_id']) + '-PAYMENT-RECEIPT'})                        
+                    print('name of the templatee', str(seller['_id']) + '-PAYMENT-RECEIPT')
                     # print(response)
-                    template_name = seller['seller_id'] + '-PAYMENT-RECEIPT'
+                    template_name = str(seller['_id']) + '-PAYMENT-RECEIPT'
                 except ApiClientError as error:
                     template_name = 'default_payment-receipt'
                     print("An exception occurred: {}".format(error.text))
 
                 # print('template_name', template_name)
                 send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
 
             elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
@@ -205,8 +214,8 @@ def update_payment_data(payment_intent_id,update_data):
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
                 print('here')
                 # Delete the cart data
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
-                print('after')
+                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                # print('after')
             return update_result
 
         else:
