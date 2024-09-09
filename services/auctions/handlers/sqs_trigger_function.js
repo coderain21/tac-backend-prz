@@ -229,8 +229,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                     }
                 }
                 // If the user didn't win any lots, change the email subject
-                const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
-                const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
+                const subjectDescription = winningLot.length > 0 ? 'Congratulations | Payment Request' : 'You lost the Auction'
+                const paymentContent = winningLot.length > 0 ? 'Please follow the link below to complete your payment.' : ''
                 let totalBidAmount = 0
                 if (winningLot.length > 0) {
                     totalBidAmount = winningLot.reduce((total, lot) => {
@@ -261,6 +261,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                     seller_email: auctionData.seller_email,
                     subject: subjectDescription,
                     paymentContent,
+                    seller_id: sellerInformation[0]._id, // to make the email template unique with no conflicts with other environments
+
                     total_amount: totalBidAmount,
                     checkout_url: checkoutURL,
                 }
