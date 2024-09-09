@@ -201,7 +201,7 @@ def update_payment_data(payment_intent_id,update_data):
 
                 # print('template_name', template_name)
                 send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
-                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
 
             elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
@@ -211,7 +211,7 @@ def update_payment_data(payment_intent_id,update_data):
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
                 print('here')
                 # Delete the cart data
-                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
                 # print('after')
             return update_result
 
