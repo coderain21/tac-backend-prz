@@ -240,8 +240,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                     }
                 }
                 // If the user didn't win any lots, change the email subject
-                const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
-                const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
+                const subjectDescription = winningLot.length > 0 ? 'Congratulations | Payment Request' : 'You lost the Auction'
+                const paymentContent = winningLot.length > 0 ? 'Please follow the link below to complete your payment.' : ''
                 let totalBidAmount = 0
                 if (winningLot.length > 0) {
                     totalBidAmount = winningLot.reduce((total, lot) => {
@@ -258,10 +258,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                 const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
                 const auctionId = auctionData._id.toString()
                 const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
-                console.log('buyer info', buyerInformation)
                 // Create the email data
                 if (buyerInformation.length > 0) {
-                    console.log('here inside sending email')
                     const template_data = {
                         winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
                         winning_lot_count: winningLot.length,
@@ -274,7 +272,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         seller_email: auctionData.seller_email,
                         subject: subjectDescription,
                         paymentContent,
-                        seller_id: sellerInformation[0]._id,
+                        seller_id: sellerInformation[0]._id, // to make the email template unique with no conflicts with other environments
                         total_amount: totalBidAmount,
                         checkout_url: checkoutURL,
                     }
