@@ -190,6 +190,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     email_address: event.seller_email,
                 }
                 const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+                console.log('seller', sellerInformation)
 
                 // Set up a MongoDB query to find the user's information
                 const query = {
@@ -228,8 +229,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                     }
                 }
                 // If the user didn't win any lots, change the email subject
-                const subjectDescription = winningLot.length > 0 ? 'Congratulations | Payment Request' : 'You lost the Auction'
-                const paymentContent = winningLot.length > 0 ? 'Please follow the link below to complete your payment.' : ''
+                const subjectDescription = winningLot.length > 0 ? 'You Won the Auction' : 'You lost the Auction'
+                const paymentContent = winningLot.length > 0 ? 'A payment request email will follow shortly along with instructions on the next steps.' : ''
                 let totalBidAmount = 0
                 if (winningLot.length > 0) {
                     totalBidAmount = winningLot.reduce((total, lot) => {
