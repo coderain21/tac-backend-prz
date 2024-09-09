@@ -191,7 +191,7 @@ def update_payment_data(payment_intent_id,update_data):
                 # Checking mailchimp for template existence
                 try:
                     mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                    response = mailchimp.templates.info({"name": str(seller['_id']) + '-PAYMENT-RECEIPT'})                        
+                    response = mailchimp.templates.info({"name": str(seller['_id']) + '-PAYMENT-RECEIPT'})
                     print('name of the templatee', str(seller['_id']) + '-PAYMENT-RECEIPT')
                     # print(response)
                     template_name = str(seller['_id']) + '-PAYMENT-RECEIPT'
