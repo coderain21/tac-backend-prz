@@ -49,7 +49,7 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
         # Prepare the message object to match the Node.js example
         send_message = {
             "from_email": sender_email,
-            "subject": "Payment Summary",
+            "subject": "Thank You | Payment Receipt",
             "to": [{"email": email, "type": "to"}],
             "merge_language": "handlebars",
             "merge": True,
@@ -65,7 +65,7 @@ def send_mailchimp_payment_email(email, template_name, template_data, sender_ema
                 {"name": "country", "content": template_data["country"]},
                 {"name": "zip_code", "content": template_data["zip_code"]},
                 {"name": "email_address", "content": template_data["email_address"]},
-                {"name": "seller_email", "content": template_data["seller_email"]},
+                {"name": "seller_name", "content": template_data["seller_name"]},
                 {"name": "amount_paid", "content": template_data["amount_paid"]},
                 # {"name": "cdn_url", "content": template_data["cdn_url"]},
                 {"name": "lots", "content": template_data["lots"]}  # Assuming lots are correctly formatted
