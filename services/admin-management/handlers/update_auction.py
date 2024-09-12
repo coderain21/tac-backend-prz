@@ -4,12 +4,12 @@ import json
 import boto3
 import uuid
 from pymongo import MongoClient, UpdateOne
-from lib.invoke_step_function import invoke_state_machine
+# from lib.invoke_step_function import invoke_state_machine
 from bson import ObjectId
 from lib.get import get_by_email
 from lib.helper_python import get_Lot
 from lib.common_helper import Encoder
-from datetime import datetime, timezone
+from datetime import datetime    #, timezone
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
 sqs = boto3.client('sqs')
@@ -178,7 +178,7 @@ def update_auction(event, context):
         print('auction_extension_between_lots', auction_extension_between_lots)
         auction_id = event['pathParameters']['auction_id']
         seller_email = event['queryStringParameters']['seller_email']
-        
+
         if not seller_email:
             print('seller email is not present')
             return {
