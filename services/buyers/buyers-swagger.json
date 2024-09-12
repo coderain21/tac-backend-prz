@@ -148,6 +148,12 @@
                         "show_bidder_location_in_bidder_history": {
                           "type": "string"
                         },
+                        "show_bidding_history": {
+                          "type": "string"
+                        },
+                        "hide_auction_lots": {
+                          "type": "string"
+                        },
                         "publish_auction_results": {
                           "type": "string"
                         }
@@ -255,27 +261,30 @@
                   },
                   "example4": {
                     "value": {
-                      "message": "This is a private auction ,please provide passcode.",
+                      "message": "This is a private auction,please provide passcode",
                       "data": {
-                        "menu_links": [
-                          {
-                            "title": "Home",
-                            "link_url": "https://example.com/home",
-                            "dropdown": [
-                              {
-                                "title": "About Us",
-                                "link_url": "https://example.com/about"
-                              },
-                              {
-                                "title": "Contact Us",
-                                "link_url": "https://example.com/contact"
-                              }
-                            ]
-                          }
-                        ],
-                        "logo_image": "https://example.com/logo.png"
+                          "menu_links": [],
+                          "logo_image": "",
+                          "header": {
+                              "background_color": "",
+                              "text_color": ""
+                          },
+                          "font": {
+                              "hearder_font": "",
+                              "body_font": ""
+                          },
+                          "buttons": {
+                              "background_color": "",
+                              "text_color": ""
+                          },
+                          "title": "Out of the Margins",
+                          "content_area": {
+                              "background_color": "",
+                              "text_color": ""
+                          },
+                          "_id": "66c72ecc2b4ebac5266825a8",
+                          "sub_domain": "subdomain-change"
                       }
-                    }
                   },
                   "example5": {
                     "value": {
@@ -304,7 +313,8 @@
                 }
               }
             }
-          },
+          }
+        },
           "404": {
             "description": "Not found",
             "content": {
@@ -2401,6 +2411,113 @@
           }
         }
       }
+    },
+    "/links": {
+      "get": {
+        "tags": ["Buyers Management"],
+        "summary": "Get Seller social links",
+        "description": "Get Seller social links",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Fetch details for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi+stripe@7edge.com"
+          }
+        ],
+        
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved seller links",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "facebook_link": {
+                          "type": "string"
+                        },
+                        "Instagram_link": {
+                          "type": "string"
+                        },
+                        "twitter": {
+                          "type": "string"
+                        },
+                        "linkdin_link": {
+                          "type": "string"
+                        },
+                        "tiktok_link": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "_id": "65d6cac06016b45c27883191",
+                  "facebook_link": "https://facebook.com",
+                  "Instagram_link": "https://cryptic",
+                  "twitter": "https://twitter",
+                  "tiktok_link": "https://dsgfashdfajs"
+              }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide seller email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Seller not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2511,6 +2628,12 @@
             "type": "boolean"
           },
           "show_bidder_location_in_bidder_history": {
+            "type": "boolean"
+          },
+          "show_bidding_history": {
+            "type": "boolean"
+          },
+          "hide_auction_lots": {
             "type": "boolean"
           },
           "make_your_auction_private": {

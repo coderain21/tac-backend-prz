@@ -19,6 +19,7 @@ client = MongoClient(
                         )
 db = client[os.environ['DATABASE']]
 collection = db[os.environ['CART_COLLECTION']]
+buyer_collection = db[os.environ['BUYER_COLLECTION']]
 
 
 def view(event, context):
@@ -52,15 +53,17 @@ def view(event, context):
         #         "body": json.dumps({"message": "You do not have access to perform this API action"})
         #     }
         try:
-            email_address = event['requestContext']['authorizer']['claims']['email']
+            # email_address = event['requestContext']['authorizer']['claims']['email']
+            # print('email', email_address)
+            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
+            #     print('here in first')
+            #     return {
+            #         "statusCode": 403,
+            #         "headers": headers,
+            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+            #     }
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-                print('here in first')
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
         except:
             print('here in second')
             return {
@@ -68,12 +71,14 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # client = MongoClient(
-                    #   os.environ['MONGO_CLIENT'],
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                    #     )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ['CART_COLLECTION']]
+        buyer_details = buyer_collection.find_one({'email_address':email_address})
+        if buyer_details is None:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Buyer doesn't exist"})
+            }
+
         data = event['queryStringParameters']
         auction_id = data['auction_id']
         plan_type = "Free"

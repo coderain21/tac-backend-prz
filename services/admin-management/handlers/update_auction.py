@@ -29,6 +29,9 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
+
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
@@ -160,7 +163,6 @@ def update_auction(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
-            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -168,6 +170,7 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
+        admin_record = admin_collection.find_one({"email_address": email_address})
         auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
         auction_extension_type = request_body.get('extension_type', None)
@@ -223,13 +226,6 @@ def update_auction(event, context):
             }
 
         if published_status == 'true':
-            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            # if kyc_kyb_review is not True:
-            #     return {
-            #             "statusCode": 400,
-            #             'headers': headers,
-            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
-            #         }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
@@ -362,7 +358,7 @@ def update_auction(event, context):
                                 "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
                                 "fees", "faq", "time_zone", "terms_and_condition",
-                                "publish_auction_results", "show_bidder_location_in_bidder_history",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
@@ -371,7 +367,7 @@ def update_auction(event, context):
                                 "description", "end_date",
                                 "extension_time_between_lots",
                                 "faq", "publish_auction_results",
-                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode", "show_bidding_history",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
         elif auction_status == "Completed":
@@ -381,7 +377,7 @@ def update_auction(event, context):
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
                                 "description", "start_date", "end_date",
                                 "faq", "time_zone", "publish_auction_results",
-                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
+                                "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode", "show_bidding_history","hide_auction_lots",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
         else:
@@ -616,6 +612,21 @@ def update_auction(event, context):
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
+        access_logs = {
+            "actor_id": admin_record.get('user_id'),
+            "updated_by": {
+                "type": 'Admin',
+                "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
+                "email_address": email_address,
+            },
+            "section": {
+                "name": 'Auctions Management',
+                "action": 'Update',
+                "auction_id": auction_id,
+                "updated": update_data
+            },
+        }
+        access_logs_collection.insert_one(access_logs)
         return {
             "headers": headers,
             'statusCode': 204,
