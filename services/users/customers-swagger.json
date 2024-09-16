@@ -166,7 +166,12 @@
                   }
                 }
               }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         },
         "patch":{
           "tags": [
@@ -376,7 +381,12 @@
                   }
                 }
               }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       },
       "/request-otp":{
@@ -492,7 +502,12 @@
                   }
                 }
               }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       },
       "/otp-validation":{
@@ -582,7 +597,12 @@
                   }
                 }
               }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       },
        "/update-plan/{email}": {
@@ -693,7 +713,12 @@
                   }
                 }
               }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       },
       "/generate": {
@@ -752,7 +777,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       },
       "/kyb-generate": {
@@ -811,7 +841,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       },
       "/password-update/{email}": {
@@ -924,7 +959,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
        },
       "/forgot_password":{
@@ -996,7 +1036,12 @@
                   }
                 }
               }
-            }
+            },
+            "security": [
+              {
+                "bearerAuth": []
+              }
+            ]
         }
        },
       "/reset_password": {
@@ -1116,7 +1161,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
        },
        "/stripe": {
@@ -1175,7 +1225,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         },
         "patch": {
           "tags": [
@@ -1236,7 +1291,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ]
         }
       }
 
