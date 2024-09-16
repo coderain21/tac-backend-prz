@@ -89,7 +89,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "BearerAuth": []
           }
         ]
       }

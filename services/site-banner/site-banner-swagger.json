@@ -104,7 +104,7 @@
         },
         "security": [
           {
-            "bearerAuth": []
+            "BearerAuth": []
           }
         ]
       },
@@ -116,7 +116,7 @@
         ],
         "security": [
           {
-            "bearerAuth": []
+            "BearerAuth": []
           }
         ],
         "parameters": [
@@ -230,7 +230,7 @@
       ],
       "security": [
         {
-          "bearerAuth": []
+          "BearerAuth": []
         }
       ],
       "parameters": [

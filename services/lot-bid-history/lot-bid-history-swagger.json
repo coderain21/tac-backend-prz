@@ -133,7 +133,7 @@
           },
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ]
         }
@@ -240,7 +240,7 @@
           },
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ]
         }

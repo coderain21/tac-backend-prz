@@ -136,7 +136,7 @@
                 },
                 "security": [
                   {
-                    "bearerAuth": []
+                    "BearerAuth": []
                   }
                 ]
               }
