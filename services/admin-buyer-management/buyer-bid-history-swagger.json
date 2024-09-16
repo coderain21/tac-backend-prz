@@ -165,11 +165,6 @@
           "tags": [
             "Admin | Auction Buyer Management"
           ],
-          "security": [
-            {
-              "BearerAuth": []
-            }
-          ],
           "parameters": [
             {
               "name": "seller_email",
@@ -284,7 +279,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       },
       "/{buyer_id}": {
