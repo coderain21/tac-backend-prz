@@ -18,10 +18,11 @@ const UserSchema = new Schema({
     user_type: {
         type: String, trim: true, required: true,
     },
+    seller_id: { type: String, trim: true },
     user_name: { type: String, trim: true },
     password: { type: String, trim: true, required: true },
     email_address: { type: String, trim: true },
-    status: { type: Boolean, default: false },
+    status: { type: String, default: 'Active' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     is_first_time_login: { type: Boolean, default: true },
@@ -47,8 +48,8 @@ const UserSchema = new Schema({
     twitter: { type: String, trim: true, default: '' },
     linkedin_link: { type: String, trim: true, default: '' },
     tiktok_link: { type: String, trim: true, default: '' },
-    kyc_status: { type: String, trim: true, default: false },
     kyb_status: { type: String, trim: true, default: false },
+    full_name: { type: String, trim: true, default: '' },
 
 })
 

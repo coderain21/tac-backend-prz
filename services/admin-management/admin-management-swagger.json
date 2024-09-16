@@ -16,6 +16,7 @@
       "description": "APIs to manage the Admin"
     }
   ],
+
   "paths": {
     "/auctions": {
       "get": {
@@ -88,6 +89,7 @@
             },
             "example": 1
           },
+          
           {
             "name": "keyword",
             "in": "query",
@@ -290,13 +292,13 @@
             "example": 1
           },
           {
-            "name": "search",
+            "name": "search", 
             "in": "query",
             "description": "search key",
             "schema": {
               "type": "string"
             },
-            "example": "C"
+            "example": "B0228"
           }
         ],
         "responses": {
@@ -316,18 +318,9 @@
                             "type": "string"
                           },
                           "email_address": {
-                            "type": "number"
-                          },
-                          "seller_email": {
                             "type": "string"
                           },
-                          "first_name": {
-                            "type": "number"
-                          },
-                          "last_name": {
-                            "type": "string"
-                          },
-                          "name": {
+                          "full_name": {
                             "type": "string"
                           },
                           "created_at": {
@@ -343,7 +336,7 @@
                       "type": "integer"
                     },
                     "page_number": {
-                      "type": "integer"
+                      "type": "integer" 
                     },
                     "page_size": {
                       "type": "integer"
@@ -353,153 +346,63 @@
                 "example": {
                   "buyers": [
                     {
+                      "_id": "663b4c1317654f444922d3bb",
+                      "email_address": "testmaisonqr@gmail.com",
+                      "created_at": "2024-05-08 09:55:31.007000",
+                      "buyer_id": "B0231"
+                    },
+                    {
                       "_id": "6628f469deb4ba6493d75000",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19AMNqyiXAuxP9QzVezN/i4Pticbfmf+uE=",
                       "email_address": "ibrahimkhaleel0399@gmail.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "IBRAHIM",
-                      "last_name": "KHALEEL",
-                      "registered_through": "federated",
                       "created_at": "2024-04-24 12:00:37.422000",
-                      "buyer_id": "B0192",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com"
+                      "buyer_id": "B0192"
+                    },
+                    {
+                      "_id": "6639fe2b4028f54a68c50f18",
+                      "email_address": "ssandhyashri@gmail.com",
+                      "created_at": "2024-05-07 10:10:51.301000",
+                      "buyer_id": "B0228"
+                    },
+                    {
+                      "_id": "66332683cbf11ea82ccfcee0",
+                      "email_address": "sushmitha.j@7edge.com",
+                      "created_at": "2024-05-02 05:37:07.134000",
+                      "buyer_id": "B0211"
                     },
                     {
                       "_id": "65ddc527cca2efbf6a77a199",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19T9rOlvYoOIeH95VeoyRoUk02KAahrpM4=",
                       "email_address": "ranjith.n@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "",
                       "created_at": "2024-02-27 11:19:03.827000",
-                      "buyer_id": "B0159",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com",
-                      "token": {
-                        "endpoint": "https://fcm.googleapis.com/fcm/send/ckQIJlnC3sY:APA91bGcRjHH9omDvamn2ovPooaF5D-X3JERvpN1knwqyjAOvDdF2ee_t9egMn9Fdk38xVf514Fu6rDgOoJ1L-lIOeT9eixf5ExdmidhOzeeGqWOEdcaNzxiqIvxNrYkqhHDMQdTkN2Z",
-                        "expirationTime": null,
-                        "keys": {
-                          "p256dh": "BHilXltJxPkyHmHbS7DPZXHlnHIikQBPd-KUNUB85AI0ftGJ7NJCIsoVzJGGd4OxXKkpGs_Giu_l0BQ8pZaZKDI",
-                          "auth": "EVzD5S9wBhawZY6nb7rzAQ"
-                        }
-                      }
+                      "buyer_id": "B0159"
                     },
                     {
-                      "_id": "65dc375df646dea4687b61e4",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+wPyyaXGcE8sfyoJlODekKNW53SR3CV9g=",
-                      "email_address": "sushmitha.j@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "registered_through": "",
-                      "created_at": "2024-02-26 07:01:49.800000",
-                      "buyer_id": "B0157",
-                      "__v": 0,
-                      "seller_email": "sthuthi+stripe@7edge.com"
-                    },
-                    {
-                      "_id": "6628fa73161dfe72936def73",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19BjZPcjiuFupj/B4bMdtYvFL+qa2WEwgA=",
-                      "email_address": "anusha.k@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Anusha",
-                      "last_name": "K",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-24 12:26:27.952000",
-                      "buyer_id": "B0199",
-                      "__v": 0
-                    },
-                    {
-                      "_id": "66290633fa8b23477b47b353",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+n/lqIYj4S7jDnHhl0XvIMfDzIY6kNYs4=",
-                      "email_address": "ibrahim.khaleel@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Ibrahim",
-                      "last_name": "Khaleel",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-24 13:16:28.940000",
-                      "buyer_id": "B0201",
-                      "__v": 0,
-                      "seller_email": "namratha.shettigar+dev@7edge.com"
-                    },
-                    {
-                      "_id": "662644514434bce4ccf53c1b",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX19soFAwgo2AQKvnseThYPRRV6axRVrad48=",
-                      "email_address": "sthuthi@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Sthuthi",
-                      "last_name": "B",
-                      "registered_through": "federated",
-                      "created_at": "2024-04-22 11:04:49.532000",
-                      "buyer_id": "B0190",
-                      "__v": 0
-                    },
-                    {
-                      "_id": "65d861d7f46ef6bed548dacd",
-                      "user_type": "buyer",
-                      "password": "",
-                      "email_address": "sthuthi+auction@7edge.com",
-                      "newsletter_notification": false,
-                      "seller_email": "namratha.shettigar+dev@7edge.com",
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": ""
+                      "_id": "666ae74412b3b56b6ea4e9e4",
+                      "email_address": "sayyed.adullah@7edge.com",
+                      "created_at": "2024-06-13 12:34:12.573000",
+                      "buyer_id": "B0386"
                     },
                     {
                       "_id": "6627a1a710dbf1eb85016ad4",
-                      "user_type": "buyer",
-                      "password": "U2FsdGVkX1+YsMRhX2m88uGAxRRM0tmZ9sbmpz0MHRA=",
                       "email_address": "sandhyashri@7edge.com",
-                      "newsletter_notification": false,
-                      "terms_and_condition": true,
-                      "first_name": "Sandhyashri",
-                      "last_name": "S",
-                      "registered_through": "federated",
                       "created_at": "2024-04-23 11:55:19.780000",
-                      "buyer_id": "B0191",
-                      "__v": 0
+                      "buyer_id": "B0191"
                     },
                     {
-                      "_id": "654f761642ec4ad6db303f3e",
-                      "user_type": "buyer",
-                      "password": "",
-                      "email_address": "aishwarya@7edge.com",
-                      "newsletter_notification": false,
-                      "seller_email": "sthuthi+testing@7edge.com",
-                      "terms_and_condition": true,
-                      "first_name": "",
-                      "last_name": "",
-                      "full_name": " "
+                      "_id": "6639eac201be4846a189390c",
+                      "email_address": "sthuthi+auction@7edge.com"
                     },
                     {
-                      "_id": "6539052c46ee02100faba421",
-                      "email_address": "aishwarya+vt@7edge.com",
-                      "first_name": "Aishwarya",
-                      "last_name": "K",
-                      "password": "$pbkdf2-sha256$29000$aW5keUBhdWN0aW9u$7k7XPbv5UYbS9OLtuTiWboLKa82wxo42hX8EXHiazmE",
-                      "terms_and_condition": true,
-                      "user_type": "buyer",
-                      "newsletter_notification": false,
-                      "sub_domain": "www-dev",
-                      "seller_email": "aishwarya+30@7edge.com",
-                      "full_name": "Aishwarya K"
+                      "_id": "66290633fa8b23477b47b353",
+                      "email_address": "ibrahim.khaleel@7edge.com",
+                      "created_at": "2024-04-24 13:16:28.940000",
+                      "buyer_id": "B0201"
+                    },
+                    {
+                      "_id": "664739a101e9f805ececd62d",
+                      "email_address": "sthuthi+ssss@7edge.com"
                     }
                   ],
-                  "total_buyers": 65,
+                  "total_buyers": 250,
                   "page_size": 10,
                   "page_number": 1
                 }
@@ -1985,6 +1888,12 @@
                       "publish_auction_results": {
                         "type": "boolean"
                       },
+                      "show_bidding_history":{
+                        "type": "boolean"
+                      },
+                      "hide_auction_lots": {
+                        "type": "Boolean"
+                      },
                       "show_bidder_location_in_bidder_history": {
                         "type": "boolean"
                       },
@@ -3175,6 +3084,426 @@
             "BearerAuth": []
           }
         ]
+        
+      }
+    },
+    "/admin-update-password": {
+      "patch": {
+        "tags": ["Admin Management"],
+        "summary": "updating admin password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "old_password": {
+                    "type": "string"
+                  },
+                  "new_password": {
+                    "type": "string"
+                  },
+                  "confirm_password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "old_password": "Password@123",
+                "new_password": "Password@123",
+                "confirm_password": "Password@134"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Password updated successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Current password is incorrect. The password update cannot be completed"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "new password is same as old password"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Current password and new password not matching"
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                      "message": "Something went wrong.Please try again"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enable-disable-seller":{
+      "patch": {
+        "tags": ["Admin Management"],
+        "summary": "updating seller status(Activate/Deactivate)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "actor_id": {
+                    "type": "string"
+                  },
+                  "updated_by": {
+                    "type": "object"
+                  },
+                  "section": {
+                    "type": "object"
+                  }
+                }
+              },
+              "example": {
+                "actor_id": "IA0001",
+                "updated_by": {
+                  "type": "Admin",
+                  "name": "AnushaK",
+                  "email_address": "anusha.k+admin@7edge.com"
+                },
+                "section": {
+                  "name": "seller management",
+                  "user_id": "sandhyashri+sell@7edge.com",
+                  "action": "Activate"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "User Activated/Deactivated  successfully"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while updating the status"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Please pass the required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/view-seller": {
+      "get": {
+        "tags": [
+          "Admin Seller Management"
+        ],
+        "summary": "View  seller information",
+        "parameters": [
+          {
+            "required": true,
+            "name": "seller_id",
+            "in": "query",
+            "description": "get user by seller_id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "654f664042b81a4af17a0fd8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string"
+                    },
+                    "user_type": {
+                      "type": "string"
+                    },
+                    "password": {
+                      "type": "string"
+                    },
+                    "email_address": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "is_first_time_login": {
+                      "type": "boolean"
+                    },
+                    "newsletter_notification": {
+                      "type": "boolean"
+                    },
+                    "terms_and_condition": {
+                      "type": "boolean"
+                    },
+                    "free_user": {
+                      "type": "boolean"
+                    },
+                    "first_name": {
+                      "type": "string"
+                    },
+                    "last_name": {
+                      "type": "string"
+                    },
+                    "full_name": {
+                      "type": "string"
+                    },
+                    "brand_name": {
+                      "type": "string"
+                    },
+                    "business_registration_number": {
+                      "type": "string"
+                    },
+                    "website": {
+                      "type": "string"
+                    },
+                    "address_line_1": {
+                      "type": "string"
+                    },
+                    "address_line_2": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "postal_code": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "phone_number": {
+                      "type": "string"
+                    },
+                    "country_code": {
+                      "type": "string"
+                    },
+                    "date_of_birth": {
+                      "type": "string"
+                    },
+                    "about": {
+                      "type": "string"
+                    },
+                    "facebook_link": {
+                      "type": "string"
+                    },
+                    "Instagram_link": {
+                      "type": "string"
+                    },
+                    "twitter": {
+                      "type": "string"
+                    },
+                    "linkedin_link": {
+                      "type": "string"
+                    },
+                    "tiktok_link": {
+                      "type": "string"
+                    },
+                    "kyc_status": {
+                      "type": "boolean"
+                    },
+                    "kyb_status": {
+                      "type": "boolean"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "__v": {
+                      "type": "integer"
+                    },
+                    "auctions_count": {
+                      "type": "string"
+                    },
+                    "plan_type": {
+                      "type": "string"
+                    },
+                    "is_deleted": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+              "_id": "654f664042b81a4af17a0fd8",
+              "user_type": "seller",
+              "password": "U2FsdGVkX18CVhG/YqBspB4lQUipBJdfGDIegc/xcDA=",
+              "email_address": "aishwarya+seller2@7edge.com",
+              "status": "Active",
+              "is_first_time_login": false,
+              "newsletter_notification": false,
+              "terms_and_condition": true,
+              "free_user": false,
+              "first_name": "William",
+              "last_name": "",
+              "brand_name": "",
+              "business_registration_number": "",
+              "website": "",
+              "address_line_1": "",
+              "address_line_2": "",
+              "city": "",
+              "postal_code": "",
+              "country": "",
+              "phone_number": "",
+              "country_code": "",
+              "date_of_birth": "",
+              "about": "",
+              "facebook_link": "",
+              "Instagram_link": "",
+              "twitter": "",
+              "linkedin_link": "",
+              "tiktok_link": "",
+              "kyc_status": "false",
+              "kyb_status": "false",
+              "created_at": "2023-11-11 11:32:16.818000",
+              "updated_at": "2023-11-11 11:32:16.818000",
+              "__v": 0,
+              "auctions_count": "1",
+              "plan_type": "Pro",
+              "full_name": "William ",
+              "is_deleted": false
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+              "description": "view user",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+        }
       }
     }
   },
@@ -3287,6 +3616,12 @@
           },
           "show_bidder_location_in_bidder_history":{
             "type": "boolean"
+          },
+          "show_bidding_history": {
+            "type": "boolean"
+          },
+          "hide_auction_lots": {
+            "type": "Boolean"
           },
           "make_your_auction_private":{
             "type": "boolean"

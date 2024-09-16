@@ -37,6 +37,7 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     BUYER_EMAIL_OTP_TEMPLATE: 
@@ -122,7 +123,7 @@ custom:
 functions: 
   list:
     handler: handlers/list.list_bidders
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -139,7 +140,7 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   view:
     handler: handlers/view.view_bidder
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -156,7 +157,7 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   admin-view:
     handler: handlers/admin_view.view_bidder
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -174,7 +175,7 @@ functions:
 
   add-to-group:
     handler: handlers/update.update_user
-    runtime: python3.8
+    runtime: python3.9
     layers: 
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:

@@ -37,6 +37,7 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     BUYER_EMAIL_OTP_TEMPLATE: 
       Fn::Join:
@@ -127,7 +128,7 @@ custom:
 functions:
   list_orders:
     handler: handlers/list.list_orders
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -154,7 +155,7 @@ functions:
   
   order_detail:
     handler: handlers/order_detail.order_detail
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -178,9 +179,37 @@ functions:
               - Accept
               - Access-Control-Allow-Headers
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+  
+  order_update:
+    handler: handlers/order_update.order_update
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /update
+          method: put
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: ${ssm:SELLER_COGNITO_AUTH_ARN}             #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
   sales_details:
     handler: handlers/sales_details.sales_details
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -208,7 +237,7 @@ functions:
           
   seller_list_orders:
     handler: handlers/sellers_list.list_orders
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
