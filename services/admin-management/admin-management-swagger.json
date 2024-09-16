@@ -246,7 +246,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/buyers": {
@@ -532,7 +537,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/sellers": {
@@ -750,7 +760,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/buyer-auctions": {
@@ -902,7 +917,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/buyer-details": {
@@ -1016,7 +1036,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/{id}": {
@@ -1196,7 +1221,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/clone-auction": {
@@ -1277,7 +1307,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/order-details": {
@@ -1565,7 +1600,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/auction-purchases": {
@@ -1824,7 +1864,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/auction-details": {
@@ -2184,7 +2229,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/accountings": {
@@ -2479,7 +2529,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/unpublish-auction": {
@@ -2609,7 +2664,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/publish-auction/{auction_id}": {
@@ -2772,7 +2832,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/admin-subdomain": {
@@ -2840,7 +2905,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
      },
      "/edit-auction/{auction_id}":{
@@ -2935,8 +3005,12 @@
               }
             }
           }
-        }
-        
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/update-lot": {
@@ -3095,7 +3169,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
   },
