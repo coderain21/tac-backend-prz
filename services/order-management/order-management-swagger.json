@@ -171,7 +171,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/details": {
@@ -450,7 +455,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/seller": {
@@ -612,7 +622,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/sales":{
@@ -891,7 +906,12 @@
               }
               }
           }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
       }
   }
   },
