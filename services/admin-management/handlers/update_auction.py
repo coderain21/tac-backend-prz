@@ -172,6 +172,9 @@ def update_auction(event, context):
         request_body = json.loads(event['body'])
         admin_record = admin_collection.find_one({"email_address": email_address})
         auction_end_date = request_body.get('end_date', None)
+        if auction_end_date:
+            auction_end_date = auction_end_date.replace(second=0, microsecond=0)
+            print('end date', auction_end_date)
         auction_start_date = request_body.get('start_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
@@ -386,11 +389,11 @@ def update_auction(event, context):
         update_data = {key: value for key,
                        value in request_body.items() if key in updatable_fields}
         documents = []
-        extension_time_str = auction_record.get('extension_time_between_lots', '0')
+        extension_time_str = auction_record.get('extension_time_between_lots', 2)
         if extension_time_str != '':
             extension_time = int(extension_time_str[:1])
         else:
-            extension_time=0
+            extension_time=2
 
         # if auction_extension_type or auction_extension_between_lots:
         #     if auction_extension_type and not auction_extension_between_lots:
@@ -404,21 +407,36 @@ def update_auction(event, context):
         #         extension_time = int(extension_time_str[:1])
 
         if auction_extension_type or auction_extension_between_lots:
+
             if auction_extension_type and not auction_extension_between_lots:
-                extension_time_str = auction_record.get('extension_time_between_lots', '0')
+
+                extension_time_str = auction_record.get('extension_time_between_lots', 2)
+
             elif auction_extension_between_lots and not auction_extension_type:
-                extension_time_str = request_body.get('extension_time_between_lots', '0')
+
+                extension_time_str = request_body.get('extension_time_between_lots', 2)
+
             elif auction_extension_type and auction_extension_between_lots:
-                extension_time_str = request_body.get('extension_time_between_lots', '0')
+
+                extension_time_str = request_body.get('extension_time_between_lots', 2)
+
             try:
-                extension_time = int(extension_time_str[:1]) if extension_time_str else 0
+
+                extension_time = int(extension_time_str[:1]) if extension_time_str else 2
+
             except ValueError:
+
                 extension_time = 0
+                
+                
+                
+
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
         if auction_end_date != None:
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
+            end_date = end_date.replace(second=0, microsecond=0)
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                 additional_time_ms = end_date + (existing_lots_count -1 ) * extension_time * 60 * 1000
                 update_data ['end_date'] = additional_time_ms
@@ -510,18 +528,43 @@ def update_auction(event, context):
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
                     if len(getExistingLot) > 0:
+
                         # Create a new dictionary with only the required fields
+
                         required_fields = {
-                            **getExistingLot,
+
                             '_id': item.get('_id'),
+
                             'start_date': item.get('start_date'),
+
                             'end_date': item.get('end_date'),
+
                             'lot_number': item.get('lot_number'),
-                            # 'auction_id': item.get('auction_id'),
-                            # 'seller_email': item.get('seller_email'),
+
+                            'auction_id': item.get('auction_id'),
+
+                            'seller_email': item.get('seller_email'),
+
                             'winning_user': getExistingLot.get('winning_user', winningUser) if getExistingLot.get('winning_user', winningUser) != '' else winningUser,
-                            'bid_amount': getExistingLot.get('bid_amount', item.get('current_bid') )
-                            # Add more required fields as needed
+
+                            'bid_amount': getExistingLot.get('bid_amount', item.get('current_bid') ),
+
+                            'starting_price': item.get('starting_price'),
+
+                            'images': getExistingLot.get('images'),
+
+                            "title1": item.get('title1'),
+
+                            "email_address": getExistingLot.get('email_address'),
+
+                            "auction_uid": getExistingLot.get('auction_uid'),
+
+                            "max_bid": getExistingLot.get('max_bid'),
+
+                            "title2": getExistingLot.get('title2'),
+
+                            "lot_end_date": getExistingLot.get('lot_end_date')                   
+
                         }
                     else:
                         print('no from existing')
@@ -612,6 +655,18 @@ def update_auction(event, context):
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
+        
+        # Get the current timestamp in seconds and convert to milliseconds
+
+        timestamp_ms = int(datetime.now().timestamp() * 1000)
+
+
+
+        # Convert to float and format as a string with '.0'
+
+        formatted_timestamp = float(timestamp_ms)
+
+
         access_logs = {
             "actor_id": admin_record.get('user_id'),
             "updated_by": {
@@ -625,6 +680,7 @@ def update_auction(event, context):
                 "auction_id": auction_id,
                 "updated": update_data
             },
+            "updated_at": formatted_timestamp
         }
         access_logs_collection.insert_one(access_logs)
         return {
