@@ -201,6 +201,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     email_address: event.seller_email,
                 }
                 const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+                console.log('seller', sellerInformation)
 
                 // Set up a MongoDB query to find the user's information
                 const query = {
@@ -271,7 +272,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         seller_email: auctionData.seller_email,
                         subject: subjectDescription,
                         paymentContent,
-                        seller_id: sellerInformation[0].seller_id,
+                        seller_id: sellerInformation[0]._id, // to make the email template unique with no conflicts with other environments
                         total_amount: totalBidAmount,
                         checkout_url: checkoutURL,
                     }
