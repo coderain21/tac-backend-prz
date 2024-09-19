@@ -173,6 +173,13 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Initialize empty array to store promiseList
         const promiseList = []
         const auctionData = await mongodbHelper.getAuction(event, Auction)
+        const payload = {
+            seller_email: auctionData.seller_email,
+            auction_id: auctionData.auction_id,
+        }
+        const getAuctionLots = await mongodbHelper.getAuctionLots(payload, Lot)
+        const lastRecord = getAuctionLots[getAuctionLots.length - 1]
+        console.log(lastRecord)
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
         const getAllLots = await getLot('lot', client, event)
