@@ -30,7 +30,7 @@
           ],
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ],
           "parameters": [
@@ -165,17 +165,12 @@
           "tags": [
             "Admin | Auction Buyer Management"
           ],
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ],
           "parameters": [
             {
               "name": "seller_email",
               "in": "path",
               "required": true,
-              "example": "sandhyashri+auction@7edge.com",
+              "example": "sthuthi+stripe@7edge.com",
               "description": "The unique identifier.",
               "schema": {
                 "type": "string"
@@ -185,7 +180,7 @@
               "name": "auction_id",
               "in": "path",
               "required": true,
-              "example": "657002ca98c217adad2f0791",
+              "example": "65dec2177441cf1f78dd6450",
               "description": "The unique identifier.",
               "schema": {
                 "type": "string"
@@ -284,7 +279,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       },
       "/{buyer_id}": {
@@ -414,7 +414,7 @@
           ],
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ],
           "parameters": [
@@ -948,7 +948,7 @@
           ],
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ],
           "parameters": [
