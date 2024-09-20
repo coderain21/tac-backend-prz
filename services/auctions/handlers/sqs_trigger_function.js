@@ -218,7 +218,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                         singleLot.push(JSON.parse(getLotInfo[i]))
                     }
                     // Add the CDN link to the image URL
-                    lot.lot_image = `${process.env.CDN_LINK}${lot.images[0].url}`
+                    const featuredImage = lot.images.find((image) => image.featured)
+                    lot.lot_image = `${process.env.CDN_LINK}${featuredImage ? featuredImage.url : lot.images[0].url}`
 
                     // Add the formatted bid amount to the lot
                     if (lot.winning_user === user.buyer_id) {
