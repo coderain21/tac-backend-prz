@@ -11,6 +11,7 @@ locals {
   json_data = jsonencode(jsondecode(file("${path.module}/services.json")))
 }
 
+
 resource "aws_cloudwatch_dashboard" "demo-dashboard" {
   dashboard_name = "Indyauction-Services-Dashboard"
   provider = aws.deployment-eu

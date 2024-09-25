@@ -21,7 +21,7 @@
       }
     ],
     "paths": {
-      "/admin/{email}": {
+      "/admin/buyer/{email_address}": {
         "get": {
           "summary": "List Bids",
           "description": "Fetch a list of bids placed by buyer.",
@@ -402,7 +402,12 @@
                   }
                 }
               }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       },
       "/bids": {
