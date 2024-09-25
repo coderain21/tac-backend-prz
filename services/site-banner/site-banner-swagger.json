@@ -101,7 +101,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "get": {
         "summary": "List Site Banner Notification",
@@ -111,7 +116,7 @@
         ],
         "security": [
           {
-            "bearerAuth": []
+            "BearerAuth": []
           }
         ],
         "parameters": [
@@ -225,7 +230,7 @@
       ],
       "security": [
         {
-          "bearerAuth": []
+          "BearerAuth": []
         }
       ],
       "parameters": [

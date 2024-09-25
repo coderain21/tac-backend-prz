@@ -30,7 +30,7 @@
           ],
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ],
           "parameters": [
@@ -165,11 +165,6 @@
           "tags": [
             "Admin | Auction Buyer Management"
           ],
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ],
           "parameters": [
             {
               "name": "seller_email",
@@ -284,7 +279,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       },
       "/{buyer_id}": {
@@ -414,7 +414,7 @@
           ],
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ],
           "parameters": [
@@ -948,7 +948,7 @@
           ],
           "security": [
             {
-              "bearerAuth": []
+              "BearerAuth": []
             }
           ],
           "parameters": [

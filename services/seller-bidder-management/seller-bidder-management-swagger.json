@@ -173,7 +173,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       },
       "/seller-orders": {
@@ -325,7 +330,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
     },

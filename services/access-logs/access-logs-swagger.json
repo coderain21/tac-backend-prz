@@ -27,7 +27,7 @@
         ],
         "security": [
           {
-            "bearerAuth": []
+            "BearerAuth": []
           }
         ],
         "parameters": [
