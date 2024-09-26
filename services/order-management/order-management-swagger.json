@@ -918,10 +918,11 @@
   "components": {
     "securitySchemes": {
       "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "description": "Bearer Token"
-      }
+          "type": "apiKey",
+          "name": "Authorization",
+          "in": "header",
+          "description": "Bearer Token"
+        }
     }
   }
 }
