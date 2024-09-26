@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.dev.indyauction.net/v1/order-management"
+      "url": "https://apis.dev.indyauction.net/v1/orders"
     }
   ],
   "tags": [
@@ -918,9 +918,8 @@
   "components": {
     "securitySchemes": {
       "BearerAuth": {
-        "type": "apiKey",
-        "name": "Authorization",
-        "in": "header",
+        "type": "http",
+        "scheme": "bearer",
         "description": "Bearer Token"
       }
     }
