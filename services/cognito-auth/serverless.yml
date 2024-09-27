@@ -121,13 +121,12 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      
       - ${ssm:COMMON_LIB_ARN}
     events:
-        - cognitoUserPool:
-            pool: ${opt:stage, self:provider.stage}-indyauction-buyers
-            trigger: PreSignUp
-            existing: true
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-indyauction-buyers
+          trigger: PreSignUp
+          existing: true
 
   # COGNITO CREATE AUTH CHALLENGE
   cognito-create-auth-challenge:
