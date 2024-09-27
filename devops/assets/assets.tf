@@ -595,6 +595,13 @@ resource "aws_ssm_parameter" "mailchimp_address" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "client_side_id" {
+  name  = "CLIENT_SIDE_ID"
+  type  = "String"
+  value = var.CLIENT_SIDE_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
 
