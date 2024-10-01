@@ -191,7 +191,7 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
-        
+
         seller = user_collection.find_one({"email_address": seller_email}) #, {'_id': 0})
         print('seller 1234', seller)
 
@@ -299,7 +299,7 @@ def register_auction(event, context):
                             'created_at': datetime.utcnow(),
                             'marketing': marketing
                    }
- 
+
         result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
         print('result', result)
         if result is None:
