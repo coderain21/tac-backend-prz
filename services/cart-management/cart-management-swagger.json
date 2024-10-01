@@ -16,7 +16,6 @@
       "description": "APIs to manage the Buyer Cart"
     }
   ],
-  
   "paths": {
       "/cart":{
         "get": {
@@ -146,7 +145,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
           }
       },

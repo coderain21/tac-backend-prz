@@ -16,6 +16,7 @@
         "description": "APIs to manage the auctions list"
     }
   ],
+  
   "paths": {
     "/":{
       "post": {
@@ -75,6 +76,8 @@
               "terms_and_condition": "By participating, you agree to our terms.",
               "publish_auction_results": true,
               "show_bidder_location_in_bidder_history": true, 
+              "show_bidding_history": true,
+              "hide_auction_lots": true,
               "make_your_auction_private": true,
               "passcode": "1234",
               "font": {
@@ -153,7 +156,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "get": {
         "tags": [
@@ -384,7 +392,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -478,8 +491,12 @@
               }
             }
           }
-        }
-        
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/{auction_id}":{
@@ -565,7 +582,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "patch":{
         "tags": ["Auction"],
@@ -698,7 +720,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/view":{
@@ -874,7 +901,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/lots":{
@@ -971,7 +1003,12 @@
                 }
               }
             }
-          }
+          },
+          "security":[
+            {
+              "BearerAuth": []
+            }
+          ]
         },
       "get": {
       "tags": [
@@ -1143,7 +1180,12 @@
             }
           }
         }
-      }
+      },
+      "security":[
+        {
+          "BearerAuth": []
+        }
+      ]
       },
       "delete": {
         "tags": [
@@ -1221,7 +1263,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": [
@@ -1366,7 +1413,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/reorder-lots":{
@@ -1469,7 +1521,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/import":{
@@ -1638,7 +1695,12 @@
             }
           }
           
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/clone":{
@@ -1719,7 +1781,12 @@
                 }
               }
             }
-          }
+          },
+          "security":[
+            {
+              "BearerAuth": []
+            }
+          ]
         } 
     },
     "/update/{auction_id}": {      
@@ -1878,7 +1945,12 @@
               }
             }
           }
-        }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
       }
      },
     "/deactivate":{
@@ -1971,7 +2043,12 @@
               }
             }
           }
-          }
+          },
+          "security":[
+            {
+              "BearerAuth": []
+            }
+          ]
         } 
     },
     "/admin/lots": {
@@ -2195,7 +2272,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
 },
@@ -2308,6 +2390,12 @@
           },
           "show_bidder_location_in_bidder_history":{
             "type": "boolean"
+          },
+          "show_bidding_history": {
+            "type": "boolean"
+          },
+          "hide_auction_lots": {
+            "type": "booelan"
           },
           "make_your_auction_private":{
             "type": "boolean"

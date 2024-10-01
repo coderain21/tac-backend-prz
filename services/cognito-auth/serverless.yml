@@ -121,13 +121,12 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      
       - ${ssm:COMMON_LIB_ARN}
     events:
-        - cognitoUserPool:
-            pool: ${opt:stage, self:provider.stage}-indyauction-buyers
-            trigger: PreSignUp
-            existing: true
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-indyauction-buyers
+          trigger: PreSignUp
+          existing: true
 
   # COGNITO CREATE AUTH CHALLENGE
   cognito-create-auth-challenge:
@@ -736,6 +735,35 @@ resources:
           Name: LAMBDA_ARN
           Type: String
           Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:cognito-${self:provider.stage}-add_callback_logout_urls
+    
+    UpdatePassword:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/update_password.html)}
+        Subject: Indy.auction - Password Update Confirmation
+        TemplateName: ${self:provider.stage}-admin-update-password-template
+
+    ActivateSeller:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/activate_seller.html)}
+        Subject: Indy.auction - Your Account Activation Notification
+        TemplateName: ${self:provider.stage}-admin-activate-seller-template
+    
+    DeactivateSeller:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/deactivate_seller.html)}
+        Subject: Indy.auction - Your Account Deactivation Notification
+        TemplateName: ${self:provider.stage}-admin-deactivate-seller-template
+
+    DeleteBuyer:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/delete_buyer.html)}
+        Subject: Indy.auction - Your Account Deactivation Notification
+        TemplateName: ${self:provider.stage}-admin-delete-buyer-template
+
 
 
             
