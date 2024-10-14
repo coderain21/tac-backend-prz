@@ -29,7 +29,32 @@ def get_mongodb_connection():
     db = client[os.environ['DATABASE']]
     return client, db[os.environ['SELLERS_TABLE']]
 
+client_id = os.environ.get('PAYPAL_CLIENT_ID')
+client_secret = os.environ.get('PAYPAL_CLIENT_SECRET')
+partner_merchant_id = os.environ.get('PAYPAL_PARTNER_MERCHANT_ID')
+paypal_url = os.environ.get('PAYPAL_URL')
+
+
 def verify_webhook(event):
+    """
+    Verify that the given webhook event is a valid PayPal webhook event.
+
+    Extracts the required fields from the event, and uses them to verify
+    the webhook event against the PayPal webhook identified by the
+    PAYPAL_WEBHOOK_ID environment variable.
+
+    :param event: The webhook event to verify, as a dict-like object
+                  containing the following keys:
+                      - headers: A dict-like object containing the
+                        following keys:
+                          - PAYPAL-TRANSMISSION-ID
+                          - PAYPAL-TRANSMISSION-TIME
+                          - PAYPAL-CERT-URL
+                          - PAYPAL-TRANSMISSION-SIG
+                          - PAYPAL-AUTH-ALGO
+                      - body: The JSON-decoded body of the webhook event
+    :return: True if the webhook event is valid, False otherwise.
+    """
     webhook_id = os.environ["PAYPAL_WEBHOOK_ID"]
     headers = event["headers"]
 
@@ -43,10 +68,20 @@ def verify_webhook(event):
         auth_algo=headers["PAYPAL-AUTH-ALGO"]
     )
 
+
+
+
 def get_paypal_access_token():
-    client_id = os.environ.get('PAYPAL_CLIENT_ID')
-    client_secret = os.environ.get('PAYPAL_CLIENT_SECRET')
-    paypal_api_base = "https://api-m.sandbox.paypal.com"  # Use the production URL for live environment
+    """
+    Get a PayPal access token.
+
+    Makes a request to the PayPal OAuth2 token endpoint, using the
+    client ID and secret from the environment variables, and returns
+    the access token received in response.
+
+    :return: The access token, as a string.
+    """
+    paypal_api_base = paypal_url   #"https://api-m.sandbox.paypal.com"  # Use the production URL for live environment
 
     auth = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
     headers = {
@@ -59,8 +94,22 @@ def get_paypal_access_token():
     response.raise_for_status()
     return response.json()["access_token"]
 
+
+
+
+
 def call_paypal_api(endpoint, method='GET'):
-    paypal_api_base = "https://api-m.sandbox.paypal.com"  # Use the production URL for live environment
+    """
+    Makes a call to the PayPal API at the given endpoint.
+
+    Args:
+        endpoint: The API endpoint to call.
+        method: The HTTP method to use (default is GET).
+
+    Returns:
+        The JSON-decoded response from the API, or an empty dictionary if there was an error.
+    """
+    paypal_api_base = paypal_url   #"https://api-m.sandbox.paypal.com"  # Use the production URL for live environment
     headers = {
         "Authorization": f"Bearer {get_paypal_access_token()}",
         "Content-Type": "application/json"
@@ -68,57 +117,102 @@ def call_paypal_api(endpoint, method='GET'):
 
     try:
         response = requests.request(method, f"{paypal_api_base}{endpoint}", headers=headers)
+        print('response in call api', response.json())
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
         print(f"Error calling PayPal API: {e}")
         return {}
+    
 
-def handle_onboarding_event(collection, data, event_type):
-    paypal_id = data.get("merchant_id")
+
+
+
+
+
+
+def get_paypal_id(tracking_id):
+    """
+    Given a tracking_id, return the associated paypal merchant id
+    using the PayPal Partners API.
+    """
+    
+    PAYPAL_URL = paypal_url   #"https://api-m.sandbox.paypal.com"
+
+    url = f"{PAYPAL_URL}/v1/customer/partners/{partner_merchant_id}/merchant-integrations?tracking_id={tracking_id}"
+    access_token = get_paypal_access_token()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}'
+    }
+    
+    response = requests.get(url, headers=headers)
+    print('response', response.json())
+    return response['merchant_id']
+
+
+
+def update_or_create_merchant(collection, data, event_type):
     tracking_id = data.get("tracking_id")
-
-    # Get merchant's onboarding status
-    if paypal_id:
-        onboarding_status = call_paypal_api(f"/v1/customer/partners/S2DT3GS2RAWHL/merchant-integrations/{paypal_id}")
-
-        update_data = {
-            "$set": {
-                "paypal_connected_id": paypal_id,
-                "paypal_status": 'connected',
-                "paypal_capabilities": onboarding_status.get('capabilities', []),
-                "paypal_products": onboarding_status.get('products', []),
-                "paypal_onboarding_completed": datetime.now() if "COMPLETED" in event_type else None,
-                "paypal_onboarding_started": datetime.now() if "STARTED" in event_type else None,
-            }
+    merchant_id = data.get("merchant_id")
+    
+    print(f"Processing event: {event_type}")
+    print(f"Tracking ID: {tracking_id}")
+    print(f"Merchant ID: {merchant_id}")
+    
+    # Try to find the document by tracking_id first
+    existing_doc = collection.find_one({"paypal_tracking_id": tracking_id})
+    
+    if not existing_doc and merchant_id:
+        # If not found by tracking_id, try to find by merchant_id
+        existing_doc = collection.find_one({"paypal_connected_id": merchant_id})
+    
+    update_data = {
+        "$set": {
+            "paypal_tracking_id": tracking_id,
+            "paypal_connected_id": merchant_id,
+            "last_updated": datetime.now(),
         }
+    }
+    
+    if event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED":
+        update_data["$set"]["paypal_status"] = "pending"
+        update_data["$set"]["paypal_onboarding_started"] = datetime.now()
+    elif event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-CONSENT-GRANTED":
+        update_data["$set"]["paypal_status"] = "consent_granted"
+        if merchant_id:
+            merchant_info = call_paypal_api(f"/v1/customer/partners/{partner_merchant_id}/merchant-integrations/{merchant_id}")
+            update_data["$set"]["paypal_capabilities"] = merchant_info.get('capabilities', [])
+            update_data["$set"]["paypal_products"] = merchant_info.get('products', [])
+
+             # Check if payments_receivable is True and primary_email is confirmed
+            payments_receivable = merchant_info.get('payments_receivable', False)
+            primary_email_confirmed = merchant_info.get('primary_email_confirmed', False)
+
+            if payments_receivable and primary_email_confirmed:
+                # Merchant is fully onboarded
+                update_data["$set"]["paypal_status"] = "connected"
+            else:
+                # If not fully onboarded, capture incomplete status
+                update_data["$set"]["paypal_status"] = "consent_granted"
+
+
+
+
+    elif event_type == "MERCHANT.ONBOARDING.COMPLETED":
+        update_data["$set"]["paypal_status"] = "connected"
+        update_data["$set"]["paypal_onboarding_completed"] = datetime.now()
+    
+    if existing_doc:
+        result = collection.update_one({"_id": existing_doc["_id"]}, update_data)
+        print(f"Updated merchant document. Modified: {result.modified_count}")
+        if existing_doc.get("paypal_connected_id") != merchant_id:
+            print(f"Merchant ID changed from {existing_doc.get('paypal_connected_id')} to {merchant_id}")
     else:
-        update_data = {
-            "$set": {
-                "paypal_status": "pending",
-                "paypal_onboarding_started": datetime.now() if "STARTED" in event_type else None,
-            }
-        }
-
-    result = collection.update_one({'paypal_tracking_id': tracking_id}, update_data)
-    print(f"Merchant onboarding {event_type} for PayPal ID: {paypal_id}. Modified: {result.modified_count}")
-
-def handle_status_change_event(collection, data):
-    paypal_id = data.get("merchant_id")
-    status = data.get("status", "UNKNOWN")
-
-    query_result = collection.find_one({'paypal_connected_id': paypal_id})
-    if query_result:
-        update_data = {
-            "$set": {
-                "paypal_status": "connected" if status == "ACTIVE" else "disconnected",
-                "last_updated": datetime.now(),
-            }
-        }
-        result = collection.update_one({'paypal_connected_id': paypal_id}, update_data)
-        print(f"Updated merchant status for PayPal ID: {paypal_id}. Modified: {result.modified_count}")
-    else:
-        print(f"Warning: No user found with PayPal ID: {paypal_id} for status update")
+        result = collection.insert_one(update_data["$set"])
+        print(f"Created new merchant document. Inserted ID: {result.inserted_id}")
+    
+    return result
 
 def create(event, context):
     try:
@@ -135,18 +229,25 @@ def create(event, context):
         client, collection = get_mongodb_connection()
 
         try:
-            if webhook_event["event_type"] in [
-                "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED", 
-                "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-COMPLETED", 
-                "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED",
-                "MERCHANT.ONBOARDING.COMPLETED",
-                "CUSTOMER.MERCHANT-INTEGRATION.COMPLETED"
+            event_type = webhook_event["event_type"]
+            resource = webhook_event["resource"]
+            
+            if event_type in [
+                "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED",
+                "CUSTOMER.MERCHANT-INTEGRATION.SELLER-CONSENT-GRANTED",
+                "MERCHANT.ONBOARDING.COMPLETED"
             ]:
-                handle_onboarding_event(collection, webhook_event["resource"], webhook_event["event_type"])
-            elif webhook_event["event_type"] == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-STATUS-CHANGE":
-                handle_status_change_event(collection, webhook_event["resource"])
+                update_or_create_merchant(collection, resource, event_type)
             else:
-                print(f"Unhandled event type: {webhook_event['event_type']}")
+                print(f"Unhandled event type: {event_type}")
+
+        except Exception as err:
+            print(f"Error processing webhook: {str(err)}")
+            return {
+                "headers": headers,
+                "statusCode": 500,
+                "body": json.dumps({"message": "There was an error processing the webhook"})
+            }
         finally:
             client.close()
 

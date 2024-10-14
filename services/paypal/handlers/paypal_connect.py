@@ -5,20 +5,28 @@ from pymongo import MongoClient
 import requests
 import json
 import os
+import uuid
 
 # Environment variables for sensitive data
 CLIENT_ID = os.environ["PAYPAL_CLIENT_ID"]
 CLIENT_SECRET = os.environ["PAYPAL_CLIENT_SECRET"]
 
-# URLs and other constants
+# URLs and other constants   
 PAYPAL_OAUTH_URL = os.environ["PAYPAL_OAUTH_URL"]
 PAYPAL_PARTNER_REFERRALS_URL = os.environ["PAYPAL_PARTNER_REFERRALS_URL"]
+PAYPAL_ONBOARDING_STATUS_URL = 'https://api-m.sandbox.paypal.com/v1/customer/partners/BCFR6Q9SDKF9A/merchant-integrations/{}'
+
+
 
 mongo_client = MongoClient(
     os.environ['MONGO_CLIENT']
 )
 db = mongo_client[os.environ['DATABASE']]
 seller_collection = db[os.environ['SELLERS_TABLE']]
+
+
+
+
 
 def get_paypal_access_token():
     """Gets a PayPal access token."""
@@ -35,6 +43,10 @@ def get_paypal_access_token():
     response_json = response.json()
     return response_json["access_token"]
 
+
+
+
+
 def create_partner_referral(access_token, tracking_id, return_url):
     """Creates a partner referral with API_INTEGRATION operation in PayPal."""
     headers = {
@@ -47,7 +59,7 @@ def create_partner_referral(access_token, tracking_id, return_url):
             "partner_logo_url": "https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg",
             "return_url": return_url,
             "return_url_description": "the URL to return the merchant after the PayPal onboarding process.",
-            "action_renewal_url": os.environ['DASHBOARD_URL']+os.environ['PAYPAL_REDIRECTION_PATH'],
+            # "action_renewal_url": os.environ['DASHBOARD_URL']+os.environ['PAYPAL_REDIRECTION_PATH'],
         },
         "operations": [
             {
@@ -59,7 +71,8 @@ def create_partner_referral(access_token, tracking_id, return_url):
                         "third_party_details": {
                             "features": [
                                 "PAYMENT",
-                                "REFUND"
+                                "REFUND",
+                                "ACCESS_MERCHANT_INFORMATION"
                             ]
                         }
                     }
@@ -80,7 +93,40 @@ def create_partner_referral(access_token, tracking_id, return_url):
         raise requests.HTTPError(f"Failed to create partner referral: {response.status_code} - {response.content}")
     return response.json()
 
+
+
+
+
+
+
+def check_merchant_onboarding_status(merchant_id, access_token):
+    """
+    Check if the merchant is onboarded with the given merchant ID
+    """
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}",
+    }
+    
+    url = PAYPAL_ONBOARDING_STATUS_URL.format(merchant_id)
+    print('url', url)
+    response = requests.get(url, headers=headers)
+    print('response in check', response)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Failed to retrieve merchant status: {response.text}")
+
+
+
 def connect(event, context):
+    """
+    This function is used to connect the seller to paypal.
+    It uses the email address from the authorizer to find the user in the database.
+    If the user is already connected to paypal, it just queries the database and changes the status.
+    If the user is not connected to paypal, it creates a partner referral and redirects the user to paypal to complete the onboarding process.
+    """
     headers = {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -110,19 +156,35 @@ def connect(event, context):
         #if the user is already connected to paypal, we are just querying the database and changing the status
         print('user info', user_info)
         if 'paypal_connected_id' in user_info and user_info['paypal_connected_id']:
-            print('here')
-            update_data = {
-                'paypal_status': 'connected'
-            }
-            connected = seller_collection.update_one({'email_address': email_address}, {'$set': update_data})
-            return {
-                'statusCode': 201,
-                'headers': headers,
-                'body': json.dumps({})
-            }
+            access_token = get_paypal_access_token()
+            print(f"Access token: {access_token}")
+            
+            # Step 2: Check merchant onboarding status
+            merchant_id = user_info['paypal_connected_id']  # merchant ID from db
+            merchant_status = check_merchant_onboarding_status(merchant_id, access_token)
+            product_status = any(product['name'] and product['status'] == 'ACTIVE' 
+                         for product in merchant_status.get('products', []))
+            print('Merchant status:', merchant_status)
+    
+            # Check if payments are receivable and email is confirmed
+            payments_receivable = merchant_status.get('payments_receivable', False)
+            email_confirmed = merchant_status.get('primary_email_confirmed', False)
+            
+            # If all conditions are met, the merchant is considered onboarded
+            if product_status and payments_receivable and email_confirmed:
+                print('here')
+                update_data = {
+                    'paypal_status': 'connected'
+                }
+                connected = seller_collection.update_one({'email_address': email_address}, {'$set': update_data})
+                return {
+                    'statusCode': 201,
+                    'headers': headers,
+                    'body': json.dumps({})
+                }
 
         access_token = get_paypal_access_token()
-        tracking_id = f"indy_{email_address}_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        tracking_id = str(user_info.get('_id'))+str(uuid.uuid4())
         return_url = os.environ['DASHBOARD_URL']+os.environ['PAYPAL_REDIRECTION_PATH']
 
         referral_response = create_partner_referral(access_token, tracking_id, return_url)
