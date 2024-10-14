@@ -312,6 +312,33 @@ def register_auction(event, context):
                         'marketing': marketing
                         }
         else:
+            template_data = {
+                            "Seller_name": seller_name,
+                            "Auction_title":title, 
+                            "auction_start_date":str(start_date) ,
+                            "auction_start_time":str(start_time),
+                            "auction_end_date":str(end_date),
+                            "auction_end_time":str(end_time),
+                            "auction_image": auction_image,
+                            "logo":logo_img,
+                            "subject":"Indy.auction-Your Registration awaits: Pending Approval",
+                            "Seller_email": seller_email,
+                            "domainURL": domain_url
+            }
+
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL'})
+                print('name of the templatee', str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL')
+                print(response)
+                template_name = str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL'
+            except ApiClientError as error:
+                template_name = 'default_buyer_pending_approval_email'
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+
             register_status="Pending"
             data_to_insert= {
                             'first_name': first_name,
