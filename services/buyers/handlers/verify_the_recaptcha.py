@@ -108,18 +108,10 @@ def verify(event, context):
         password = data.get("password")
         confirm_password = data.get("confirm_password")
         is_password_valid = False
-
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        # user_collection = db[os.environ["BUYER_COLLECTION"]]
         auction_id = data['auction_id']
         seller_details = auction_collection.find_one(
             {'_id': ObjectId(auction_id)})
-        seller_data = collection_seller.find_one({"email_address": seller_details['seller_email']}, {"_id": 0})
+        seller_data = collection_seller.find_one({"email_address": seller_details['seller_email']})   #, {"_id": 0})
 
         user_exist = check_user_in_cognito(data['email_address'])
 
@@ -151,10 +143,7 @@ def verify(event, context):
                 'body': json.dumps({'message': 'Invalid Password'})
             }
         hostname = data['hostname']
-
-        print('Before captcha verification')
         captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
-        print('After captcha verification')
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
         if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
@@ -171,8 +160,8 @@ def verify(event, context):
         # template = template_collection.find_one({"seller_email": seller_details['seller_email'], 'type': 'otp'})
         try:
             mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-            response = mailchimp.templates.info({"name": seller_data['seller_id'] + '-OTP-VALIDATION'})
-            template_name = seller_data['seller_id'] + '-OTP-VALIDATION'
+            response = mailchimp.templates.info({"name": str(seller_data['_id']) + '-OTP-VALIDATION'})
+            template_name = str(seller_data['_id']) + '-OTP-VALIDATION'
         except ApiClientError as error:
             template_name = 'buyer-default-otp-template'
             print("An exception occurred: {}".format(error.text))

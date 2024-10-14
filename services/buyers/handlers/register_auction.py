@@ -34,6 +34,8 @@ counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
 subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
 template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
+subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
+template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
 
@@ -52,50 +54,6 @@ TIMEZONE_MAPPING = {
         'CST - Central Standard Time (US)': 'America/Chicago',
         'EST - Eastern Standard Time (US)': 'America/New_York',
     }
-
-
-# import mailchimp_transactional
-# from mailchimp_transactional.api_client import ApiClientError
-
-# client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-
-
-# def send_email(email, template_name, template_data, seller_email):
-#     try:
-#         print('here in mailchimp')
-#         response = client.messages.send_template(
-#             {
-#                 "template_name": template_name,
-#                 "template_content": [],
-#                 "message": {
-#                     "to": [{"email": email, "type": "to"}],
-#                     "from": 'no-reply@indy.auction',
-#                     "global_merge_vars": [
-#                         {"name": key, "content": value}
-#                         for key, value in template_data.items()
-#                     ]
-#                 }
-#             }
-#         )
-#         print('response', response)
-#         # response = client.messages.send_template(
-#         #     {
-#         #         "template_name": template_name,
-#         #         "template_content": [],
-#         #         "message": {
-#         #             "to": [{"email": email, "type": "to"}],
-#         #             "subject": 'testing'
-#         #         }
-#         #     }
-#         # )
-#         # print('response', response)
-#         return response
-#     except ApiClientError as e:
-#         print("An error occurred: {}".format(e))
-#         return False
-
-
-
 
 
 def register_auction(event, context):
@@ -233,43 +191,33 @@ def register_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "status is pending"})
             }
+
+        seller = user_collection.find_one({"email_address": seller_email}) #, {'_id': 0})
+        print('seller 1234', seller)
+
+        title = registration_type['title']
+        seller_name= seller['first_name']
+        if registration_type["logo_image"] == "":
+
+            logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
+        else:
+            logo_img= os.environ["CDN_LINK"]+registration_type["logo_image"]
+        paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+                        "seller_email": seller_email,
+                        'record_type': 'Paddle'},
+                        {'$inc': {
+                            'starting_sequence': 1}},
+                        return_document=pymongo.ReturnDocument.AFTER,
+                        upsert=True)
+        subdomain = subdomain_collection.find_one({"seller_email": seller_email})
+        domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
+
+        auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+
+
+
         if registration_type['registration_type'] == 'Email only' or registration_type['registration_type'] == 'Credit (bank) card validation':
             register_status = "Approved"
-            seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
-            print('seller 1234', seller)
-            # Use mapping to convert common names to pytz names
-            # common_time_zone = registration_type.get('time_zone', 'UTC')  # Default to 'UTC' if not specified
-            # time_zone = TIMEZONE_MAPPING.get(common_time_zone, common_time_zone)  # Fallback to the common name if not found in mapping
-            # print('time zone', time_zone)
-            # tz = pytz.timezone(time_zone)
-
-            # start_date_time_in_milliseconds = registration_type['start_date']
-            # # Convert timestamp in milliseconds to datetime object in the specified time zone
-            # start_date_time_utc = datetime.utcfromtimestamp(start_date_time_in_milliseconds / 1000)
-            # start_date_time = start_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
-
-            # # Extract date and time
-            # start_date = start_date_time.date()
-            # start_time = start_date_time.time().strftime('%H:%M:%S')
-
-            title = registration_type['title']
-            seller_name= seller['first_name']
-            if registration_type["logo_image"] == "":
-
-                logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
-            else:
-                logo_img= os.environ["CDN_LINK"]+registration_type["logo_image"]
-            paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
-                            "seller_email": seller_email,
-                            'record_type': 'Paddle'},
-                            {'$inc': {
-                                'starting_sequence': 1}},
-                            return_document=pymongo.ReturnDocument.AFTER,
-                            upsert=True)
-            subdomain = subdomain_collection.find_one({"seller_email": seller_email})
-            domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
-
-            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
             template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
                             "Auction_title":title, "auction_start_date":str(start_date) ,
@@ -288,10 +236,10 @@ def register_auction(event, context):
             # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
-                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                response = mailchimp.templates.info({"name": str(seller['_id']) + '-PADDLE-GENERATION'})
+                print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
                 print(response)
-                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+                template_name = str(seller['_id']) + '-PADDLE-GENERATION'
             except ApiClientError as error:
                 template_name = 'buyer_default_paddle_template'
                 print("An exception occurred: {}".format(error.text))
@@ -312,6 +260,33 @@ def register_auction(event, context):
                         'marketing': marketing
                         }
         else:
+            template_data = {
+                            "Seller_name": seller_name,
+                            "Auction_title":title, 
+                            "auction_start_date":str(start_date) ,
+                            "auction_start_time":str(start_time),
+                            "auction_end_date":str(end_date),
+                            "auction_end_time":str(end_time),
+                            "auction_image": auction_image,
+                            "logo":logo_img,
+                            "subject":"Indy.auction-Your Registration awaits: Pending Approval",
+                            "Seller_email": seller_email,
+                            "domainURL": domain_url
+            }
+
+            try:
+                mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
+                response = mailchimp.templates.info({"name": str(seller['_id']) + '-BUYER-PENDING-APPROVAL'})
+                print('name of the templatee', str(seller['_id']) + '-BUYER-PENDING-APPROVAL')
+                print(response)
+                template_name = str(seller['_id']) + '-BUYER-PENDING-APPROVAL'
+            except ApiClientError as error:
+                template_name = 'default_buyer_pending_approval_email'
+                print("An exception occurred: {}".format(error.text))
+
+            print('template_name', template_name)
+            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+
             register_status="Pending"
             data_to_insert= {
                             'first_name': first_name,
@@ -324,6 +299,7 @@ def register_auction(event, context):
                             'created_at': datetime.utcnow(),
                             'marketing': marketing
                    }
+
         result=auction_register.find_one({"auction_id": auction_id,'email_address':email_address })
         print('result', result)
         if result is None:

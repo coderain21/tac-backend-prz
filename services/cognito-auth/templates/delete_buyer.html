@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <title>Auction Bid Confirmation</title>
+    <style>
+      @import url(https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap);
+
+      body {
+        font-family: Inter, sans-serif;
+        line-height: 1.6;
+        background-color: #E6E6E6;
+      }
+
+      .container {
+        max-width: 505px;
+        margin: 0 auto;
+        padding: 20px 80px 20px 80px;
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        margin-top: 36px;
+       
+      }
+
+      .text {
+        font-size: 14px;
+        line-height: 16px;
+        text-align: center;
+      }
+
+      .header {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px;
+        line-height: 19px;
+        color: black;
+      }
+
+      .dates {
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        color: #A1A1A9;
+        line-height: 15px;
+        padding-top: 8px;
+      }
+
+      .auction_title {
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 22px;
+        color: #343434;
+      }
+
+      .author_title {
+        /* left: calc(50% - 220px/2);
+        position: absolute; */
+        margin-top: 28px;
+        color: #A1A1A9;
+        font-size: 12px;
+        line-height: 14px;
+        text-align: center;
+      }
+
+      .testName {
+        position: absolute;
+        width: 600px;
+        height: 500px;
+        left: calc(50% - 554px/2);
+        top: 152px;
+        color: #343434;
+      }
+
+      .auction {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        padding-top: 10px;
+        padding-right: 20px;
+        padding-bottom: 10px;
+        padding-left: 20px;
+        margin-top: 20px;
+      }
+
+      .lot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #E4E4E7;
+        border-radius: 8px;
+        padding: 10px 20px 10px 20px;
+        margin-top: 12px;
+      }
+
+      @media only screen and (max-width:748px) {
+      .container {
+        max-width: 505px;
+        margin: 0 auto;
+        padding: 20px 20px 20px 20px;
+        background-color: #FFFFFF;
+        border-radius: 10px;
+        margin-top: 36px;
+      }
+
+        .lot {
+          display: block;
+          justify-content: space-between;
+          align-items: center;
+          border: 1px solid #E4E4E7;
+          border-radius: 8px;
+          /* padding: 10px 20px 10px 20px; */
+          margin-top: 12px;
+        }
+
+        .auction {
+          display: block;
+          justify-content: space-between;
+          align-items: center;
+          border: 1px solid #E4E4E7;
+          border-radius: 8px;
+          padding: 10px 20px 10px 20px;
+          margin-top: 22px;
+        }
+
+        
+
+        .imageB {
+          padding-bottom: 20px;
+          margin-left: 0px !important;
+          display: inline-block;
+          margin-bottom: 10px;
+          margin-top: 12px;
+        }
+
+        .auction {
+          display: block;
+          justify-content: space-between;
+          align-items: center;
+          border: 1px solid #E4E4E7;
+          border-radius: 8px;
+          padding: 10px 20px 10px 20px;
+          margin-top: 22px;
+        }
+
+        .header {
+          font-style: normal;
+          font-weight: 500;
+          font-size: 2px;
+          line-height: 19px;
+          color: black;
+          
+        }
+
+        .dates {
+          font-size: 10px !important;
+          font-style: normal;
+          font-weight: 500;
+          color: #A1A1A9;
+          line-height: 15px;
+          padding-top: 8px;
+        }
+
+        .amount {
+          font-size: 12px !important;
+          font-style: normal;
+          font-weight: 500;
+          color: #343434;
+          line-height: 15px;
+        }
+
+        .auction_title {
+          font-size: 14px !important;
+          font-weight: 500;
+          line-height: 22px;
+          color: #343434;
+        }
+
+        .lasttitle {
+          margin-top: 10px;
+        }
+        .fontfame {
+        font-family: 'Inter', sans-serif !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 16px !important;
+      }
+
+      .fonttext {
+        font-family: 'Inter', sans-serif !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 15px !important;
+        line-height: 21px
+      }
+      }
+
+      .imageB {
+        padding-bottom: 10px;
+        margin-left: 20px;
+        display: inline-block;
+      }
+
+      .section {
+        padding-top: 25px;
+      }
+
+      .auctionLogo {
+        display: flex;
+        justify-content: center;
+        padding-top: 20px;
+      }
+
+      .footer {
+        padding-top: 10px;
+        color: black;
+      }
+
+      .Fname {
+        display: flex;
+      }
+
+      .span {
+        margin-right: 8px;
+      }
+
+      .fontfame {
+        font-family: 'Inter', sans-serif !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 22px;
+        line-height: 28px;
+      }
+
+      .fonttext {
+        font-family: 'Inter', sans-serif !important;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 21px
+      }
+    </style>
+  </head>
+  <body>
+    <div style="justify-content: center; padding-top: 20px;" vertical-align="middle" align="center">
+      <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/Logo-indy-email.png" alt="img" style="width:180px; height:auto;object-fit:contain;"/>
+    </div>
+    <div class="container textName">
+      <div class="header section" style=" display: grid; place-items: center;">
+          <p style="padding-top:10px; color:black; text-align:center; " class="fontfame"> Bidder account {{bidder_email}} has been <br/> successfully deleted. </p>
+          <p style="padding-top:20px; color:#A1A1A9; text-align:center;padding-bottom: 40px;" class="fonttext"> The bidder will no longer be able to log in to their <br/> Indy account. However, they can create a new <br/> account with the same email and start registering <br/> for auctions.  </p>
+      </div>
+    </div>
+    <div style="justify-content: center; padding-top: 40px;" vertical-align="middle" align="center">
+        <a href="https://www.instagram.com/theauctioncollective/"
+        ><img
+          class="insta-icon"
+          src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/insta-icon-dark.png"
+          alt="img"
+      /></a>
+      <a href="https://www.facebook.com/theauctioncollective/"
+        ><img
+          class="facebook-icon"
+          src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/facebook-dark-icon.png"
+          alt="img"
+      /></a>
+      <a href="https://twitter.com/AucCollective"
+        ><img
+          class="twitter-icon"
+          src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/twitter-dark-icon.png"
+          alt="img"
+      /></a>
+      <a href="https://www.linkedin.com/company/the-auction-collective/"
+        ><img
+          class="linkedin-icon"
+          src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/linkedin-dark-logo.png"
+          alt="img"
+      /></a>
+    </div>
+    <p class="author_title" style="padding-top:5px;">Copyright 2024 indy.auction. All rights reserved.</p>
+  </body>
+</html>
