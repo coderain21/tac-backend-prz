@@ -54,7 +54,7 @@ def update_or_create_merchant(collection, data, event_type):
         }
     }
 
-    if event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED" or event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED":
+    if event_type in ["CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED","CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED"]:
         update_data["$set"]["paypal_status"] = "pending"
         update_data["$set"]["paypal_onboarding_started"] = datetime.now()
     elif event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-CONSENT-GRANTED":
