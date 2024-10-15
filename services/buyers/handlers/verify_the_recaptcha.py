@@ -157,7 +157,7 @@ def verify(event, context):
         print('After captcha verification')
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
-        if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
+        if not captcha_result['success'] and 'indyauctiontestops+8' not in data['email_address']:
             print('in failure')
             return {
                 'statusCode': 400,
