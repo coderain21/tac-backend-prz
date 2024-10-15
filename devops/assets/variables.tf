@@ -153,6 +153,16 @@ variable "PAYPAL_REDIRECTION_PATH" {
   description = "Description of the variable"
 }
 
+variable "PAYPAL_URL" {
+  type        = string
+  description = "Description of the variable"
+}
+
+variable "PAYPAL_PARTNER_MERCHANT_ID" {
+  type        = string
+  description = "Description of the variable"
+}
+
 variable "QUICKSIGHT_ACCOUNT_ID" {
   type        = string
   description = "Description of the variable"
