@@ -83,10 +83,6 @@ def lambda_handler(event, context):
         # Check if the user_type is "Free"
         user_type = request_body.get('user_type', '')
 
-        # Initialize the MongoDB client
-        # collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        # lot_collection= db[os.environ["COUNTER_LOT"]]
-        # auction_collection= db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction = auction_collection.count_documents({'seller_email':seller_email,
                                                       'auction_id': auction_id })
         if auction == 0:
@@ -127,7 +123,6 @@ def lambda_handler(event, context):
             request_body['start_date'] = auction_record['start_date']
             request_body['end_date'] = auction_record['end_date']
         elif  extension_type in ['Cascade', 'Individual Lots']:
-            print('inside cascaded')
             auction_record.get('')
             time_between_lots = auction_record.get('time_between_lots', 0)
             latest = collection.find(
@@ -140,6 +135,7 @@ def lambda_handler(event, context):
             extension_time = 2  # Convert the string to an integer
             if extension_time_str != '':
                 extension_time = int(extension_time_str)  # Convert the string to an integer
+            print('extension_time', extension_time)
             if len(latest_lot) > 0:
                 latest_end_date = latest_lot[0]['end_date']
                 request_body['start_date'] = latest_lot[0]['start_date']
@@ -152,9 +148,9 @@ def lambda_handler(event, context):
                 request_body['end_date'] = enddate
             updateCheck = auction_collection.update_one({'seller_email': seller_email,'auction_id': auction_id},{'$set': {'end_date': request_body['end_date']}})
 
-        # request_body['end_date'] = auction_record['end_date']
         request_body["lot_number"] = counter["starting_sequence"]
         request_body["seller_email"] = seller_email
+
         # Insert the lot data into the MongoDB collection
         inserting = collection.insert_one(request_body)
         if  auction_status in ['Published', 'Accepting bids']:
@@ -165,7 +161,6 @@ def lambda_handler(event, context):
             request_body['start_date'] = iso_date_with_offset
             itemData = json.loads(json.dumps(request_body, cls= Encoder))
             invoking = invoke_state_machine(itemData, os.environ['STATE_MACHINE_LOT_ARN'])
-            # step_collection = db[os.environ["STEP_FUNCTION_ARN_TABLE"]]
             step_request={}
             step_request['arn'] = invoking['executionArn']
             id_value = str(inserted_id)

@@ -136,7 +136,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
  
@@ -219,7 +224,12 @@
             }
           }
         }
-      }
+      },
+      "security": [
+        {
+          "BearerAuth": []
+        }
+      ]
     }
   },
   "/wishlist": {
@@ -897,7 +907,12 @@
             }
           }
         }
-      }
+      },
+      "security": [
+        {
+          "BearerAuth": []
+        }
+      ]
     }
   }
   },

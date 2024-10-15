@@ -6,6 +6,12 @@ parameter_names=(
     "BUYER_COGNITO_CLIENT_ID"
     "ADMIN_COGNITO_USERPOOL_ID"
     "ADMIN_COGNITO_CLIENT_ID"
+    "API_USERNAME"
+    "PASSWORD"
+    "BUYER_API_USERNAME"
+    "BUYER_PASSWORD"
+    "ADMIN_USERNAME"
+    "ADMIN_PASSWORD"
 )
 # Loop through each parameter
 for param_name in "${parameter_names[@]}"; do
