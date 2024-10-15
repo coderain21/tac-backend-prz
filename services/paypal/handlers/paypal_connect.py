@@ -7,7 +7,7 @@ import os
 import uuid
 
 
-# URLs and other constants   
+# URLs and other constants
 PAYPAL_OAUTH_URL = os.environ["PAYPAL_OAUTH_URL"]
 PAYPAL_PARTNER_REFERRALS_URL = os.environ["PAYPAL_PARTNER_REFERRALS_URL"]
 
@@ -114,18 +114,18 @@ def connect(event, context):
         if 'paypal_connected_id' in user_info and user_info['paypal_connected_id']:
             access_token = get_paypal_access_token()
             print(f"Access token: {access_token}")
-    
+
             # Step 2: Check merchant onboarding status
             merchant_id = user_info['paypal_connected_id']  # merchant ID from db
             merchant_status = call_paypal_api(f"/v1/customer/partners/{partner_merchant_id}/merchant-integrations/{merchant_id}", access_token, "GET")
             product_status = any(product['name'] and product['status'] == 'ACTIVE'
                          for product in merchant_status.get('products', []))
             print('Merchant status:', merchant_status)
-    
+
             # Check if payments are receivable and email is confirmed
             payments_receivable = merchant_status.get('payments_receivable', False)
             email_confirmed = merchant_status.get('primary_email_confirmed', False)
-         
+
             # If all conditions are met, the merchant is considered onboarded
             if product_status and payments_receivable and email_confirmed:
                 print('here')
