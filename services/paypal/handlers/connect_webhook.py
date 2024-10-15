@@ -34,18 +34,18 @@ partner_merchant_id = os.environ.get('PAYPAL_PARTNER_MERCHANT_ID')
 def update_or_create_merchant(collection, data, event_type):
     tracking_id = data.get("tracking_id")
     merchant_id = data.get("merchant_id")
-    
+
     print(f"Processing event: {event_type}")
     print(f"Tracking ID: {tracking_id}")
     print(f"Merchant ID: {merchant_id}")
-    
+
     # Try to find the document by tracking_id first
     existing_doc = collection.find_one({"paypal_tracking_id": tracking_id})
-    
+
     if not existing_doc and merchant_id:
         # If not found by tracking_id, try to find by merchant_id
         existing_doc = collection.find_one({"paypal_connected_id": merchant_id})
-    
+
     update_data = {
         "$set": {
             "paypal_tracking_id": tracking_id,
@@ -53,7 +53,7 @@ def update_or_create_merchant(collection, data, event_type):
             "last_updated": datetime.now(),
         }
     }
-    
+
     if event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED" or event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED":
         update_data["$set"]["paypal_status"] = "pending"
         update_data["$set"]["paypal_onboarding_started"] = datetime.now()
@@ -83,7 +83,7 @@ def update_or_create_merchant(collection, data, event_type):
     elif event_type == "MERCHANT.ONBOARDING.COMPLETED":
         update_data["$set"]["paypal_status"] = "connected"
         update_data["$set"]["paypal_onboarding_completed"] = datetime.now()
-    
+
     if existing_doc:
         result = collection.update_one({"_id": existing_doc["_id"]}, update_data)
         print(f"Updated merchant document. Modified: {result.modified_count}")
@@ -95,7 +95,7 @@ def update_or_create_merchant(collection, data, event_type):
             "statusCode": 404,
             "body": json.dumps({"message": "Merchant not found"})
         }
-    
+
     return result
 
 def create(event, context):
@@ -115,7 +115,7 @@ def create(event, context):
         try:
             event_type = webhook_event["event_type"]
             resource = webhook_event["resource"]
-            
+
             if event_type in [
                 "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED",
                 "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED",
