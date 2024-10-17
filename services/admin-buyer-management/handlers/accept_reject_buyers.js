@@ -132,16 +132,17 @@ module.exports.handler = async (event) => {
 
             const seller = await mongodbHelper.getUser({ email_address: requestBody.seller_email }, Users)
             console.log('seller', seller)
-            const sellerId = seller[0].seller_id
+            const sellerId = seller[0]._id.toString()
             let templateName = `${sellerId}-PADDLE-GENERATION`
             console.log('template', templateName)
             const mailchimpClient = await mailchimp(process.env.MAILCHIMP_SECRET_KEY)
-            try {
-                const response = await mailchimpClient.templates.info({ name: templateName })
-                console.log('Mailchimp template response:', response)
-            } catch (error) {
-                console.error('Error getting Mailchimp template:', error)
+            const response = await mailchimpClient.templates.info({ name: templateName })
+
+            if (!response || !response.template) {
+                console.log('Mailchimp template not found. Using default template.')
                 templateName = 'buyer_default_paddle_template'
+            } else {
+                console.log('Mailchimp template response:', response)
             }
 
             await mailchimpHelper.sendMailchimpEmail(requestBody.email_address, templateName, template_data, process.env.MAILCHIMP_ADDRESS)

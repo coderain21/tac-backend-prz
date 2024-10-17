@@ -11,6 +11,7 @@ locals {
   json_data = jsonencode(jsondecode(file("${path.module}/services.json")))
 }
 
+
 resource "aws_cloudwatch_dashboard" "demo-dashboard" {
   dashboard_name = "Indyauction-Services-Dashboard"
   provider = aws.deployment-eu
@@ -395,8 +396,14 @@ resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
   provider = aws.deployment-eu
   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
   protocol  = "email"
-  endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
+  endpoint  = "nidhi.shashi@7edge.com"  # Replace with your email address
 }
+# resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
+#   provider = aws.deployment-eu
+#   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
+#   protocol  = "email"
+#   endpoint  = "ibrahim.khaleel@7edge.com"  # Replace with your email address
+# }
 # resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
 #   provider = aws.deployment-eu
 #   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn

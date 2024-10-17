@@ -143,7 +143,7 @@ def accept_buyer(event, context):
                                 return_document=pymongo.ReturnDocument.AFTER,
                                 upsert=True)
             register_status = "Approved"
-            seller = user_collection.find_one({"email_address": seller_email}, {'_id': 0})
+            seller = user_collection.find_one({"email_address": seller_email}) #, {'_id': 0})
             title = registration_type['title']
             seller_name = seller['first_name']
             if registration_type["logo_image"] == "":
@@ -169,10 +169,10 @@ def accept_buyer(event, context):
             # Checking mailchimp for template existence
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": seller['seller_id'] + '-PADDLE-GENERATION'})
-                print('name of the templatee', seller['seller_id'] + '-PADDLE-GENERATION')
+                response = mailchimp.templates.info({"name": str(seller['_id']) + '-PADDLE-GENERATION'})
+                print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
                 print(response)
-                template_name = seller['seller_id'] + '-PADDLE-GENERATION'
+                template_name = str(seller['_id']) + '-PADDLE-GENERATION'
             except ApiClientError as error:
                 template_name = 'buyer_default_paddle_template'
                 print("An exception occurred: {}".format(error.text))

@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://apis.dev.indyauction.net/v1/order-management"
+      "url": "https://apis.dev.indyauction.net/v1/orders"
     }
   ],
   "tags": [
@@ -171,7 +171,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/details": {
@@ -450,7 +455,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/seller": {
@@ -612,7 +622,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/sales":{
@@ -891,16 +906,20 @@
               }
               }
           }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
       }
   }
   },
   "components": {
     "securitySchemes": {
       "BearerAuth": {
-        "type": "apiKey",
-        "name": "Authorization",
-        "in": "header",
+        "type": "http",
+        "scheme": "bearer",
         "description": "Bearer Token"
       }
     }
