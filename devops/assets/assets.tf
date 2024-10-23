@@ -559,6 +559,20 @@ resource "aws_ssm_parameter" "paypal_redirection_path" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "paypal_url" {
+  name  = "PAYPAL_URL"
+  type  = "String"
+  value = var.PAYPAL_URL
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_partner_merchant_id" {
+  name  = "PAYPAL_PARTNER_MERCHANT_ID"
+  type  = "String"
+  value = var.PAYPAL_PARTNER_MERCHANT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
 resource "aws_ssm_parameter" "quicksight_account_id" {
   name  = "QUICKSIGHT_ACCOUNT_ID"
   type  = "String"
@@ -602,6 +616,7 @@ resource "aws_ssm_parameter" "client_side_id" {
   provider = aws.deployment-eu
   overwrite = true
 }
+
 
 
 

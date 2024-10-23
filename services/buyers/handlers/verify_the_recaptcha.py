@@ -146,7 +146,7 @@ def verify(event, context):
         captcha_result = verify_buyer_recaptcha(data['session_token'], hostname)
         data['otp'] = ''.join(random.choice("1234567890") for _ in range(6))
 
-        if not captcha_result['success'] and 'anusha.k+8' not in data['email_address']:
+        if not captcha_result['success'] and 'indyauctiontestops+8' not in data['email_address']:
             print('in failure')
             return {
                 'statusCode': 400,
