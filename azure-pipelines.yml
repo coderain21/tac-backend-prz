@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
       - qa
-      - pre-production
+      - pre-prod
       - master
 pr:
   branches:
@@ -18,7 +18,7 @@ variables:
     - group: qa
     - name: ENV
       value: 'Testing'
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-production') }}:
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-prod') }}:
     - group: pre-production
     - name: ENV
       value: 'Production'
@@ -202,7 +202,7 @@ stages:
 - stage: Deploy
   jobs:
     - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master')), succeeded())
+      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
       displayName: Deployment
       pool:
         vmImage: 'ubuntu-latest'
@@ -247,7 +247,7 @@ stages:
 #       pool:
 #         vmImage: 'macos-latest'
 #       variables:
-#         - group: pre-production
+#         - group: pre-prod
 #       strategy:
 #         # Default deployment strategy, more coming...
 #         runOnce:
@@ -284,7 +284,7 @@ stages:
 #       pool:
 #         vmImage: 'macos-latest'
 #       variables:
-#         - group: pre-production
+#         - group: pre-prod
 #       strategy:
 #         # Default deployment strategy, more coming...
 #         runOnce:
