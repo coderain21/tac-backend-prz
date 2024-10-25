@@ -24,6 +24,7 @@ parameter_names=(
     "BUYER_COGNITO_IDENTITY_POOL_ID"
     "BUYER_COGNITO_USERPOOL_DOMAIN"
     "NOTIFY_KEY"
+    "LAUNCHDARKLY_CLIENT_ID"
 )
 
 # Loop through each parameter
