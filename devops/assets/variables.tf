@@ -186,7 +186,7 @@ variable "MAILCHIMP_ADDRESS" {
   type        = string
   description = "Description of the variable"
 }
-variable "CLIENT_SIDE_ID" {
+variable "LAUNCHDARKLY_CLIENT_ID" {
   type        = string
   description = "Description of the variable"
 }
