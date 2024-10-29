@@ -14,7 +14,7 @@ provider "aws" {
 
 # Step 1: Create IAM Role and store ARN in SSM
 resource "aws_iam_role" "athena_ambda_role" {
-  name               = "athena-lambda-role"
+  name               = "${var.STAGE}-athena-lambda-role"
   provider = aws.deployment-main
   assume_role_policy = jsonencode({
     "Version": "2012-10-17",
@@ -152,7 +152,7 @@ resource "aws_iam_role_policy_attachment" "athena_ambda_role_cloudwatch" {
 # IAM Role in Dev Account
 resource "aws_iam_role" "quicksight_access_role" {
   provider = aws.deployment-main
-  name     = "quicksight-access-role"
+  name     = "${var.STAGE}-quicksight-access-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -215,7 +215,7 @@ resource "aws_iam_role_policy_attachment" "attach_quicksight_policy" {
 # IAM Role for Lambda in Pre-production Account
 resource "aws_iam_role" "lambda_execution_role" {
   provider = aws.deployment-eu
-  name     = "lambda-execution-role"
+  name     = "${var.STAGE}-lambda-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
