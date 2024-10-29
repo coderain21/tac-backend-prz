@@ -36,8 +36,8 @@ terraform -chdir=devops/dependency/nodejs-auth-layer init
 terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 terraform -chdir=devops/dependency/python init
 terraform -chdir=devops/dependency/python apply -auto-approve
-run_command terraform -chdir=devops/secret_manager init
-run_command terraform -chdir=devops/secret_manager apply -auto-approve
+terraform -chdir=devops/secret_manager init
+terraform -chdir=devops/secret_manager apply -auto-approve
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     terraform -chdir=devops/mongodb init
     terraform -chdir=devops/mongodb apply -auto-approve
