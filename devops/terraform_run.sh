@@ -36,8 +36,7 @@ terraform -chdir=devops/dependency/nodejs-auth-layer init
 terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 terraform -chdir=devops/dependency/python init
 terraform -chdir=devops/dependency/python apply -auto-approve
-terraform -chdir=devops/secret_manager init
-terraform -chdir=devops/secret_manager apply -auto-approve
+
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     terraform -chdir=devops/mongodb init
     terraform -chdir=devops/mongodb apply -auto-approve
@@ -55,6 +54,8 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/ecs_new apply -auto-approve
     terraform -chdir=devops/redis-cluster_new init
     terraform -chdir=devops/redis-cluster_new apply -auto-approve
+    terraform -chdir=devops/secret_manager init
+    terraform -chdir=devops/secret_manager apply -auto-approve
 fi
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
