@@ -12,7 +12,10 @@ aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS
 
 aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-
+if [ "${STAGE}" = "pre-production" ] ; then
+    aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
+    aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
+fi
 log_bucket="s3://indyauction-pipeline-states/$STAGE/"
 echo "$log_bucket"
 aws s3 sync $log_bucket . --profile $PROFILE_MAIN
