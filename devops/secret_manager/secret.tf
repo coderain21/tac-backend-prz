@@ -35,6 +35,7 @@ resource "aws_ssm_parameter" "role_arn" {
   type  = "String"
   value = aws_iam_role.athena_ambda_role.arn
   provider = aws.deployment-main
+  overwrite = true
 }
 
 # Step 2: Create KMS key with policy
