@@ -36,14 +36,26 @@ terraform -chdir=devops/dependency/nodejs-auth-layer init
 terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 terraform -chdir=devops/dependency/python init
 terraform -chdir=devops/dependency/python apply -auto-approve
-terraform -chdir=devops/mongodb init
-terraform -chdir=devops/mongodb apply -auto-approve
-terraform -chdir=devops/ecs init
-terraform -chdir=devops/ecs apply -auto-approve
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
+    terraform -chdir=devops/mongodb init
+    terraform -chdir=devops/mongodb apply -auto-approve
+    terraform -chdir=devops/ecs init
+    terraform -chdir=devops/ecs apply -auto-approve
+    terraform -chdir=devops/redis-cluster init
+    terraform -chdir=devops/redis-cluster apply -auto-approve
+fi
+if [ "${STAGE}" = "pre-production" ] ; then
+    terraform -chdir=devops/vpc init
+    terraform -chdir=devops/vpc apply -auto-approve
+    terraform -chdir=devops/mongodb_new init
+    terraform -chdir=devops/mongodb_new apply -auto-approve
+    terraform -chdir=devops/ecs_new init
+    terraform -chdir=devops/ecs_new apply -auto-approve
+    terraform -chdir=devops/redis-cluster_new init
+    terraform -chdir=devops/redis-cluster_new apply -auto-approve
+fi
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
-terraform -chdir=devops/redis-cluster init
-terraform -chdir=devops/redis-cluster apply -auto-approve
 terraform -chdir=devops/budgets init
 terraform -chdir=devops/budgets apply -auto-approve
 terraform -chdir=devops/stripe_webhook init

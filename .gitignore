@@ -34,6 +34,7 @@ python_lib2
 python.zip
 .terraform.tfstate.lock.info
 layer
+vpcstatefile/
 # Compiled Java class files
 *.class
 # Compiled Python bytecode
