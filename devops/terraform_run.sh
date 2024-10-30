@@ -55,8 +55,8 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/mongodb_new apply -auto-approve
     terraform -chdir=devops/ecs_new init
     terraform -chdir=devops/ecs_new apply -auto-approve
-    terraform -chdir=devops/redis-cluster_new init
-    terraform -chdir=devops/redis-cluster_new apply -auto-approve
+    terraform -chdir=devops/redis_cluster_new init
+    terraform -chdir=devops/redis_cluster_new apply -auto-approve
     terraform -chdir=devops/secret_manager init
     terraform -chdir=devops/secret_manager apply -auto-approve
 fi
