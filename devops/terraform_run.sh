@@ -3,6 +3,16 @@
 # set -a            
 # source .env
 # set +a
+overall_status=0
+run_command() {
+    "$@"
+    local status=$?
+    if [ $status -ne 0 ]; then
+        overall_status=$status
+        echo "Command failed: $@"
+    fi
+    return $status
+}
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
@@ -49,16 +59,16 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     terraform -chdir=devops/redis-cluster apply -auto-approve
 fi
 if [ "${STAGE}" = "pre-production" ] ; then
-    terraform -chdir=devops/vpc init
-    terraform -chdir=devops/vpc apply -auto-approve
-    terraform -chdir=devops/mongodb_new init
-    terraform -chdir=devops/mongodb_new apply -auto-approve
-    terraform -chdir=devops/ecs_new init
-    terraform -chdir=devops/ecs_new apply -auto-approve
-    terraform -chdir=devops/redis_cluster_new init
-    terraform -chdir=devops/redis_cluster_new apply -auto-approve
-    terraform -chdir=devops/secret_manager init
-    terraform -chdir=devops/secret_manager apply -auto-approve
+    run_command terraform -chdir=devops/vpc init
+    run_command terraform -chdir=devops/vpc apply -auto-approve
+    run_command terraform -chdir=devops/mongodb_new init
+    run_command terraform -chdir=devops/mongodb_new apply -auto-approve
+    run_command terraform -chdir=devops/ecs_new init
+    run_command terraform -chdir=devops/ecs_new apply -auto-approve
+    run_command terraform -chdir=devops/redis_cluster_new init
+    run_command terraform -chdir=devops/redis_cluster_new apply -auto-approve
+    run_command terraform -chdir=devops/secret_manager init
+    run_command terraform -chdir=devops/secret_manager apply -auto-approve
 fi
 terraform -chdir=devops/cloudwatch_alarms init
 terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
@@ -135,3 +145,9 @@ if [ "${STAGE}" = "qa" ]; then
 fi
 sls deploy --stage ${STAGE} --max-concurrency 5
 
+if [ $overall_status -ne 0 ]; then
+    echo "One or more commands failed."
+    exit 1
+else
+    echo "All commands executed successfully."
+fi
