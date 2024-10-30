@@ -247,12 +247,11 @@ resource "aws_iam_role_policy" "lambda_assume_role_policy" {
       {
         Effect = "Allow",
         Action = "sts:AssumeRole",
-        Resource = "arn:aws:iam::${var.ACCOUNT_ID_MAIN}:role/quicksight-access-role"
+        Resource = format("arn:aws:iam::%s:role/quicksight-access-role", var.ACCOUNT_ID_MAIN)
       }
     ]
   })
 }
-
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_role_policy_attachment" {
   role       = aws_iam_role.lambda_execution_role.name
