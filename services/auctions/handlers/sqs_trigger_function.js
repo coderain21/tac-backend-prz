@@ -80,7 +80,6 @@ async function lotDetails(rediskey, client) {
  * @returns {string} The formatted currency string
  */
 function formatCurrency(amount, currencyCode) {
-    console.log('amount', amount)
     try {
         // Convert amount to a string
         const amountString = String(amount)
@@ -258,27 +257,28 @@ module.exports.sqsTriggerFunction = async (event) => {
                 const auctionId = auctionData._id.toString()
                 const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
                 // Create the email data
-                const template_data = {
-                    winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
-                    winning_lot_count: winningLot.length,
-                    buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
-                    title: auctionData.title,
-                    logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                    not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
-                    not_winning_lot_count: notWinning.length,
-                    seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
-                    seller_email: auctionData.seller_email,
-                    subject: subjectDescription,
-                    paymentContent,
-                    seller_id: sellerInformation[0]._id, // to make the email template unique with no conflicts with other environments
+                if (buyerInformation.length > 0) {
+                    const template_data = {
+                        winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                        winning_lot_count: winningLot.length,
+                        buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
+                        title: auctionData.title,
+                        logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
+                        not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                        not_winning_lot_count: notWinning.length,
+                        seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                        seller_email: auctionData.seller_email,
+                        subject: subjectDescription,
+                        paymentContent,
+                        seller_id: sellerInformation[0]._id, // to make the email template unique with no conflicts with other environments
+                        total_amount: totalBidAmount,
+                        checkout_url: checkoutURL,
+                    }
 
-                    total_amount: totalBidAmount,
-                    checkout_url: checkoutURL,
+                    // Send email
+                    // promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
+                    promiseList.push(sendTemplateEmails(user.email_address, template_data))
                 }
-
-                // Send email
-                // promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
-                promiseList.push(sendTemplateEmails(user.email_address, template_data))
             }
 
             // Run all the promises in parallel

@@ -7,7 +7,7 @@
     },
     "servers": [
       {
-        "url": "https://apis.dev.indyauction.net/v1/Subdomain"
+        "url": "https://apis.dev.indyauction.net/v1/subdomain"
       }
     ],
     "tags": [
@@ -16,6 +16,7 @@
         "description": "APIs to manage the auctions"
       }
     ],
+
     
     "paths": {
         "/subdomain":{
@@ -132,16 +133,20 @@
                       }
                     }
                   }
-                }
+                },
+                "security": [
+                  {
+                    "BearerAuth": []
+                  }
+                ]
               }
             }
         },
         "components": {
             "securitySchemes": {
               "BearerAuth": {
-                "type": "apiKey",
-                "name": "Authorization",
-                "in": "header",
+                "type": "http",
+                "scheme": "bearer",
                 "description": "Bearer Token"
               }
             }

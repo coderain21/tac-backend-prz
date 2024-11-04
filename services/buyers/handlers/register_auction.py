@@ -34,6 +34,8 @@ counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
 subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
 template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
+subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
+template_collection = db[os.environ['MAILCHIMP_COLLECTION']]
 
 
 
@@ -52,50 +54,6 @@ TIMEZONE_MAPPING = {
         'CST - Central Standard Time (US)': 'America/Chicago',
         'EST - Eastern Standard Time (US)': 'America/New_York',
     }
-
-
-# import mailchimp_transactional
-# from mailchimp_transactional.api_client import ApiClientError
-
-# client = mailchimp_transactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-
-
-# def send_email(email, template_name, template_data, seller_email):
-#     try:
-#         print('here in mailchimp')
-#         response = client.messages.send_template(
-#             {
-#                 "template_name": template_name,
-#                 "template_content": [],
-#                 "message": {
-#                     "to": [{"email": email, "type": "to"}],
-#                     "from": 'no-reply@indy.auction',
-#                     "global_merge_vars": [
-#                         {"name": key, "content": value}
-#                         for key, value in template_data.items()
-#                     ]
-#                 }
-#             }
-#         )
-#         print('response', response)
-#         # response = client.messages.send_template(
-#         #     {
-#         #         "template_name": template_name,
-#         #         "template_content": [],
-#         #         "message": {
-#         #             "to": [{"email": email, "type": "to"}],
-#         #             "subject": 'testing'
-#         #         }
-#         #     }
-#         # )
-#         # print('response', response)
-#         return response
-#     except ApiClientError as e:
-#         print("An error occurred: {}".format(e))
-#         return False
-
-
-
 
 
 def register_auction(event, context):
@@ -318,10 +276,10 @@ def register_auction(event, context):
 
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": str(seller['_id']) + '-BUYER-PENDING-APPROVAL'})
-                print('name of the templatee', str(seller['_id']) + '-BUYER-PENDING-APPROVAL')
+                response = mailchimp.templates.info({"name": str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL'})
+                print('name of the templatee', str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL')
                 print(response)
-                template_name = str(seller['_id']) + '-BUYER-PENDING-APPROVAL'
+                template_name = str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL'
             except ApiClientError as error:
                 template_name = 'default_buyer_pending_approval_email'
                 print("An exception occurred: {}".format(error.text))

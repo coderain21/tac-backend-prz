@@ -74,7 +74,7 @@ provider:
     DEFAULT_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
-    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}  #ADDED THIS FOR MAILCHIMP API CALL
 
    
     
@@ -469,6 +469,24 @@ functions:
               method: any
               # authorizer:
               #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  save-logs:
+      handler: handlers/login_log.handler
+      layers:
+        - ${ssm:COMMON_LIB_ARN}
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+    
+      events:
+          - http:
+              cors: true
+              path: /save-log
+              method: POST
+              authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
 resources:

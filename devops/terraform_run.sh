@@ -98,16 +98,21 @@ export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/users
+run_command sls deploy --region $REGION --stage $STAGE
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/lambda-authorizer
 run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
+run_command terraform -chdir=devops/buyer_web_application init
 run_command terraform -chdir=devops/buyer_web_application init
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="devops/buyer_web_application/terraform.tfstate"
@@ -126,6 +131,7 @@ if [ -f "$STATE_FILE" ]; then
 #   echo "{\"subdomains\": $domain}" > devops/buyer_web_application/subdomains.json
   # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
   run_command terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
+  run_command terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
                -target=aws_amplify_branch.amplify_branch \
                -target=aws_ssm_parameter.amplify_id \
                -target=aws_ssm_parameter.bitbucket_secret \
@@ -134,15 +140,20 @@ if [ -f "$STATE_FILE" ]; then
                -target=data.external.token
 else
   run_command terraform -chdir=devops/buyer_web_application apply -auto-approve
+  run_command terraform -chdir=devops/buyer_web_application apply -auto-approve
 fi
+run_command terraform -chdir=devops/cognito_custom_domain init
+run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 run_command terraform -chdir=devops/cognito_custom_domain init
 run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 if [ "${STAGE}" = "qa" ]; then
   cd services/bdd-api
   run_command sls deploy --region $REGION --stage $STAGE
+  run_command sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
+run_command sls deploy --stage ${STAGE} --max-concurrency 5
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
 
 if [ $overall_status -ne 0 ]; then
