@@ -76,7 +76,10 @@ resource "aws_docdb_subnet_group" "subnet_group" {
   provider   = aws.deployment-eu
 }
 
-
+data "aws_ssm_parameter" "mongo_password" {
+  name = "MONGO_PASSWORD"
+  provider = aws.deployment-eu
+}
 
 
 #######################
@@ -173,7 +176,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
-  master_password         = random_password.password.result
+  master_password         = data.aws_ssm_parameter.mongo_password.value
   vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
   provider = aws.deployment-eu
 }
@@ -299,7 +302,7 @@ resource "aws_eip" "example" {
 resource "aws_ssm_parameter" "documentdb" {
   name  = "MONGODB_CONNECTION_STRING"
   type  = "String"
-  value = "mongodb://indyauctionAdmin:${random_password.password.result}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
+  value = "mongodb://indyauctionAdmin:${data.aws_ssm_parameter.mongo_password.value}@${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
   provider = aws.deployment-eu
   overwrite = true
 }
@@ -333,7 +336,7 @@ resource "aws_ssm_parameter" "ec2_instance_id" {
 resource "aws_ssm_parameter" "mongodb_password" {
   name  = "MONGO_PASSWORD"
   type  = "String"
-  value = random_password.password.result
+  value = data.aws_ssm_parameter.mongo_password.value
   provider = aws.deployment-eu
   overwrite = true
 }
