@@ -32,6 +32,7 @@ python2.zip
 python_lib2
 python.zip
 .terraform.tfstate.lock.info
+vpcstaefile
 layer
 tf-key-pair-*.pem
 # Compiled Java class files

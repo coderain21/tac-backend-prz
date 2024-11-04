@@ -17,9 +17,6 @@
 // const {
 //     PinpointEmail,
 // } = require('aws-sdk')
-// const {
-//     PinpointEmail,
-// } = require('aws-sdk')
 const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')

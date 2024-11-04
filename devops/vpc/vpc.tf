@@ -5,11 +5,7 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
-provider "aws" {
-  region = "us-east-1"
-  alias = "route53-account"   # Specify a default AWS region here
-  profile = "${var.ROUTE53_ACCOUNT}"
-}
+
 
 
 data "aws_ssm_parameter" "cidr_block" {
@@ -45,6 +41,7 @@ resource "aws_vpc" "main" {
   tags = {
     Name = "new-vpc"
   }
+  provider = aws.deployment-eu
 }
 
 resource "aws_internet_gateway" "main" {
@@ -54,6 +51,7 @@ resource "aws_internet_gateway" "main" {
     Name = "new-igw"
   }
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 resource "aws_route_table" "public" {
@@ -68,6 +66,7 @@ resource "aws_route_table" "public" {
     Name = "public-route-table"
   }
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 resource "aws_subnet" "public_subnet_a" {
@@ -80,6 +79,7 @@ resource "aws_subnet" "public_subnet_a" {
     Name = "public-subnet-a"
   }
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 resource "aws_subnet" "public_subnet_c" {
@@ -92,6 +92,7 @@ resource "aws_subnet" "public_subnet_c" {
     Name = "public-subnet-c"
   }
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 resource "aws_subnet" "private_subnet_b1" {
@@ -103,6 +104,7 @@ resource "aws_subnet" "private_subnet_b1" {
     Name = "private-subnet-b1"
   }
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 resource "aws_subnet" "private_subnet_b2" {
@@ -114,12 +116,14 @@ resource "aws_subnet" "private_subnet_b2" {
     Name = "private-subnet-b2"
   }
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 resource "aws_route_table_association" "public_a" {
   subnet_id      = aws_subnet.public_subnet_a.id
   route_table_id = aws_route_table.public.id
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 
@@ -127,6 +131,7 @@ resource "aws_route_table_association" "public_c" {
   subnet_id      = aws_subnet.public_subnet_c.id
   route_table_id = aws_route_table.public.id
   provider = aws.deployment-eu
+  depends_on = [resource.aws_vpc.main]
 }
 
 output "vpc_id" {
