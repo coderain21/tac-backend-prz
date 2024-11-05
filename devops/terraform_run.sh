@@ -130,7 +130,7 @@ if [ -f "$STATE_FILE" ]; then
 #   domain=$(aws amplify get-domain-association --app-id $APP_ID --domain-name $AMPLIFY_DOMAIN_NAME --profile $PROFILE_ENV --region $REGION --query 'domainAssociation.subDomains[*].subDomainSetting.prefix')
 #   echo "{\"subdomains\": $domain}" > devops/buyer_web_application/subdomains.json
   # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
-  terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
+  # terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
   terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
                -target=aws_amplify_branch.amplify_branch \
                -target=aws_ssm_parameter.amplify_id \
@@ -140,7 +140,7 @@ if [ -f "$STATE_FILE" ]; then
                -target=data.external.token
 else
   terraform -chdir=devops/buyer_web_application apply -auto-approve
-  terraform -chdir=devops/buyer_web_application apply -auto-approve
+  #terraform -chdir=devops/buyer_web_application apply -auto-approveSS
 fi
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
