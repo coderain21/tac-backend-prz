@@ -38,3 +38,7 @@ def set_authorization(transaction):
         print('Skipping the test...')
         transaction['skip'] = True
         return
+    if (transaction['request']['method'] == 'POST' and '/paypal-order' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return

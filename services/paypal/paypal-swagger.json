@@ -144,7 +144,161 @@
           }
         }
       }
-    }
+    },
+    "/paypal-order": {
+      "post": {
+        "tags": ["Paypal Payments Management"],
+        "summary": "Create order",
+        "description": "Create order",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "auction_id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65a13c3265e68545fe2f9b38"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "description": "amount",
+            "schema": {
+              "type": "string"
+            },
+            "example": "100"
+            },
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "currency",
+            "schema": {
+              "type": "string"
+            },
+            "example": "subdomain-change"
+          },
+          {
+            "name": "id",
+            "in": "query",
+            "description": "id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "672c4a045cca17b7dd71c4da"
+          },
+          {
+            "name": "shipping",
+            "in": "query",
+            "description": "shipping",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6729ca92f5bd41c25a34555b"
+          },
+          {
+            "name": "billing",
+            "in": "query",
+            "description": "billing",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6729ca92f5bd41c25a34555b"
+          },
+          {
+            "name": "payment",
+            "in": "query",
+            "description": "payment type",
+            "schema": {
+              "type": "string"
+            },
+            "example": "paypal"
+          },
+          {
+            "name": "return_url",
+            "in": "query",
+            "description": "return_url",
+            "schema": {
+              "type": "string"
+            },
+            "example": "https://subdomain-change.dev.indyauction.net/auctions/672c4a045cca17b7dd71c4da/purchases"
+          },
+          {
+            "name": "cancel_url",
+            "in": "query",
+            "description": "cancel_url",
+            "schema": {
+              "type": "string"
+            },
+            "example": "https://subdomain-change.dev.indyauction.net/auctions/672c4a045cca17b7dd71c4da/purchases"
+          }
+          
+        ],
+        "responses": {
+          "201": {
+            "description": "Successfully created order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "paypal_intent_id": {
+                      "type": "string"
+                    },
+                    "confirmation_url": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "paypal_intent_id": "7W49511563595394E",
+                  "confirmation_url": "https://www.sandbox.paypal.com/checkoutnow?token=7W49511563595394E"
+              }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "examples": {
+                        "example1": {
+                          "message": "Seller does not have paypal account,please connect"
+                        },
+                        "example2": {
+                          "message": "Seller has disconnected their paypal account,please connect"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+   }
   },
   "components": {
     "schemas": {
