@@ -63,12 +63,15 @@ resource "aws_security_group" "security_groups" {
 
 data "aws_ssm_parameter" "redis_node_type" {
   name = "REDIS_NODE_TYPE"
+  provider                  = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_groups" {
   name = "REDIS_NODE_GROUPS"
+  provider                  = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_replica_groups" {
   name = "REDIS_NODE_REPLICA_GROUPS"
+  provider                  = aws.deployment-eu
 }
 
 resource "aws_elasticache_replication_group" "websocket" {
@@ -82,6 +85,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
+  snapshot_name               = "pre-production-snapsot"
   apply_immediately          = true
   provider                  = aws.deployment-eu
 }

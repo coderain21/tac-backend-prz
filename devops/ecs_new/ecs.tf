@@ -22,14 +22,6 @@ provider "aws" {
   profile = "${var.ROUTE53_ACCOUNT}"
 }
 
-data "aws_ssm_parameter" "subnet_id" {
-  name = "PUBLIC_SUBNET_ID"
-  provider = aws.deployment-eu
-}
-data "aws_ssm_parameter" "vpc_id" {
-  name     = "VPC_ID"
-  provider = aws.deployment-eu
-}
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
@@ -39,17 +31,43 @@ data "aws_vpc" "default" {
   provider = aws.deployment-eu
 }
 
+resource "aws_default_security_group" "default" {
+  vpc_id = data.aws_vpc.default.id
+  provider = aws.deployment-eu
 
+  ingress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # "-1" represents all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # "-1" represents all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_ssm_parameter.vpc_id.value]
+    values = [data.aws_vpc.default.id]
   }
   provider = aws.deployment-eu
 }
 
-
-
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "eu-west-2c"
+  provider = aws.deployment-eu
+}
 
 
 data "aws_acm_certificate" "existing_certificate" {
@@ -61,7 +79,7 @@ data "aws_acm_certificate" "existing_certificate" {
 
 
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "new-ecs-task-execution-role"
+  name = "ecs-task-execution-role-new"
   provider = aws.deployment-eu
   assume_role_policy = <<EOF
 {
@@ -96,7 +114,7 @@ resource "aws_iam_role_policy_attachment" "stepfunctions_full_access" {
 
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "new-ecs-task-role"
+  name = "ecs-task-role-new"
   provider = aws.deployment-eu
   assume_role_policy = <<EOF
 {
@@ -167,12 +185,11 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
   provider = aws.deployment-eu
 }
 
-
-
-resource "aws_security_group" "new-websocket-security-group" {
-  name        = "new-websocket-security-group"
+# Security Group for loadbalancer
+resource "aws_security_group" "websocket-security-group" {
+  name        = "websocket-security-group-new"
   description = "Security Group for ECS and Load Balancer"
-  vpc_id      = data.aws_ssm_parameter.vpc_id.value
+  vpc_id      = data.aws_vpc.default.id
   provider = aws.deployment-eu
 
   # Inbound rules
@@ -236,24 +253,35 @@ resource "aws_security_group" "new-websocket-security-group" {
 
 # ECS Cluster
 resource "aws_ecs_cluster" "websocket-cluster" {
-  name = "new-websocket-cluster"
+  name = "websocket-cluster"
   provider = aws.deployment-eu
 }
 # ECR Repositories
 resource "aws_ecr_repository" "repo1" {
-  name = "new-websocket-repo"
+  name = "websocket-repo-new"
+  provider = aws.deployment-eu
+  force_delete = true
+}
+# ECR Repositories
+resource "aws_ecr_repository" "repo" {
+  name = "update-auction-repo"
   provider = aws.deployment-eu
   force_delete = true
 }
 
+
 ########################
 
-
+# data "aws_s3_bucket_object" "my_objects" {
+#   bucket = "ecs-deployment-bucket"
+#   key = "ecr-credential/task-definition.json"
+#   provider = aws.deployment-eu
+# }
 
 locals {
   definitions = jsonencode([
     {
-      name      = "new-websocket-container"
+      name      = "websocket-container"
       image     = "${resource.aws_ecr_repository.repo1.repository_url}:latest"
       cpu       = 0
       essential = true
@@ -286,13 +314,23 @@ locals {
 }
 data "aws_ssm_parameter" "cpu" {
   name = "CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "memory" {
   name = "MEMORY"
+  provider = aws.deployment-eu
+}
+data "aws_ssm_parameter" "ecs_cpu" {
+  name = "ECS_CPU"
+  provider = aws.deployment-eu
+}
+data "aws_ssm_parameter" "ecs_memory" {
+  name = "ECS_MEMORY"
+  provider = aws.deployment-eu
 }
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
-  family                   = "new-websocket-task-definition"
+  family                   = "websocket-task-definition"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
@@ -308,7 +346,7 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
 data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_ssm_parameter.vpc_id.value]
+    values = [data.aws_vpc.default.id]
   }
   filter {
     name   = "map-public-ip-on-launch"
@@ -320,10 +358,10 @@ data "aws_subnets" "public" {
 
 # Application Load Balancer (ALB) and Target Group
 resource "aws_lb" "load-balancer" {
-  name               = "new-web-socket-load-balancer"
+  name               = "web-socket-load-balancer-new"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.new-websocket-security-group.id]  # Security group for the Load Balancer
+  security_groups    = [aws_security_group.websocket-security-group.id]  # Security group for the Load Balancer
   subnets            = data.aws_subnets.public.ids
 
   enable_deletion_protection = false
@@ -350,10 +388,10 @@ resource "aws_route53_record" "my_cname" {
 
 # Target Group
 resource "aws_lb_target_group" "target_group" {
-  name     = "new-target-group-websocket"
+  name     = "target-group-websocket-new"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = data.aws_ssm_parameter.vpc_id.value  # Use VPC ID from default VPC
+  vpc_id   = data.aws_vpc.default.id  # Use VPC ID from default VPC
   target_type = "ip"
   provider = aws.deployment-eu
 }
@@ -377,21 +415,21 @@ resource "aws_lb_listener" "listener" {
 
 
 resource "aws_ecs_service" "ecs_service" {
-  name            = "new-websocket-ecs-service"
+  name            = "websocket-ecs-service-new"
   cluster         = resource.aws_ecs_cluster.websocket-cluster.id
   task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [data.aws_ssm_parameter.subnet_id.value]  # Fetch default subnets dynamically
-    security_groups = [aws_security_group.new-websocket-security-group.id]
+    subnets         = [resource.aws_default_subnet.default_az1.id]  # Fetch default subnets dynamically
+    security_groups = [aws_default_security_group.default.id]
     assign_public_ip = true
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = "new-websocket-container"
+    container_name   = "websocket-container"
     container_port   = 5000
   }
   provider = aws.deployment-eu
@@ -419,7 +457,23 @@ resource "aws_appautoscaling_policy" "cpu" {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
-    target_value = 70
+    target_value = data.aws_ssm_parameter.ecs_cpu.value
+  }
+  provider = aws.deployment-eu
+}
+resource "aws_appautoscaling_policy" "memory" {
+  name = "memory"
+  policy_type = "TargetTrackingScaling"
+  resource_id = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace = aws_appautoscaling_target.target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+
+    target_value = data.aws_ssm_parameter.ecs_memory.value
   }
   provider = aws.deployment-eu
 }

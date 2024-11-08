@@ -17,7 +17,7 @@ resource "aws_sns_topic" "ses_reputation_topic" {
 
 # Create an IAM role for CloudWatch Alarms to use
 resource "aws_iam_role" "ses_reputation_role" {
-  name = "SESReputationRole"
+  name = "${var.STAGE}-SESReputationRole"
   provider = aws.deployment-eu
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
