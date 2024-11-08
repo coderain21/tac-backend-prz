@@ -113,7 +113,7 @@ def generate_paypal_order(payment_info, redirect_url):
     access_token = get_access_token()
 
 
-    
+
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
