@@ -102,8 +102,18 @@ def create_order(insert_data):
     return True
 
 # Create a PayPal order
-def generate_paypal_order(amount, currency, application_fee, account_id, seller_email, return_url, cancel_url):
+def generate_paypal_order(payment_info, redirect_url):
+    currency = payment_info.get("currency")
+    amount = payment_info.get("amount")
+    account_id = payment_info.get("account_id")
+    seller_email = payment_info.get("seller_email")
+    application_fee = payment_info.get("application_fee")
+    return_url = redirect_url.get('return_url')
+    cancel_url = redirect_url.get('cancel_url')
     access_token = get_access_token()
+
+
+    
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
@@ -230,9 +240,21 @@ def create_paypal_order(event, context):
                     "headers": headers,
                     "body": json.dumps({'message': 'Seller has disconnected their paypal account,please connect'}, cls=Encoder)
                 }
+            payment_info = {
+                "amount": amount,
+                "currency": seller_data_of_auction["currency"],
+                "application_fee": application_fee,
+                "account_id": account_id,
+                "seller_email": seller_email
+            }
 
-            paypal_order = generate_paypal_order(
-                amount, seller_data_of_auction["currency"], application_fee, account_id, seller_email, return_url, cancel_url)
+            redirect_urls = {
+                "return_url": return_url,
+                "cancel_url": cancel_url
+            }
+
+            paypal_order = generate_paypal_order(payment_info, redirect_urls)
+
 
 
             insert_data = {
