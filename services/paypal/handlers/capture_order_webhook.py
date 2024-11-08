@@ -10,9 +10,9 @@ import os
 from bson import ObjectId
 from pymongo import MongoClient
 from lib.email_helper import send_mailchimp_payment_email
-from lib.paypal_helper import get_paypal_access_token, verify_webhook
+from lib.paypal_helper import get_paypal_access_token
 import mailchimp_transactional as MailchimpTransactional
-# from mailchimp_transactional.api_client import ApiClientError
+from mailchimp_transactional.api_client import ApiClientError
 from datetime import datetime
 import pytz
 import requests
@@ -23,6 +23,7 @@ db = client[os.environ['DATABASE']]
 user_collection = db[os.environ["MONGODB_COLLECTION_NAME"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+PAYPAL_API_URL = os.environ['PAYPAL_URL']
 
 headers = {
     'Content-Type': 'application/json',
@@ -64,10 +65,6 @@ currencySymbolMapping = {
 
 
 
-
-
-
-
 def update_order(payment_intent, update_data):
     """
     Update order data in the MongoDB collection.
@@ -90,14 +87,21 @@ def update_order(payment_intent, update_data):
         # If not in temp, check main payments collection
         if not temp_payment_details:
             existing_order = payments_collection.find_one({"payment_intent": payment_intent})
+            print('existing order', existing_order)
             if not existing_order:
                 print(f"No payment details found for payment_intent: {payment_intent}")
                 return None
-            
+            # Retrieve key information
+            seller_email = existing_order.get("seller_email")
+            buyer_email = existing_order.get("email_address")
+            auction_id = existing_order['purchases'][0]['auction_id']
+
+            print('data', seller_email, buyer_email, auction_id)
+         
             # If this is a COMPLETED event and we have an existing order
             if update_data.get("payment_status") == "Paid":
                 print('Payment captured and sending email receipt')
-            
+
                 # Update the order
                 combined_data = {**update_data}
                 update_result = payments_collection.update_one(
@@ -109,22 +113,27 @@ def update_order(payment_intent, update_data):
                     # Delete both temp and cart data after successful payment
                     delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent})
                     print(f"Deleted temp payment data: {delete_temp.deleted_count}")
-                    
-                    # delete_cart = cart_collection.delete_many({
-                    #     "email_address": buyer_email,
-                    #     "seller_email": seller_email,
-                    #     "auction_id": auction_id
-                    # })
-                    # print(f"Deleted cart data: {delete_cart.deleted_count}")
+
+                    delete_cart = cart_collection.delete_many({
+                        "email_address": buyer_email,
+                        "seller_email": seller_email,
+                        "auction_id": auction_id
+                    })
+                    print(f"Deleted cart data: {delete_cart.deleted_count}")
 
 
                     seller = user_collection.find_one({"email_address": seller_email})
+                    print('seller', seller)
                     buyer = buyer_collection.find_one({'email_address': buyer_email, "seller_email": seller_email})
+                    print('buyer', buyer)
                     auction_data = auction.find_one({'_id': ObjectId(auction_id)})
+                    print('auction', auction_data)
                     get_winning_lot = cart_collection.find(
                         {'buyer_id': str(buyer['_id']), 'auction_id': str(auction_id)}, 
                         {'_id': 0}
                     )
+
+                    print('get winning lot', get_winning_lot)
 
                     # Convert cursor to list
                     if isinstance(get_winning_lot, list):
@@ -138,6 +147,8 @@ def update_order(payment_intent, update_data):
                     for lot in lots_list:
                         if 'lot_image' in lot:
                             lot['lot_image'] = os.environ.get('CDN_URL') + lot['lot_image']
+
+                    print("lot", lots_list)
 
                     # Handle timezone conversion
                     common_time_zone = auction_data.get('time_zone', 'UTC')
@@ -153,26 +164,26 @@ def update_order(payment_intent, update_data):
                     end_date = end_date_time_local.date()
 
                     # Prepare email template data
-                    currency = temp_payment_details.get("currency", "")
-                    amount_paid = currency + ' ' + str(temp_payment_details['amount'])
+                    currency = existing_order.get("currency", "")
+                    amount_paid = currency + ' ' + str(existing_order['amount'])
                     logo_img = f"{os.environ.get('CDN_URL')}Logo.png" if not auction_data['logo_image'] else os.environ["CDN_URL"] + auction_data["logo_image"]
-                    
+
                     seller_name = ' '.join(filter(None, [seller.get('first_name'), seller.get('last_name')])) or 'Seller'
 
                     template_data = {
-                        "auction_title": temp_payment_details['auction_title'],
+                        "auction_title": existing_order['auction_title'],
                         "logo_image": logo_img,
                         "auction_end_date": end_date,
                         'account_name': ' '.join(filter(None, [
-                            temp_payment_details['billing_address']['first_name'],
-                            temp_payment_details['billing_address']['last_name']
-                        ])),    
-                        "address_line1": temp_payment_details['billing_address']['address_line1'],
-                        "address_line2": temp_payment_details['billing_address']['address_line2'],
-                        "city": temp_payment_details['billing_address']['city'],
-                        "state": temp_payment_details['billing_address']['state'],
-                        "country": temp_payment_details['billing_address']['country'],
-                        "zip_code": temp_payment_details['billing_address']['postal_code'],
+                            existing_order['billing_address']['first_name'],
+                            existing_order['billing_address']['last_name']
+                        ])),
+                        "address_line1": existing_order['billing_address']['address_line1'],
+                        "address_line2": existing_order['billing_address']['address_line2'],
+                        "city": existing_order['billing_address']['city'],
+                        "state": existing_order['billing_address']['state'],
+                        "country": existing_order['billing_address']['country'],
+                        "zip_code": existing_order['billing_address']['postal_code'],
                         "email_address": buyer_email,
                         "seller_name": seller_name,      
                         "currency": currency, 
@@ -186,11 +197,11 @@ def update_order(payment_intent, update_data):
                         template_name = str(seller['_id']) + '-PAYMENT-RECEIPT-EMAIL'
                         mailchimp.templates.info({"name": template_name})
                     except ApiClientError as error:
-                        template_name = 'default_payment-receipt-email'
+                        template_name = 'default_payment-receipt'
                         print("An exception occurred: {}".format(error.text))
 
                     send_mailchimp_payment_email(
-                        temp_payment_details['email_address'],
+                        existing_order['email_address'],
                         template_name,
                         template_data,
                         os.environ['MAILCHIMP_ADDRESS']
@@ -200,10 +211,8 @@ def update_order(payment_intent, update_data):
             else:
                 return None
 
-       
 
-
-        # Retrieve key information
+       # Retrieve key information
         seller_email = temp_payment_details.get("seller_email")
         buyer_email = temp_payment_details.get("email_address")
         auction_id = temp_payment_details.get("auction_id")
@@ -218,17 +227,17 @@ def update_order(payment_intent, update_data):
 
         if update_data.get("payment_status") == "Approved":
             print('Creating order in the order table with Unpaid status')
-            # capture_order(payment_intent)
+            capture_order(payment_intent)
 
             # Create the order with Unpaid status
             combined_data = {**temp_payment_details, **update_data, "payment_status": "Unpaid"}
             insert_result = create_order(combined_data)
-            
+
             if insert_result:
                 # Only delete temp data after successful order creation
                 delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent})
                 print(f"Deleted temp payment data: {delete_temp.deleted_count}")
-                
+
                 # Keep cart data until payment is completed
 
 
@@ -268,6 +277,9 @@ def create_order(insert_data):
         print(f"Unexpected {err=}, {type(err)=}")
         raise
 
+
+
+
 def capture_order(order_id):
     """Capture the payment for an existing PayPal order."""
     access_token = get_paypal_access_token()
@@ -278,7 +290,7 @@ def capture_order(order_id):
     }
 
     response = requests.post(
-        f"https://api.sandbox.paypal.com/v2/checkout/orders/{order_id}/capture",
+        f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}/capture",
         headers=headers,
         json={}  # No body needed for capture
     )
@@ -289,6 +301,8 @@ def capture_order(order_id):
     else:
         print("Failed to capture order:")
         # print(json.dumps(response.json(), indent=4))
+
+
 
 
 
@@ -304,22 +318,10 @@ def create(event, context):
     - dict: HTTP response containing status code, headers, and body
     """
     try:
-        print(event)
-        webhook_event = json.loads(event["body"])
-        print(f"Received event: {webhook_event['event_type']}")
-        
         try:
-            # Verify the PayPal webhook signature
-            # if not verify_webhook(event):
-            #     return {
-            #         "headers": headers,
-            #         "statusCode": 400,
-            #         "body": json.dumps({"message": "Invalid Webhook Event"})
-            #     }
-
             webhook_event = json.loads(event["body"])
             print(f"Received event: {webhook_event['event_type']}")
-            
+
             try:
                 if webhook_event["event_type"] == "CHECKOUT.ORDER.APPROVED":
                     payment_intent = webhook_event["resource"]["id"]

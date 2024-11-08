@@ -7,10 +7,9 @@ import requests
 from pymongo import MongoClient
 
 # Constants
-PAYPAL_API_URL = "https://api.sandbox.paypal.com"  # Use live URL for production
+PAYPAL_API_URL = os.environ["PAYPAL_URL"]  # Use live URL for production
 CLIENT_ID = os.environ["PAYPAL_CLIENT_ID"]
 CLIENT_SECRET = os.environ["PAYPAL_CLIENT_SECRET"]
-# SELLER_EMAIL = "sb-ckybs27026226@business.example.com"
 
 # MongoDB setup
 client = MongoClient(
@@ -131,19 +130,6 @@ def generate_paypal_order(amount, currency, application_fee, account_id, seller_
     response.raise_for_status()
     return response.json()
 
-# Capture payment for an order
-def capture_order(access_token, order_id):
-    response = requests.post(
-        f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}/capture",
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {access_token}"},
-        json={}
-    )
-    response.raise_for_status()
-    return response.json()
-
-
-
-
 
 def create_paypal_order(event, context):
     """
@@ -167,11 +153,6 @@ def create_paypal_order(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
-        # email_address = 'ibrahim.khaleel+newtes@7edge.com'
-
-
-
 
         data = event['queryStringParameters']
         expected_fields = ["id", "domain", "amount", "billing", "shipping", "timestamp"]
@@ -227,12 +208,8 @@ def create_paypal_order(event, context):
 
         plan_type = seller_data.get("plan_type", "")
         application_fee = calculate_application_fee(amount, plan_type)
-        
-
 
         insert_data = {}
-
-
 
 
         if payment == "paypal":
@@ -255,9 +232,8 @@ def create_paypal_order(event, context):
 
             paypal_order = generate_paypal_order(
                 amount, seller_data_of_auction["currency"], application_fee, account_id, seller_email, return_url, cancel_url)
-            
-            # print('paypal order', json.dumps(paypal_order))
-            
+
+    
             insert_data = {
                 "email_address": email_address,
                 "payment_intent": paypal_order["id"],
@@ -273,7 +249,7 @@ def create_paypal_order(event, context):
         #fetch address data and add to order data
         billing_address = address_collection.find_one({"_id": ObjectId(billing)})
         shipping_address = address_collection.find_one({"_id": ObjectId(shipping)})
-        
+
 
 
 

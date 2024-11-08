@@ -94,6 +94,9 @@ provider:
     PAYPAL_REDIRECTION_PATH: ${ssm:PAYPAL_REDIRECTION_PATH}
     PAYPAL_PARTNER_MERCHANT_ID : ${ssm:PAYPAL_PARTNER_MERCHANT_ID}
     PAYPAL_URL: ${ssm:PAYPAL_URL}
+    CDN_URL: ${ssm:CDN_URL}
+    MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
 
     
@@ -173,7 +176,7 @@ functions:
               - Access-Control-Allow-Headers
           path: /paypal-connect
           method: get
-          # authorizer: ${ssm:SELLER_COGNITO_AUTH_ARN}     
+          authorizer: ${ssm:SELLER_COGNITO_AUTH_ARN}     
 
   
   paypal_connect_webhook:
@@ -217,8 +220,8 @@ functions:
           cors: true
           path: /paypal-disconnect
           method: patch
-          # authorizer:
-          #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   create-order:
     handler: handlers/create_order.create_paypal_order
