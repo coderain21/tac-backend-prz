@@ -97,7 +97,7 @@ def update_order(payment_intent, update_data):
             auction_id = existing_order['purchases'][0]['auction_id']
 
             print('data', seller_email, buyer_email, auction_id)
-         
+
             # If this is a COMPLETED event and we have an existing order
             if update_data.get("payment_status") == "Paid":
                 print('Payment captured and sending email receipt')
@@ -129,7 +129,7 @@ def update_order(payment_intent, update_data):
                     auction_data = auction.find_one({'_id': ObjectId(auction_id)})
                     print('auction', auction_data)
                     get_winning_lot = cart_collection.find(
-                        {'buyer_id': str(buyer['_id']), 'auction_id': str(auction_id)}, 
+                        {'buyer_id': str(buyer['_id']), 'auction_id': str(auction_id)},
                         {'_id': 0}
                     )
 
@@ -219,7 +219,7 @@ def update_order(payment_intent, update_data):
 
         # Update the payment data
         update_result = temp_payments_collection.update_one(
-            {"payment_intent": payment_intent}, 
+            {"payment_intent": payment_intent},
             {"$set": update_data}
         )
         print('update_data', update_data)

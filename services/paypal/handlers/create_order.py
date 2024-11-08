@@ -1,3 +1,4 @@
+'''This function is used to create the order in paypal'''
 from datetime import datetime
 import decimal
 import json
@@ -176,7 +177,7 @@ def create_paypal_order(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide return_url and cancel_url"})
             }
-        
+
 
         payment = data.get("payment")
 
@@ -192,7 +193,7 @@ def create_paypal_order(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Auction doesn't exist"})
             }
-        
+
 
         auction_title = seller_data_of_auction.get("title")
         auction_image = seller_data_of_auction.get("auction_image")
@@ -233,7 +234,7 @@ def create_paypal_order(event, context):
             paypal_order = generate_paypal_order(
                 amount, seller_data_of_auction["currency"], application_fee, account_id, seller_email, return_url, cancel_url)
 
-    
+
             insert_data = {
                 "email_address": email_address,
                 "payment_intent": paypal_order["id"],
