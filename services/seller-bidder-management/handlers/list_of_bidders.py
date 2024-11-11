@@ -139,7 +139,7 @@ def list_bidders(event, context):
 
 
         print('pipeline', pipeline)
-        buyers = buyer_collection.aggregate(pipeline)
+        buyers = buyer_collection.aggregate(pipeline, allowDiskUse=True)
         total_buyers_pipeline = [
             {"$match": search_query},
             {"$lookup": {
@@ -161,7 +161,7 @@ def list_bidders(event, context):
         ]
 
         print('total_buyers_pipeline', total_buyers_pipeline)
-        total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
+        total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline, allowDiskUse=True))
         print('total_buyers_result', total_buyers_result)
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
 
