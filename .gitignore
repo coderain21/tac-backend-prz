@@ -35,6 +35,7 @@ python.zip
 vpcstaefile
 layer
 tf-key-pair-*.pem
+vpcstatefile/
 # Compiled Java class files
 *.class
 # Compiled Python bytecode
