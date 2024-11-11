@@ -28,11 +28,6 @@
           "tags": [
             "Bid History  Management"
           ],
-          "security": [
-            {
-              "bearerAuth": []
-            }
-          ],
           "parameters": [
             {
               "name": "lot_id",
@@ -135,7 +130,12 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       },
       "/seller/bids": {
@@ -144,11 +144,6 @@
           "description": "Fetch a list of bids placed on a particular auction.",
           "tags": [
             "Bid History  Management"
-          ],
-          "security": [
-            {
-              "bearerAuth": []
-            }
           ],
           "parameters": [
             {
@@ -242,16 +237,20 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
       }
     },
     "components": {
       "securitySchemes": {
         "BearerAuth": {
-          "type": "apiKey",
-          "name": "Authorization",
-          "in": "header",
+          "type": "http",
+          "scheme": "bearer",
           "description": "Bearer Token"
         }
       }

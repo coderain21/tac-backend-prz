@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable no-unused-vars */
 // Handler for the Post Confirmation Lambda trigger
 exports.handler = async (event, context) => {

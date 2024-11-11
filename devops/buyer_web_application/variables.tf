@@ -95,3 +95,8 @@ variable "ROUTE53_ACCOUNT" {
   type        = string
   description = "Description of the variable"
 }
+
+variable "LAUNCHDARKLY_CLIENT_ID" {
+  type        = string
+  description = "Description of the variable"
+}

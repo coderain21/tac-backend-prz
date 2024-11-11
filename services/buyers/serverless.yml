@@ -40,6 +40,7 @@ provider:
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     MAILCHIMP_COLLECTION: ${opt:stage, self:provider.stage}-mailchimp-templates
+    ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     CDN_LINK: ${ssm:CDN_URL}
@@ -322,7 +323,8 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}      #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
           path: /update-password
           method: post
   
@@ -353,7 +355,8 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}          #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}          #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
 
   view_profile:
     handler: handlers/view_profile.view_profile
@@ -380,7 +383,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /profile
           method: patch
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}           #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}           #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
   
   add_address:
     handler: handlers/add_address.add_address
@@ -407,7 +411,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /add-address
           method: patch
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}              #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}              #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number
@@ -434,7 +439,8 @@ functions:
               - Access-Control-Allow-Headers
           path: /paddle
           method: get
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}             #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}             #"arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer"
 
 
   send-reset-link:
@@ -469,6 +475,63 @@ functions:
           cors: true
           path: /reset_password
           method: post
+  
+
+  footer-links:
+    handler: handlers/get_link.get_link
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /links
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          # authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
+
+  buyer-signin-logger:
+    handler: handlers/buyer_signin_logger.buyer_signin_logger
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /buyer-logs
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
 
 

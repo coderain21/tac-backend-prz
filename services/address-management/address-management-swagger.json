@@ -16,7 +16,6 @@
       "description": "APIs to manage the address"
     }
   ],
-
   "paths": {
     "/address": {
       "post": {
@@ -140,7 +139,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "get": {
         "tags": ["Address management"],
@@ -301,7 +305,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       },
       "patch": {
         "tags": ["Address management"],
@@ -430,7 +439,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
   },
