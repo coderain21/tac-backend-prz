@@ -3,7 +3,7 @@
 # set -a            
 # source .env
 # set +a
-
+overall_status=0
 run_command() {
     "$@"
     local status=$?
@@ -13,6 +13,7 @@ run_command() {
     fi
     return $status
 }
+
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
 # # Configure AWS CLI profiles
@@ -21,7 +22,10 @@ aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS
 
 aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
 aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-
+if [ "${STAGE}" = "pre-production" ] ; then
+    aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
+    aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
+fi
 log_bucket="s3://indyauction-pipeline-states/$STAGE/"
 echo "$log_bucket"
 aws s3 sync $log_bucket . --profile $PROFILE_MAIN
@@ -45,23 +49,36 @@ run_command terraform -chdir=devops/dependency/nodejs-auth-layer init
 run_command terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 run_command terraform -chdir=devops/dependency/python init
 run_command terraform -chdir=devops/dependency/python apply -auto-approve
-run_command terraform -chdir=devops/mongodb init
-run_command terraform -chdir=devops/mongodb apply -auto-approve
-run_command terraform -chdir=devops/ecs init
-run_command terraform -chdir=devops/ecs apply -auto-approve
+
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
+    run_command terraform -chdir=devops/mongodb init
+    run_command terraform -chdir=devops/mongodb apply -auto-approve
+    run_command terraform -chdir=devops/ecs init
+    run_command terraform -chdir=devops/ecs apply -auto-approve
+    run_command terraform -chdir=devops/redis-cluster init
+    run_command terraform -chdir=devops/redis-cluster apply -auto-approve
+fi
+if [ "${STAGE}" = "pre-production" ] ; then
+    run_command terraform -chdir=devops/vpc init
+    run_command terraform -chdir=devops/vpc apply -auto-approve
+    run_command terraform -chdir=devops/mongodb_new init
+    run_command terraform -chdir=devops/mongodb_new apply -auto-approve
+    run_command terraform -chdir=devops/ecs_new init
+    run_command terraform -chdir=devops/ecs_new apply -auto-approve
+    run_command terraform -chdir=devops/redis_cluster_new init
+    run_command terraform -chdir=devops/redis_cluster_new apply -auto-approve
+    run_command terraform -chdir=devops/secret_manager init
+    run_command terraform -chdir=devops/secret_manager apply -auto-approve
+fi
 run_command terraform -chdir=devops/cloudwatch_alarms init
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
-run_command terraform -chdir=devops/redis-cluster init
-run_command terraform -chdir=devops/redis-cluster apply -auto-approve
 run_command terraform -chdir=devops/budgets init
 run_command terraform -chdir=devops/budgets apply -auto-approve
 run_command terraform -chdir=devops/stripe_webhook init
 run_command terraform -chdir=devops/stripe_webhook apply -auto-approve
-run_command terraform -chdir=devops/secret_manager init
-run_command terraform -chdir=devops/secret_manager apply -auto-approve
 if [ "${STAGE}" = "prod" ]; then
-   run_command terraform -chdir=devops/cloudwatch init
-   run_command terraform -chdir=devops/cloudwatch apply -auto-approve
+    run_command terraform -chdir=devops/cloudwatch init
+    run_command terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 npm i -g serverless@3.15.2
@@ -128,8 +145,6 @@ if [ "${STAGE}" = "qa" ]; then
 fi
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
 
-
-# Check overall status at the end
 if [ $overall_status -ne 0 ]; then
     echo "One or more commands failed."
     exit 1

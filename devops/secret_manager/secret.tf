@@ -14,7 +14,7 @@ provider "aws" {
 
 # Step 1: Create IAM Role and store ARN in SSM
 resource "aws_iam_role" "athena_ambda_role" {
-  name               = "athena-lambda-role"
+  name               = "${var.STAGE}-athena-lambda-role"
   provider = aws.deployment-main
   assume_role_policy = jsonencode({
     "Version": "2012-10-17",
@@ -35,6 +35,7 @@ resource "aws_ssm_parameter" "role_arn" {
   type  = "String"
   value = aws_iam_role.athena_ambda_role.arn
   provider = aws.deployment-main
+  overwrite = true
 }
 
 # Step 2: Create KMS key with policy
@@ -152,7 +153,7 @@ resource "aws_iam_role_policy_attachment" "athena_ambda_role_cloudwatch" {
 # IAM Role in Dev Account
 resource "aws_iam_role" "quicksight_access_role" {
   provider = aws.deployment-main
-  name     = "quicksight-access-role"
+  name     = "${var.STAGE}-quicksight-access-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -215,7 +216,7 @@ resource "aws_iam_role_policy_attachment" "attach_quicksight_policy" {
 # IAM Role for Lambda in Pre-production Account
 resource "aws_iam_role" "lambda_execution_role" {
   provider = aws.deployment-eu
-  name     = "lambda-execution-role"
+  name     = "${var.STAGE}-lambda-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -246,12 +247,11 @@ resource "aws_iam_role_policy" "lambda_assume_role_policy" {
       {
         Effect = "Allow",
         Action = "sts:AssumeRole",
-        Resource = "arn:aws:iam::${var.ACCOUNT_ID_MAIN}:role/quicksight-access-role"
+        Resource = format("arn:aws:iam::%s:role/quicksight-access-role", var.ACCOUNT_ID_MAIN)
       }
     ]
   })
 }
-
 
 resource "aws_iam_role_policy_attachment" "lambda_execution_role_policy_attachment" {
   role       = aws_iam_role.lambda_execution_role.name

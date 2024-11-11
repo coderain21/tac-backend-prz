@@ -49,6 +49,7 @@ const UserSchema = new Schema({
     linkedin_link: { type: String, trim: true, default: '' },
     tiktok_link: { type: String, trim: true, default: '' },
     kyb_status: { type: String, trim: true, default: false },
+    seller_id: { type: String, trim: true, default: '' },
     full_name: { type: String, trim: true, default: '' },
 
 })
