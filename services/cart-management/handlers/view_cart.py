@@ -89,6 +89,11 @@ def view(event, context):
             if seller_data is not None:
                 plan_type = seller_data["plan_type"]
 
+            #this is to check whether the seller is connected to stripe or paypal for payment flow
+            seller_payment_status = { }
+            seller_payment_status['paypal_status'] = 'connected' if seller_data.get('paypal_status') == 'connected' else ''
+            seller_payment_status['stripe_status'] = 'connected' if seller_data.get('stripe_status') == 'connected' else ''
+
         cart_details= collection.find({'email_address':email_address,'auction_id':auction_id})
         if cart_details is None:
             return {
@@ -99,7 +104,7 @@ def view(event, context):
         return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({"data":list(cart_details),"plan_type":plan_type},cls = Encoder)
+                "body": json.dumps({"data":list(cart_details),"plan_type":plan_type, "seller_payment_status": seller_payment_status},cls = Encoder)
             }
     except Exception as err:
         print(err)
