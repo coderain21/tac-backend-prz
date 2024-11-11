@@ -61,7 +61,7 @@ provider:
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
-    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    # JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD: 
       Fn::Join:
         - ":"
@@ -93,9 +93,9 @@ provider:
           - "templates/${self:provider.stage}-admin-deactivate-seller-template/EMAIL"
 
   
-    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
+    # BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
-    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
+    # STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
