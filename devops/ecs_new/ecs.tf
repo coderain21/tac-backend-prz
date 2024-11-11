@@ -31,6 +31,15 @@ data "aws_vpc" "default" {
   provider = aws.deployment-eu
 }
 
+data "aws_vpc" "my_vpc" {
+  # Use the "Name" tag filter to find the VPC by name
+  filter {
+    name   = "tag:Name"
+    values = ["new-vpc"]
+  }
+  provider = aws.deployment-eu
+}
+
 resource "aws_default_security_group" "default" {
   vpc_id = data.aws_vpc.default.id
   provider = aws.deployment-eu
@@ -56,18 +65,63 @@ resource "aws_default_security_group" "default" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-data "aws_subnets" "default" {
+
+resource "aws_security_group" "ecs-security-group" {
+  name        = "ecs-security-group-new"
+  description = "Security Group for ECS"
+  vpc_id = data.aws_vpc.my_vpc.id
+  provider = aws.deployment-eu
+
+  ingress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # "-1" represents all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1" # "-1" represents all protocols
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+
+data "aws_subnet" "default_az1" {
+  filter {
+    name   = "availability-zone"
+    values = ["eu-west-2c"]
+  }
+
+  # Add this filter to specify the VPC ID
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+    values = [data.aws_vpc.my_vpc.id]  # Reference to your VPC data source
   }
+
+  filter {
+    name   = "tag:Name"
+    values = ["public-subnet-c"]
+  }
+
   provider = aws.deployment-eu
 }
+
 
 resource "aws_default_subnet" "default_az1" {
   availability_zone = "eu-west-2c"
   provider = aws.deployment-eu
 }
+
+
 
 
 data "aws_acm_certificate" "existing_certificate" {
@@ -251,6 +305,71 @@ resource "aws_security_group" "websocket-security-group" {
   }
 }
 
+resource "aws_security_group" "new-websocket-security-group" {
+  name        = "new-websocket-security-group"
+  description = "New Security Group for ECS and Load Balancer"
+  vpc_id      = data.aws_vpc.my_vpc.id
+  provider = aws.deployment-eu
+
+  # Inbound rules
+  ingress {
+    from_port = 6379
+    to_port   = 6379
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = 80
+    to_port   = 80
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = 11211
+    to_port   = 11211
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = 8080
+    to_port   = 8080
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = 22
+    to_port   = 22
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = 0
+    to_port   = 65535
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Outbound rules (allow all traffic)
+  egress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 # ECS Cluster
 resource "aws_ecs_cluster" "websocket-cluster" {
   name = "websocket-cluster"
@@ -343,6 +462,20 @@ resource "aws_ecs_task_definition" "websocket-task-definition" {
   provider = aws.deployment-eu
 }
 
+resource "aws_ecs_task_definition" "new-websocket-task-definition" {
+  family                   = "new-websocket-task-definition"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
+  execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
+  cpu                      = data.aws_ssm_parameter.cpu.value
+  memory                   = data.aws_ssm_parameter.memory.value
+  depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
+  container_definitions = local.definitions
+  skip_destroy = true
+  provider = aws.deployment-eu
+}
+
 data "aws_subnets" "public" {
   filter {
     name   = "vpc-id"
@@ -355,14 +488,36 @@ data "aws_subnets" "public" {
   provider = aws.deployment-eu
 }
 
-
-# Application Load Balancer (ALB) and Target Group
+data "aws_subnets" "new-public" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.my_vpc.id]
+  }
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
+  provider = aws.deployment-eu
+}
 resource "aws_lb" "load-balancer" {
   name               = "web-socket-load-balancer-new"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.websocket-security-group.id]  # Security group for the Load Balancer
   subnets            = data.aws_subnets.public.ids
+
+  enable_deletion_protection = false
+  provider = aws.deployment-eu
+}
+
+
+# Application Load Balancer (ALB) and Target Group
+resource "aws_lb" "new-load-balancer" {
+  name               = "web-soc-load-balancer-new"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.new-websocket-security-group.id]  # Security group for the Load Balancer
+  subnets            = data.aws_subnets.new-public.ids
 
   enable_deletion_protection = false
   provider = aws.deployment-eu
@@ -379,8 +534,8 @@ resource "aws_route53_record" "my_cname" {
   type    = "A"
   zone_id = data.aws_route53_zone.domain_zone.zone_id  # Replace with your Route 53 hosted zone ID
   alias {
-    name                   = aws_lb.load-balancer.dns_name
-    zone_id                = aws_lb.load-balancer.zone_id
+    name                   = aws_lb.new-load-balancer.dns_name
+    zone_id                = aws_lb.new-load-balancer.zone_id
     evaluate_target_health = true
   }
   provider = aws.route53-account
@@ -396,11 +551,20 @@ resource "aws_lb_target_group" "target_group" {
   provider = aws.deployment-eu
 }
 
+resource "aws_lb_target_group" "new_target_group" {
+  name     = "new-target-group-websocket"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = data.aws_vpc.my_vpc.id  # Use VPC ID from default VPC
+  target_type = "ip"
+  provider = aws.deployment-eu
+}
+
 # Listener Rule
 
 # Listener
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_lb.load-balancer.arn
+  load_balancer_arn = aws_lb.new-load-balancer.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
@@ -408,32 +572,32 @@ resource "aws_lb_listener" "listener" {
 
   default_action {
     type             = "forward"
-      target_group_arn = aws_lb_target_group.target_group.arn
+      target_group_arn = aws_lb_target_group.new_target_group.arn
   }
   provider = aws.deployment-eu
 }
 
-
 resource "aws_ecs_service" "ecs_service" {
   name            = "websocket-ecs-service-new"
   cluster         = resource.aws_ecs_cluster.websocket-cluster.id
-  task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
+  task_definition = resource.aws_ecs_task_definition.new-websocket-task-definition.arn
   desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [resource.aws_default_subnet.default_az1.id]  # Fetch default subnets dynamically
-    security_groups = [aws_default_security_group.default.id]
+    subnets         = [data.aws_subnet.default_az1.id]  # Fetch default subnets dynamically
+    security_groups = [aws_security_group.ecs-security-group.id]
     assign_public_ip = true
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.new_target_group.arn
     container_name   = "websocket-container"
     container_port   = 5000
   }
   provider = aws.deployment-eu
 }
+
 
 resource "aws_appautoscaling_target" "target" {
   max_capacity = 5
@@ -484,5 +648,3 @@ resource "aws_ssm_parameter" "socket" {
   provider = aws.deployment-eu
   overwrite = true
 }
-
-

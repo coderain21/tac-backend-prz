@@ -4,15 +4,15 @@
 # source .env
 # set +a
 overall_status=0
-# run_command() {
-#     "$@"
-#     local status=$?
-#     if [ $status -ne 0 ]; then
-#         overall_status=$status
-#         echo "Command failed: $@"
-#     fi
-#     return $status
-# }
+run_command() {
+    "$@"
+    local status=$?
+    if [ $status -ne 0 ]; then
+        overall_status=$status
+        echo "Command failed: $@"
+    fi
+    return $status
+}
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
@@ -33,22 +33,22 @@ aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
-terraform -chdir=devops/assets init
-terraform -chdir=devops/assets apply -auto-approve
-terraform -chdir=devops/ses init
-terraform -chdir=devops/ses apply -auto-approve
-terraform -chdir=devops/admin_web_application init
-terraform -chdir=devops/admin_web_application apply -auto-approve
-terraform -chdir=devops/seller_web_application init
-terraform -chdir=devops/seller_web_application apply -auto-approve
-terraform -chdir=devops/api_gateway init
-terraform -chdir=devops/api_gateway apply -auto-approve
-terraform -chdir=devops/dependency/node init
-terraform -chdir=devops/dependency/node apply -auto-approve
-terraform -chdir=devops/dependency/nodejs-auth-layer init
-terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
-terraform -chdir=devops/dependency/python init
-terraform -chdir=devops/dependency/python apply -auto-approve
+run_command terraform -chdir=devops/assets init
+run_command terraform -chdir=devops/assets apply -auto-approve
+run_command terraform -chdir=devops/ses init
+run_command terraform -chdir=devops/ses apply -auto-approve
+run_command terraform -chdir=devops/admin_web_application init
+run_command terraform -chdir=devops/admin_web_application apply -auto-approve
+run_command terraform -chdir=devops/seller_web_application init
+run_command terraform -chdir=devops/seller_web_application apply -auto-approve
+run_command terraform -chdir=devops/api_gateway init
+run_command terraform -chdir=devops/api_gateway apply -auto-approve
+run_command terraform -chdir=devops/dependency/node init
+run_command terraform -chdir=devops/dependency/node apply -auto-approve
+run_command terraform -chdir=devops/dependency/nodejs-auth-layer init
+run_command terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
+run_command terraform -chdir=devops/dependency/python init
+run_command terraform -chdir=devops/dependency/python apply -auto-approve
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     terraform -chdir=devops/mongodb init
@@ -70,15 +70,15 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/secret_manager init
     terraform -chdir=devops/secret_manager apply -auto-approve
 fi
-terraform -chdir=devops/cloudwatch_alarms init
-terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
-terraform -chdir=devops/budgets init
-terraform -chdir=devops/budgets apply -auto-approve
-terraform -chdir=devops/stripe_webhook init
-terraform -chdir=devops/stripe_webhook apply -auto-approve
+run_command terraform -chdir=devops/cloudwatch_alarms init
+run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
+run_command terraform -chdir=devops/budgets init
+run_command terraform -chdir=devops/budgets apply -auto-approve
+run_command terraform -chdir=devops/stripe_webhook init
+run_command terraform -chdir=devops/stripe_webhook apply -auto-approve
 if [ "${STAGE}" = "prod" ]; then
-    terraform -chdir=devops/cloudwatch init
-    terraform -chdir=devops/cloudwatch apply -auto-approve
+    run_command terraform -chdir=devops/cloudwatch init
+    run_command terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 npm i -g serverless@3.15.2
@@ -153,8 +153,7 @@ if [ "${STAGE}" = "qa" ]; then
   sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
-sls deploy --stage ${STAGE} --max-concurrency 5
-sls deploy --stage ${STAGE} --max-concurrency 5
+run_command sls deploy --stage ${STAGE} --max-concurrency 5
 
 if [ $overall_status -ne 0 ]; then
     echo "One or more commands failed."
