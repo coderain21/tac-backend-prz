@@ -93,15 +93,15 @@ def list_bidders(event, context):
                     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
                     "localField": "auction_id",
                     "foreignField": "_id",
-                    "as": "auction_info"
-                }},
-                {"$unwind": "$auction_info"},
-                {"$lookup": {
-                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
-                    "localField": "auction_info.auction_id",
-                    "foreignField": "auction_id",
                     "as": "auction_details"
                 }},
+                # {"$unwind": "$auction_info"},
+                # {"$lookup": {
+                #     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                #     "localField": "auction_info.auction_id",
+                #     "foreignField": "auction_id",
+                #     "as": "auction_details"
+                # }},
                 {"$unwind": "$auction_details"},
                 {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
                 {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
@@ -117,15 +117,15 @@ def list_bidders(event, context):
                     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
                     "localField": "auction_id",
                     "foreignField": "_id",
-                    "as": "auction_info"
-                }},
-                {"$unwind": "$auction_info"},
-                {"$lookup": {
-                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
-                    "localField": "auction_info.auction_id",
-                    "foreignField": "auction_id",
                     "as": "auction_details"
                 }},
+                # {"$unwind": "$auction_info"},
+                # {"$lookup": {
+                #     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                #     "localField": "auction_info.auction_id",
+                #     "foreignField": "auction_id",
+                #     "as": "auction_details"
+                # }},
                 {"$unwind": "$auction_details"},
                 {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
                 {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
@@ -139,29 +139,29 @@ def list_bidders(event, context):
 
 
         print('pipeline', pipeline)
-        buyers = buyer_collection.aggregate(pipeline, allowDiskUse=True)
+        buyers = buyer_collection.aggregate(pipeline)
         total_buyers_pipeline = [
             {"$match": search_query},
             {"$lookup": {
                 "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
                 "localField": "auction_id",
                 "foreignField": "_id",
-                "as": "auction_info"
-            }},
-            {"$unwind": "$auction_info"},
-            {"$lookup": {
-                "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
-                "localField": "auction_info.auction_id",
-                "foreignField": "auction_id",
                 "as": "auction_details"
             }},
+            # {"$unwind": "$auction_info"},
+            # {"$lookup": {
+            #     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+            #     "localField": "auction_info.auction_id",
+            #     "foreignField": "auction_id",
+            #     "as": "auction_details"
+            # }},
             {"$unwind": "$auction_details"},
             {"$group": {"_id": "$email_address"}},
             {"$count": "total_buyers"}
         ]
 
         print('total_buyers_pipeline', total_buyers_pipeline)
-        total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline, allowDiskUse=True))
+        total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         print('total_buyers_result', total_buyers_result)
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
 
