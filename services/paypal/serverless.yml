@@ -94,6 +94,9 @@ provider:
     PAYPAL_REDIRECTION_PATH: ${ssm:PAYPAL_REDIRECTION_PATH}
     PAYPAL_PARTNER_MERCHANT_ID : ${ssm:PAYPAL_PARTNER_MERCHANT_ID}
     PAYPAL_URL: ${ssm:PAYPAL_URL}
+    CDN_URL: ${ssm:CDN_URL}
+    MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
 
     
@@ -219,6 +222,55 @@ functions:
           method: patch
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  create-order:
+    handler: handlers/create_order.create_paypal_order
+    timeout: 30
+    runtime: python3.9
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /paypal-order
+          method: post
+          authorizer:
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+  
+  paypal-order-webhook:
+    handler: handlers/capture_order_webhook.create
+    timeout: 30
+    runtime: python3.9
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /paypal-order-webhook
+          method: post
+          # authorizer:
+          #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
 
 
 resources:
