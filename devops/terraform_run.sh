@@ -51,24 +51,24 @@ run_command terraform -chdir=devops/dependency/python init
 run_command terraform -chdir=devops/dependency/python apply -auto-approve
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
-    run_command terraform -chdir=devops/mongodb init
-    run_command terraform -chdir=devops/mongodb apply -auto-approve
-    run_command terraform -chdir=devops/ecs init
-    run_command terraform -chdir=devops/ecs apply -auto-approve
-    run_command terraform -chdir=devops/redis-cluster init
-    run_command terraform -chdir=devops/redis-cluster apply -auto-approve
+    terraform -chdir=devops/mongodb init
+    terraform -chdir=devops/mongodb apply -auto-approve
+    terraform -chdir=devops/ecs init
+    terraform -chdir=devops/ecs apply -auto-approve
+    terraform -chdir=devops/redis-cluster init
+    terraform -chdir=devops/redis-cluster apply -auto-approve
 fi
 if [ "${STAGE}" = "pre-production" ] ; then
-    run_command terraform -chdir=devops/vpc init
-    run_command terraform -chdir=devops/vpc apply -auto-approve
-    run_command terraform -chdir=devops/mongodb_new init
-    run_command terraform -chdir=devops/mongodb_new apply -auto-approve
-    run_command terraform -chdir=devops/ecs_new init
-    run_command terraform -chdir=devops/ecs_new apply -auto-approve
-    run_command terraform -chdir=devops/redis_cluster_new init
-    run_command terraform -chdir=devops/redis_cluster_new apply -auto-approve
-    run_command terraform -chdir=devops/secret_manager init
-    run_command terraform -chdir=devops/secret_manager apply -auto-approve
+    terraform -chdir=devops/vpc init
+    terraform -chdir=devops/vpc apply -auto-approve
+    terraform -chdir=devops/mongodb_new init
+    terraform -chdir=devops/mongodb_new apply -auto-approve
+    terraform -chdir=devops/ecs_new init
+    terraform -chdir=devops/ecs_new apply -auto-approve
+    terraform -chdir=devops/redis_cluster_new init
+    terraform -chdir=devops/redis_cluster_new apply -auto-approve
+    terraform -chdir=devops/secret_manager init
+    terraform -chdir=devops/secret_manager apply -auto-approve
 fi
 run_command terraform -chdir=devops/cloudwatch_alarms init
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
@@ -97,18 +97,23 @@ export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/lambda-authorizer
-run_command sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/auctions
-run_command sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
+sls deploy --region $REGION --stage $STAGE
 cd ../..
-run_command terraform -chdir=devops/buyer_web_application init
+terraform -chdir=devops/buyer_web_application init
+terraform -chdir=devops/buyer_web_application init
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="devops/buyer_web_application/terraform.tfstate"
 # Check if the state file exists
@@ -125,7 +130,8 @@ if [ -f "$STATE_FILE" ]; then
 #   domain=$(aws amplify get-domain-association --app-id $APP_ID --domain-name $AMPLIFY_DOMAIN_NAME --profile $PROFILE_ENV --region $REGION --query 'domainAssociation.subDomains[*].subDomainSetting.prefix')
 #   echo "{\"subdomains\": $domain}" > devops/buyer_web_application/subdomains.json
   # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
-  run_command terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
+  # terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
+  terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
                -target=aws_amplify_branch.amplify_branch \
                -target=aws_ssm_parameter.amplify_id \
                -target=aws_ssm_parameter.bitbucket_secret \
@@ -133,14 +139,18 @@ if [ -f "$STATE_FILE" ]; then
                -target=data.external.env \
                -target=data.external.token
 else
-  run_command terraform -chdir=devops/buyer_web_application apply -auto-approve
+  terraform -chdir=devops/buyer_web_application apply -auto-approve
+  #terraform -chdir=devops/buyer_web_application apply -auto-approveSS
 fi
-run_command terraform -chdir=devops/cognito_custom_domain init
-run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+terraform -chdir=devops/cognito_custom_domain init
+terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+terraform -chdir=devops/cognito_custom_domain init
+terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 if [ "${STAGE}" = "qa" ]; then
   cd services/bdd-api
-  run_command sls deploy --region $REGION --stage $STAGE
+  sls deploy --region $REGION --stage $STAGE
+  sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
 run_command sls deploy --stage ${STAGE} --max-concurrency 5

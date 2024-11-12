@@ -256,11 +256,11 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
             # print('seller data', seller_data['stripe_status'])
-            if 'stripe_status' not in seller_data or seller_data['stripe_status'] == 'disconnected':
+            if ('stripe_status' not in seller_data or seller_data['stripe_status'] == 'disconnected') and ('paypal_status' not in seller_data or seller_data['paypal_status'] == 'disconnected'):
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "Stripe account not linked."})
+                    "body": json.dumps({"message": "Stripe or PayPal account is not linked."})
                 }
             if total_lots < 1:
                 return {
