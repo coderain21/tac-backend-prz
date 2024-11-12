@@ -33,6 +33,12 @@ resource "stripe_webhook_endpoint" "webhook" {
     "account.external_account.updated"
   ]
   connect = true
+  lifecycle {
+    ignore_changes = [
+      connect# Prevent recreation when storage encryption changes
+      # Add more fields if necessary
+    ]
+  }
   provider =  stripe.stripe-webhook
 }
 resource "stripe_webhook_endpoint" "payment_webhook" {
@@ -49,6 +55,12 @@ resource "stripe_webhook_endpoint" "payment_webhook" {
       "payment_intent.succeeded"
     ]
   connect  = true
+  lifecycle {
+    ignore_changes = [
+      connect# Prevent recreation when storage encryption changes
+      # Add more fields if necessary
+    ]
+  }
   provider = stripe.stripe-webhook
 }
 

@@ -517,6 +517,91 @@ resource "aws_ssm_parameter" "google_api" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "paypal_client_id" {
+  name  = "PAYPAL_CLIENT_ID"
+  type  = "String"
+  value = var.PAYPAL_CLIENT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_client_secret" {
+  name  = "PAYPAL_CLIENT_SECRET"
+  type  = "String"
+  value = var.PAYPAL_CLIENT_SECRET
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_oauth_url" {
+  name  = "PAYPAL_OAUTH_URL"
+  type  = "String"
+  value = var.PAYPAL_OAUTH_URL
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_partner_referrals_url" {
+  name  = "PAYPAL_PARTNER_REFERRALS_URL"
+  type  = "String"
+  value = var.PAYPAL_PARTNER_REFERRALS_URL
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_webhook_id" {
+  name  = "PAYPAL_WEBHOOK_ID"
+  type  = "String"
+  value = var.PAYPAL_WEBHOOK_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_redirection_path" {
+  name  = "PAYPAL_REDIRECTION_PATH"
+  type  = "String"
+  value = var.PAYPAL_REDIRECTION_PATH
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_url" {
+  name  = "PAYPAL_URL"
+  type  = "String"
+  value = var.PAYPAL_URL
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "paypal_partner_merchant_id" {
+  name  = "PAYPAL_PARTNER_MERCHANT_ID"
+  type  = "String"
+  value = var.PAYPAL_PARTNER_MERCHANT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "quicksight_account_id" {
+  name  = "QUICKSIGHT_ACCOUNT_ID"
+  type  = "String"
+  value = var.QUICKSIGHT_ACCOUNT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "quicksight_dashboard_id" {
+  name  = "QUICKSIGHT_DASHBOARD_ID"
+  type  = "String"
+  value = var.QUICKSIGHT_DASHBOARD_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+resource "aws_ssm_parameter" "quicksight_auction_dashboard_id" {
+  name  = "QUICKSIGHT_AUCTION_DASHBOARD_ID"
+  type  = "String"
+  value = var.QUICKSIGHT_AUCTION_DASHBOARD_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "admin_dashboard_id" {
+  name  = "ADMIN_DASHBOARD_ID"
+  type  = "String"
+  value = var.ADMIN_DASHBOARD_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
 resource "aws_ssm_parameter" "mailchimp_address" {
   name  = "MAILCHIMP_ADDRESS"
   type  = "String"
@@ -524,5 +609,15 @@ resource "aws_ssm_parameter" "mailchimp_address" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "launchdarkly_client_id" {
+  name  = "LAUNCHDARKLY_CLIENT_ID"
+  type  = "String"
+  value = var.LAUNCHDARKLY_CLIENT_ID
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+
+
 
 

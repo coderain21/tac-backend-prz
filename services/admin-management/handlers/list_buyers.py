@@ -103,6 +103,7 @@ def list_buyers(event, context):
             {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
             {"$replaceRoot": {"newRoot": "$firstRecord"}},
             {"$sort": {sort_key: sort_order}},
+            {"$project": projection},
             {"$skip": (page_number - 1) * page_size },
             {"$limit": page_size}
         ]
