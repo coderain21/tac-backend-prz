@@ -7,11 +7,15 @@ adding payment data to a MongoDB collection, and creating payment intents.
 '''
 import json
 import os
+
+import requests
 import stripe
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
 from lib.get import get_by_email, fetch_seller_data_from_auction, fetch_buyer_data
+from lib.paypal_helper import get_paypal_access_token
+
 
 headers = {
     'Content-Type': 'application/json',
@@ -25,6 +29,8 @@ client = MongoClient(
                 os.environ['MONGO_CLIENT'],
                 maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                 )
+db = client[os.environ['DATABASE']]
+PAYPAL_API_URL = os.environ["PAYPAL_URL"]
 
 def generate_order_code(number):
     if not isinstance(number, int) or number < 1:
@@ -53,7 +59,7 @@ def get_data_from_cart(auction_id,seller_email,buyer_email):
         #               os.environ['MONGO_CLIENT'],
         #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
         #                 )
-        db = client[os.environ['DATABASE']]
+        #db = client[os.environ['DATABASE']]
         cart_collection = db[os.environ["CART_COLLECTION"]]
         res = ""
         cart_data = cart_collection.find({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
@@ -155,7 +161,7 @@ def create_order(insert_data):
         #               os.environ['MONGO_CLIENT'],
         #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
         #                 )
-        db = client[os.environ['DATABASE']]
+        #db = client[os.environ['DATABASE']]
         payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         insert_result = payments_collection.insert_one(insert_data)
         # client.close()
@@ -180,32 +186,7 @@ def create_intent(event, context):
         dict: The API response containing payment intent data.
     """
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            # print('email', email_address)
-            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-            #     print('here in first')
-            #     return {
-            #         "statusCode": 403,
-            #         "headers": headers,
-            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-            #     }
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
@@ -245,6 +226,32 @@ def create_intent(event, context):
         seller_email = seller_data_of_auction["seller_email"]
         seller_data = get_by_email(
             seller_data_of_auction["seller_email"], os.environ['SELLERS_TABLE'])
+
+        # Checking whether payment is already created in paypal or not
+        #db = client[os.environ['DATABASE']]
+        payment_status = db['dev-payment-status']
+        payment_processing = payment_status.find_one({'auction_id': auction_id, 'seller_email': seller_email, 'email_address': email_address})
+        print('payment_processing', payment_processing)
+        if payment_processing:
+            order_id = payment_processing['id']
+            print('order id', order_id)
+            check_order_status = paypal_order_status(order_id)
+            print('check order', check_order_status)
+            # return
+            if payment_processing.get("status") in ["APPROVED", "COMPLETED"]:
+                # Update the payment status to reflect the existing order
+                payment_status.update_one(
+                    {'_id': payment_processing['_id']},
+                    {'$set': {'payment_status': 'Paid'}}
+                )
+                return {
+                    "statusCode": 400,
+                    "headers": headers,
+                    "body": json.dumps({"message": "Order is already created"})
+                }
+
+
+
         if seller_data is None:
             return {
                 "statusCode": 404,
@@ -316,7 +323,7 @@ def create_intent(event, context):
         #               os.environ['MONGO_CLIENT'],
         #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
         #                 )
-        db = client[os.environ['DATABASE']]
+        #db = client[os.environ['DATABASE']]
 
         counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
@@ -385,3 +392,29 @@ def create_intent(event, context):
             "headers": headers,
             "body": json.dumps({"message": "There was an error while generating payment data"})
         }
+
+
+
+#To check whether order has been created in paypal or not
+
+def paypal_order_status(order_id):
+    '''Get order status'''
+    access_token = get_paypal_access_token()
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {access_token}"
+    }
+
+    response = requests.get(
+        f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
+        headers=headers
+    )
+
+    print('response in order capture', response)
+    
+    if response.status_code == 200:
+        print("Order status:", response.json())
+    else:
+        print("Failed to get order status:", response.json())
+
+    return response.json()
