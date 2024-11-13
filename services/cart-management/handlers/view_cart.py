@@ -82,12 +82,17 @@ def view(event, context):
         data = event['queryStringParameters']
         auction_id = data['auction_id']
         plan_type = "Free"
+        seller_payment_status = {"paypal_status": "", "stripe_status": ""}   #need to assign empty for the object
         auction_data = fetch_seller_data_from_auction(auction_id)
         if auction_data is not None:
             seller_email = auction_data["seller_email"]
             seller_data = get_by_email(seller_email,os.environ['SELLERS_TABLE'])
             if seller_data is not None:
                 plan_type = seller_data["plan_type"]
+
+            #this is to check whether the seller is connected to stripe or paypal for payment flow
+                seller_payment_status['paypal_status'] = 'connected' if seller_data.get('paypal_status') == 'connected' else ''
+                seller_payment_status['stripe_status'] = 'connected' if seller_data.get('stripe_status') == 'connected' else ''
 
         cart_details= collection.find({'email_address':email_address,'auction_id':auction_id})
         if cart_details is None:
@@ -99,7 +104,7 @@ def view(event, context):
         return {
                 "statusCode": 200,
                 "headers": headers,
-                "body": json.dumps({"data":list(cart_details),"plan_type":plan_type},cls = Encoder)
+                "body": json.dumps({"data":list(cart_details),"plan_type":plan_type, "seller_payment_status": seller_payment_status},cls = Encoder)
             }
     except Exception as err:
         print(err)

@@ -34,10 +34,13 @@ partner_merchant_id = os.environ.get('PAYPAL_PARTNER_MERCHANT_ID')
 def update_or_create_merchant(collection, data, event_type):
     tracking_id = data.get("tracking_id")
     merchant_id = data.get("merchant_id")
-
+    link = data['links'][0]['href']
+    print('link', link)
     print(f"Processing event: {event_type}")
     print(f"Tracking ID: {tracking_id}")
     print(f"Merchant ID: {merchant_id}")
+
+    access_token = get_paypal_access_token()
 
     # Try to find the document by tracking_id first
     existing_doc = collection.find_one({"paypal_tracking_id": tracking_id})
@@ -55,8 +58,29 @@ def update_or_create_merchant(collection, data, event_type):
     }
 
     if event_type in ["CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED","CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-INITIATED"]:
-        update_data["$set"]["paypal_status"] = "pending"
         update_data["$set"]["paypal_onboarding_started"] = datetime.now()
+        if merchant_id:
+            # Call PayPal API to get merchant info
+            access_token = get_paypal_access_token()
+            merchant_info = call_paypal_api(f"/v1/customer/partners/{partner_merchant_id}/merchant-integrations/{merchant_id}", access_token, "GET")
+            update_data["$set"]["paypal_capabilities"] = merchant_info.get('capabilities', [])
+            update_data["$set"]["paypal_products"] = merchant_info.get('products', [])
+
+             # Check if payments_receivable is True and primary_email is confirmed
+            payments_receivable = merchant_info.get('payments_receivable', False)
+            primary_email_confirmed = merchant_info.get('primary_email_confirmed', False)
+
+            if payments_receivable and primary_email_confirmed:
+                # Merchant is fully onboarded
+                update_data["$set"]["paypal_status"] = "connected"
+            else:
+                # If not fully onboarded, capture incomplete status
+                update_data["$set"]["paypal_status"] = "consent_granted"
+        else:
+            update_data["$set"]["paypal_status"] = "pending"
+
+
+
     elif event_type == "CUSTOMER.MERCHANT-INTEGRATION.SELLER-CONSENT-GRANTED":
         update_data["$set"]["paypal_status"] = "consent_granted"
         if merchant_id:
@@ -115,6 +139,7 @@ def create(event, context):
         try:
             event_type = webhook_event["event_type"]
             resource = webhook_event["resource"]
+            print('resource', resource)
 
             if event_type in [
                 "CUSTOMER.MERCHANT-INTEGRATION.SELLER-ONBOARDING-STARTED",
