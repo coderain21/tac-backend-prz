@@ -220,7 +220,7 @@ def create_paypal_order(event, context):
             check_order_status = order_status(order_id)
             print('check order', check_order_status)
             # return
-            if check_order_status['status'] in ['CREATED','APPROVED','COMPLETED']:
+            if check_order_status['status'] in ['APPROVED','COMPLETED']:
                 # payment_status.delete_one(
                 # {
                 #     "email_address": email_address,

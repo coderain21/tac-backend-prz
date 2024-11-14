@@ -238,7 +238,8 @@ def create_intent(event, context):
             check_order_status = paypal_order_status(order_id)
             print('check order', check_order_status)
             # return
-            if payment_processing.get("status") in ["APPROVED", "COMPLETED"]:
+            print('status', check_order_status['status'])
+            if check_order_status["status"] in ["APPROVED", "COMPLETED"]:
                 # Update the payment status to reflect the existing order
                 payment_status.update_one(
                     {'_id': payment_processing['_id']},
@@ -400,6 +401,7 @@ def create_intent(event, context):
 def paypal_order_status(order_id):
     '''Get order status'''
     access_token = get_paypal_access_token()
+    print('access', access_token)
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {access_token}"
