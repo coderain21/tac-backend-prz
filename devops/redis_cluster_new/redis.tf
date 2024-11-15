@@ -77,7 +77,7 @@ data "aws_ssm_parameter" "redis_node_replica_groups" {
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
-  replication_group_id        = "new-websocket-redis-cluster-enabled"
+  replication_group_id        = "websocket-redis-cluster-enabled"
   description                 = "websocket description with cluster enabled"
   node_type                   = data.aws_ssm_parameter.redis_node_type.value
   num_node_groups         = data.aws_ssm_parameter.redis_node_groups.value
