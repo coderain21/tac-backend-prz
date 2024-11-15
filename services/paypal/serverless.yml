@@ -97,6 +97,8 @@ provider:
     CDN_URL: ${ssm:CDN_URL}
     MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
+    PAYMENT_STATUS: ${opt:stage, self:provider.stage}-payment-status
+
 
 
     

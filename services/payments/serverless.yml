@@ -96,6 +96,7 @@ provider:
     PAYPAL_REDIRECTION_PATH: ${ssm:PAYPAL_REDIRECTION_PATH}
     PAYPAL_PARTNER_MERCHANT_ID : ${ssm:PAYPAL_PARTNER_MERCHANT_ID}
     PAYPAL_URL: ${ssm:PAYPAL_URL}
+    PAYMENT_STATUS: ${opt:stage, self:provider.stage}-payment-status
     
 
 

@@ -229,7 +229,7 @@ def create_intent(event, context):
 
         # Checking whether payment is already created in paypal or not
         #db = client[os.environ['DATABASE']]
-        payment_status = db['dev-payment-status']
+        payment_status = db[os.environ['PAYMENT_STATUS']]
         payment_processing = payment_status.find_one({'auction_id': auction_id, 'seller_email': seller_email, 'email_address': email_address})
         print('payment_processing', payment_processing)
         if payment_processing:
@@ -239,11 +239,11 @@ def create_intent(event, context):
             print('check order', check_order_status)
             # return
             print('status', check_order_status['status'])
-            if check_order_status["status"] in ["APPROVED", "COMPLETED"]:
+            if check_order_status.get("status") in ["APPROVED", "COMPLETED"]:
                 # Update the payment status to reflect the existing order
                 payment_status.update_one(
                     {'_id': payment_processing['_id']},
-                    {'$set': {'payment_status': 'Paid'}}
+                    {'$set': {'payment_status': 'Paid or Approved'}}
                 )
                 return {
                     "statusCode": 400,

@@ -300,7 +300,12 @@ def capture_order(order_id):
         # print(json.dumps(response.json(), indent=4))
     else:
         print("Failed to capture order:")
-        # print(json.dumps(response.json(), indent=4))
+        print(json.dumps(response.json()))
+        return{
+            "statusCode": 400,
+            "headers": headers,
+            "body": json.dumps(response.json())
+        }
 
 
 

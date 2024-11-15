@@ -26,7 +26,7 @@ cart_collection = db[os.environ["CART_COLLECTION"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 seller_collection = db[os.environ["SELLERS_TABLE"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-payment_status = db['dev-payment-status']
+payment_status = db[os.environ['PAYMENT_STATUS']]
 
 
 # JSON encoder for special types
@@ -227,6 +227,10 @@ def create_paypal_order(event, context):
                 #     "seller_email": seller_email,
                 #     "auction_id": auction_id
                 # })
+                payment_status.update_one(
+                    {'_id': payment_processing['_id']},
+                    {'$set': {'payment_status': 'Paid or Approved'}}
+                )
                 return{
                     "statusCode": 400,
                     "headers": headers,
