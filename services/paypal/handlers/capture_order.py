@@ -116,6 +116,7 @@ def capture_order(event, context):
                 order_data = temp_orders_collection.find_one({"payment_intent": order_id})
                 print('temp', order_data)
                 order_data['payment_status'] = 'Paid'
+                order_data['status'] = 'succeeded'
                 order_collection.update_one({"payment_intent": order_id}, {"$set": order_data}, upsert=True)
 
                 delete_cart = cart_collection.delete_many({
@@ -143,8 +144,21 @@ def capture_order(event, context):
             error_response = capture_response.json()
             error_message = error_response.get("message", "Unknown error")
             print(f"Failed to capture order (status {capture_response.status_code}):", error_response)
+            order_data = temp_orders_collection.find_one({"payment_intent": order_id})
+            print('temp', order_data)
+            order_data['payment_status'] = 'Unpaid'
+            order_data['status'] = 'failed'
+            order_collection.update_one({"payment_intent": order_id}, {"$set": order_data}, upsert=True)
+
+            delete_cart = cart_collection.delete_many({
+                "email_address": order_data['email_address'],
+                "seller_email": order_data['seller_email'],
+                "auction_id": order_data['auction_id']
+            })
+
+            print(f"Deleted cart data: {delete_cart.deleted_count}")
             return {
-                "statusCode": capture_response.status_code,
+                "statusCode": 400,
                 "headers": HEADERS,
                 "body": json.dumps({
                     "message": "Failed to capture order",

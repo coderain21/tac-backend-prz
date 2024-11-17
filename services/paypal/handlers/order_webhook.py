@@ -324,7 +324,7 @@ def create_order(insert_data):
 def handle_payment_decline(payment_intent):
     """Handle declined PayPal payments."""
     try:
-        temp_payments_collection = db[os.environ['TEMP_PAYMENTS_COLLECTION']]
+        temp_payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
         orders_collection = db[os.environ['ORDERS_COLLECTION']]
         cart_collection = db[os.environ['CART_COLLECTION']]
 
@@ -378,41 +378,44 @@ def create(event, context):
     """AWS Lambda function entry point for handling PayPal webhook events."""
     try:
         webhook_event = json.loads(event["body"])
+
         print(f"Received event: {webhook_event['event_type']}")
 
-        if webhook_event["event_type"] == "CHECKOUT.ORDER.APPROVED":
-            payment_intent = webhook_event["resource"]["id"]
-            update_data = {
-                "status": webhook_event["resource"]["status"],
-                "payment_status": "Approved" if webhook_event["resource"]["status"] in ["APPROVED"] else "Pending",
-                "payment_method_types": ["paypal"],
-                "updated_at": datetime.utcnow()
-            }
-            update_order(payment_intent, update_data)
-            return {
-                "headers": headers,
-                "statusCode": 200,
-                "body": json.dumps({"message": "Order updated successfully"})
-            }
+        # if webhook_event["event_type"] == "CHECKOUT.ORDER.APPROVED":
+        #     payment_intent = webhook_event["resource"]["id"]
+        #     update_data = {
+        #         "status": webhook_event["resource"]["status"],
+        #         "payment_status": "Approved" if webhook_event["resource"]["status"] in ["APPROVED"] else "Pending",
+        #         "payment_method_types": ["paypal"],
+        #         "updated_at": datetime.utcnow()
+        #     }
+        #     update_order(payment_intent, update_data)
+        #     return {
+        #         "headers": headers,
+        #         "statusCode": 200,
+        #         "body": json.dumps({"message": "Order updated successfully"})
+        #     }
 
-        elif webhook_event["event_type"] == "CHECKOUT.ORDER.COMPLETED":
-            payment_intent = webhook_event["resource"]["id"]
-            update_data = {
-                "status": "succeeded",
-                "payment_status": "Paid",
-                "payment_method_types": ["paypal"],
-                "updated_at": datetime.utcnow()
-            }
-            update_order(payment_intent, update_data)
-            return {
-                "headers": headers,
-                "statusCode": 200,
-                "body": json.dumps({"message": "Payment captured successfully"})
-            }
+        # elif webhook_event["event_type"] == "PAYMENT.CAPTURE.COMPLETED":
+        #     payment_intent = webhook_event["resource"]["id"]
+        #     update_data = {
+        #         "status": "succeeded",
+        #         "payment_status": "Paid",
+        #         "payment_method_types": ["paypal"],
+        #         "updated_at": datetime.utcnow()
+        #     }
+        #     update_order(payment_intent, update_data)
+        #     return {
+        #         "headers": headers,
+        #         "statusCode": 200,
+        #         "body": json.dumps({"message": "Payment captured successfully"})
+        #     }
 
-        elif webhook_event['event_type'] == "PAYMENT.CAPTURE.DECLINED":
-            payment_intent = webhook_event["resource"]["id"]
-            handle_payment_decline(payment_intent)
+        if webhook_event['event_type'] == "PAYMENT.CAPTURE.DECLINED":
+            payment_data =webhook_event['resource'])
+            related_ids = payment_data.get('resource', {}).get('supplementary_data', {}).get('related_ids', {})
+            order_id = related_ids.get('order_id')
+            handle_payment_decline(order_id)
             return {
                 "headers": headers,
                 "statusCode": 200,
