@@ -356,7 +356,7 @@ def handle_payment_decline(payment_intent):
             upsert=True
         )
 
-        delete_cart = cart_collection.delete_many({"email_address": payment_details.get("email_address"), 
+        delete_cart = cart_collection.delete_many({"email_address": payment_details.get("email_address"),
                                                    "auction_id": payment_details.get("auction_id"),
                                                      "seller_email": payment_details.get("seller_email")})
         if delete_cart:
