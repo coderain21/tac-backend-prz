@@ -42,30 +42,30 @@ def capture_order(event, context):
         order_id = event.get('queryStringParameters', {}).get('order_id')
         if not order_id:
             raise ValueError("Order ID is missing in the request parameters.")
-        
+
         # Fetch access token
         access_token = get_paypal_access_token()
         if not access_token:
             raise Exception("Failed to retrieve PayPal access token.")
-        
+
         # Prepare headers for PayPal request
         paypal_headers = {
             "Content-Type": "application/json",
             "Authorization": f"Bearer {access_token}"
         }
-        
+
         # Step 1: Check the status of the order
         order_details_response = requests.get(
             f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
             headers=paypal_headers
         )
-        
+
         if order_details_response.status_code == 200:
             order_details = order_details_response.json()
             order_status = order_details.get("status")
-            
+
             print("Order details:", order_details)
-            
+
             if order_status == "COMPLETED":
                 return {
                     "statusCode": 200,
@@ -98,14 +98,14 @@ def capture_order(event, context):
                     "details": error_response
                 })
             }
-        
+
         # Step 2: Proceed with capturing the order if the status is "APPROVED"
         capture_response = requests.post(
             f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}/capture",
             headers=paypal_headers,
             json={}  # No body required for capture
         )
-        
+
         # Handle response from PayPal
         if capture_response.status_code == 201:
             capture_details = capture_response.json()
@@ -115,6 +115,12 @@ def capture_order(event, context):
             if status == "COMPLETED":
                 order_data = temp_orders_collection.find_one({"payment_intent": order_id})
                 print('temp', order_data)
+                temp_orders_collection.delete_many({
+                    "email_address": order_data['email_address'],
+                    "seller_email": order_data['seller_email'],
+                    "auction_id": order_data['auction_id']
+                    }
+                )
                 order_data['payment_status'] = 'Paid'
                 order_data['status'] = 'succeeded'
                 order_collection.update_one({"payment_intent": order_id}, {"$set": order_data}, upsert=True)
@@ -166,7 +172,7 @@ def capture_order(event, context):
                     "details": error_response
                 })
             }
-    
+
     except ValueError as e:
         # Handle missing order ID or other ValueErrors
         print(f"Error: {str(e)}")
@@ -175,7 +181,7 @@ def capture_order(event, context):
             "headers": HEADERS,
             "body": json.dumps({"message": str(e)})
         }
-    
+
     except Exception as e:
         # Catch any other exceptions
         print(f"Unexpected error: {str(e)}")
