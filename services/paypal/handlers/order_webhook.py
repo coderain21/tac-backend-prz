@@ -10,12 +10,12 @@ import os
 from bson import ObjectId
 from pymongo import MongoClient
 from lib.email_helper import send_mailchimp_payment_email
-from lib.paypal_helper import get_paypal_access_token
+# from lib.paypal_helper import get_paypal_access_token
 import mailchimp_transactional as MailchimpTransactional
 from mailchimp_transactional.api_client import ApiClientError
 from datetime import datetime
 import pytz
-import requests
+# import requests
 
 # MongoDB configuration
 client = MongoClient(os.environ['MONGO_CLIENT'])
@@ -227,7 +227,7 @@ def update_order(payment_intent, update_data):
 
         if update_data.get("payment_status") == "Approved":
             print('Creating order in the order table with Unpaid status')
-            capture_order(payment_intent)
+            # capture_order(payment_intent)
 
             # Create the order with Unpaid status
             combined_data = {**temp_payment_details, **update_data, "payment_status": "Unpaid"}
@@ -279,107 +279,162 @@ def create_order(insert_data):
 
 
 
+# def capture_order(order_id):
+#     """Capture the payment for an existing PayPal order."""
+#     try:
+#         access_token = get_paypal_access_token()
 
-def capture_order(order_id):
-    """Capture the payment for an existing PayPal order."""
-    access_token = get_paypal_access_token()
-    print('order_id', order_id)
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {access_token}"
-    }
+#         headers = {
+#             "Content-Type": "application/json",
+#             "Authorization": f"Bearer {access_token}"
+#         }
 
-    response = requests.post(
-        f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}/capture",
-        headers=headers,
-        json={}  # No body needed for capture
-    )
+#         response = requests.post(
+#             f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}/capture",
+#             headers=headers,
+#             json={}
+#         )
 
-    if response.status_code == 201:
-        print("Order captured successfully:")
-        # print(json.dumps(response.json(), indent=4))
-    else:
-        print("Failed to capture order:")
-        # print(json.dumps(response.json(), indent=4))
+#         if response.status_code == 201:
+#             print("Order captured successfully")
+#             return {
+#                 "statusCode": 200,
+#                 "headers": headers,
+#                 "body": json.dumps({"message": "Payment captured successfully"})
+#             }
 
+#         print("Failed to capture order:", response.json())
+#         return {
+#             "statusCode": 400,
+#             "headers": headers,
+#             "body": json.dumps(response.json())
+#         }
+#     except Exception as err:
+#         print(f"Error capturing order: {err}")
+#         return {
+#             "statusCode": 500,
+#             "headers": headers,
+#             "body": json.dumps({"message": "Error processing payment capture"})
+#         }
+
+
+
+
+
+def handle_payment_decline(payment_intent):
+    """Handle declined PayPal payments."""
+    try:
+        temp_payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
+        orders_collection = db[os.environ['ORDERS_COLLECTION']]
+        cart_collection = db[os.environ['CART_COLLECTION']]
+
+        # Get payment details
+        payment_details = temp_payments_collection.find_one({"payment_intent": payment_intent})
+        if not payment_details:
+            payment_details = orders_collection.find_one({"payment_intent": payment_intent})
+
+        if not payment_details:
+            print(f"No payment details found for payment_intent: {payment_intent}")
+            return None
+
+        # Update payment status
+        update_data = {
+            "payment_status": "Unpaid",
+            "status": "failed",
+            "updated_at": datetime.utcnow()
+        }
+
+        # Update in both collections to ensure consistency
+        temp_result = temp_payments_collection.update_one(
+            {"payment_intent": payment_intent},
+            {"$set": update_data}
+        )
+
+        order_result = orders_collection.update_one(
+            {"payment_intent": payment_intent},
+            {"$set": update_data},
+            upsert=True
+        )
+
+        delete_cart = cart_collection.delete_many({"email_address": payment_details.get("email_address"),
+                                                   "auction_id": payment_details.get("auction_id"),
+                                                     "seller_email": payment_details.get("seller_email")})
+        if delete_cart:
+            print(f"Deleted cart data: {delete_cart.deleted_count}, email_address: {payment_details.get('email_address')}, auction_id: {payment_details.get('auction_id')}, seller_email: {payment_details.get('seller_email')}")
+
+        return {
+            "temp_update": temp_result.modified_count,
+            "order_update": order_result.modified_count
+        }
+
+    except Exception as err:
+        print(f"Error handling payment decline: {err}")
+        raise
 
 
 
 
 def create(event, context):
-    """
-    AWS Lambda function entry point for handling PayPal webhook events.
-
-    Parameters:
-    - event (dict): AWS Lambda event object containing details of the invocation
-    - context (object): AWS Lambda context object providing information about the runtime
-
-    Returns:
-    - dict: HTTP response containing status code, headers, and body
-    """
+    """AWS Lambda function entry point for handling PayPal webhook events."""
     try:
-        try:
-            webhook_event = json.loads(event["body"])
-            print(f"Received event: {webhook_event['event_type']}")
+        webhook_event = json.loads(event["body"])
 
-            try:
-                if webhook_event["event_type"] == "CHECKOUT.ORDER.APPROVED":
-                    payment_intent = webhook_event["resource"]["id"]
-                    update_data = {
-                        "status": webhook_event["resource"]["status"],
-                        "payment_status": "Approved" if webhook_event["resource"]["status"] == "APPROVED" else "pending",
-                        "payment_method_types": ["paypal"]
-                    }
-                    update_order(payment_intent, update_data)
-                    return {
-                        "headers": headers,
-                        "statusCode": 200,
-                        "body": json.dumps({"message": "Order updated successfully"})
-                    }
-                elif webhook_event["event_type"] == "CHECKOUT.ORDER.COMPLETED":
-                    print('webhook after completed', json.dumps(webhook_event))
-                    payment_intent = webhook_event["resource"]["id"]
-                    print('order id', payment_intent)
-                    print('here in order completd')
-                    update_data = {
-                        "status": "succeeded",
-                        "payment_status": "Paid",
-                        "payment_method_types": ["paypal"]
-                    }
-                    update_order(payment_intent, update_data)
-                    return {
-                        "headers": headers,
-                        "statusCode": 200,
-                        "body": json.dumps({"message": "Payment captured successfully"})
-                    }
-                else:
-                    print(f"Unhandled event type: {webhook_event['event_type']}")
-                    return {
-                        "headers": headers,
-                        "statusCode": 400,
-                        "body": json.dumps({"message": "Unhandled event type"})
-                    }
+        print(f"Received event: {webhook_event['event_type']}")
 
-            except Exception as err:
-                print(f"Error processing webhook: {str(err)}")
-                return {
-                    "headers": headers,
-                    "statusCode": 400,
-                    "body": json.dumps({"message": "Error processing webhook"})
-                }
+        # if webhook_event["event_type"] == "CHECKOUT.ORDER.APPROVED":
+        #     payment_intent = webhook_event["resource"]["id"]
+        #     update_data = {
+        #         "status": webhook_event["resource"]["status"],
+        #         "payment_status": "Approved" if webhook_event["resource"]["status"] in ["APPROVED"] else "Pending",
+        #         "payment_method_types": ["paypal"],
+        #         "updated_at": datetime.utcnow()
+        #     }
+        #     update_order(payment_intent, update_data)
+        #     return {
+        #         "headers": headers,
+        #         "statusCode": 200,
+        #         "body": json.dumps({"message": "Order updated successfully"})
+        #     }
 
-        except Exception as err:
-            print(f"Error processing webhook: {str(err)}")
+        if webhook_event["event_type"] == "CHECKOUT.ORDER.COMPLETED":
+            print('data', webhook_event['resource'])
+            payment_intent = webhook_event["resource"]["id"]
+            update_data = {
+                "status": "succeeded",
+                "payment_status": "Paid",
+                "payment_method_types": ["paypal"],
+                "updated_at": datetime.utcnow()
+            }
+            update_order(payment_intent, update_data)
+            return {
+                "headers": headers,
+                "statusCode": 200,
+                "body": json.dumps({"message": "Payment captured successfully"})
+            }
+
+        if webhook_event['event_type'] == "PAYMENT.CAPTURE.DECLINED":
+            payment_data =webhook_event['resource']
+            related_ids = payment_data.get('resource', {}).get('supplementary_data', {}).get('related_ids', {})
+            order_id = related_ids.get('order_id')
+            handle_payment_decline(order_id)
+            return {
+                "headers": headers,
+                "statusCode": 200,
+                "body": json.dumps({"message": "Payment decline handled successfully"})
+            }
+
+        else:
+            print(f"Unhandled event type: {webhook_event['event_type']}")
             return {
                 "headers": headers,
                 "statusCode": 400,
-                "body": json.dumps({"message": "Error processing webhook"})
+                "body": json.dumps({"message": "Unhandled event type"})
             }
 
     except Exception as err:
-        print(f"Error processing the request: {str(err)}")
+        print(f"Error processing webhook: {str(err)}")
         return {
             "statusCode": 500,
             "headers": headers,
-            "body": json.dumps({"message": "There was an error while updating payment data"})
+            "body": json.dumps({"message": "Error processing webhook"})
         }
