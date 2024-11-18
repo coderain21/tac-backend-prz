@@ -424,7 +424,7 @@ def order_status(order_id):
     )
 
     print('response in order capture', response)
-    
+
     if response.status_code == 200:
         print("Order status:", response.json())
     else:

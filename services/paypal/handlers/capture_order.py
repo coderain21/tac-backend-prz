@@ -46,7 +46,7 @@ def capture_order(event, context):
         # Fetch access token
         access_token = get_paypal_access_token()
         if not access_token:
-            raise Exception("Failed to retrieve PayPal access token.")
+            raise ValueError("Failed to retrieve PayPal access token.")
 
         # Prepare headers for PayPal request
         paypal_headers = {

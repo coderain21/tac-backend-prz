@@ -413,7 +413,7 @@ def create(event, context):
             }
 
         if webhook_event['event_type'] == "PAYMENT.CAPTURE.DECLINED":
-            payment_data =webhook_event['resource'])
+            payment_data =webhook_event['resource']
             related_ids = payment_data.get('resource', {}).get('supplementary_data', {}).get('related_ids', {})
             order_id = related_ids.get('order_id')
             handle_payment_decline(order_id)
