@@ -283,7 +283,7 @@ def create_order(insert_data):
 #     """Capture the payment for an existing PayPal order."""
 #     try:
 #         access_token = get_paypal_access_token()
-        
+
 #         headers = {
 #             "Content-Type": "application/json",
 #             "Authorization": f"Bearer {access_token}"
@@ -302,7 +302,7 @@ def create_order(insert_data):
 #                 "headers": headers,
 #                 "body": json.dumps({"message": "Payment captured successfully"})
 #             }
-        
+
 #         print("Failed to capture order:", response.json())
 #         return {
 #             "statusCode": 400,
@@ -332,7 +332,7 @@ def handle_payment_decline(payment_intent):
         payment_details = temp_payments_collection.find_one({"payment_intent": payment_intent})
         if not payment_details:
             payment_details = orders_collection.find_one({"payment_intent": payment_intent})
-            
+
         if not payment_details:
             print(f"No payment details found for payment_intent: {payment_intent}")
             return None
