@@ -1,5 +1,5 @@
 '''This api is used to delete the buyer by admin'''
-from datetime import datetime, timezone
+from datetime import datetime
 import json
 import pymongo
 import os
@@ -45,6 +45,8 @@ def delete_buyer(event, context):
         cognito_delete = cognito_client.admin_delete_user(UserPoolId=os.environ["BUYER_COGNITO_USERPOOL_ID"], Username=buyer_email)
         print('cognito_delete', cognito_delete)
         print('result', result)
+        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+        formatted_timestamp = float(timestamp_ms)
         access_log_data = {
             "actor_id": admin_record.get('user_id'),
             "updated_by": {
@@ -57,7 +59,7 @@ def delete_buyer(event, context):
                 "action": 'Delete',
                 "buyer_email": buyer_email,
             },
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": formatted_timestamp,
         }
 
         if result and register_result and wishlist_result:
