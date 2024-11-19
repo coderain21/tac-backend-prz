@@ -14,7 +14,7 @@ exports.handler = async (event) => {
 
     if (
         eventData.request.challengeAnswer === expectedAnswer
-    || (['dev', 'qa'].includes(process.env.STAGE) && eventData.request.challengeAnswer === '573421')
+    || (['dev', 'qa', 'pre-production'].includes(process.env.STAGE) && eventData.request.challengeAnswer === '573421')
     ) {
         eventData.response.answerCorrect = true
     } else {

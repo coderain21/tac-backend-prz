@@ -174,14 +174,19 @@ resource "aws_iam_policy" "quicksight_access_policy" {
   name     = "${var.STAGE}-quicksight-access-policy-main"
 
   policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        Effect = "Allow",
-        Action = [
-          "quicksight:*",
+        "Effect" : "Allow",
+        "Action" : [
+          "quicksight:GenerateEmbedUrlForRegisteredUser",
+          "quicksight:SearchDashboards",
+          "quicksight:DescribeUser",
+          "quicksight:RegisterUser",
+          "quicksight:CreateGroup",
+          "quicksight:CreateGroupMembership"
         ],
-        Resource = "*"
+        "Resource" : "*"
       }
     ]
   })
@@ -192,14 +197,19 @@ resource "aws_iam_policy" "quicksight_access_policy_new" {
   name     = "${var.STAGE}-quicksight-access-policy"
 
   policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
+    "Version" : "2012-10-17",
+    "Statement" : [
       {
-        Effect = "Allow",
-        Action = [
-          "quicksight:*",
+        "Effect" : "Allow",
+        "Action" : [
+          "quicksight:GenerateEmbedUrlForRegisteredUser",
+          "quicksight:SearchDashboards",
+          "quicksight:DescribeUser",
+          "quicksight:RegisterUser",
+          "quicksight:CreateGroup",
+          "quicksight:CreateGroupMembership"
         ],
-        Resource = "*"
+        "Resource" : "*"
       }
     ]
   })
@@ -247,7 +257,7 @@ resource "aws_iam_role_policy" "lambda_assume_role_policy" {
       {
         Effect = "Allow",
         Action = "sts:AssumeRole",
-        Resource = format("arn:aws:iam::%s:role/quicksight-access-role", var.ACCOUNT_ID_MAIN)
+        Resource = format("arn:aws:iam::%s:role/${var.STAGE}-quicksight-access-role", var.ACCOUNT_ID_MAIN)
       }
     ]
   })

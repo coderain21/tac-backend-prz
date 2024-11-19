@@ -70,7 +70,7 @@ def admin_get_dashboard(event, context):
         print("auctions_data",auctions_data)
         a_id = auctions_data['_id']
 
-        if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-prod':
+        if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-production':
             sts_client = boto3.client('sts')
             assumed_role = sts_client.assume_role(
                     RoleArn=os.environ.get('QUICKSIGHT_ASSUME_ROLE_ARN'),
