@@ -40,31 +40,7 @@ data "aws_vpc" "my_vpc" {
   provider = aws.deployment-eu
 }
 
-resource "aws_default_security_group" "default" {
-  vpc_id = data.aws_vpc.default.id
-  provider = aws.deployment-eu
 
-  ingress {
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # "-1" represents all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # "-1" represents all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 
 resource "aws_security_group" "ecs-security-group" {
   name        = "ecs-security-group-new"
@@ -240,70 +216,7 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 }
 
 # Security Group for loadbalancer
-resource "aws_security_group" "websocket-security-group" {
-  name        = "websocket-security-group-new"
-  description = "Security Group for ECS and Load Balancer"
-  vpc_id      = data.aws_vpc.default.id
-  provider = aws.deployment-eu
 
-  # Inbound rules
-  ingress {
-    from_port = 6379
-    to_port   = 6379
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 11211
-    to_port   = 11211
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 0
-    to_port   = 65535
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Outbound rules (allow all traffic)
-  egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
 
 resource "aws_security_group" "new-websocket-security-group" {
   name        = "new-websocket-security-group"
@@ -476,17 +389,6 @@ resource "aws_ecs_task_definition" "new-websocket-task-definition" {
   provider = aws.deployment-eu
 }
 
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
-  provider = aws.deployment-eu
-}
 
 data "aws_subnets" "new-public" {
   filter {
@@ -497,16 +399,6 @@ data "aws_subnets" "new-public" {
     name   = "map-public-ip-on-launch"
     values = ["true"]
   }
-  provider = aws.deployment-eu
-}
-resource "aws_lb" "load-balancer" {
-  name               = "web-socket-load-balancer-new"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.websocket-security-group.id]  # Security group for the Load Balancer
-  subnets            = data.aws_subnets.public.ids
-
-  enable_deletion_protection = false
   provider = aws.deployment-eu
 }
 
@@ -541,15 +433,7 @@ resource "aws_route53_record" "my_cname" {
   provider = aws.route53-account
 }
 
-# Target Group
-resource "aws_lb_target_group" "target_group" {
-  name     = "target-group-websocket-new"
-  port     = 80
-  protocol = "HTTP"
-  vpc_id   = data.aws_vpc.default.id  # Use VPC ID from default VPC
-  target_type = "ip"
-  provider = aws.deployment-eu
-}
+
 
 resource "aws_lb_target_group" "new_target_group" {
   name     = "new-target-group-websocket"

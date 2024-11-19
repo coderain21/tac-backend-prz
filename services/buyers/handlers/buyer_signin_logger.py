@@ -41,19 +41,10 @@ def buyer_signin_logger(event, context):
     try:
         print('event', event['requestContext']['authorizer']['claims'] )
         try:
-            cognito_data = json.loads(json.dumps(
-                event['requestContext']['authorizer']['claims']))
-            print('cognito data', cognito_data)
-            email_address = cognito_data['email']
+            email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
-            if "cognito:groups" not in cognito_data :
-                return {
-                    "statusCode": 403,
-                    "headers": headers,
-                    "body": json.dumps({"message": "You do not have access to perform this API action"})
-                }
-        except Exception as e:
-            print('error', e)
+        except:
+            print('here in second')
             return {
                 "statusCode": 403,
                 "headers": headers,
