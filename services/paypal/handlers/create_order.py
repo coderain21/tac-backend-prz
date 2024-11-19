@@ -368,6 +368,8 @@ def create_paypal_order(event, context):
             name = f_name+' '+l_name
         insert_data["name"] = name
 
+        insert_data['payment_method_types'] = ["PayPal"]
+
         create_order(insert_data)
 
         payment_process = payment_status.find_one_and_update(
