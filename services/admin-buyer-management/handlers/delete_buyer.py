@@ -45,7 +45,7 @@ def delete_buyer(event, context):
         cognito_delete = cognito_client.admin_delete_user(UserPoolId=os.environ["BUYER_COGNITO_USERPOOL_ID"], Username=buyer_email)
         print('cognito_delete', cognito_delete)
         print('result', result)
-        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+        timestamp_ms = int(datetime.now().timestamp() * 1000)
         formatted_timestamp = float(timestamp_ms)
         access_log_data = {
             "actor_id": admin_record.get('user_id'),
