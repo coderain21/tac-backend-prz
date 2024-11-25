@@ -239,7 +239,7 @@ data "aws_ssm_parameter" "mongo_password" {
 resource "aws_ssm_parameter" "socket" {
   name      = "MONGOBETWEEN_CONNECTION_STRING"
   type      = "String"
-  value     = "mongodb://indyauctionAdmin:${data.aws_ssm_parameter.mongo_password.value}@${aws_lb.mongobetween_nlb.dns_name}:27016/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false&replicaSet=rs0&readPreference=secondaryPreferred"
+  value     = "mongodb://indyauctionAdmin:${data.aws_ssm_parameter.mongo_password.value}@${aws_lb.mongobetween_nlb.dns_name}:27016/${var.STAGE}?authMechanism=SCRAM-SHA-1&authSource=${var.STAGE}&retryWrites=false"
   provider  = aws.deployment-eu
   overwrite = true
 }

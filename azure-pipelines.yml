@@ -231,12 +231,6 @@ stages:
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - script: |
                   bash devops/terraform_run.sh
-                  echo $(aws ecr get-login --no-include-email --region $REGION)  > login.sh
-                  sh login.sh
-                  docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
-                  docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
-                  docker push $MONGOBETWEEN_ECR_REPO_URI
-                  aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
                   if [ $? -ne 0 ]; then
                     echo "API testing failed"
                     exit 1
