@@ -18,6 +18,7 @@ parameter_names=(
     "AMPLIFY_DOMAIN_NAME"
     "ADMIN_COGNITO_USERPOOL_ID"
     "SELLER_COGNITO_USERPOOL_ID"
+    "MONGOBETWEEN_CONNECTION_STRING"
 )
 
 # Loop through each parameter
