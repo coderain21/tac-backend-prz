@@ -79,6 +79,7 @@ fi
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     terraform -chdir=devops/mongobetween init
     terraform -chdir=devops/mongobetween apply -auto-approve
+
 fi
 
 run_command terraform -chdir=devops/cloudwatch_alarms init

@@ -244,6 +244,7 @@ resource "aws_ssm_parameter" "socket" {
   overwrite = true
 }
 
+
 resource "aws_ssm_parameter" "repository_url" {
   name      = "MONGOBETWEEN_DOCKER_IMAGE"
   type      = "String"
@@ -264,6 +265,21 @@ resource "aws_ssm_parameter" "ecr_repository_url" {
   name      = "MONGOBETWEEN_ECR_REPO_URI"
   type      = "String"
   value     = "${aws_ecr_repository.repo1.repository_url}"
+  overwrite = true
+  provider  = aws.deployment-eu
+}
+
+resource "aws_ssm_parameter" "mongobetween_ecs_service_name" {
+  name      = "MONGOBETWEEN_ECS_SERVICE_NAME"
+  type      = "String"
+  value     = "mongobetween-ecs-service"
+  overwrite = true
+  provider  = aws.deployment-eu
+}
+resource "aws_ssm_parameter" "ecs_cluster_name" {
+  name      = "ECS_CLUSTER_NAME"
+  type      = "String"
+  value     = "websocket-cluster"
   overwrite = true
   provider  = aws.deployment-eu
 }
