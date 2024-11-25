@@ -12,6 +12,11 @@ parameter_names=(
     "BUYER_PASSWORD"
     "ADMIN_USERNAME"
     "ADMIN_PASSWORD"
+    "MONGOBETWEEN_DOCKER_IMAGE"
+    "MONGOBETWEEN_ECR_REPO_NAME"
+    "MONGOBETWEEN_ECR_REPO_URI"
+    "MONGOBETWEEN_ECS_SERVICE_NAME"
+    "ECS_CLUSTER_NAME"
 )
 # Loop through each parameter
 for param_name in "${parameter_names[@]}"; do

@@ -76,6 +76,12 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/secret_manager init
     terraform -chdir=devops/secret_manager apply -auto-approve
 fi
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+    terraform -chdir=devops/mongobetween init
+    terraform -chdir=devops/mongobetween apply -auto-approve
+
+fi
+
 run_command terraform -chdir=devops/cloudwatch_alarms init
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 run_command terraform -chdir=devops/budgets init
