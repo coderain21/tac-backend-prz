@@ -44,6 +44,11 @@ exports.handler = async (event, context, callback) => {
         const identities = event.request.userAttributes.identities
         const name = `${event.request.userAttributes.given_name} ${event.request.userAttributes.family_name}`
 
+        if (!identities) {
+            console.log('Non-federated user. Skipping identities and access log creation.');
+            return callback(null, event);
+        }
+
         // Parse the identities string
         const parsedIdentities = JSON.parse(identities)
 
