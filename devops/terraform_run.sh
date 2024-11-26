@@ -30,6 +30,7 @@ log_bucket="s3://indyauction-pipeline-states/$STAGE/"
 echo "$log_bucket"
 aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 
+
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
@@ -76,6 +77,41 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/secret_manager init
     terraform -chdir=devops/secret_manager apply -auto-approve
 fi
+
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+    terraform -chdir=devops/mongobetween init
+    terraform -chdir=devops/mongobetween apply -auto-approve
+
+    parameter_names=(
+    "REGION"
+    "MONGOBETWEEN_DOCKER_IMAGE"
+    "MONGOBETWEEN_ECR_REPO_NAME"
+    "MONGOBETWEEN_ECR_REPO_URI"
+    "MONGOBETWEEN_ECS_SERVICE_NAME"
+    "ECS_CLUSTER_NAME"
+    )
+
+    # Loop through each parameter
+    for param_name in "${parameter_names[@]}"; do
+        echo "$param_name"
+        # Get parameter value
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+
+        # Set environment variable
+        export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+
+        echo "Set $param_name as environment variable with value: $param_value"
+    done <<< "$parameter_names"
+
+    echo $(aws ecr get-login --no-include-email --region $REGION)  > login.sh
+    sh login.sh
+    docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
+    docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
+    docker push $MONGOBETWEEN_ECR_REPO_URI
+    aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+fi
+
+
 run_command terraform -chdir=devops/cloudwatch_alarms init
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 run_command terraform -chdir=devops/budgets init
