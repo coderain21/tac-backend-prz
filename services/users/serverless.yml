@@ -23,7 +23,7 @@ provider:
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
     TEMPLATE_ARN_EMAIL_OTP: 
@@ -105,6 +105,7 @@ package:
     - ./lib/**
 
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - '../../lib'
