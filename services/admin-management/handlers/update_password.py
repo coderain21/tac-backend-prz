@@ -171,6 +171,20 @@ def update_password(event, context):
                 "body": json.dumps({"message": "there was some error while updating"})
             }
 
+        # Invalidate all tokens for the user
+        try:
+            cognito_client.admin_user_global_sign_out(
+                UserPoolId=userpool_id,
+                Username=email_address
+            )
+        except Exception as signout_error:
+            print(f"Error in global sign-out: {signout_error}")
+            return {
+                "statusCode": 500,
+                "headers": headers,
+                "body": json.dumps({"message": "Password updated but could not log out sessions."})
+            }
+
         # email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], "{}",
         #                                 os.environ["TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD"])
         return {
