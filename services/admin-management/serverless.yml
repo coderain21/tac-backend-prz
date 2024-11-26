@@ -30,7 +30,7 @@ provider:
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
-    # CSV_FILE:  /tmp/Auctions.csv
+    CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     SELLER_COGNITO_USERPOOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -41,7 +41,7 @@ provider:
     USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     STEP_FUNCTION_COLLECTION: ${opt:stage, self:provider.stage}-step-function-arns
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
-    # SALES_CSV_FILE:  /tmp/Sales_List.csv
+    SALES_CSV_FILE:  /tmp/Sales_List.csv
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
     # BUYER_EMAIL_OTP_TEMPLATE:
@@ -123,7 +123,7 @@ provider:
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     # TEMPLATE_ARN_AUCTION_COMPLETION:
     #   Fn::Join:
