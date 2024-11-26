@@ -104,12 +104,12 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
         echo "Set $param_name as environment variable with value: $param_value"
     done <<< "$parameter_names"
 
-    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.ca-central-1.amazonaws.com  > login.sh
+    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
     sh login.sh
     run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
     run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
-    run_command ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
 fi
 
 
