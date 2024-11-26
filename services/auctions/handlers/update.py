@@ -253,6 +253,12 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
+            if seller_data.get('status') == 'Inactive':
+                return {
+                    "statusCode": 401,
+                    'headers': headers,
+                    "body": json.dumps({"message": "Unauthorised to perform this action."})
+                }
             result = has_images_for_auction_and_seller(auction_id, seller_email)
             if result:
                 print("All lots have images.")
@@ -503,15 +509,23 @@ def update_auction(event, context):
                     if len(getExistingLot) > 0:
                         # Create a new dictionary with only the required fields
                         required_fields = {
-                            **getExistingLot,
+                            # **getExistingLot,
                             '_id': item.get('_id'),
                             'start_date': item.get('start_date'),
                             'end_date': item.get('end_date'),
                             'lot_number': item.get('lot_number'),
-                            # 'auction_id': item.get('auction_id'),
-                            # 'seller_email': item.get('seller_email'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
                             'winning_user': getExistingLot.get('winning_user', winningUser) if getExistingLot.get('winning_user', winningUser) != '' else winningUser,
-                            'bid_amount': getExistingLot.get('bid_amount', item.get('current_bid') )
+                            'bid_amount': getExistingLot.get('bid_amount', item.get('current_bid') ),
+                            'starting_price': item.get('starting_price'),
+                            'images': getExistingLot.get('images'),
+                            "title1": item.get('title1'),
+                            "email_address": getExistingLot.get('email_address'),
+                            "auction_uid": getExistingLot.get('auction_uid'),
+                            "max_bid": getExistingLot.get('max_bid'),
+                            "title2": getExistingLot.get('title2'),
+                            "lot_end_date": getExistingLot.get('lot_end_date')
                             # Add more required fields as needed
                         }
                     else:
