@@ -933,7 +933,7 @@ resources:
           
 
 plugins:
-  #- serverless-offline
+  - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
   - serverless-plugin-ifelse
