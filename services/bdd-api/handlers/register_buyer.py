@@ -1,3 +1,4 @@
+'''This api is used to register the buyer'''
 import json
 import boto3
 import os
@@ -21,6 +22,14 @@ headers = {
     'Access-Control-Allow-Methods': '*'
 }
 
+class CustomEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()  # Convert datetime to ISO format
+        return super().default(o)
+
+
+
 # Helper function for encryption
 def encrypt_password(password, secret_key):
     cipher = AES.new(secret_key.encode('utf-8'), AES.MODE_ECB)
@@ -38,6 +47,75 @@ def generate_buyer_id():
     )
     sequence = counter.get("starting_sequence", 1)
     return f"B{str(sequence).zfill(4)}"
+
+
+
+def id_token_generator(email):
+    user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
+    client_id = os.environ['BUYER_COGNITO_CLIENT_ID']
+    username = email
+    password = 'Buyer@123'
+    response = cognito.admin_initiate_auth(
+            UserPoolId=user_pool_id,
+            ClientId=client_id,
+            AuthFlow='ADMIN_NO_SRP_AUTH',
+            AuthParameters={
+                'USERNAME': username,
+                'PASSWORD': password
+            }
+        )
+
+    return response['AuthenticationResult']['IdToken']
+
+
+
+def list_users_paginated(cognito, user_pool_id, filter_string=None, limit=60):
+    """
+    Fetch Cognito users in batches
+    
+    :param cognito: Cognito client
+    :param user_pool_id: Cognito User Pool ID
+    :param filter_string: Optional filter string
+    :param limit: Maximum number of users to fetch per call
+    :return: List of users
+    """
+    users = []
+    pagination_token = None
+
+    while True:
+        # Prepare pagination parameters
+        kwargs = {
+            'UserPoolId': user_pool_id,
+            'Limit': limit
+        }
+
+        # Add filter if provided
+        if filter_string:
+            kwargs['Filter'] = filter_string
+
+        # Add pagination token if exists
+        if pagination_token:
+            kwargs['PaginationToken'] = pagination_token
+
+        try:
+            # Fetch users
+            response = cognito.list_users(**kwargs)
+
+            # Extend users list
+            users.extend(response.get('Users', []))
+
+            # Check if there are more users
+            pagination_token = response.get('PaginationToken')
+            if not pagination_token:
+                break
+
+        except cognito.exceptions.TooManyRequestsException:
+            # Wait and retry
+            datetime.time.sleep(2)
+
+    return users
+
+
 
 # Lambda function handler
 def handler(event, context):
@@ -58,11 +136,11 @@ def handler(event, context):
 
         # Check if the user already exists in Cognito
         user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
-        response = cognito.list_users(
-            UserPoolId=user_pool_id,
-            Filter=f'email = "{email}"'
+        existing_users = list_users_paginated(
+            cognito, 
+            user_pool_id, 
+            filter_string=f'email = "{email}"'
         )
-        existing_users = response.get('Users', [])
 
         if existing_users:
             return {
@@ -93,9 +171,14 @@ def handler(event, context):
             "created_at": datetime.datetime.utcnow(),
             "buyer_id": buyer_id,
         }
+        # Ensure datetime is serializable by converting it to ISO format
+        new_buyer['created_at'] = new_buyer['created_at'].isoformat()
 
         # Insert new buyer into MongoDB
-        buyers_collection.insert_one(new_buyer)
+        result = buyers_collection.insert_one(new_buyer)
+
+        # Get the _id of the inserted document
+        inserted_id = result.inserted_id
 
         # Create the user in Cognito
         cognito_response = cognito.admin_create_user(
@@ -122,7 +205,18 @@ def handler(event, context):
             if cognito_response.get('ResponseMetadata', {}).get('HTTPStatusCode') == 200:
                 print("Password reset successfully.")
                 id_token = id_token_generator(email)
-                # print('id_token', id_token)
+
+                # Replace the existing JSON serialization with this
+                return {
+                    "statusCode": 201,
+                    "headers": headers,
+                    "body": json.dumps({
+                        "message": "Buyer created successfully.", 
+                        "buyer_uuid": str(inserted_id), 
+                        "id_token": id_token
+                    }, cls=CustomEncoder)
+                }
+
             else:
                 return {
                     "statusCode": 500,
@@ -131,12 +225,6 @@ def handler(event, context):
                 }
 
 
-        return {
-            "statusCode": 201,
-            "headers": headers,
-            "body": json.dumps({"message": "Buyer created successfully.", "buyer_id": buyer_id, "id_token": id_token})
-        }
-
     except Exception as e:
         print(f"Error: {str(e)}")
         return {
@@ -144,22 +232,3 @@ def handler(event, context):
             "headers": headers,
             "body": json.dumps({"error": "An error occurred while creating the buyer."})
         }
-
-
-
-def id_token_generator(email):
-    user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
-    client_id = os.environ['BUYER_COGNITO_CLIENT_ID']
-    username = email
-    password = 'Buyer@123'
-    response = cognito.admin_initiate_auth(
-            UserPoolId=user_pool_id,
-            ClientId=client_id,
-            AuthFlow='ADMIN_NO_SRP_AUTH',
-            AuthParameters={
-                'USERNAME': username,
-                'PASSWORD': password
-            }
-        )
-
-    return response['AuthenticationResult']['IdToken']
