@@ -75,6 +75,7 @@ provider:
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}  #ADDED THIS FOR MAILCHIMP API CALL
+    ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
 
    
     
@@ -148,8 +149,8 @@ functions:
             trigger: PreSignUp
             existing: true
   
-  cognito-post-signups-trigger:
-    handler: handlers/cognito_post_confirmation.handler
+  cognito-post-auth-trigger:
+    handler: handlers/cognito_post_auth.handler
     layers:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
@@ -161,7 +162,7 @@ functions:
     events:
         - cognitoUserPool:
             pool: ${opt:stage, self:provider.stage}-indyauction-seller
-            trigger: PostConfirmation                                             #PreAuthentication
+            trigger: PostAuthentication                                      #PreAuthentication
             existing: true 
 
   verify-recaptha:
