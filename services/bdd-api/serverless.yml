@@ -220,6 +220,17 @@ functions:
           path: /create-buyer
           method: post
 
+  get-lot:
+    handler: handlers/get_lot.handler
+    runtime: python3.9
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /get-lots
+          method: get
+
 
 stepFunctions:
   stateMachines:
