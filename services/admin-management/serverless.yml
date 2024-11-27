@@ -38,7 +38,7 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     CREDIT_CARD_COLLECTION: ${opt:stage, self:provider.stage}-carts
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
-    USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    #USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     STEP_FUNCTION_COLLECTION: ${opt:stage, self:provider.stage}-step-function-arns
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     SALES_CSV_FILE:  /tmp/Sales_List.csv
@@ -96,7 +96,7 @@ provider:
     # BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
     #STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: INDY@SELLER
+    # SELLER_GOOGLE_PASSWORD: INDY@SELLER
     #PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
@@ -933,7 +933,7 @@ resources:
           
 
 plugins:
-  - serverless-offline
+  #- serverless-offline
   - serverless-package-external
   - serverless-domain-manager
   - serverless-plugin-ifelse
