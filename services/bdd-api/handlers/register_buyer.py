@@ -64,8 +64,8 @@ def id_token_generator(email):
                 'PASSWORD': password
             }
         )
-
-    return response['AuthenticationResult']['IdToken']
+    tokens = response['AuthenticationResult']
+    return tokens
 
 
 
