@@ -95,9 +95,9 @@ provider:
   
     # BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
-    # STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
+    #STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
-    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    #PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
     ADMIN_USER_COLLECTION: ${opt:stage, self:provider.stage}-admin-users
@@ -123,7 +123,7 @@ provider:
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
-    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    #REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
     # TEMPLATE_ARN_AUCTION_COMPLETION:
     #   Fn::Join:
