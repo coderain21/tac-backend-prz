@@ -70,10 +70,10 @@ if [ "${STAGE}" = "pre-production" ] ; then
     # terraform -chdir=devops/mongodb destroy -auto-approve
     terraform -chdir=devops/mongodb_new init
     terraform -chdir=devops/mongodb_new apply -auto-approve
-    terraform -chdir=devops/ecs_new init
-    terraform -chdir=devops/ecs_new apply -auto-approve
     terraform -chdir=devops/redis_cluster_new init
     terraform -chdir=devops/redis_cluster_new apply -auto-approve
+    terraform -chdir=devops/ecs_new init
+    terraform -chdir=devops/ecs_new apply -auto-approve
     terraform -chdir=devops/secret_manager init
     terraform -chdir=devops/secret_manager apply -auto-approve
 fi
@@ -89,6 +89,7 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     "MONGOBETWEEN_ECR_REPO_URI"
     "MONGOBETWEEN_ECS_SERVICE_NAME"
     "ECS_CLUSTER_NAME"
+    "ACCOUNT_ID"
     )
 
     # Loop through each parameter
@@ -103,12 +104,12 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
         echo "Set $param_name as environment variable with value: $param_value"
     done <<< "$parameter_names"
 
-    echo $(aws ecr get-login --no-include-email --region $REGION)  > login.sh
+    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
     sh login.sh
-    docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
-    docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
-    docker push $MONGOBETWEEN_ECR_REPO_URI
-    aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
+    run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
+    run_command docker push $MONGOBETWEEN_ECR_REPO_URI
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
 fi
 
 
@@ -203,3 +204,4 @@ if [ $overall_status -ne 0 ]; then
 else
     echo "All commands executed successfully."
 fi
+
