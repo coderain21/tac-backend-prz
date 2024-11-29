@@ -157,7 +157,6 @@ def import_lots(event, context):
             "current_bid": 0,
             "Top_bidder": "",
             "images": [],
-            "images": [],
         }
         # Get the next lot number for the seller
         counter_record = counter_collection.find_one({"auction_id": auction_id,
