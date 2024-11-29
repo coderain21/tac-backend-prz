@@ -190,7 +190,7 @@ terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
-if [ "${STAGE}" = "qa" ]; then
+if [ "${STAGE}" = "qa" || "${STAGE}" = "pre-production"]; then
   cd services/bdd-api
   sls deploy --region $REGION --stage $STAGE
   sls deploy --region $REGION --stage $STAGE
