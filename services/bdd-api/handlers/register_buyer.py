@@ -137,8 +137,8 @@ def handler(event, context):
         # Check if the user already exists in Cognito
         user_pool_id = os.environ['BUYER_COGNITO_USERPOOL_ID']
         existing_users = list_users_paginated(
-            cognito, 
-            user_pool_id, 
+            cognito,
+            user_pool_id,
             filter_string=f'email = "{email}"'
         )
 

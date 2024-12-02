@@ -244,8 +244,11 @@ def register_auction(event, context):
                 template_name = 'buyer_default_paddle_template'
                 print("An exception occurred: {}".format(error.text))
 
-            print('template_name', template_name)
-            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+            if os.environ['STAGE'] in ['pre-production', 'beta'] and email_address.startswith('indyauctiontestops+k6'):
+                print('Skipping sending email', email_address)
+            else:
+                print('sending mailchimp email', email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+                send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
 
             data_to_insert= {
                         'first_name': first_name,
@@ -285,7 +288,10 @@ def register_auction(event, context):
                 print("An exception occurred: {}".format(error.text))
 
             print('template_name', template_name)
-            send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+            if os.environ['STAGE'] in ['pre-production', 'beta'] and email_address.startswith('indyauctiontestops+k6'):
+                print('Skipping sending email', email_address)
+            else:
+                send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
 
             register_status="Pending"
             data_to_insert= {
