@@ -623,7 +623,7 @@ resources:
     AdminUsersClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
-        AccessTokenValidity: 60
+        AccessTokenValidity: 5
         AllowedOAuthFlowsUserPoolClient: false
         AuthSessionValidity: 3
         ClientName: admin
@@ -636,7 +636,7 @@ resources:
           - ALLOW_USER_SRP_AUTH
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
           - ALLOW_USER_PASSWORD_AUTH
-        IdTokenValidity: 60
+        IdTokenValidity: 5
         PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
