@@ -310,7 +310,9 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
+                        print('published', item)
                         message_body = 'published'
+
 
                         message_attributes = {
                             'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
@@ -490,6 +492,7 @@ def update_auction(event, context):
                     if len(getExistingLot) > 0:
                         # Create a new dictionary with only the required fields
                         required_fields = {
+                            # **getExistingLot,
                             '_id': item.get('_id'),
                             'start_date': item.get('start_date'),
                             'end_date': item.get('end_date'),
@@ -505,7 +508,8 @@ def update_auction(event, context):
                             "auction_uid": getExistingLot.get('auction_uid'),
                             "max_bid": getExistingLot.get('max_bid'),
                             "title2": getExistingLot.get('title2'),
-                            "lot_end_date": getExistingLot.get('lot_end_date')                   
+                            "lot_end_date": getExistingLot.get('lot_end_date')
+                            # Add more required fields as needed
                         }
                     else:
                         required_fields = {
