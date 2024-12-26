@@ -74,8 +74,6 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/redis_cluster_new apply -auto-approve
     terraform -chdir=devops/ecs_new init
     terraform -chdir=devops/ecs_new apply -auto-approve
-    terraform -chdir=devops/secret_manager init
-    terraform -chdir=devops/secret_manager apply -auto-approve
 fi
 
 if [ "${STAGE}" = "pre-production" ]; then
@@ -113,8 +111,10 @@ if [ "${STAGE}" = "pre-production" ]; then
 fi
 
 if [ "${STAGE}" = "prod"  ]; then
+
     terraform -chdir=devops/mongobetween-prod init
     terraform -chdir=devops/mongobetween-prod apply -auto-approve
+   
 
     parameter_names=(
     "REGION"
@@ -146,7 +146,8 @@ if [ "${STAGE}" = "prod"  ]; then
     run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
 fi
 
-
+run_command terraform -chdir=devops/secret_manager init
+run_command terraform -chdir=devops/secret_manager apply -auto-approve
 run_command terraform -chdir=devops/cloudwatch_alarms init
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 run_command terraform -chdir=devops/budgets init

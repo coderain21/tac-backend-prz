@@ -392,7 +392,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
 
 
 
-resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
+resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_3" {
   provider = aws.deployment-eu
   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
   protocol  = "email"
