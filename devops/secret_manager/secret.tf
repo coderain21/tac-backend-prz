@@ -5,17 +5,20 @@ provider "aws" {
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
+
+
 provider "aws" {
   region = var.REGION
-  alias = "deployment-main"   # Specify a default AWS region here
-  profile = "indyauction-qa"
+  alias = "quiksight-account"   # Specify a default AWS region here
+  profile = "${var.QUICKSIGHT_ACCOUNT}"
 }
+
 
 
 # Step 1: Create IAM Role and store ARN in SSM
 resource "aws_iam_role" "athena_ambda_role" {
   name               = "${var.STAGE}-athena-lambda-role"
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
   assume_role_policy = jsonencode({
     "Version": "2012-10-17",
     "Statement": [
@@ -34,7 +37,7 @@ resource "aws_ssm_parameter" "role_arn" {
   name  = "ROLE_ARN"
   type  = "String"
   value = aws_iam_role.athena_ambda_role.arn
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
   overwrite = true
 }
 
@@ -113,7 +116,7 @@ resource "aws_iam_role_policy_attachment" "athena_ambda_role_policy_attachment" 
   role       = aws_iam_role.athena_ambda_role.name
   depends_on = [resource.aws_secretsmanager_secret_policy.documentdb_secret_policy]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
 }
 # Define the inline S3 access policy
 resource "aws_iam_role_policy" "athena_lambda_s3_policy" {
@@ -133,26 +136,26 @@ resource "aws_iam_role_policy" "athena_lambda_s3_policy" {
       }
     ]
   })
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
 }
 
 resource "aws_iam_role_policy_attachment" "athena_ambda_role_cloudwatch_logs" {
   role       = aws_iam_role.athena_ambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
   depends_on = [resource.aws_secretsmanager_secret_policy.documentdb_secret_policy]
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
 }
 
 resource "aws_iam_role_policy_attachment" "athena_ambda_role_cloudwatch" {
   role       = aws_iam_role.athena_ambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
   depends_on = [resource.aws_secretsmanager_secret_policy.documentdb_secret_policy]
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
 }
 
 # IAM Role in Dev Account
 resource "aws_iam_role" "quicksight_access_role" {
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
   name     = "${var.STAGE}-quicksight-access-role"
 
   assume_role_policy = jsonencode({
@@ -170,7 +173,7 @@ resource "aws_iam_role" "quicksight_access_role" {
 }
 # IAM Policy in Dev Account
 resource "aws_iam_policy" "quicksight_access_policy" {
-  provider = aws.deployment-main
+  provider = aws.quiksight-account
   name     = "${var.STAGE}-quicksight-access-policy-main"
 
   policy = jsonencode({
@@ -217,7 +220,7 @@ resource "aws_iam_policy" "quicksight_access_policy_new" {
 
 # Attach Policy to Role in Dev Account
 resource "aws_iam_role_policy_attachment" "attach_quicksight_policy" {
-  provider  = aws.deployment-main
+  provider  = aws.quiksight-account
   role      = aws_iam_role.quicksight_access_role.name
   policy_arn = aws_iam_policy.quicksight_access_policy.arn
 }
