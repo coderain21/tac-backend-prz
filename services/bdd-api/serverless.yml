@@ -23,14 +23,18 @@ provider:
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    BUYER_COGNITO_CLIENT_ID: ${ssm:BUYER_COGNITO_CLIENT_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    BUYER_COGNITO_USERPOOL_ID: ${ssm:BUYER_COGNITO_USERPOOL_ID}
+    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     REGION: ${ssm:REGION}
     DATABASE: ${opt:stage, self:provider.stage}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
@@ -113,6 +117,7 @@ package:
     - ./lib/**
 
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - '../../lib'
@@ -178,6 +183,17 @@ functions:
             method: patch
             # authorizer:
             #     arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  total-lots:
+    handler: handlers/quicksight_total_lots.total_lots
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /total-lots
+          method: get
 
   # sqs-lot-update:
   #   handler: handlers/batch_lots_update.handler
@@ -191,6 +207,29 @@ functions:
   #           Fn::GetAtt:
   #             - updateLotsQueue
   #             - Arn
+
+  register-buyer:
+    handler: handlers/register_buyer.handler
+    runtime: python3.9
+    timeout: 30
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /create-buyer
+          method: post
+
+  get-lot:
+    handler: handlers/get_lot.handler
+    runtime: python3.9
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /get-lots
+          method: get
 
 
 stepFunctions:

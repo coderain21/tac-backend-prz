@@ -29,6 +29,8 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
+access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+
 
 class Encoder(json.JSONEncoder):
     def default(self, o):
@@ -38,7 +40,6 @@ class Encoder(json.JSONEncoder):
 
 def  updateAllLot(listLots, extension_type, auction_record, auction_id, extension_time):
     try:
-        print('auction_extension_type12333', extension_type)
         documents = []
         start_date =  auction_record.get('start_date')
         end_date = auction_record.get('end_date')
@@ -174,11 +175,10 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
+        auction_end_date = request_body.get('end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
-        print('auction_extension_between_lots', auction_extension_between_lots)
         auction_id = event['pathParameters']['auction_id']
         if event['queryStringParameters'] is not None:
             published_status = event['queryStringParameters'].get(
@@ -204,13 +204,6 @@ def update_auction(event, context):
             {"auction_id": auction_id, "seller_email": seller_email},{"_id": 0}
         )
         seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
-        # print('seller data', seller_data)
-        # if seller_data.get('stripe_account_id') is None or 'stripe_account_id' not in seller_data:
-        #     return {
-        #         "statusCode": 400,
-        #         'headers': headers,
-        #         "body": json.dumps({"message": "Stripe account not linked."})
-        #     }
         if auction_record is None:
             return {
                 "statusCode": 404,
@@ -219,13 +212,6 @@ def update_auction(event, context):
             }
 
         if published_status == 'true':
-            kyc_kyb_review = has_kyb_or_kyc_completed(seller_email)
-            # if kyc_kyb_review is not True:
-            #     return {
-            #             "statusCode": 400,
-            #             'headers': headers,
-            #             "body": json.dumps({"message": "Please complete the Individual or Business verification before publishing the auction."})
-            #         }
             required_fields = ["auction_image", "title", "description", "currency",
                             "time_zone", "extension_type", "registration_type", "add_buyer_fees"]
             for field in required_fields:
@@ -253,6 +239,12 @@ def update_auction(event, context):
                     'headers': headers,
                     "body": json.dumps({"message": "required fields are missing or empty."})
                 }
+            if seller_data.get('status') == 'Inactive':
+                return {
+                    "statusCode": 401,
+                    'headers': headers,
+                    "body": json.dumps({"message": "Unauthorised to perform this action."})
+                }
             result = has_images_for_auction_and_seller(auction_id, seller_email)
             if result:
                 print("All lots have images.")
@@ -264,11 +256,11 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
             # print('seller data', seller_data['stripe_status'])
-            if 'stripe_status' not in seller_data or seller_data['stripe_status'] == 'disconnected':
+            if ('stripe_status' not in seller_data or seller_data['stripe_status'] == 'disconnected') and ('paypal_status' not in seller_data or seller_data['paypal_status'] == 'disconnected'):
                 return {
                     "statusCode": 400,
                     'headers': headers,
-                    "body": json.dumps({"message": "Stripe account not linked."})
+                    "body": json.dumps({"message": "Stripe or PayPal account is not linked."})
                 }
             if total_lots < 1:
                 return {
@@ -302,8 +294,6 @@ def update_auction(event, context):
                         }
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
-                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
-                # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
@@ -359,7 +349,7 @@ def update_auction(event, context):
                                 "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
                                 "fees", "faq", "time_zone", "terms_and_condition",
-                                "publish_auction_results", "show_bidder_location_in_bidder_history",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
@@ -367,7 +357,7 @@ def update_auction(event, context):
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
                                 "description", "end_date",
                                 "extension_time_between_lots",
-                                "faq", "publish_auction_results",
+                                "faq", "publish_auction_results", "show_bidding_history",
                                 "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
@@ -377,7 +367,7 @@ def update_auction(event, context):
         elif auction_status == "Published":
             updatable_fields = {"menu_links", "logo_image", "logo_redirection_url", "title", "auction_image",
                                 "description", "start_date", "end_date",
-                                "faq", "time_zone", "publish_auction_results",
+                                "faq", "time_zone", "publish_auction_results", "show_bidding_history","hide_auction_lots",
                                 "show_bidder_location_in_bidder_history", "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
@@ -486,7 +476,7 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
-                    print('result:', result)
+
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_data_sqs = {
                     'extension_time': auction_record.get('extension_time'),
@@ -603,12 +593,35 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
-        print('updatedataa', update_data)
         if len(update_data) > 0:
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
             )
+
+        # Get the current timestamp in seconds and convert to milliseconds
+        timestamp_ms = int(datetime.now().timestamp() * 1000)
+
+        # Convert to float and format as a string with '.0'
+        formatted_timestamp = float(timestamp_ms)
+
+
+        access_logs = {
+            "actor_id": seller_data.get('seller_id'),
+            "updated_by": {
+                "type": 'Seller',
+                "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+                "email_address": seller_email,
+            },
+            "section": {
+                "name": 'Auction Management',
+                "action": 'Update',
+                "auction_id": auction_id,
+                "updated": update_data
+            },
+            "updated_at": formatted_timestamp
+        }
+        access_logs_collection.insert_one(access_logs)
         return {
             "headers": headers,
             'statusCode': 204,

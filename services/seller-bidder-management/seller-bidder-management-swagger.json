@@ -173,9 +173,171 @@
                 }
               }
             }
-          }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
         }
+      },
+      "/seller-orders": {
+      "get": {
+        "tags": [
+          "Seller | Orders"
+        ],
+        "summary": "Seller's order Details",
+        "description": "Seller's order details",
+        "parameters": [
+          {
+            "name": "buyer_id",
+            "in": "path",
+            "description": "buyer id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "659393fff55ff30b3ff4221b"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "sorting by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "name"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "sorting by descending or ascending order",
+            "schema": {
+              "type": "string"
+            },
+            "example": "descending"
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "page number",
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "page size",
+            "schema": {
+              "type": "string"
+            },
+            "example": "3"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved buyer detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "payment_status": {
+                          "type": "string"
+                        },
+                        "payment": {
+                          "type": "string"
+                        },
+                        "order_number": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "integer"
+                        },
+                        "auction_title": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  },
+                  "total_records": {
+                    "type": "integer"
+                  },
+                  "current_page": {
+                    "type": "integer"
+                  }
+                },
+                "example": {
+                  "data": [
+                      {
+                          "_id": "656d66fd3c32ca65775aca29",
+                          "payment_status": "Paid",
+                          "payment": "Stripe",
+                          "order_number": "OD001",
+                          "created_at": 1701668603,
+                          "auction_title": "Demo auction (here)+",
+                          "name": ""
+                      }
+                  ],
+                  "total_pages": 1,
+                  "total_records": 1,
+                  "current_page": 1
+              }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
+    }
     },
     "components": {
       "securitySchemes": {

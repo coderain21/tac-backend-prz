@@ -12,7 +12,7 @@ provider:
     REGION: ${env:REGION}
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     DATABASE: ${opt:stage, self:provider.stage}
     
 
@@ -36,6 +36,7 @@ package:
     - ./assets/**
 
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - '../../lib'

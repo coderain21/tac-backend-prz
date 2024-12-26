@@ -26,7 +26,7 @@ provider:
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
@@ -86,6 +86,18 @@ provider:
     CART_COLLECTION: ${opt:stage, self:provider.stage}-carts
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     CDN_URL: ${ssm:CDN_URL}
+    PAYPAL_CLIENT_ID: ${ssm:PAYPAL_CLIENT_ID}
+    PAYPAL_CLIENT_SECRET: ${ssm:PAYPAL_CLIENT_SECRET}
+    PAYPAL_OAUTH_URL: ${ssm:PAYPAL_OAUTH_URL}
+    PAYPAL_PARTNER_REFERRALS_URL: ${ssm:PAYPAL_PARTNER_REFERRALS_URL}
+    BASE_URL_SELLER: ${ssm:BASE_URL_SELLER}
+    DASHBOARD_URL: ${ssm:SELLER_DASHBOARD_APPLICATION_URL}
+    PAYPAL_WEBHOOK_ID: ${ssm:PAYPAL_WEBHOOK_ID}
+    PAYPAL_REDIRECTION_PATH: ${ssm:PAYPAL_REDIRECTION_PATH}
+    PAYPAL_PARTNER_MERCHANT_ID : ${ssm:PAYPAL_PARTNER_MERCHANT_ID}
+    PAYPAL_URL: ${ssm:PAYPAL_URL}
+    PAYMENT_STATUS: ${opt:stage, self:provider.stage}-payment-status
+    
 
 
     
@@ -120,6 +132,7 @@ package:
     - ./lib/**
 
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - '../../lib'

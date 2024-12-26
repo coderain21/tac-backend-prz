@@ -23,7 +23,7 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     COGNITO_USER_POOL: ${ssm:ADMIN_COGNITO_USERPOOL_NAME}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
@@ -33,24 +33,26 @@ provider:
     CSV_FILE:  /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    SELLER_COGNITO_USERPOOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     CREDIT_CARD_COLLECTION: ${opt:stage, self:provider.stage}-carts
     SUB_DOMAIN_TABLE: ${opt:stage, self:provider.stage}-subdomain
-    USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
+    #USERPOOLS_MONGO: ${opt:stage, self:provider.stage}-userpools
     STEP_FUNCTION_COLLECTION: ${opt:stage, self:provider.stage}-step-function-arns
     #KMS_KEY_ID: ${ssm:KMS_KEY_ID}
     SALES_CSV_FILE:  /tmp/Sales_List.csv
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
-    BUYER_EMAIL_OTP_TEMPLATE:
-      Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "mobiletargeting"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
+    # BUYER_EMAIL_OTP_TEMPLATE:
+    #   Fn::Join:
+    #     - ":"
+    #     - - "arn"
+    #       - "aws"
+    #       - "mobiletargeting"
+    #       - !Ref "AWS::Region"
+    #       - !Ref "AWS::AccountId"
+    #       - "templates/${self:provider.stage}-buyer_email_otp/EMAIL"
 
     ENCRYPTION_SECRET_KEY: Indy@auction@789
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
@@ -59,8 +61,8 @@ provider:
     CUSTOMER_SESSION_TOKEN_SECRET: ${ssm:CUSTOMER_SESSION_TOKEN_SECRET}
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DEFAULT_SUB_DOMAIN: ${ssm:DEFAULT_SUB_DOMAIN}
-    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    TEMPLATE_ARN_EMAIL_RESET_PASSWORD:
+    # JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    TEMPLATE_ARN_ADMIN_UPDATE_PASSWORD: 
       Fn::Join:
         - ":"
         - - "arn"
@@ -68,20 +70,44 @@ provider:
           - "mobiletargeting"
           - !Ref "AWS::Region"
           - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-buyer_reset_password/EMAIL"
+          - "templates/${self:provider.stage}-admin-update-password-template/EMAIL"
 
-    BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
+    TEMPLATE_ARN_ADMIN_ACTIVATE_SELLER: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-admin-activate-seller-template/EMAIL"
+
+    TEMPLATE_ARN_ADMIN_DEACTIVATE_SELLER: 
+      Fn::Join:
+        - ":"
+        - - "arn"
+          - "aws"
+          - "mobiletargeting"
+          - !Ref "AWS::Region"
+          - !Ref "AWS::AccountId"
+          - "templates/${self:provider.stage}-admin-deactivate-seller-template/EMAIL"
+
+  
+    # BASE_URL_BUYER: ${ssm:BASE_URL_BUYER}
     CDN_LINK: ${ssm:CDN_URL}
-    STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
-    SELLER_GOOGLE_PASSWORD: INDY@SELLER
-    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    #STRIPE_API_KEY: ${ssm:STRIPE_API_KEY}
+    # SELLER_GOOGLE_PASSWORD: INDY@SELLER
+    #PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     ADDRESS_COLLECTION: ${opt:stage, self:provider.stage}-address-management
     SUBDOMAIN_COLLECTION: ${opt:stage, self:provider.stage}-subdomain
+    ADMIN_USER_COLLECTION: ${opt:stage, self:provider.stage}-admin-users
     COGNITO_ADMIN_AUTH_ARN: ${ssm:SELLER_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_AUTH_ARN: ${ssm:ADMIN_COGNITO_AUTH_ARN}
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
-    # REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    ADMIN_COGNITO_USERPOOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
+    ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
+
 
     SQS_QUEUE_ARN:  
       Fn::Join:
@@ -99,15 +125,15 @@ provider:
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
-    TEMPLATE_ARN_AUCTION_COMPLETION:
-      Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "mobiletargeting"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
+    # TEMPLATE_ARN_AUCTION_COMPLETION:
+    #   Fn::Join:
+    #     - ":"
+    #     - - "arn"
+    #       - "aws"
+    #       - "mobiletargeting"
+    #       - !Ref "AWS::Region"
+    #       - !Ref "AWS::AccountId"
+    #       - "templates/${self:provider.stage}-send-auction-completion-email/EMAIL"
     S3_BUCKET_URL: ${ssm:CDN_URL}
     SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
     STATE_MACHINE_LOT_ARN:  
@@ -119,6 +145,15 @@ provider:
             - !Ref "AWS::Region"
             - !Ref "AWS::AccountId"
             - "stateMachine:${opt:stage}-lot-published"
+    STATE_MACHINE_DEACTIVATE_SELLER_ARN:  
+      Fn::Join:
+          - ":"
+          - - "arn"
+            - "aws"
+            - "states"
+            - !Ref "AWS::Region"
+            - !Ref "AWS::AccountId"
+            - "stateMachine:${opt:stage}-seller-deactivate"
     STATE_MACHINE_AUCTION_ARN: 
       Fn::Join:
           - ":"
@@ -177,7 +212,9 @@ package:
     - ./utils/**
     - ./lib/**
 
+
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - "../../lib"
@@ -198,6 +235,19 @@ custom:
       Set:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
+stepFunctions:
+  stateMachines:
+    seller-deactivate:
+      name: ${opt:stage}-seller-deactivate
+      definition:
+        Comment: "Step function will trigger when seller is deactivated"
+        StartAt: manage-seller-deactivation
+        States:
+          manage-seller-deactivation:
+            Type: Task
+            Resource:
+              Fn::GetAtt: ["manage-seller-deactivation", Arn]
+            End: true
 functions:
   list-auction:
     handler: handlers/list_auction.list_auction
@@ -471,9 +521,36 @@ functions:
           method: get
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
-  list-sellers:
-    handler: handlers/list_sellers.list_sellers
-    runtime: python3.9
+  # list-sellers:
+  #   handler: handlers/list_sellers.list_sellers
+  #   runtime: python3.8
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   events:
+  #     - http:
+  #         cors:
+  #           origin: "*"
+  #           headers:
+  #             - Content-Type
+  #             - X-Amz-Date
+  #             - Authorization
+  #             - X-Api-Key
+  #             - X-Amz-Security-Token
+  #             - X-Requested-With
+  #             - Accept
+  #             - Access-Control-Allow-Headers
+  #         path: /sellers
+  #         method: get
+  #         authorizer:
+  #           arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  seller-view:
+    handler: handlers/seller_view.seller_view
+    runtime: python3.8
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -494,34 +571,7 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          path: /sellers
-          method: get
-          authorizer:
-            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
-  seller-details:
-    handler: handlers/seller_details.seller_details
-    runtime: python3.9
-    layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    events:
-      - http:
-          cors:
-            origin: "*"
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
-          path: /seller-details
+          path: /view-seller
           method: get
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
@@ -684,6 +734,172 @@ functions:
             method: patch
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  
+  list-all-sellers:
+    handler: handlers/all_sellers.list_all_sellers
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Header
+          path: /all-sellers
+          method: get
+          authorizer:
+              arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
+  admin_update_password:
+    handler: handlers/update_password.update_password
+    runtime: python3.8
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer: ${ssm:ADMIN_COGNITO_AUTH_ARN}      
+          path: /admin-update-password
+          method: patch
+
+  enable_disable_seller:
+      handler: handlers/seller_enable_disable.handler
+      vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+      layers:
+         - ${ssm:COMMON_LIB_ARN}
+      events:
+        - http:
+            cors: true
+            path: /enable-disable-seller
+            method: patch
+            authorizer:
+                arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
+  manage-seller-deactivation:
+    handler: handlers/manage-seller-deactivation.handler
+    vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+
+
+  sqs-lot-update_1:
+    handler: handlers/batch_lots_update.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    timeout: 60
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+
+  sqs-lot-update_2:
+    handler: handlers/batch_lots_update.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    timeout: 60
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+
+  sqs-lot-update_3:
+    handler: handlers/batch_lots_update.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    timeout: 60
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+
+  sqs-lot-update_4:
+    handler: handlers/batch_lots_update.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    timeout: 60
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+
+
+
+          
+  sqs-lot-update_5:
+    handler: handlers/batch_lots_update.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    timeout: 60
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - sqs:
+          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
 resources:
   Resources:
@@ -697,8 +913,29 @@ resources:
         RestApiId:
           Ref: "ApiGatewayRestApi"
 
+
+    # UpdatePassword:
+    #   Type: AWS::Pinpoint::EmailTemplate
+    #   Properties: 
+    #     HtmlPart: ${file(./templates/update_password.html)}
+    #     Subject: Indy.auction - Password Update Confirmation
+    #     TemplateName: ${self:provider.stage}-admin-update-password-template
+
+    LotStateMachineSSMParameter:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: STATE_MACHINE_DEACTIVATE_SELLER_ARN
+        Description: 'ARN of the Hello Step Functions state machine'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:${StateMachineName}
+          - StateMachineName: ${opt:stage}-seller-deactivate
+          
+
 plugins:
   - serverless-offline
   - serverless-package-external
   - serverless-domain-manager
   - serverless-plugin-ifelse
+  - serverless-step-functions
+

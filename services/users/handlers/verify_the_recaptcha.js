@@ -118,7 +118,7 @@ module.exports.verifyReCaptcha = async (event) => {
         }
         const userData = JSON.parse(event.body)
         const validationResult = schema.validate(userData)
-        if (validationResult.error && !(userData.email_address.includes('anusha.k+7'))) {
+        if (validationResult.error && !(userData.email_address.includes('indyauctiontestops+7'))) {
             const errorMessage = (validationResult.error.details[0].type === 'object.unknown') ? 'Please pass valid Information' : validationResult.error.message
             return {
                 statusCode: 400,

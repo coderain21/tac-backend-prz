@@ -148,6 +148,12 @@
                         "show_bidder_location_in_bidder_history": {
                           "type": "string"
                         },
+                        "show_bidding_history": {
+                          "type": "string"
+                        },
+                        "hide_auction_lots": {
+                          "type": "string"
+                        },
                         "publish_auction_results": {
                           "type": "string"
                         }
@@ -339,7 +345,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/view-lots": {
@@ -551,7 +562,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/verify-captcha": {
@@ -690,7 +706,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/otp-validation": {
@@ -839,7 +860,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/": {
@@ -935,7 +961,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/approval": {
@@ -1046,7 +1077,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/auction-register": {
@@ -1155,7 +1191,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/search-lots": {
@@ -1339,7 +1380,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/lot-details": {
@@ -1563,7 +1609,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/update-password": {
@@ -1666,7 +1717,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/forgot_password": {
@@ -1775,7 +1831,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/reset_password": {
@@ -1891,7 +1952,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
      },
      "/add-address": {
@@ -2051,7 +2117,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/profile": {
@@ -2181,7 +2252,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/paddle": {
@@ -2284,7 +2360,12 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/verify-card": {
@@ -2403,7 +2484,124 @@
               }
             }
           }
-        }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/links": {
+      "get": {
+        "tags": ["Buyers Management"],
+        "summary": "Get Seller social links",
+        "description": "Get Seller social links",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Fetch details for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sthuthi+stripe@7edge.com"
+          }
+        ],
+        
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved seller links",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "facebook_link": {
+                          "type": "string"
+                        },
+                        "Instagram_link": {
+                          "type": "string"
+                        },
+                        "twitter": {
+                          "type": "string"
+                        },
+                        "linkdin_link": {
+                          "type": "string"
+                        },
+                        "tiktok_link": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "_id": "65d6cac06016b45c27883191",
+                  "facebook_link": "https://facebook.com",
+                  "Instagram_link": "https://cryptic",
+                  "twitter": "https://twitter",
+                  "tiktok_link": "https://dsgfashdfajs"
+              }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Please provide seller email"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Seller not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "There was an error "
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
   },
@@ -2515,6 +2713,12 @@
             "type": "boolean"
           },
           "show_bidder_location_in_bidder_history": {
+            "type": "boolean"
+          },
+          "show_bidding_history": {
+            "type": "boolean"
+          },
+          "hide_auction_lots": {
             "type": "boolean"
           },
           "make_your_auction_private": {

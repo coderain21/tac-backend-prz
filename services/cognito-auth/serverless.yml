@@ -26,7 +26,7 @@ provider:
     DATABASE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -53,6 +53,8 @@ provider:
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     CREDIT_CARD_COLLECTIONS: ${opt:stage, self:provider.stage}-credit-card
+    ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
+
     TEMPLATE_ARN_EMAIL_OTP: 
       Fn::Join:
         - ":"
@@ -107,6 +109,7 @@ package:
     - ./lib/**
 
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - '../../lib'
@@ -126,6 +129,21 @@ functions:
       - cognitoUserPool:
           pool: ${self:provider.stage}-indyauction-buyers
           trigger: PreSignUp
+          existing: true
+
+  post-auth:
+    handler: handlers/post_auth.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-indyauction-buyers
+          trigger: PostAuthentication
           existing: true
 
   # COGNITO CREATE AUTH CHALLENGE
@@ -605,7 +623,7 @@ resources:
     AdminUsersClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
-        AccessTokenValidity: 60
+        AccessTokenValidity: 5
         AllowedOAuthFlowsUserPoolClient: false
         AuthSessionValidity: 3
         ClientName: admin
@@ -618,7 +636,7 @@ resources:
           - ALLOW_USER_SRP_AUTH
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
           - ALLOW_USER_PASSWORD_AUTH
-        IdTokenValidity: 60
+        IdTokenValidity: 5
         PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
         TokenValidityUnits:
@@ -735,6 +753,35 @@ resources:
           Name: LAMBDA_ARN
           Type: String
           Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:cognito-${self:provider.stage}-add_callback_logout_urls
+    
+    UpdatePassword:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/update_password.html)}
+        Subject: Indy.auction - Password Update Confirmation
+        TemplateName: ${self:provider.stage}-admin-update-password-template
+
+    ActivateSeller:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/activate_seller.html)}
+        Subject: Indy.auction - Your Account Activation Notification
+        TemplateName: ${self:provider.stage}-admin-activate-seller-template
+    
+    DeactivateSeller:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/deactivate_seller.html)}
+        Subject: Indy.auction - Your Account Deactivation Notification
+        TemplateName: ${self:provider.stage}-admin-deactivate-seller-template
+
+    DeleteBuyer:
+      Type: AWS::Pinpoint::EmailTemplate
+      Properties: 
+        HtmlPart: ${file(./templates/delete_buyer.html)}
+        Subject: Indy.auction - Your Account Deactivation Notification
+        TemplateName: ${self:provider.stage}-admin-delete-buyer-template
+
 
 
             

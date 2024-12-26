@@ -29,7 +29,7 @@ provider:
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
-    MONGO_CLIENT: ${ssm:MONGODB_CONNECTION_STRING}
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     BUCKET_NAME: ${ssm:BUCKET_NAME}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
@@ -39,6 +39,8 @@ provider:
     CDN_LINK: ${ssm:CDN_URL}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
 
 
@@ -77,6 +79,7 @@ package:
     - ./lib/**
 
 custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
       - '../../lib'
@@ -109,6 +112,20 @@ functions:
       - http:
           cors: true
           path: /
+          method: GET
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  seller-orders:
+    handler: handlers/seller_orders.list_orders
+    timeout: 60
+    runtime: python3.8
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    events:
+      - http:
+          cors: true
+          path: /seller-orders
           method: GET
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}

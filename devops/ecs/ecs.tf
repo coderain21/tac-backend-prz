@@ -262,6 +262,13 @@ resource "aws_ecr_repository" "repo1" {
   provider = aws.deployment-eu
   force_delete = true
 }
+# ECR Repositories
+resource "aws_ecr_repository" "repo" {
+  name = "update-auction-repo"
+  provider = aws.deployment-eu
+  force_delete = true
+}
+
 
 ########################
 

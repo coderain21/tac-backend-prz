@@ -93,15 +93,15 @@ def list_bidders(event, context):
                     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
                     "localField": "auction_id",
                     "foreignField": "_id",
-                    "as": "auction_info"
-                }},
-                {"$unwind": "$auction_info"},
-                {"$lookup": {
-                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
-                    "localField": "auction_info.auction_id",
-                    "foreignField": "auction_id",
                     "as": "auction_details"
                 }},
+                # {"$unwind": "$auction_info"},
+                # {"$lookup": {
+                #     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                #     "localField": "auction_info.auction_id",
+                #     "foreignField": "auction_id",
+                #     "as": "auction_details"
+                # }},
                 {"$unwind": "$auction_details"},
                 {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
                 {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
@@ -117,15 +117,15 @@ def list_bidders(event, context):
                     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
                     "localField": "auction_id",
                     "foreignField": "_id",
-                    "as": "auction_info"
-                }},
-                {"$unwind": "$auction_info"},
-                {"$lookup": {
-                    "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
-                    "localField": "auction_info.auction_id",
-                    "foreignField": "auction_id",
                     "as": "auction_details"
                 }},
+                # {"$unwind": "$auction_info"},
+                # {"$lookup": {
+                #     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+                #     "localField": "auction_info.auction_id",
+                #     "foreignField": "auction_id",
+                #     "as": "auction_details"
+                # }},
                 {"$unwind": "$auction_details"},
                 {"$addFields": {"time_zone": "$auction_details.time_zone"}},  # Add the time_zone field
                 {"$group": {"_id": "$email_address", "firstRecord": {"$first": "$$ROOT"}}},
@@ -146,15 +146,15 @@ def list_bidders(event, context):
                 "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
                 "localField": "auction_id",
                 "foreignField": "_id",
-                "as": "auction_info"
-            }},
-            {"$unwind": "$auction_info"},
-            {"$lookup": {
-                "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
-                "localField": "auction_info.auction_id",
-                "foreignField": "auction_id",
                 "as": "auction_details"
             }},
+            # {"$unwind": "$auction_info"},
+            # {"$lookup": {
+            #     "from": os.environ["AUCTION_MONGODB_COLLECTION_NAME"],
+            #     "localField": "auction_info.auction_id",
+            #     "foreignField": "auction_id",
+            #     "as": "auction_details"
+            # }},
             {"$unwind": "$auction_details"},
             {"$group": {"_id": "$email_address"}},
             {"$count": "total_buyers"}
