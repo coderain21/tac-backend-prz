@@ -173,7 +173,7 @@ data "aws_subnets" "private" {
     name   = "map-public-ip-on-launch"
     values = ["false"]
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
  
@@ -186,7 +186,7 @@ resource "aws_lb" "mongobetween_nlb" {
   name               = "mongobetween-nlb"
   internal           = true # Set to true for internal NLB
   load_balancer_type = "network"
-  subnets            = [data.aws_subnets.private.ids]
+  subnets            = data.aws_subnets.private.ids
   provider           = aws.deployment-eu
 }
 
@@ -219,7 +219,7 @@ resource "aws_ecs_service" "ecs_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [data.aws_subnets.private.ids]
+    subnets         = data.aws_subnets.private.ids
     security_groups = [aws_security_group.mongobetween-security-group.id]
     assign_public_ip = false # Do not assign public IP
   }
