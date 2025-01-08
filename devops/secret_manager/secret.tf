@@ -187,7 +187,8 @@ resource "aws_iam_policy" "quicksight_access_policy" {
           "quicksight:DescribeUser",
           "quicksight:RegisterUser",
           "quicksight:CreateGroup",
-          "quicksight:CreateGroupMembership"
+          "quicksight:CreateGroupMembership",
+          "quicksight:UpdateUser" 
         ],
         "Resource" : "*"
       }
@@ -210,7 +211,8 @@ resource "aws_iam_policy" "quicksight_access_policy_new" {
           "quicksight:DescribeUser",
           "quicksight:RegisterUser",
           "quicksight:CreateGroup",
-          "quicksight:CreateGroupMembership"
+          "quicksight:CreateGroupMembership",
+          "quicksight:UpdateUser" 
         ],
         "Resource" : "*"
       }
