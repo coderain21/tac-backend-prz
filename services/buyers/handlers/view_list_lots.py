@@ -114,6 +114,8 @@ def view_list_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
+        # Try to convert the auction_id string to a MongoDB ObjectId
+        # If conversion fails, return a 422 error indicating invalid format
         try:
             _id = ObjectId(auction_id)
         except Exception as e:

@@ -54,6 +54,8 @@ def view(event, context):
         # db = client[os.environ['DATABASE']]
         # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
+        # Check if auction_id exists and convert it to ObjectId
+        # If auction_id is missing, return 422 error
         try:
             if auction_id:
                 auction_id = ObjectId(auction_id)
@@ -64,6 +66,7 @@ def view(event, context):
                     "body": json.dumps({"message": "Auction ID is required"})
                 }
         except Exception as e:
+            # If auction_id cannot be converted to ObjectId, return 422 error
             print('Error:', str(e))
             return {
                 "statusCode": 422,
