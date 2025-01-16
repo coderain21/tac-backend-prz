@@ -54,9 +54,23 @@ def view(event, context):
         # db = client[os.environ['DATABASE']]
         # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
-        domain_data = fetch_seller_data_from_subdomain(auction_id)
-        if auction_id is not None:
-            auction_id = ObjectId(auction_id)
+        try:
+            if auction_id:
+                auction_id = ObjectId(auction_id)
+            else:
+                return {
+                    "statusCode": 422, 
+                    "headers": headers,
+                    "body": json.dumps({"message": "Auction ID is required"})
+                }
+        except Exception as e:
+            print('Error:', str(e))
+            return {
+                "statusCode": 422,
+                "headers": headers, 
+                "body": json.dumps({"message": "Invalid auction ID format"})
+            }
+        domain_data = fetch_seller_data_from_subdomain(str(auction_id))
         projection = {
             "_id": 1,
             "auction_id": 1,
