@@ -78,6 +78,8 @@ stages:
             #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
             # sh terraform-linter.sh
           displayName: 'Pylint'
+          env:
+            OPENAI_TOKEN: $(OPENAI_TOKEN)
     - job: "secret"
       displayName: "Secret Checking"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
