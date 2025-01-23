@@ -24,3 +24,7 @@ variable "ACCOUNT_ID_MAIN" {
   type        = string
   description = "Description of the variable"
 }
+variable "QUICKSIGHT_ACCOUNT" {
+  type        = string
+  description = "Description of the variable"
+}

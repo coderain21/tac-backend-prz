@@ -74,11 +74,9 @@ if [ "${STAGE}" = "pre-production" ] ; then
     terraform -chdir=devops/redis_cluster_new apply -auto-approve
     terraform -chdir=devops/ecs_new init
     terraform -chdir=devops/ecs_new apply -auto-approve
-    terraform -chdir=devops/secret_manager init
-    terraform -chdir=devops/secret_manager apply -auto-approve
 fi
 
-if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+if [ "${STAGE}" = "pre-production" ]; then
     terraform -chdir=devops/mongobetween init
     terraform -chdir=devops/mongobetween apply -auto-approve
 
@@ -112,7 +110,44 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
 fi
 
+if [ "${STAGE}" = "prod"  ]; then
 
+    terraform -chdir=devops/mongobetween-prod init
+    terraform -chdir=devops/mongobetween-prod apply -auto-approve
+   
+
+    parameter_names=(
+    "REGION"
+    "MONGOBETWEEN_DOCKER_IMAGE"
+    "MONGOBETWEEN_ECR_REPO_NAME"
+    "MONGOBETWEEN_ECR_REPO_URI"
+    "MONGOBETWEEN_ECS_SERVICE_NAME"
+    "ECS_CLUSTER_NAME"
+    "ACCOUNT_ID"
+    )
+
+    # Loop through each parameter
+    for param_name in "${parameter_names[@]}"; do
+        echo "$param_name"
+        # Get parameter value
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+
+        # Set environment variable
+        export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
+
+        echo "Set $param_name as environment variable with value: $param_value"
+    done <<< "$parameter_names"
+
+    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
+    sh login.sh
+    run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
+    run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
+    run_command docker push $MONGOBETWEEN_ECR_REPO_URI
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+fi
+
+run_command terraform -chdir=devops/secret_manager init
+run_command terraform -chdir=devops/secret_manager apply -auto-approve
 run_command terraform -chdir=devops/cloudwatch_alarms init
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 run_command terraform -chdir=devops/budgets init
@@ -190,7 +225,7 @@ terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 terraform -chdir=devops/cognito_custom_domain init
 terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
-if [ "${STAGE}" = "qa" || "${STAGE}" = "pre-production"]; then
+if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
   sls deploy --region $REGION --stage $STAGE
   sls deploy --region $REGION --stage $STAGE
