@@ -47,7 +47,7 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
-        console.log('even', event)
+        console.log('event', event)
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
@@ -77,76 +77,50 @@ module.exports.handler = async (event) => {
         console.log('currentTimestamp', currentTimestamp)
         if (auctionData.status !== 'Cancelled') {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
-                // Get the final winning bid amount
-                const winningBid = await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
-
                 const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
                 console.log('getBuyerData', getBuyerData)
-
                 if (getBuyerData && Object.keys(getBuyerData).length > 0) {
                     console.log('here inside the condition')
                     lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
                     lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
-
-                    // Add winning bid amount to lot information
-                    lotInformation.winning_bid_amount = winningBid ? winningBid.bid_amount : lotInformation.current_bid
-
-                    // Check if email has already been sent
-                    // const emailSent = await Cart.findOne({
-                    //     lot_id: lotInformation._id,
-                    //     buyer_id: lotInformation.winning_user,
-                    // })
-
-                    const session = await connection.startSession()
-                    try {
-                        await session.withTransaction(async () => {
-                            const emailSent = await Cart.findOne({
-                                lot_id: lotInformation._id,
-                                buyer_id: lotInformation.winning_user,
-                            }).session(session)
-
-                            if (!emailSent) {
-                                await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
-
-                                // Add a flag in Redis to prevent duplicate processing
-                                const processingKey = `processing:${auctionData.auction_id}`
-                                const isProcessing = await client.get(processingKey)
-
-                                if (!isProcessing) {
-                                    // Set processing flag with 5-minute expiry
-                                    await client.set(processingKey, '1', 'EX', 300)
-
-                                    if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                                        await sqsTriggerFunction(event)
-                                    } else if (getLots.length <= 0
-                                        && (auctionData.extension_type === 'Cascade'
-                                         || auctionData.extension_type === 'Individual Lots')) {
-                                        await sqsTriggerFunction(event)
-                                    }
-                                }
-                            }
-                        })
-                    } finally {
-                        await session.endSession()
+                    await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+                }
+                await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
+                // const callSQS = await sqsTriggerFunction(event)
+                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
+                    // amazonq-ignore-next-line
+                    console.log('event after processing', event)
+                    await sqsTriggerFunction(event)
+                }
+                if (getLots.length <= 0) {
+                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                        await sqsTriggerFunction(event)
                     }
+                } else {
+                    console.log('no match')
                 }
             }
         }
-
-        // Remove duplicate conditions and simplify the non-winning user case
-        if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) {
+        if ((lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) || (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user == null)) {
             if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                 await sqsTriggerFunction(event)
-            } else if (getLots.length <= 0
-                && (auctionData.extension_type === 'Cascade'
-                 || auctionData.extension_type === 'Individual Lots')) {
-                await sqsTriggerFunction(event)
+            }
+            if (getLots.length <= 0) {
+                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                    await sqsTriggerFunction(event)
+                }
+                if (getLots.length <= 0) {
+                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
+                        await sqsTriggerFunction(event)
+                    }
+                } else {
+                    console.log('no match')
+                }
             }
         }
-
         return true
     } catch (err) {
-        console.log(err)
+        console.log('Internal Server Error', err)
         return err
     }
 }
