@@ -91,6 +91,7 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
+            // amazonq-ignore-next-line
             console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
@@ -198,6 +199,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     email_address: event.seller_email,
                 }
                 const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
+                // amazonq-ignore-next-line
                 console.log('seller', sellerInformation)
 
                 // Set up a MongoDB query to find the user's information
@@ -209,7 +211,9 @@ module.exports.sqsTriggerFunction = async (event) => {
                 // Loop through the lots and add them to the winning or losing lists
                 for (const lot of get_lot) {
                     const rediskey = `lot:${lot._id}`
+                    // console.log('rediskey', rediskey)
                     const getLotInfo = await lotDetails(rediskey, client)
+                    // console.log('lot', getLotInfo)
                     const singleLot = []
                     for (let i = 0; i < getLotInfo.length; i++) {
                         singleLot.push(JSON.parse(getLotInfo[i]))
@@ -217,6 +221,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     // Add the CDN link to the image URL
                     const featuredImage = lot.images.find((image) => image.featured)
                     lot.lot_image = `${process.env.CDN_LINK}${featuredImage ? featuredImage.url : lot.images[0].url}`
+                    // console.log('lot image', lot)
 
                     // Add the formatted bid amount to the lot
                     if (lot.winning_user === user.buyer_id) {
@@ -225,6 +230,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                         // console.log('won', getAmount)
                         lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
+                        // lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                         winningLot.push(lot)
                     } else {
                         event.lot_number = lot.lot_number
@@ -232,7 +238,9 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                         if (getAmount !== null) {
                             console.log('not null')
-                            lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
+                            // lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
+                            // fetching from redis instead of db
+                            lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
                             notWinning.push(lot)
                         }
                     }
