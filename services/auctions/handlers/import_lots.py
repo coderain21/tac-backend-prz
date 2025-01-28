@@ -286,6 +286,7 @@ def import_lots(event, context):
                         }
                     )
                 else:
+                    #if the auction is of the type all lots and total lots needs to be updated
                     total_lots = len(result.inserted_ids) + auction_record["total_lots"]
                     print('inserted ids', total_lots)
                     auction_collection.update_one(
@@ -309,6 +310,7 @@ def import_lots(event, context):
                         upsert = True
                     )
                 else:
+                    #if the auction is of the type all lots and total lots needs to be updated
                     # print('inserted ids', total_lots)
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},

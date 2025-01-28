@@ -172,6 +172,7 @@ def lambda_handler(event, context):
 
         # After inserting the lot, update the total_lots count for the associated auction
         auction_id = request_body["auction_id"]
+        # skipping the total lots conditions as some of the auction is not having the total lots count
         if auction_record:                      #and "total_lots" in auction_record:
             # Increment the existing "total_lots" count
             auction_collection.update_one(
