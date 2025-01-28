@@ -47,7 +47,7 @@ async function getLot(rediskey, client) {
  */
 module.exports.handler = async (event) => {
     try {
-        console.log('even', event)
+        console.log('event', event)
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
@@ -88,6 +88,8 @@ module.exports.handler = async (event) => {
                 await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
                 // const callSQS = await sqsTriggerFunction(event)
                 if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
+                    // amazonq-ignore-next-line
+                    console.log('event after processing', event)
                     await sqsTriggerFunction(event)
                 }
                 if (getLots.length <= 0) {
@@ -118,7 +120,7 @@ module.exports.handler = async (event) => {
         }
         return true
     } catch (err) {
-        console.log(err)
+        console.log('Internal Server Error', err)
         return err
     }
 }
