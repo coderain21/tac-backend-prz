@@ -69,7 +69,6 @@ def import_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -93,7 +92,6 @@ def import_lots(event, context):
         collection = os.environ['SELLERS_TABLE']
         user_info = get_by_email(
             email_address, collection)
-        print(user_info)
         plan_type = user_info.get("plan_type")
         free_user = user_info.get("free_user")
         if plan_type == "Free" or free_user == True:
@@ -103,7 +101,7 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to Import lots"})
             }
 
-        print("plan_type", plan_type)
+
 
         # Expected column headers as set
         expected_headers = [
