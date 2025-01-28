@@ -303,8 +303,7 @@ def import_lots(event, context):
                     auction_end_date = additional_time_ms
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
-                        {"$set": {"total_lots": total_lots_count}},
-                        {"$set": {"end_date": auction_end_date}},
+                        {"$set": {"total_lots": total_lots_count, "end_date": auction_end_date}},
                         upsert = True
                     )
                 else:
