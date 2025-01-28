@@ -172,11 +172,12 @@ def lambda_handler(event, context):
 
         # After inserting the lot, update the total_lots count for the associated auction
         auction_id = request_body["auction_id"]
-        if auction_record and "total_lots" in auction_record:
+        if auction_record:                      #and "total_lots" in auction_record:
             # Increment the existing "total_lots" count
             auction_collection.update_one(
                 {"auction_id": auction_id, "seller_email": seller_email},
-                {"$inc": {"total_lots": 1}}
+                {"$inc": {"total_lots": 1}},
+                upsert=True
             )
         else:
             # Calculate the total lots count and update the auction record

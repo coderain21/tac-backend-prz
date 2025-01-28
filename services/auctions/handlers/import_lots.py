@@ -69,6 +69,7 @@ def import_lots(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
@@ -92,6 +93,7 @@ def import_lots(event, context):
         collection = os.environ['SELLERS_TABLE']
         user_info = get_by_email(
             email_address, collection)
+        print(user_info)
         plan_type = user_info.get("plan_type")
         free_user = user_info.get("free_user")
         if plan_type == "Free" or free_user == True:
@@ -101,6 +103,7 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Upgrade the plan to Import lots"})
             }
 
+        print("plan_type", plan_type)
 
         # Expected column headers as set
         expected_headers = [
@@ -282,6 +285,16 @@ def import_lots(event, context):
                             "$set": {"end_date": auction_end_date}
                         }
                     )
+                else:
+                    total_lots = len(result.inserted_ids) + auction_record["total_lots"]
+                    print('inserted ids', total_lots)
+                    auction_collection.update_one(
+                        {"auction_id": auction_id, "seller_email": email_address},
+                        {"$set": {"total_lots": total_lots}},
+                        upsert=True
+                    )
+
+
 
             else:
                 # Calculate the total lots count (if not already calculated) and update the auction record
@@ -291,7 +304,16 @@ def import_lots(event, context):
                     auction_end_date = additional_time_ms
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
-                        {"$set": {"total_lots": total_lots_count, "end_date": auction_end_date}}
+                        {"$set": {"total_lots": total_lots_count}},
+                        {"$set": {"end_date": auction_end_date}},
+                        upsert = True
+                    )
+                else:
+                    # print('inserted ids', total_lots)
+                    auction_collection.update_one(
+                        {"auction_id": auction_id, "seller_email": email_address},
+                        {"$set": {"total_lots": total_lots_count}},
+                        upsert=True
                     )
 
             client.close()
