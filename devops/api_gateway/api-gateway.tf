@@ -28,6 +28,14 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 ########
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"

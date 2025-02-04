@@ -21,6 +21,15 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
+
 # Create a subnet within the VPC
 resource "aws_subnet" "mongodb_subnet" {
   vpc_id     = aws_default_vpc.def_vpc.id

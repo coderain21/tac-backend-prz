@@ -8,6 +8,14 @@ provider "aws" {
   profile = "indyauction-${var.STAGE}"
 }
 
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 
 # Create an SNS topic for notifications
 resource "aws_sns_topic" "ses_reputation_topic" {
