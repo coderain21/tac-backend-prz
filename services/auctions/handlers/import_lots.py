@@ -102,6 +102,7 @@ def import_lots(event, context):
             }
 
 
+
         # Expected column headers as set
         expected_headers = [
             'Lot Title 1',
@@ -282,6 +283,17 @@ def import_lots(event, context):
                             "$set": {"end_date": auction_end_date}
                         }
                     )
+                else:
+                    #if the auction is of the type all lots and total lots needs to be updated
+                    total_lots = len(result.inserted_ids) + auction_record["total_lots"]
+                    print('inserted ids', total_lots)
+                    auction_collection.update_one(
+                        {"auction_id": auction_id, "seller_email": email_address},
+                        {"$set": {"total_lots": total_lots}},
+                        upsert=True
+                    )
+
+
 
             else:
                 # Calculate the total lots count (if not already calculated) and update the auction record
@@ -291,7 +303,16 @@ def import_lots(event, context):
                     auction_end_date = additional_time_ms
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
-                        {"$set": {"total_lots": total_lots_count, "end_date": auction_end_date}}
+                        {"$set": {"total_lots": total_lots_count, "end_date": auction_end_date}},
+                        upsert = True
+                    )
+                else:
+                    #if the auction is of the type all lots and total lots needs to be updated
+                    # print('inserted ids', total_lots)
+                    auction_collection.update_one(
+                        {"auction_id": auction_id, "seller_email": email_address},
+                        {"$set": {"total_lots": total_lots_count}},
+                        upsert=True
                     )
 
             client.close()
