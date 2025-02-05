@@ -193,9 +193,13 @@ cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
-STATE_FILE="$STAGE/devops/buyer_web_application/terraform.tfstate"
-# Check if the state file exists
-if [ -f "$STATE_FILE" ]; then
+STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
+# Check if the file exists in the S3 bucket
+if aws s3 ls "$STATE_FILE" --profile "${PROFILE_MAIN}" > /dev/null 2>&1; then
+  echo "State file exists. Applying Terraform with targets..."
+# STATE_FILE="$STAGE/devops/buyer_web_application/terraform.tfstate"
+# if [ -f "$STATE_FILE" ]; then
+#     echo "cheching for subdomain"
   # Extract the DOMAIN_ASSOCIATION_ID only if the state file exists
 #   DOMAIN_ASSOCIATION_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
 #   APP_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*app_id\s*=\s*"\K[^"]+')
