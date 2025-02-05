@@ -193,7 +193,7 @@ cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
-STATE_FILE="devops/buyer_web_application/terraform.tfstate"
+STATE_FILE="$STAGE/devops/buyer_web_application/terraform.tfstate"
 # Check if the state file exists
 if [ -f "$STATE_FILE" ]; then
   # Extract the DOMAIN_ASSOCIATION_ID only if the state file exists
