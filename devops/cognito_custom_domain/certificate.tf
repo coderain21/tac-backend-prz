@@ -17,6 +17,15 @@ provider "aws" {
   alias = "route53-account"   # Specify a default AWS region here
   profile = "${var.ROUTE53_ACCOUNT}"
 }
+
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
 }
