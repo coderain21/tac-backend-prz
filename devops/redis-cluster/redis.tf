@@ -4,6 +4,15 @@ provider "aws" {
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
+
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 data "aws_vpc" "default" {
   default = true
   provider = aws.deployment-us
