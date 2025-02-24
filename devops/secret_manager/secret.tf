@@ -13,7 +13,13 @@ provider "aws" {
   profile = "${var.QUICKSIGHT_ACCOUNT}"
 }
 
-
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
 
 # Step 1: Create IAM Role and store ARN in SSM
 resource "aws_iam_role" "athena_ambda_role" {

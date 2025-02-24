@@ -16,6 +16,14 @@ provider "aws" {
   profile = "${var.ROUTE53_ACCOUNT}"
 }
 
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 resource "aws_s3_bucket" "bucket" {
   bucket = "indy-auction-admin-web-application-${var.STAGE}"
   force_destroy = true

@@ -16,6 +16,14 @@ provider "stripe" {
   alias = "stripe-webhook"
 }
 
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 data "aws_ssm_parameter" "api_endpoint" {
   name     = "DOMAIN_NAME_FRONT_END"
   provider = aws.deployment-eu
