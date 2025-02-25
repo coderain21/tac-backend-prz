@@ -218,23 +218,19 @@ async function updateRedisData(lotInformation, client) {
             'Content-Type': 'application/json',
         }
         const reqUrl = `${process.env.SOCKET_URL}/notification`
-        return new Promise((resolve, reject) => {
-            const options = {
+        try {
+            const response = await axios({
                 method: 'POST',
                 url: reqUrl,
                 headers: headersList,
-                body: JSON.stringify(payload),
-            }
-
-            request(options, (error, response) => {
-                if (error) {
-                    console.error('Error:', error)
-                    reject(error)
-                } else {
-                    resolve(response)
-                }
+                data: payload,
             })
-        })
+            console.log('✅ Notification sent successfully. Response:', response.status)
+            return response
+        } catch (error) {
+            console.error('❌ Error sending notification:', error)
+            throw error
+        }
     } catch (err) {
         console.log(err)
     }
