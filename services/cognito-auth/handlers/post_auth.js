@@ -22,7 +22,7 @@ exports.handler = async (event, context, callback) => {
         console.log('event', JSON.stringify(event))
 
         // Early returns for special cases
-        if (event.username?.startsWith('GOOGLE_')) {
+        if (event.userName?.toUpperCase().startsWith('GOOGLE_')) {
             console.log('First time Login using google')
             return callback(null, event)
         }
