@@ -12,94 +12,73 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-console */
-const CryptoJS = require('crypto-js')
-const uuid = require('uuid')
-const AWS = require('aws-sdk')
-
-const cognito = new AWS.CognitoIdentityServiceProvider()
-const { get } = require('request')
-const Buyers = require('../entities/Buyers')
-const Counter = require('../entities/Counter')
-const AccessLogs = require('../entities/AccessLogs')
 const mongoConnection = require('../lib/mongodb_helper')
-const cognitoHelper = require('../lib/cognito_helper')
-const helpers = require('../lib/helper')
 
 // mongoConnection.connect()
 
 exports.handler = async (event, context, callback) => {
-    let connection // Define the connection variable here
+    let connection
     try {
         console.log('event', JSON.stringify(event))
 
-        // Connect to MongoDB
-        connection = await mongoConnection.connect()
-        console.log('connection', connection)
+        // Early returns for special cases
+        if (event.userName?.toUpperCase().startsWith('GOOGLE_')) {
+            console.log('First time Login using google')
+            return callback(null, event)
+        }
 
-        const db = connection.connection.db // Accessing the database
-        console.log('Database connected')
-
-        const email = event.request.userAttributes.email
-        const identities = event.request.userAttributes.identities
+        const { email, identities } = event.request.userAttributes
 
         if (!identities) {
             console.log('Non-federated user. Skipping identities and access log creation.')
             return callback(null, event)
         }
 
-        // Parse the identities string
-        const parsedIdentities = JSON.parse(identities)
+        // Connect to MongoDB only if needed
+        connection = await mongoConnection.connect()
+        const db = connection.connection.db
 
-        // Extract providerName
-        const providerName = parsedIdentities[0]?.providerName
-        console.log('Provider Name:', providerName)
+        // Parse identities and get provider
+        const providerName = JSON.parse(identities)[0]?.providerName
+        if (!['Google', 'Facebook'].includes(providerName)) {
+            return callback(null, event)
+        }
 
+        // Get buyer info
         const buyersCollection = db.collection(process.env.BUYER_COLLECTION)
-        const getBuyer = await buyersCollection.findOne({ email_address: email })
+        const buyer = await buyersCollection.findOne({ email_address: email })
 
-        if (!getBuyer) {
+        if (!buyer) {
             console.error('Buyer not found for email:', email)
             return callback(new Error('Buyer not found'))
         }
 
-        console.log('getBuyer', getBuyer)
-
-        // Combine first name and last name from getBuyer
-        const name = `${getBuyer.first_name || ''} ${getBuyer.last_name || ''}`.trim()
-
-        if (providerName === 'Google' || providerName === 'Facebook') {
-            const accessLog = {
-                actor_id: getBuyer.buyer_id,
-                updated_by: {
-                    type: 'Buyer',
-                    name, // Use combined name
-                    email_address: getBuyer.email_address,
-                },
-                section: {
-                    name: 'Bidder Management',
-                    action: 'Login',
-                },
-                updated_at: Date.now(), // Convert to epoch (seconds)
-            }
-
-            console.log('Access Log:', accessLog)
-
-            // Save the access log
-            const accessLogsCollection = db.collection(process.env.ACCESS_LOG_COLLECTION)
-            await accessLogsCollection.insertOne(accessLog)
-
-            console.log('Access log saved successfully')
+        // Create and save access log
+        const name = `${buyer.first_name || ''} ${buyer.last_name || ''}`.trim()
+        const accessLog = {
+            actor_id: buyer.buyer_id,
+            updated_by: {
+                type: 'Buyer',
+                name,
+                email_address: buyer.email_address,
+            },
+            section: {
+                name: 'Bidder Management',
+                action: 'Login',
+            },
+            updated_at: Date.now(),
         }
 
-        callback(null, event)
+        await db.collection(process.env.ACCESS_LOG_COLLECTION)
+            .insertOne(accessLog)
+
+        return callback(null, event)
     } catch (error) {
         console.error('Error in handler:', error)
-        callback(error)
+        return callback(error)
     } finally {
-        // Ensure MongoDB connection is closed
         if (connection) {
             await connection.disconnect()
-            console.log('MongoDB connection closed')
         }
     }
 }
