@@ -53,6 +53,13 @@ def buyer_signin_logger(event, context):
         data = event['queryStringParameters']
         auction_id = data['auction_id']
 
+        if not auction_id:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Please provide auction_id"})
+            }
+
         auction_data = auction_collection.find_one({"_id": ObjectId(auction_id)})
         seller_email = auction_data['seller_email']
         buyer_data = buyers_collection.find_one({"email_address": email_address, "seller_email": seller_email})

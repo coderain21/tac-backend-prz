@@ -218,6 +218,13 @@ def create(event, context):
     try:
         sub_domain_name = event['queryStringParameters'].get('domain')
         auction_id = event['queryStringParameters'].get('auction_id')
+
+        if not sub_domain_name or not auction_id:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Please provide domain and auction_id"})
+            }
         # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
         data = fetch_seller_email_from_auction(auction_id)
         # Encrypt the data using AWS KMS

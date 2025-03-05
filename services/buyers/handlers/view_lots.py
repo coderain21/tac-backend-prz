@@ -36,8 +36,18 @@ def lot_details(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide lot_id"})
             }
-        lot_id = ObjectId(data['lot_id'])
-        buyer_id = data.get('buyer_id')  # Check if buyer_email is provided
+        # checking whether the lot is in proper format
+        try:
+            lot_id = ObjectId(data['lot_id'])
+        except:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid lot_id format"})
+            }
+        buyer_id = data.get('buyer_id')
+        
+        # Check if buyer_email is provided
         # client = MongoClient(
                     #   os.environ['MONGO_CLIENT'],
                     #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
@@ -49,6 +59,7 @@ def lot_details(event, context):
         # auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         # buyer_details = buyer_collection.find_one({'_id': ObjectId(buyer_id)})
         # buyer_email = buyer_details['email_address']
+
         result = collection.find_one({'_id': lot_id})
         # Check if buyer_email is provided in the query parameters
         if buyer_id:
