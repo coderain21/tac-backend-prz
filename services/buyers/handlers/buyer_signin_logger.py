@@ -59,8 +59,8 @@ def buyer_signin_logger(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        
-        try: 
+
+        try:
             auction_id = ObjectId(auction_id)
         except Exception as e:
             return {

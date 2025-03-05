@@ -46,7 +46,7 @@ def lot_details(event, context):
                 "body": json.dumps({"message": "Invalid lot_id format"})
             }
         buyer_id = data.get('buyer_id')
-        
+
         # Check if buyer_email is provided
         # client = MongoClient(
                     #   os.environ['MONGO_CLIENT'],
