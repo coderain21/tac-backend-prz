@@ -30,6 +30,7 @@ db = client[os.environ['DATABASE']]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 auction_register =db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 counter_collection= db[os.environ["COUNTER_LOT"]]
 user_collection= db[os.environ["MONGODB_COLLECTION_NAME"]]
 subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
@@ -202,21 +203,37 @@ def register_auction(event, context):
             logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
         else:
             logo_img= os.environ["CDN_LINK"]+registration_type["logo_image"]
-        paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+        # paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
+        #                 "seller_email": seller_email,
+        #                 'record_type': 'Paddle'},
+        #                 {'$inc': {
+        #                     'starting_sequence': 1}},
+        #                 return_document=pymongo.ReturnDocument.AFTER,
+        #                 upsert=True)
+        subdomain = subdomain_collection.find_one({"seller_email": seller_email})
+        domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
+
+
+        if registration_type['template_name'] == 'Single Lot':
+            lot_details = lot_collection.find_one({'auction_id': registration_type['auction_id'], 'seller_email': registration_type['seller_email']})
+            lot_image = next((f"{os.environ.get('CDN_LINK')}{image['url']}" for image in lot_details['images'] if image.get('featured')), None)
+            print('lot image ', lot_image)  
+            auction_image = f"{lot_image}"
+            print('auction image', auction_image)
+        else:
+            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+
+
+        print('auction image after', auction_image)
+        if registration_type['registration_type'] == 'Email only' or registration_type['registration_type'] == 'Credit (bank) card validation':
+            #creating the counter inside this condition because it was causing issue in manual approval bidder feature
+            paddle=counter_collection.find_one_and_update({"auction_id": auction_id,
                         "seller_email": seller_email,
                         'record_type': 'Paddle'},
                         {'$inc': {
                             'starting_sequence': 1}},
                         return_document=pymongo.ReturnDocument.AFTER,
                         upsert=True)
-        subdomain = subdomain_collection.find_one({"seller_email": seller_email})
-        domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
-
-        auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
-
-
-
-        if registration_type['registration_type'] == 'Email only' or registration_type['registration_type'] == 'Credit (bank) card validation':
             register_status = "Approved"
             template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
@@ -230,6 +247,7 @@ def register_auction(event, context):
                             "Seller_email": seller_email,
                             "domainURL": domain_url
             }
+            print('template data', template_data)
             # send_pinpoint_email(email_address,os.environ['SES_SENDER_EMAIL_ID'],
             #                     template_data,os.environ['BUYER_AUCTION_REGISTER_TEMPLATE'])
 
