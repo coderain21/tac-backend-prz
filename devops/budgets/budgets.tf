@@ -30,7 +30,7 @@ resource "aws_budgets_budget" "budgets" {
     notification_type          = "ACTUAL"
     comparison_operator = "GREATER_THAN"
     threshold = 90
-    subscriber_email_addresses = ["nidhi.shashi@7edge.com", "ranjith.n@7edge.com"] 
+    subscriber_email_addresses = ["namratha.shettigar@7edge.com", "ranjith.n@7edge.com"] 
   }
 }
 
