@@ -110,6 +110,20 @@ def generate_paypal_order(payment_info, redirect_url):
     return_url = redirect_url.get('return_url')
     cancel_url = redirect_url.get('cancel_url')
     access_token = get_access_token()
+    cart_items = payment_info.get("cart_items", [])
+
+    items = []
+    for item in cart_items:
+        items.append({
+            "name": item.get("lot_title", "Auction Lot"),
+            "description": f"Lot #{item.get('lot_number', '')}",
+            "unit_amount": {
+                "currency_code": item.get("currency", currency),
+                "value": str(item.get("bid_amount", 0))
+            },
+            "quantity": "1",
+            "category": "DIGITAL_GOODS"
+        })
 
     order_data = {
         "intent": "CAPTURE",
@@ -124,16 +138,7 @@ def generate_paypal_order(payment_info, redirect_url):
                     }
                 }
             },
-            "items": [{
-                "name": "Auction Purchase",
-                "description": "Purchase from online auction",
-                "unit_amount": {
-                    "currency_code": currency,
-                    "value": str(amount)
-                },
-                "quantity": "1",
-                "category": "DIGITAL_GOODS"
-            }]
+            "items": items
         }],
         "application_context": {
             "landing_page": "BILLING",
@@ -160,8 +165,6 @@ def generate_paypal_order(payment_info, redirect_url):
     
     response.raise_for_status()
     return response.json()
-
-
 
 
 
