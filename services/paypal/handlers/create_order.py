@@ -106,42 +106,64 @@ def create_order(insert_data):
 # Create a PayPal order
 def generate_paypal_order(payment_info, redirect_url):
     currency = payment_info.get("currency")
-    amount = payment_info.get("amount")
-    account_id = payment_info.get("account_id")
-    seller_email = payment_info.get("seller_email")
-    application_fee = payment_info.get("application_fee")
+    amount = payment_info.get("amount") 
     return_url = redirect_url.get('return_url')
     cancel_url = redirect_url.get('cancel_url')
     access_token = get_access_token()
 
-
-
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
-            "amount": {"currency_code": currency, "value": amount},
-            "payee": {"merchant_id": account_id, "email_address": seller_email},
-            "payment_instruction": {
-                "disbursement_mode": "INSTANT",
-                "platform_fees": [{"amount": {"currency_code": currency, "value": application_fee}}]
-            }
+            "amount": {
+                "currency_code": currency,
+                "value": str(amount),
+                "breakdown": {
+                    "item_total": {
+                        "currency_code": currency,
+                        "value": str(amount)
+                    }
+                }
+            },
+            "items": [{
+                "name": "Auction Purchase",
+                "description": "Purchase from online auction",
+                "unit_amount": {
+                    "currency_code": currency,
+                    "value": str(amount)
+                },
+                "quantity": "1",
+                "category": "DIGITAL_GOODS"
+            }]
         }],
         "application_context": {
-            "return_url": return_url,
-            "cancel_url": cancel_url,
-            "brand_name": "INDY",
+            "landing_page": "BILLING",
+            "shipping_preference": "NO_SHIPPING",
             "user_action": "PAY_NOW",
-            "landing_page": "BILLING"
+            "return_url": return_url,
+            "cancel_url": cancel_url
         }
     }
     print(json.dumps(order_data, indent=4))
     response = requests.post(
         f"{PAYPAL_API_URL}/v2/checkout/orders",
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {access_token}"},
+        headers={
+            "Content-Type": "application/json",
+            'PayPal-Partner-Attribution-Id': os.environ["PAYPAL_BN_CODE"],
+            "Authorization": f"Bearer {access_token}"
+        },
         json=order_data
     )
+    
+    if response.status_code != 200 and response.status_code != 201:
+        print(f"Error: {response.status_code}")
+        print(f"Response: {response.text}")
+    
     response.raise_for_status()
     return response.json()
+
+
+
+
 
 
 def create_paypal_order(event, context):
