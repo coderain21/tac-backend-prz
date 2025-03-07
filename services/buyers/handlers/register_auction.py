@@ -234,6 +234,19 @@ def register_auction(event, context):
                             'starting_sequence': 1}},
                         return_document=pymongo.ReturnDocument.AFTER,
                         upsert=True)
+        subdomain = subdomain_collection.find_one({"seller_email": seller_email})
+        domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
+
+        # for single lot auction, the template image should be same as the lot lead image
+        if registration_type['template_name'] == 'Single Lot':
+            lot_details = lot_collection.find_one({'auction_id': registration_type['auction_id'], 'seller_email': registration_type['seller_email']})
+            lot_image = next((f"{os.environ.get('CDN_LINK')}{image['url']}" for image in lot_details['images'] if image.get('featured')), None)
+            auction_image = f"{lot_image}"
+        else:
+            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+
+
+        if registration_type['registration_type'] == 'Email only' or registration_type['registration_type'] == 'Credit (bank) card validation':
             register_status = "Approved"
             template_data = {"paddle":paddle['starting_sequence'],
                             "Seller_name": seller_name,"user_first_name": first_name,
