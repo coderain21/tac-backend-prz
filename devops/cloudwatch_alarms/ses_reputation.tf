@@ -97,5 +97,5 @@ resource "aws_sns_topic_subscription" "ses_reputation_subscription_2" {
   provider = aws.deployment-eu
   topic_arn = aws_sns_topic.ses_reputation_topic.arn
   protocol  = "email"
-  endpoint  = "nidhi.shashi@7edge.com"  # Replace with your email address
+  endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
 }
