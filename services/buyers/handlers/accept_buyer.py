@@ -29,6 +29,7 @@ buyer_collection = db[os.environ["BUYER_COLLECTION"]]
 auction_register = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
 auction = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 counter_collection = db[os.environ["COUNTER_LOT"]]
+lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 user_collection = db[os.environ["MONGODB_COLLECTION_NAME"]]
 subdomain_collection = db[os.environ['SUB_DOMAIN_TABLE']]
 
@@ -150,7 +151,20 @@ def accept_buyer(event, context):
                 logo_img = f"{os.environ.get('CDN_LINK')}Logo.png"
             else:
                 logo_img = os.environ["CDN_LINK"] + registration_type["logo_image"]
-            auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+
+
+            # for single lot auction, the template image should be same as the lot lead image
+            if registration_type['template_name'] == 'Single Lot':
+                lot_details = lot_collection.find_one({'auction_id': registration_type['auction_id'], 'seller_email': registration_type['seller_email']})
+                lot_image = next((f"{os.environ.get('CDN_LINK')}{image['url']}" for image in lot_details['images'] if image.get('featured')), None)
+                auction_image = f"{lot_image}"
+            else:
+                auction_image = f"{os.environ.get('CDN_LINK')}{registration_type['auction_image']}"
+
+
+
+
+
             subdomain = subdomain_collection.find_one({"seller_email": seller_email})
             domain_url = f"https://{subdomain['subdomain']}.{os.environ['AMPLIFY_DOMAIN_NAME']}/auctions/{auction_id}"
             template_data = {"paddle":paddle['starting_sequence'],
