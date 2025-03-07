@@ -122,8 +122,7 @@ def generate_paypal_order(payment_info, redirect_url):
                 "value": str(item.get("bid_amount", 0))
             },
             "quantity": "1",
-            "category": "DIGITAL_GOODS"
-        })
+            "category": "PHYSICAL_GOODS"
 
     order_data = {
         "intent": "CAPTURE",
@@ -292,12 +291,17 @@ def create_paypal_order(event, context):
                     "headers": headers,
                     "body": json.dumps({'message': 'Seller has disconnected their paypal account,please connect'}, cls=Encoder)
                 }
+            
+
+            cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
+
             payment_info = {
                 "amount": amount,
                 "currency": seller_data_of_auction["currency"],
                 "application_fee": application_fee,
                 "account_id": account_id,
-                "seller_email": seller_email
+                "seller_email": seller_email,
+                "cart_items": cart_data
             }
 
             redirect_urls = {
@@ -369,7 +373,6 @@ def create_paypal_order(event, context):
         }
 
 
-        cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["purchases"] = cart_data
         insert_data["lots"] = res
         insert_data["created_at"] = time_stamp
