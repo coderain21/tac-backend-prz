@@ -204,6 +204,14 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_full_access_task_role" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
   provider = aws.deployment-eu
 }
+
+# Attach Autoscaling policy
+resource "aws_iam_role_policy_attachment" "ECS_autoscaling_policy" {
+  role     = "${aws_iam_role.ecs_task_role.name}"
+  policy_arn = "arn:aws:iam::149706502537:policy/ECS_autoscaling_policy"
+  provider = aws.deployment-eu
+}
+
 # Attach CloudWatch Logs full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_full_access_task_execution_role" {
   role      = "${aws_iam_role.ecs_task_execution_role.name}"
