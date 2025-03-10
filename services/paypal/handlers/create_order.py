@@ -123,7 +123,7 @@ def generate_paypal_order(payment_info, redirect_url):
             },
             "quantity": "1",
             "category": "PHYSICAL_GOODS"
-
+        })
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
