@@ -137,6 +137,7 @@ def accept_buyer(event, context):
         print('Start date:', start_date, 'Start time:', start_time)
 
         if status == 'Approved':
+            #so the counter is getting created here itself for the first time when they approve the bidder.
             paddle = counter_collection.find_one_and_update({"auction_id": auction_id,
                                 "seller_email": seller_email,
                                 'record_type': 'Paddle'},
