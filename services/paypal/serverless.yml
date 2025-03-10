@@ -98,6 +98,7 @@ provider:
     MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     PAYMENT_STATUS: ${opt:stage, self:provider.stage}-payment-status
+    PAYPAL_BN_CODE: ${ssm:PAYPAL_BN_CODE}
 
 
 

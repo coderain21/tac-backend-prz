@@ -163,6 +163,12 @@ variable "PAYPAL_PARTNER_MERCHANT_ID" {
   description = "Description of the variable"
 }
 
+variable "PAYPAL_BN_CODE" {
+  type        = string
+  description = "Description of the variable"
+}
+
+
 variable "QUICKSIGHT_ACCOUNT_ID" {
   type        = string
   description = "Description of the variable"

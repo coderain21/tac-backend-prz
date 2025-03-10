@@ -95,11 +95,17 @@ def update_or_create_merchant(collection, data, event_type):
             primary_email_confirmed = merchant_info.get('primary_email_confirmed', False)
 
             if payments_receivable and primary_email_confirmed:
+                update_data["$set"]["paypal_payment_recievable"] = True
+                update_data["$set"]["paypal_email_confirmed"] = True
                 # Merchant is fully onboarded
                 update_data["$set"]["paypal_status"] = "connected"
             else:
                 # If not fully onboarded, capture incomplete status
                 update_data["$set"]["paypal_status"] = "consent_granted"
+                if not payments_receivable:
+                    update_data["$set"]["paypal_payment_recievable"] = False
+                if not primary_email_confirmed:
+                    update_data["$set"]["paypal_email_confirmed"] = False
 
 
 
