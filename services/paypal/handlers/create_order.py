@@ -158,7 +158,7 @@ def generate_paypal_order(payment_info, redirect_url):
         json=order_data
     )
 
-    if response.status_code not in [200, 201]: 
+    if response.status_code not in [200, 201]:
         print(f"Error: {response.status_code}")
         print(f"Response: {response.text}")
 
