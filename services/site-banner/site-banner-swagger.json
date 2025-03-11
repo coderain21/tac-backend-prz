@@ -42,7 +42,7 @@
                 {
                   "type":"Emergency",
                    "audience": "All Sellers",
-                   "notification": "<p>emergency<p>"
+                   "notification": "<p>emergency</p>"
                }
               }
             }
