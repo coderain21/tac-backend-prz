@@ -38,9 +38,17 @@ def credit_card(event, context):
     # Parse the request body to get the token and buyer_id
     data = event['queryStringParameters']
     buyer_id= data['buyer_id']
-    buyer_id = ObjectId(buyer_id)
     auction_id = data['auction_id']
-    auction_id =ObjectId(auction_id)
+    try:
+        auction_id =ObjectId(auction_id)
+        buyer_id = ObjectId(buyer_id)
+    except Exception as e:
+        print('Invalid Auction id', str(e))
+        return {
+            "statusCode": 400,
+            "headers": headers,
+            "body": json.dumps({"message": "Invalid Auction id or buyer id"})
+        }
     # Set your Stripe API key
     stripe.api_key = os.environ['CREDIT_CARD_STRIPE_API_KEY']
     try:
@@ -105,6 +113,7 @@ def credit_card(event, context):
                                 'setup_intent_id': setup_intent.id})
         }
     except stripe.error.StripeError as e:
+        print('stripe error', str(e))
         # Handle specific Stripe errors
         return{
             'statusCode': 400,
