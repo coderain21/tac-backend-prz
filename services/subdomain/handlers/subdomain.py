@@ -69,64 +69,57 @@ def create_app_client(userpoolid,client_name,subdomain):
     return response
 
 def update_app_client(userpoolid, client_id, client_name, subdomain, existing_domain_record):
-    try:
-        get_userpool = cognito_client.describe_user_pool_client(
-            UserPoolId=userpoolid,
-            ClientId=client_id
-        )
-        callbackUrlArray = get_userpool['UserPoolClient']['CallbackURLs']
-        # Append new callback URLs
-        new_callback_urls = [
-            f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}",
-            f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/register", 
-            f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/login"
-        ]
-        callbackUrlArray.extend(new_callback_urls)
+    get_userpool = cognito_client.describe_user_pool_client(
+        UserPoolId=userpoolid,
+        ClientId=client_id
+    )
+    callbackUrlArray = get_userpool['UserPoolClient']['CallbackURLs']
+    # Append new callback URLs
+    new_callback_urls = [
+        f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}",
+        f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/register", 
+        f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/login"
+    ]
+    callbackUrlArray.extend(new_callback_urls)
 
-        # Check if the existing subdomain is different from the default subdomain
-        if existing_domain_record['subdomain'] != os.environ['DEFAULT_SUB_DOMAIN']:
-            # Remove the callback URLs related to the existing subdomain
-            callbackUrlArray = [url for url in callbackUrlArray if existing_domain_record['subdomain'] not in url]
+    # Check if the existing subdomain is different from the default subdomain
+    if existing_domain_record['subdomain'] != os.environ['DEFAULT_SUB_DOMAIN']:
+        # Remove the callback URLs related to the existing subdomain
+        callbackUrlArray = [url for url in callbackUrlArray if existing_domain_record['subdomain'] not in url]
 
-        if os.environ.get("STAGE") == "dev":
-            callbackUrlArray.append('http://localhost:3000/register')
-        response = cognito_client.update_user_pool_client(
-            UserPoolId=userpoolid,
-            ClientId=client_id,
-            ClientName=client_name,
-            TokenValidityUnits={
-                'AccessToken': 'minutes',
-                'IdToken': 'minutes',
-                'RefreshToken': 'days'
-            },
-            ExplicitAuthFlows=[
-                'ALLOW_ADMIN_USER_PASSWORD_AUTH', 'ALLOW_CUSTOM_AUTH', 'ALLOW_USER_PASSWORD_AUTH', 'ALLOW_USER_SRP_AUTH',
-                'ALLOW_REFRESH_TOKEN_AUTH'
-            ],
-            AccessTokenValidity=60,
-            IdTokenValidity=60,
-            RefreshTokenValidity=30,
-            CallbackURLs=callbackUrlArray,  # Use the modified callback_url list
-            LogoutURLs=callbackUrlArray,  # Use the modified callback_url list
-            SupportedIdentityProviders=[
-                'COGNITO', 'Facebook', 'Google'
-            ],
-            AllowedOAuthFlows=[
-                'code', 'implicit'
-            ],
-            AllowedOAuthScopes=[
-                'phone', 'email', 'openid', 'profile', 'aws.cognito.signin.user.admin'
-            ],
-            AllowedOAuthFlowsUserPoolClient=True
-        )
-        return response
-    except Exception as e:
-        print('Error in update app client', e)
-        return {
-            'statusCode': 400,
-            'headers': headers,
-            'body': json.dumps({'Error in update app client': str(e)})
-        }
+    if os.environ.get("STAGE") == "dev":
+        callbackUrlArray.append('http://localhost:3000/register')
+    response = cognito_client.update_user_pool_client(
+        UserPoolId=userpoolid,
+        ClientId=client_id,
+        ClientName=client_name,
+        TokenValidityUnits={
+            'AccessToken': 'minutes',
+            'IdToken': 'minutes',
+            'RefreshToken': 'days'
+        },
+        ExplicitAuthFlows=[
+            'ALLOW_ADMIN_USER_PASSWORD_AUTH', 'ALLOW_CUSTOM_AUTH', 'ALLOW_USER_PASSWORD_AUTH', 'ALLOW_USER_SRP_AUTH',
+            'ALLOW_REFRESH_TOKEN_AUTH'
+        ],
+        AccessTokenValidity=60,
+        IdTokenValidity=60,
+        RefreshTokenValidity=30,
+        CallbackURLs=callbackUrlArray,  # Use the modified callback_url list
+        LogoutURLs=callbackUrlArray,  # Use the modified callback_url list
+        SupportedIdentityProviders=[
+            'COGNITO', 'Facebook', 'Google'
+        ],
+        AllowedOAuthFlows=[
+            'code', 'implicit'
+        ],
+        AllowedOAuthScopes=[
+            'phone', 'email', 'openid', 'profile', 'aws.cognito.signin.user.admin'
+        ],
+        AllowedOAuthFlowsUserPoolClient=True
+    )
+    return response
+
 
 
 def subdomain(event, context):
@@ -213,7 +206,16 @@ def subdomain(event, context):
                 print('update_mapping', update_mapping)
                 update_mapping.append({'prefix': new_subdomain, 'branchName': os.environ["AMPLIFY_BRANCH"]})
 
-                update_app_client(userpoolid, userclientid, userclientname, new_subdomain,existing_domain_record)
+                try:
+                    update_app_client(userpoolid, userclientid, userclientname, new_subdomain,existing_domain_record)
+                except Exception as e:
+                    print('Error in update app client call:', str(e))
+                    session.abort_transaction()
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'Error updating app client': str(e)})
+                             }               
                 subdomain_collection.update_one(
                     {'seller_email': seller_email},
                     {"$set": {'subdomain': new_subdomain, "default": False}},
