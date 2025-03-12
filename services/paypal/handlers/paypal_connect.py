@@ -29,6 +29,7 @@ def create_partner_referral(access_token, tracking_id, return_url):
     """Creates a partner referral with API_INTEGRATION operation in PayPal."""
     headers = {
         'Content-Type': 'application/json',
+        'PayPal-Partner-Attribution-Id': os.environ["PAYPAL_BN_CODE"],
         'Authorization': f'Bearer {access_token}',
     }
     data = {
@@ -117,7 +118,7 @@ def connect(event, context):
 
             # Step 2: Check merchant onboarding status
             merchant_id = user_info['paypal_connected_id']  # merchant ID from db
-            merchant_status = call_paypal_api(f"/v1/customer/partners/{partner_merchant_id}/merchant-integrations/{merchant_id}", access_token, "GET")
+            merchant_status = call_paypal_api(f"/v2/customer/partners/{partner_merchant_id}/merchant-integrations/{merchant_id}", access_token, "GET")
             product_status = any(product.get('name') and product.get('status') == 'ACTIVE'
                          for product in merchant_status.get('products', []))
             print('Merchant status:', merchant_status)

@@ -72,7 +72,15 @@ def view_profile(event, context):
         # collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
         auction_id = data['auction_id']
-        auction_id= ObjectId(auction_id)
+        try:
+            auction_id= ObjectId(auction_id)
+        except Exception as e:
+            print('Invalid Auction id', str(e))
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid Auction id"})
+            }
         # auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
         auction= auction_collection.find({'_id':auction_id})
         auction= list(auction)

@@ -581,6 +581,13 @@ resource "aws_ssm_parameter" "paypal_partner_merchant_id" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "paypal_bn_code" {
+  name  = "PAYPAL_BN_CODE"
+  type  = "String"
+  value = var.PAYPAL_BN_CODE
+  provider = aws.deployment-eu
+  overwrite = true
+}
 resource "aws_ssm_parameter" "quicksight_account_id" {
   name  = "QUICKSIGHT_ACCOUNT_ID"
   type  = "String"

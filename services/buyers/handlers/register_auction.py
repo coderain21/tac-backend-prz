@@ -217,7 +217,7 @@ def register_auction(event, context):
         if registration_type['template_name'] == 'Single Lot':
             lot_details = lot_collection.find_one({'auction_id': registration_type['auction_id'], 'seller_email': registration_type['seller_email']})
             lot_image = next((f"{os.environ.get('CDN_LINK')}{image['url']}" for image in lot_details['images'] if image.get('featured')), None)
-            print('lot image ', lot_image)  
+            print('lot image ', lot_image)
             auction_image = f"{lot_image}"
             print('auction image', auction_image)
         else:
