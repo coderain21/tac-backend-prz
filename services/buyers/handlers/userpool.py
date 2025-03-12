@@ -163,6 +163,11 @@ def fetch_item_from_dynamodb(sub_domain_name, default,id):
 
 def fetch_seller_email_from_auction(auction_id):
     auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+    try:
+        auction_id = ObjectId(auction_id)
+    except Exception as e:
+        print('Invalid format', str(e))
+        return None
     email = auction_collection.find_one(
             {"_id":ObjectId(auction_id)},{'seller_email' : 1}).get('seller_email')
     return email
@@ -218,8 +223,21 @@ def create(event, context):
     try:
         sub_domain_name = event['queryStringParameters'].get('domain')
         auction_id = event['queryStringParameters'].get('auction_id')
+
+        if sub_domain_name is None or auction_id is None:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Please provide domain and auction_id"})
+            }
         # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
         data = fetch_seller_email_from_auction(auction_id)
+        if not data:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid auction id format"})
+            }
         # Encrypt the data using AWS KMS
         # if data is not None:
         #     data["auth_domain"] = os.environ["DEFAULT_COGNITO_DOMAIN"]

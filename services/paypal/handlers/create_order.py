@@ -107,41 +107,65 @@ def create_order(insert_data):
 def generate_paypal_order(payment_info, redirect_url):
     currency = payment_info.get("currency")
     amount = payment_info.get("amount")
-    account_id = payment_info.get("account_id")
-    seller_email = payment_info.get("seller_email")
-    application_fee = payment_info.get("application_fee")
     return_url = redirect_url.get('return_url')
     cancel_url = redirect_url.get('cancel_url')
     access_token = get_access_token()
+    cart_items = payment_info.get("cart_items", [])
 
-
-
+    items = []
+    for item in cart_items:
+        items.append({
+            "name": item.get("lot_title", "Auction Lot"),
+            "description": f"Lot #{item.get('lot_number', '')}",
+            "unit_amount": {
+                "currency_code": item.get("currency", currency),
+                "value": str(item.get("bid_amount", 0))
+            },
+            "quantity": "1",
+            "category": "PHYSICAL_GOODS"
+        })
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
-            "amount": {"currency_code": currency, "value": amount},
-            "payee": {"merchant_id": account_id, "email_address": seller_email},
-            "payment_instruction": {
-                "disbursement_mode": "INSTANT",
-                "platform_fees": [{"amount": {"currency_code": currency, "value": application_fee}}]
-            }
+            "amount": {
+                "currency_code": currency,
+                "value": str(amount),
+                "breakdown": {
+                    "item_total": {
+                        "currency_code": currency,
+                        "value": str(amount)
+                    }
+                }
+            },
+            "items": items
         }],
         "application_context": {
-            "return_url": return_url,
-            "cancel_url": cancel_url,
-            "brand_name": "INDY",
+            "landing_page": "BILLING",
+            "shipping_preference": "NO_SHIPPING",
             "user_action": "PAY_NOW",
-            "landing_page": "BILLING"
+            "return_url": return_url,
+            "cancel_url": cancel_url
         }
     }
     print(json.dumps(order_data, indent=4))
     response = requests.post(
         f"{PAYPAL_API_URL}/v2/checkout/orders",
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {access_token}"},
+        headers={
+            "Content-Type": "application/json",
+            'PayPal-Partner-Attribution-Id': os.environ["PAYPAL_BN_CODE"],
+            "Authorization": f"Bearer {access_token}"
+        },
         json=order_data
     )
+
+    if response.status_code not in [200, 201]:
+        print(f"Error: {response.status_code}")
+        print(f"Response: {response.text}")
+
     response.raise_for_status()
     return response.json()
+
+
 
 
 def create_paypal_order(event, context):
@@ -267,12 +291,16 @@ def create_paypal_order(event, context):
                     "headers": headers,
                     "body": json.dumps({'message': 'Seller has disconnected their paypal account,please connect'}, cls=Encoder)
                 }
+
+            cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
+
             payment_info = {
                 "amount": amount,
                 "currency": seller_data_of_auction["currency"],
                 "application_fee": application_fee,
                 "account_id": account_id,
-                "seller_email": seller_email
+                "seller_email": seller_email,
+                "cart_items": cart_data
             }
 
             redirect_urls = {
@@ -344,7 +372,6 @@ def create_paypal_order(event, context):
         }
 
 
-        cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["purchases"] = cart_data
         insert_data["lots"] = res
         insert_data["created_at"] = time_stamp
