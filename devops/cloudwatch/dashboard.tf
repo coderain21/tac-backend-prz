@@ -404,7 +404,7 @@ resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_3" {
   provider = aws.deployment-eu
   topic_arn = aws_sns_topic.cloudwatch_rum_topic.arn
   protocol  = "email"
-  endpoint  = "nidhi.shashi@7edge.com"  # Replace with your email address
+  endpoint  = "namratha.shettigar@7edge.com"  # Replace with your email address
 }
 
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
