@@ -132,6 +132,8 @@ module.exports.otpValidation = async (event, _context, callback) => {
                     const counter = await Counter.findOneAndUpdate({ record_type: 'Seller', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
                     const sequenceNumber = `S${helpers.leftPad(counter.starting_sequence, 4)}`
                     userData.seller_id = sequenceNumber
+                    userData.free_user = false
+                    userData.plan_type = 'Pro'
                     const user = await mongoConnection.save(userData, Users)
                     const domainInfo = {
                         seller_email: userData.email_address,
