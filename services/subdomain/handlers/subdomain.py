@@ -122,20 +122,34 @@ def update_app_client(userpoolid, client_id, client_name, subdomain, existing_do
 
     print("Existing Subdomain:", existing_domain_record['subdomain'])
     print("Default Subdomain:", os.environ['DEFAULT_SUB_DOMAIN'])
+    print('new subdomain', subdomain)
 
 
     # Check if the existing subdomain is different from the default subdomain
     if existing_domain_record['subdomain'] != os.environ['DEFAULT_SUB_DOMAIN']:
         # Remove the callback URLs related to the existing subdomain
         # callbackUrlArray =[url for url in callbackUrlArray if existing_domain_record['subdomain'] not in url] 
-        filtered_callbackUrlArray = []
-        for url in callbackUrlArray:
-            print('existing subdomain', existing_domain_record['subdomain'])
-            if existing_domain_record['subdomain'] not in url:
-                print('url', url)
-                filtered_callbackUrlArray.append(url)
+        subdomain = existing_domain_record['subdomain']
+        # pattern = re.compile(rf"https://{re.escape(subdomain)}")
 
-        callbackUrlArray = filtered_callbackUrlArray
+        print("Before filtering:", callbackUrlArray)
+        print("Filtering out subdomain:", subdomain)
+
+        callbackUrlArray[:] = [
+                                url for url in callbackUrlArray if not url.startswith(f"https://{subdomain}.")
+                            ]
+
+
+        print("After filtering:", callbackUrlArray)
+
+        # filtered_callbackUrlArray = []
+        # for url in callbackUrlArray:
+        #     print('existing subdomain', existing_domain_record['subdomain'])
+        #     if existing_domain_record['subdomain'] not in url:
+        #         print('url', url)
+        #         filtered_callbackUrlArray.append(url)
+
+        # callbackUrlArray = filtered_callbackUrlArray
     
     # old_subdomain = existing_domain_record['subdomain']
     # callbackUrlArray = [url for url in callbackUrlArray if old_subdomain not in url]
@@ -196,6 +210,7 @@ def subdomain(event, context):
         data = event['queryStringParameters']
         seller_collection = db[os.environ['SELLERS_TABLE']]
         existing_domain_record = subdomain_collection.find_one({"seller_email": seller_email})
+        print('existing domain record', existing_domain_record)
         if data and 'view' in data and data['view'] == 'True':
             subdomain = existing_domain_record.get('subdomain')
             return {
@@ -225,7 +240,15 @@ def subdomain(event, context):
             dns_record = response['domainAssociation']['subDomains'][0]['dnsRecord'].split(' ')[2]
 
         existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
-        subdomain_exists = new_subdomain in [domain['prefix'] for domain in existing_subdomains]
+        print('existing subdomains',existing_subdomains)
+        # subdomain_exists = new_subdomain in [domain['prefix'] for domain in existing_subdomains]
+        # Extract the 'prefix' values from each dictionary in the existing_subdomains list
+        existing_prefixes = [domain['prefix'] for domain in existing_subdomains]
+        print('existing_prefix', existing_prefixes)
+
+        # Check if new_subdomain exists in the list of extracted prefixes
+        subdomain_exists = new_subdomain in existing_prefixes
+        # print('subdomain exists', subdomain_exists)
 
         if subdomain_exists:
             return {
@@ -250,6 +273,7 @@ def subdomain(event, context):
         # update_mapping = [domain for domain in existing_subdomains if domain['prefix'] != existing_domain_record['subdomain']]
         # print('update_mapping', update_mapping)
         update_mapping.append({'prefix': new_subdomain, 'branchName': os.environ["AMPLIFY_BRANCH"]})
+        print('update mapping', update_mapping)
         subdomain_collection.update_one(
             {'seller_email': seller_email},
             {"$set": {'subdomain': new_subdomain, "default": False}}
