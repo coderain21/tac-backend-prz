@@ -53,7 +53,23 @@ def buyer_signin_logger(event, context):
         data = event['queryStringParameters']
         auction_id = data['auction_id']
 
-        auction_data = auction_collection.find_one({"_id": ObjectId(auction_id)})
+        if not auction_id:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Please provide auction_id"})
+            }
+
+        try:
+            auction_id = ObjectId(auction_id)
+        except Exception as e:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid auction_id format"})
+            }
+
+        auction_data = auction_collection.find_one({"_id": auction_id})
         seller_email = auction_data['seller_email']
         buyer_data = buyers_collection.find_one({"email_address": email_address, "seller_email": seller_email})
         actor_id = buyer_data.get('buyer_id')

@@ -12,36 +12,30 @@ variables:
   - group: general
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - group: master
-    - name: ENV
-      value: 'Production'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
     - group: qa
-    - name: ENV
-      value: 'Testing'
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-prod') }}:
     - group: pre-production
-    - name: ENV
-      value: 'Production'
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     - group: develop
-    - name: ENV
-      value: 'Development'
+
 
 stages:
 - stage: CodeQuality
   jobs:
-    - job: "pr_review"
-      displayName: "GPT Pull Request Review"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-latest"
-      steps:
-        - checkout: self
-          persistCredentials: true
-        - task: GPTPullRequestReview@0
-          inputs:
-            api_key: $(OPENAI_TOKEN)
-            aoi_endpoint: $(OPENAI_URL)
+    # - job: "pr_review"
+    #   displayName: "GPT Pull Request Review"
+    #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+    #   pool:
+    #       vmImage: "ubuntu-latest"
+    #   steps:
+    #     - checkout: self
+    #       persistCredentials: true
+    #     - task: GPTPullRequestReview@0
+    #       inputs:
+    #         api_key: $(OPENAI_TOKEN)
+    #         aoi_endpoint: $(OPENAI_URL)
+    
     - job: "lint"
       displayName: "Code Quality"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
@@ -221,9 +215,16 @@ stages:
     - deployment: Deployment
       condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
       displayName: Deployment
+      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          environment: 'Production'
+      ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+          environment: 'Testing'
+      ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+          environment: 'Pre-Production'
+      ${{ else }}:
+        environment: 'Development'
       pool:
         vmImage: 'ubuntu-latest'
-      environment: ${{variables.ENV}}
       strategy:
         # Default deployment strategy, more coming...
         runOnce:
