@@ -142,6 +142,7 @@ def update_app_client(userpoolid, client_id, client_name, subdomain, existing_do
     # Remove old subdomain URLs if not using default subdomain
     if existing_domain_record['subdomain'] != os.environ['DEFAULT_SUB_DOMAIN']:
         # Filter out URLs containing the old subdomain
+        subdomain = existing_domain_record['subdomain']
         callbackUrlArray = [
                                 url for url in callbackUrlArray if not url.startswith(f"https://{subdomain}.")
                             ]
