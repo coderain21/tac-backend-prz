@@ -107,6 +107,7 @@ def create_order(insert_data):
 def generate_paypal_order(payment_info, redirect_url):
     currency = payment_info.get("currency")
     amount = payment_info.get("amount")
+    seller_email = payment_info.get("seller_email")
     return_url = redirect_url.get('return_url')
     cancel_url = redirect_url.get('cancel_url')
     access_token = get_access_token()
@@ -140,9 +141,7 @@ def generate_paypal_order(payment_info, redirect_url):
                 }
             },
             "items": items,
-            "payee": {
-                "merchant_id": account_id
-            },
+            "payee": {"merchant_id": account_id, "email_address": seller_email},
             "payment_instruction": {
                 "platform_fees": [{
                     "amount": {
