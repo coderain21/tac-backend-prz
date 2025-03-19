@@ -51,7 +51,7 @@ const UserSchema = new Schema({
     kyb_status: { type: String, trim: true, default: false },
     seller_id: { type: String, trim: true, default: '' },
     full_name: { type: String, trim: true, default: '' },
-
+    plan_type: {type: String, trim: true, default: ''},
 })
 
 UserSchema.plugin(mongoosePaginate)
