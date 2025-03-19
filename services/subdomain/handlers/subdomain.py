@@ -27,7 +27,7 @@ db = client[os.environ['DATABASE']]
 subdomain_collection = db[os.environ['SUBDOMAIN_COLLECTION']]
 seller_collection = db[os.environ['SELLERS_TABLE']]
 userpoolid = os.environ['DEFAULT_BUYER_USERPOOL_ID']
-userclientid = os.environ['BUYER_COGNITO_CLIENT_ID'] 
+userclientid = os.environ['BUYER_COGNITO_CLIENT_ID']
 userclientname = 'default-client'
 
 def create_app_client(userpoolid,client_name,subdomain):
