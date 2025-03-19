@@ -130,6 +130,8 @@ provider:
             - sts:*
             - lambda:*
             - mobiletargeting:*
+            - xray:PutTraceSegments
+            - xray:PutTelemetryRecords
           Resource: "*"
  
 package:
