@@ -69,6 +69,17 @@ def update_lot(event):
         "images": request_body.get('images', []),
     }
 
+    lot_information = collection.find_one(
+            {"auction_id": auction_id, "seller_email": seller_email, "lot_number": lot_number})
+
+    lot_information = json.loads(json.dumps(lot_information, cls= Encoder))
+    print('lot information', lot_information)
+
+    if request_body.get('starting_price') != lot_information.get('starting_price') and lot_information.get('current_bid'):
+        print('Lot has current bid')
+        return (400, {"message": "Lot has already been bid"})
+
+
     collection.update_one(
         {"lot_number": lot_number, "seller_email": seller_email,
             "auction_id": auction_id},
@@ -76,9 +87,6 @@ def update_lot(event):
     )
     auction_record = collection_auction.find_one(
             {"auction_id": auction_id, "seller_email": seller_email})
-    lot_information = collection.find_one(
-            {"auction_id": auction_id, "seller_email": seller_email, "lot_number": lot_number})
-    lot_information = json.loads(json.dumps(lot_information, cls= Encoder))
     lot_id = str(lot_information['_id'])
     if auction_record['status'] in ['Accepting bids' , 'Published']:
         update = update_lot_data(request_body, lot_id)
