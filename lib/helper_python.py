@@ -10,25 +10,53 @@ import boto3
 import redis
 
 
-def createRedisClient():
-    try:
-        startup_nodes = [
-            {
-                "host": os.environ["REDIS_CLUSTER_ENDPOINT"],
-                "port": 6379
-            }
-        ]
-        cluster = RedisCluster(
-            startup_nodes=startup_nodes,
-            decode_responses=True,
-            skip_full_coverage_check=True  # Add this option
-        )
-        return cluster
-    except (ConnectionError, Exception) as e:
-        print(f"Error connecting to Redis: {e}")
+# def createRedisClient():
+#     try:
+#         startup_nodes = [
+#             {
+#                 "host": os.environ["REDIS_CLUSTER_ENDPOINT"],
+#                 "port": 6379
+#             }
+#         ]
+#         cluster = RedisCluster(
+#             startup_nodes=startup_nodes,
+#             decode_responses=True,
+#             skip_full_coverage_check=True,  # Add this option
+#             ssl=True,
+#             password='--'
+#         )
+#         return cluster
+#     except (ConnectionError, Exception) as e:
+#         print(f"Error connecting to Redis: {e}")
 
 # redis_client = createRedisClient()
 
+def createRedisClient():
+    try:
+        # Remove port from endpoint if it's included
+        cluster_endpoint = os.environ.get("REDIS_CLUSTER_ENDPOINT", "")
+        # if ":" in cluster_endpoint:
+        #     cluster_endpoint = cluster_endpoint.split(":")[0]
+            
+        
+        
+        cluster = RedisCluster(
+            host=cluster_endpoint,  # Use host parameter instead of startup_nodes
+            port=6379,
+            decode_responses=True,
+            skip_full_coverage_check=True,
+            ssl=True,
+            password='--------'  # Your actual password
+        )
+        
+        # Test connection
+        cluster.ping()
+        print("Successfully connected to Redis cluster")
+        
+        return cluster
+    except Exception as e:
+        print(f"Error connecting to Redis: {e}")
+        raise  # Re-raise the exception for proper error handling
 
 # redis_client = redis.Redis(host=os.environ["REDIS_CLUSTER_ENDPOINT"], port=6379)
 
