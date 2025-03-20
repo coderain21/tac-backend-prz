@@ -2,7 +2,7 @@
 import os
 import json
 import pymongo
-from lib.helper_python import update_lot_data 
+from lib.helper_python import update_lot_data
 from lib.common_helper import Encoder
 
 
