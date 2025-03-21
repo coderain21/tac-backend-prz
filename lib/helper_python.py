@@ -124,7 +124,7 @@ def update_lot_data(item, lot_id):
             "images": item.get('images', []),
         }
 
-        if existing_record.get('starting_price') != item.get('starting_price') and existing_record.get('bid_amount'):
+        if get_lot.get('starting_price') != item.get('starting_price') and get_lot.get('bid_amount'):
             print('Lot has current bid')
             return (400, {"message": "Lot has already been bid"})
 
