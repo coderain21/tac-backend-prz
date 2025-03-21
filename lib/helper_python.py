@@ -106,10 +106,10 @@ def update_lot_data(item, lot_id):
     else:
         get_lot = json.loads(existing_record)
         if existing_record:
-                get_lot = json.loads(existing_record)
-     
+            get_lot = json.loads(existing_record)
+
         else:
-                get_lot = {}
+            get_lot = {}
 
         update_request = {
             **get_lot,
@@ -124,7 +124,7 @@ def update_lot_data(item, lot_id):
             "images": item.get('images', []),
         }
 
-        if existing_record.get('starting_price') != item.get('starting_price') and existing_record.get('bid_amount'):
+        if get_lot.get('starting_price') != item.get('starting_price') and get_lot.get('bid_amount'):
             print('Lot has current bid')
             return (400, {"message": "Lot has already been bid"})
 
@@ -142,11 +142,11 @@ def get_Lot(item, lot_id):
     else:
         get_lot = json.loads(existing_record)
         if existing_record:
-                get_lot = json.loads(existing_record)
-                
+            get_lot = json.loads(existing_record)
+
         else:
-                get_lot = {}
-                
+            get_lot = {}
+
         update_request = {
             **get_lot,
             "title1": item.get('title1', ''),
@@ -158,7 +158,7 @@ def get_Lot(item, lot_id):
             "shipping_details": item.get('shipping_details', ''),
             "tags": item.get('tags', []),
             "images": item.get('images', []),
-               
+
         }
         update_request["winning_user"] = update_request.get('winning_user', '')
         return update_request
@@ -199,4 +199,3 @@ def sqs_trigger_event(json_serializable_list, action, auction_record_str):
             Entries=entries
         )
         print('cc', cc)
-
