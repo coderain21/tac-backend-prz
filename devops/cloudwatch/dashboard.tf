@@ -169,7 +169,7 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
   namespace           = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].namespace
   period              = 300
   statistic           = "Sum"
-  threshold           = 1
+  threshold           = 5
   alarm_description   = "Alarm when Lambda logs contain 'getRedisClient: error occurred for  ClusterAllFailedError: Failed to refresh slots cache'"
 
   # Actions
