@@ -109,7 +109,7 @@ def view(event, context):
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1
         }
-        result = collection.find_one({"_id":ObjectId(auction_id)}, projection)
+        result = collection.find_one({"_id":ObjectId(auction_id), "seller_email": email_address}, projection)
         if result is None:
             return {
                 "headers": headers,
