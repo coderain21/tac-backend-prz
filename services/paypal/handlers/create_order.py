@@ -107,15 +107,18 @@ def create_order(insert_data):
 def generate_paypal_order(payment_info, redirect_url):
     currency = payment_info.get("currency")
     amount = payment_info.get("amount")
+    seller_email = payment_info.get("seller_email")
     return_url = redirect_url.get('return_url')
     cancel_url = redirect_url.get('cancel_url')
     access_token = get_access_token()
     cart_items = payment_info.get("cart_items", [])
+    application_fee = payment_info.get("application_fee", 0)
+    account_id = payment_info.get("account_id")
 
     items = []
     for item in cart_items:
         items.append({
-            "name": item.get("lot_title", "Auction Lot"),
+            "name": item.get("lot_title", "Auction Lot"), 
             "description": f"Lot #{item.get('lot_number', '')}",
             "unit_amount": {
                 "currency_code": item.get("currency", currency),
@@ -137,11 +140,20 @@ def generate_paypal_order(payment_info, redirect_url):
                     }
                 }
             },
-            "items": items
+            "items": items,
+            "payee": {"merchant_id": account_id, "email_address": seller_email},
+            "payment_instruction": {
+                "platform_fees": [{
+                    "amount": {
+                        "currency_code": currency,
+                        "value": str(application_fee)
+                    }
+                }]
+            }
         }],
         "application_context": {
             "landing_page": "BILLING",
-            "shipping_preference": "NO_SHIPPING",
+            "shipping_preference": "NO_SHIPPING", 
             "user_action": "PAY_NOW",
             "return_url": return_url,
             "cancel_url": cancel_url
