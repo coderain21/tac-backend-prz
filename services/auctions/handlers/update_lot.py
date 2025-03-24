@@ -88,9 +88,11 @@ def update_lot(event):
     auction_record = collection_auction.find_one(
             {"auction_id": auction_id, "seller_email": seller_email})
 
+    # updating the featured image to the latest in auction collection
     if lot_updated:
         if auction_record['template_name'] == 'Single Lot':
             auction_image = None
+            #getting the featured image , so that we can update the auction image for the single with the feature image
             for image in update_data['images']:
                 if image.get('featured')==True:
                     auction_image = image['url']

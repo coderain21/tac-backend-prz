@@ -28,10 +28,6 @@ from datetime import datetime, timezone
 from lib.common_helper import Encoder
 
 
-
-
-
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
