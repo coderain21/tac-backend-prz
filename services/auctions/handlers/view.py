@@ -152,12 +152,12 @@ def view(event, context):
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
         
-        if result["template_name"] == "Single Lot":
-            lots = lot_collection.find({"auction_id": result["auction_id"], "seller_email": email_address})
-            # Convert cursor to list and get the first lot since it's a single lot template
-            lot = next(lots, None)
-            if lot and 'images' in lot:
-                result["auction_image"] = [image['url'] for image in lot['images'] if image.get('featured')]
+        # if result["template_name"] == "Single Lot":
+        #     lots = lot_collection.find({"auction_id": result["auction_id"], "seller_email": email_address})
+        #     # Convert cursor to list and get the first lot since it's a single lot template
+        #     lot = next(lots, None)
+        #     if lot and 'images' in lot:
+        #         result["auction_image"] = [image['url'] for image in lot['images'] if image.get('featured')]
 
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
