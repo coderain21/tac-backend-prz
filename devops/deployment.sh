@@ -44,10 +44,8 @@ run_command terraform -chdir=devops/seller_web_application init -backend-config=
 run_command terraform -chdir=devops/seller_web_application apply -auto-approve
 run_command terraform -chdir=devops/api_gateway init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/api_gateway/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/api_gateway apply -auto-approve
-run_command terraform -chdir=devops/vpc init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/vpc/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-run_command terraform -chdir=devops/vpc apply -auto-approve
-run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-run_command terraform -chdir=devops/ecs_new apply -auto-approve
+run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/ecs apply -auto-approve
 
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 npm i -g serverless@3.15.2
