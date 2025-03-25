@@ -284,7 +284,7 @@ stages:
             npm install --cache .npm
           condition: ne(variables.CACHE_RESTORED, 'true')
         - script: |
-            bash devops/deployement-2.sh
+            bash devops/deployment.sh
             if [ $? -ne 0 ]; then
               echo "API testing failed"
               exit 1
@@ -316,7 +316,7 @@ stages:
             npm install --cache .npm
           condition: ne(variables.CACHE_RESTORED, 'true')
         - script: |
-            bash devops/deployement-2.sh
+            bash devops/deployment-2.sh
             if [ $? -ne 0 ]; then
               echo "API testing failed"
               exit 1
