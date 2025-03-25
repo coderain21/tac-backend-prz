@@ -42,8 +42,6 @@ run_command terraform -chdir=devops/dependency/nodejs-auth-layer init
 run_command terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
 run_command terraform -chdir=devops/dependency/python init
 run_command terraform -chdir=devops/dependency/python apply -auto-approve
-run_command terraform -chdir=devops/secret_manager init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/secret_manager/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-run_command terraform -chdir=devops/secret_manager apply -auto-approve
 run_command terraform -chdir=devops/cloudwatch_alarms init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch_alarms/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 run_command terraform -chdir=devops/budgets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/budgets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
