@@ -244,3 +244,6 @@ else
     echo "All commands executed successfully."
 fi
 
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+    aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+fi

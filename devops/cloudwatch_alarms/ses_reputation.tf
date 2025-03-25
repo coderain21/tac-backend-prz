@@ -62,8 +62,6 @@ resource "aws_cloudwatch_metric_alarm" "ses_reputation_alarm" {
   threshold = element([0.01, 0.02, 0.03, 0.04, 0.05], count.index)
 
   alarm_actions = [aws_sns_topic.ses_reputation_topic.arn]
-  ok_actions    = [aws_sns_topic.ses_reputation_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.ses_reputation_topic.arn]
 }
 
 
@@ -82,8 +80,6 @@ resource "aws_cloudwatch_metric_alarm" "ses_reputation_alarm_complaint" {
   threshold = element([0.01, 0.02, 0.03, 0.04, 0.05], count.index)
 
   alarm_actions = [aws_sns_topic.ses_reputation_topic.arn]
-  ok_actions    = [aws_sns_topic.ses_reputation_topic.arn]
-  insufficient_data_actions = [aws_sns_topic.ses_reputation_topic.arn]
 }
 
 # Subscribe an email address to the SNS topic for notifications
