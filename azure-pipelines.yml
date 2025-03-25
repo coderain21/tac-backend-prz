@@ -262,7 +262,6 @@ stages:
     - job: Bidding_Deployment_One
       condition: and(contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
       displayName: Deployment
-      environment: 'Testing'
       pool:
         vmImage: 'ubuntu-latest'
       steps:
@@ -295,7 +294,6 @@ stages:
     - job: Bidding_Deployment_Two
       condition: and(contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
       displayName: Deployment
-      environment: 'Testing'
       pool:
         vmImage: 'ubuntu-latest'
       steps:
