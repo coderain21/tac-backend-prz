@@ -151,7 +151,7 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        
+
         # if result["template_name"] == "Single Lot":
         #     lots = lot_collection.find({"auction_id": result["auction_id"], "seller_email": email_address})
         #     # Convert cursor to list and get the first lot since it's a single lot template
