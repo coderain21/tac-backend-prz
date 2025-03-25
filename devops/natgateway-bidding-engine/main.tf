@@ -21,11 +21,18 @@ resource "aws_subnet" "mongodb_subnet" {
   provider = aws.deployment-eu
 }
 
-
+data "aws_availability_zones" "available" {
+  provider = aws.deployment-eu
+  }
 
 
 resource "aws_eip" "nat_gateway" {
   vpc = true
+  provider = aws.deployment-eu
+}
+
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = data.aws_availability_zones.available.names[0]
   provider = aws.deployment-eu
 }
 
