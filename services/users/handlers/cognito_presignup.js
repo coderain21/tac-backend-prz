@@ -112,6 +112,8 @@ async function checkForExistingUsers(event, linkToExistingUser) {
             is_first_time_login: true,
             user_type: 'seller',
             seller_id: sequenceNumber,
+            free_user: false,
+            plan_type: 'Pro',
         }
         const domainInfo = {
             seller_email: event.request.userAttributes.email,
