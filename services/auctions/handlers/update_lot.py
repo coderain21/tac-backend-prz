@@ -80,13 +80,29 @@ def update_lot(event):
         return (400, {"message": "Lot has already been bid"})
 
 
-    collection.update_one(
+    lot_updated = collection.update_one(
         {"lot_number": lot_number, "seller_email": seller_email,
             "auction_id": auction_id},
         {"$set": update_data}
     )
     auction_record = collection_auction.find_one(
             {"auction_id": auction_id, "seller_email": seller_email})
+
+    # updating the featured image to the latest in auction collection
+    if lot_updated:
+        if auction_record['template_name'] == 'Single Lot':
+            auction_image = None
+            #getting the featured image , so that we can update the auction image for the single with the feature image
+            for image in update_data['images']:
+                if image.get('featured')==True:
+                    auction_image = image['url']
+                    break
+
+            collection_auction.update_one(
+                {"auction_id": auction_id, "seller_email": seller_email},
+                {"$set": {"auction_image": auction_image}}
+            )
+
     lot_id = str(lot_information['_id'])
     if auction_record['status'] in ['Accepting bids' , 'Published']:
         update = update_lot_data(request_body, lot_id)
