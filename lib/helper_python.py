@@ -96,41 +96,46 @@ def decrypt_with_time_validation(encrypted_data_hex, secret_key):
 
     return data
 
-def update_lot_data(item, lot_id): 
+def update_lot_data(item, lot_id):
     print('inside update lot redis')
     redis_client = createRedisClient()
     bid_key = f'lot:{lot_id}'
-    existing_record =  redis_client.hget('lot', bid_key)
-    if existing_record is None:
-        print("No record found for the specified key.")
-    else:
-        get_lot = json.loads(existing_record)
-        if existing_record:
-                get_lot = json.loads(existing_record)
-     
+    
+    try:
+        existing_record = redis_client.hget('lot', bid_key)
+        if existing_record is None:
+            print("No record found for the specified key.")
         else:
+            get_lot = json.loads(existing_record)
+            if existing_record:
+                get_lot = json.loads(existing_record)
+            else:
                 get_lot = {}
 
-        update_request = {
-            **get_lot,
-            "title1": item.get('title1', ''),
-            "title2": item.get('title2', ''),
-            "description": item.get('description', ''),
-            "starting_price": item.get('starting_price', 0),
-            "low_estimate": item.get('low_estimate', 0),
-            "high_estimate": item.get('high_estimate', 0),
-            "shipping_details": item.get('shipping_details', ''),
-            "tags": item.get('tags', []),
-            "images": item.get('images', []),
-        }
+            update_request = {
+                **get_lot,
+                "title1": item.get('title1', ''),
+                "title2": item.get('title2', ''),
+                "description": item.get('description', ''),
+                "starting_price": item.get('starting_price', 0),
+                "low_estimate": item.get('low_estimate', 0),
+                "high_estimate": item.get('high_estimate', 0),
+                "shipping_details": item.get('shipping_details', ''),
+                "tags": item.get('tags', []),
+                "images": item.get('images', []),
+            }
 
-        if existing_record.get('starting_price') != item.get('starting_price') and existing_record.get('bid_amount'):
-            print('Lot has current bid')
-            return (400, {"message": "Lot has already been bid"})
+            if get_lot.get('starting_price') != item.get('starting_price') and get_lot.get('bid_amount'):
+                print('Lot has current bid')
+                return (400, {"message": "Lot has already been bid"})
 
-        update_request["winning_user"] = update_request.get('winning_user', '')
-        cache_update = redis_client.hset('lot', bid_key, json.dumps(update_request))
-        print('cache_update', cache_update)
+            update_request["winning_user"] = update_request.get('winning_user', '')
+
+            # Execute update
+            redis_client.hset('lot', bid_key, json.dumps(update_request))
+  
+    except Exception as e:
+        print(f"Error in transaction: {e}")
 
 
 def get_Lot(item, lot_id):
