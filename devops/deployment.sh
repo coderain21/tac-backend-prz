@@ -46,6 +46,8 @@ run_command terraform -chdir=devops/api_gateway init -backend-config="bucket=${l
 run_command terraform -chdir=devops/api_gateway apply -auto-approve
 run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ecs apply -auto-approve
+run_command terraform -chdir=devops/natgateway-bidding-engine init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/natgateway-bidding-engine/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/natgateway-bidding-engine apply -auto-approve
 
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 npm i -g serverless@3.15.2
