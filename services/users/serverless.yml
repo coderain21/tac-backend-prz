@@ -488,7 +488,8 @@ functions:
               path: /save-log
               method: POST
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
 
 
 resources:
