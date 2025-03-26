@@ -232,10 +232,14 @@ terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
   sls deploy --region $REGION --stage $STAGE
-  sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
+cd services/quicksight-dashboards
+run_command sls deploy --region $REGION --stage $STAGE
+cd ../..
+
+
 
 if [ $overall_status -ne 0 ]; then
     echo "One or more commands failed."
