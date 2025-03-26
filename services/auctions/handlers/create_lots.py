@@ -176,9 +176,7 @@ def lambda_handler(event, context):
 
             # Add auction image update if Single Lot template
             if auction_record['template_name'] == 'Single Lot':
-                featured_image = next((img['url'] for img in request_body['images'] if img.get('featured')), None)
-                if featured_image:
-                    update_operations["$set"] = {"auction_image": featured_image}
+                update_operations["$set"] = {"auction_image": request_body['images']}
 
             # Execute single update with combined operations
             auction_collection.update_one(
