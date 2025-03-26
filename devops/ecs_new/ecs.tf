@@ -548,7 +548,7 @@ resource "aws_ssm_parameter" "socket" {
   provider = aws.deployment-eu
   overwrite = true
 }
-resource "aws_ssm_parameter" "socket" {
+resource "aws_ssm_parameter" "ecr_rep_uri" {
   name  = "ECR_REPO_URI"
   type  = "String"
   value = "${aws_ecr_repository.repo1.repository_url}"
@@ -557,14 +557,14 @@ resource "aws_ssm_parameter" "socket" {
 }
 
 
-resource "aws_ssm_parameter" "socket" {
+resource "aws_ssm_parameter" "ecr_repo_name" {
   name  = "ECR_REPO_NAME"
   type  = "String"
   value = "websocket-repo"
   provider = aws.deployment-eu
   overwrite = true
 }
-resource "aws_ssm_parameter" "socket" {
+resource "aws_ssm_parameter" "ecr_repo_tag" {
   name  = "ECR_REPO_URI_TAG"
   type  = "String"
   value = "latest"
