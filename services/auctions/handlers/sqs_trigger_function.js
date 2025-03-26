@@ -150,6 +150,32 @@ function formatCurrency(amount, currencyCode) {
 // }
 
 /**
+ * Generates an order code with prefix "OD" and padded zeros
+ * @param {number} number The order number to format
+ * @returns {string} The formatted order code
+ */
+function generateOrderCode(number) {
+    // Validate input is positive integer
+    if (!Number.isInteger(number) || number < 1) {
+        throw new Error('Input must be a positive integer greater than 0.')
+    }
+
+    // Define prefix
+    const prefix = 'OD'
+
+    // Get number of digits
+    const numDigits = number.toString().length
+
+    // Calculate padding needed
+    const padding = Math.max(0, 3 - numDigits)
+
+    // Generate formatted code with padding
+    const formattedCode = `${prefix}${'0'.repeat(padding)}${number}`
+
+    return formattedCode
+}
+
+/**
  * Handle the AWS SQS trigger event for the auction completion job
  *
  * This function retrieves the bidders from MongoDB, retrieves the lots from Redis, and sends an email to each buyer
@@ -256,53 +282,106 @@ module.exports.sqsTriggerFunction = async (event) => {
                         return total + bidAmount
                     }, 0)
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
-                }
 
-                const subdomainQuery = {
-                    seller_email: auctionData.seller_email,
-                }
-                const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
-                const auctionId = auctionData._id.toString()
-                const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
-                // Create the email data
-                if (buyerInformation.length > 0) {
-                    const template_data = {
-                        winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
-                        winning_lot_count: winningLot.length,
-                        buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
-                        title: auctionData.title,
-                        logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                        not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
-                        not_winning_lot_count: notWinning.length,
-                        seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                    // Check for existing counter record
+                    const counterRecord = await mongodbHelper.getCounterRecord({
+                        auction_id: auctionData.auction_id,
+                        email_address: user.email_address,
                         seller_email: auctionData.seller_email,
-                        subject: subjectDescription,
-                        paymentContent,
-                        seller_id: sellerInformation[0]._id, // to make the email template unique with no conflicts with other environments
-                        total_amount: totalBidAmount,
-                        checkout_url: checkoutURL,
+                        record_type: 'Orders',
+                    })
+
+                    let lastOrderNumber = 0
+                    // Initialize counter if it doesn't exist
+                    if (!counterRecord) {
+                        const newCounterRecord = {
+                            auction_id: auctionData.auction_id,
+                            seller_email: auctionData.seller_email,
+                            email_address: user.email_address,
+                            record_type: 'Orders',
+                            starting_sequence: lastOrderNumber,
+                        }
+
+                        await mongodbHelper.createCounterRecord(newCounterRecord)
+                    } else {
+                        lastOrderNumber = counterRecord.starting_sequence + 1
+
+                        // Update counter record with new sequence
+                        const updateData = {
+                            starting_sequence: lastOrderNumber,
+                        }
+                        await mongodbHelper.updateCounterRecord(counterRecord._id, updateData)
                     }
 
-                    // Send email
-                    // promiseList.push(sendMail(user.email_address, process.env.SENDER_EMAIL_ADDRESS, JSON.stringify(template_data), process.env.TEMPLATE_ARN_AUCTION_COMPLETION))
-                    promiseList.push(sendTemplateEmails(user.email_address, template_data))
+                    // Create order document
+                    const orderData = {
+                        order_number: generateOrderCode(lastOrderNumber),
+                        seller_email: auctionData.seller_email,
+                        email_address: user.email_address,
+                        name: user.name,
+                        auction_id: auctionData.auction_id,
+                        auction_image: auctionData.auction_image,
+                        auction_title: auctionData.title,
+                        currency: auctionData.currency,
+                        lots: winningLot.map((lot) => ({
+                            lot_id: lot._id,
+                            lot_number: lot.lot_number,
+                            bid_amount: lot.bid_amount,
+                            title: lot.title,
+                        })),
+                        amount: totalBidAmount,
+                        payment_status: 'pending',
+                        created_at: new Date(),
+                        updated_at: new Date(),
+                    }
+
+                    // Insert order into orders collection
+                    await mongodbHelper.createOrder(orderData)
+
+                    const subdomainQuery = {
+                        seller_email: auctionData.seller_email,
+                    }
+                    const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
+                    const auctionId = auctionData._id.toString()
+                    const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
+                    // Create the email data
+                    if (buyerInformation.length > 0) {
+                        const template_data = {
+                            winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                            winning_lot_count: winningLot.length,
+                            buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
+                            title: auctionData.title,
+                            logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
+                            not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                            not_winning_lot_count: notWinning.length,
+                            seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                            seller_email: auctionData.seller_email,
+                            subject: subjectDescription,
+                            paymentContent,
+                            seller_id: sellerInformation[0]._id,
+                            total_amount: totalBidAmount,
+                            checkout_url: checkoutURL,
+                        }
+
+                        promiseList.push(sendTemplateEmails(user.email_address, template_data))
+                    }
+                }
+
+                // Run all the promises in parallel
+                await Promise.all(promiseList)
+            }
+            // clear the cache
+            if (lastLot.lot_number === event.lot_number) {
+                for (const lot of get_lot) {
+                    const redisKeys = `lot:${lot._id}`
+                    const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
+                    const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
+                    const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
+                    console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
                 }
             }
-
-            // Run all the promises in parallel
-            await Promise.all(promiseList)
+            return true
         }
-        // clear the cache
-        // if (lastLot.lot_number === event.lot_number) {
-        //     for (const lot of get_lot) {
-        //         const redisKeys = `lot:${lot._id}`
-        //         const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
-        //         const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
-        //         const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
-        //         console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
-        //     }
-        // }
-        return true
     } catch (err) {
         console.log('err', err)
         return err
