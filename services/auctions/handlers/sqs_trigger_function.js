@@ -26,6 +26,7 @@ const BidInformation = require('../entities/BidInformation')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
+const Counter = require('../entities/Counter')
 const Lot = require('../entities/Lot')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
@@ -285,24 +286,24 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                     // Check for existing counter record
                     const counterRecord = await mongodbHelper.getCounterRecord({
-                        auction_id: auctionData.auction_id,
+                        auction_id: auctionData._id,
                         email_address: user.email_address,
                         seller_email: auctionData.seller_email,
                         record_type: 'Orders',
-                    })
+                    }, Counter)
 
-                    let lastOrderNumber = 0
+                    let lastOrderNumber = 1
                     // Initialize counter if it doesn't exist
                     if (!counterRecord) {
                         const newCounterRecord = {
-                            auction_id: auctionData.auction_id,
+                            auction_id: auctionData._id,
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             record_type: 'Orders',
                             starting_sequence: lastOrderNumber,
                         }
 
-                        await mongodbHelper.createCounterRecord(newCounterRecord)
+                        await mongodbHelper.createCounterRecord(newCounterRecord, Counter)
                     } else {
                         lastOrderNumber = counterRecord.starting_sequence + 1
 
