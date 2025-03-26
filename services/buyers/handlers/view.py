@@ -24,7 +24,6 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
-
 def view(event, context):
     """
     The `view` function retrieves auction data based on the provided auction ID and the authenticated
@@ -47,12 +46,6 @@ def view(event, context):
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
         passcode = data.get("passcode")
-        # client = MongoClient(
-            # os.environ['MONGO_CLIENT'],
-            # maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-            # )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_id = data['auction_id']
         # Check if auction_id exists and convert it to ObjectId
         # If auction_id is missing, return 422 error
@@ -145,7 +138,7 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
-        print(result)
+
         start_time=result['start_date']
         end_time= result['end_date']
         time_zone_str = result.get("time_zone")
