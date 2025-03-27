@@ -282,11 +282,13 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const bidAmount = parseFloat(lot.bid_amount.replace(new RegExp('[^0-9.]+', 'g'), ''))
                         return total + bidAmount
                     }, 0)
+                    // Store raw number in orderAmount before formatting
+                    orderAmount = Number(totalBidAmount.toFixed(2))
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
 
                     // Check for existing counter record
                     const counterRecord = await mongodbHelper.getCounterRecord({
-                        auction_id: auctionData._id,
+                        auction_id: auctionData._id.toString(),
                         email_address: user.email_address,
                         seller_email: auctionData.seller_email,
                         record_type: 'Orders',
@@ -296,14 +298,15 @@ module.exports.sqsTriggerFunction = async (event) => {
                     // Initialize counter if it doesn't exist
                     if (!counterRecord) {
                         const newCounterRecord = {
-                            auction_id: auctionData._id,
+                            _id: new ObjectId(), // Add ObjectId for the counter record
+                            auction_id: auctionData._id.toString(),
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             record_type: 'Orders',
                             starting_sequence: lastOrderNumber,
                         }
 
-                        await mongodbHelper.createCounterRecord(newCounterRecord, Counter)
+                        await mongodbHelper.createCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, newCounterRecord)
                     } else {
                         lastOrderNumber = counterRecord.starting_sequence + 1
 
@@ -311,7 +314,10 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const updateData = {
                             starting_sequence: lastOrderNumber,
                         }
-                        await mongodbHelper.updateCounterRecord(counterRecord._id, updateData)
+                        const updateQuery = {
+                            _id: counterRecord._id,
+                        }
+                        await mongodbHelper.updateCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, updateQuery, updateData)
                     }
 
                     // Create order document
@@ -330,7 +336,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             bid_amount: lot.bid_amount,
                             title: lot.title,
                         })),
-                        amount: totalBidAmount,
+                        amount: orderAmount,
                         payment_status: 'pending',
                         created_at: new Date(),
                         updated_at: new Date(),
@@ -360,7 +366,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             subject: subjectDescription,
                             paymentContent,
                             seller_id: sellerInformation[0]._id,
-                            total_amount: totalBidAmount,
+                            total_amount: orderAmount,
                             checkout_url: checkoutURL,
                         }
 
