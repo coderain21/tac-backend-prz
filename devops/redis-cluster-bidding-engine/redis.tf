@@ -54,7 +54,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   replicas_per_node_group = data.aws_ssm_parameter.redis_node_replica_groups.value
   parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
-  security_group_ids = [data.aws_ssm_parameter.subnet.value]
+  security_group_ids = [data.aws_ssm_parameter.security_group.value]
   apply_immediately          = true
   provider                  = aws.deployment-us
 }
