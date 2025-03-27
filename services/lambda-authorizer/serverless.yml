@@ -13,7 +13,7 @@ provider:
     SELLER_GOOGLE_PASSWORD: INDY@SELLER
     BUYER_COLLECTION: ${opt:stage, self:provider.stage}-buyers
     MONGO_CLIENT: ${self:custom.mongodbConnectionString}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     
 
   iam:

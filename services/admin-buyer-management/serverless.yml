@@ -27,7 +27,7 @@ provider:
     COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     REGION: ${env:REGION}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users

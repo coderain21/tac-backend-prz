@@ -49,7 +49,7 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
     FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${self:provider.stage}-forgot-password
       # Fn::Join:
