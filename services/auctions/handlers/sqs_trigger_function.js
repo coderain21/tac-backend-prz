@@ -337,7 +337,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     }
 
                     // Insert order into orders collection
-                    await mongodbHelper.createOrder(orderData)
+                    await mongodbHelper.createOrder(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.ORDERS_COLLECTION, orderData)
 
                     const subdomainQuery = {
                         seller_email: auctionData.seller_email,
@@ -372,7 +372,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 await Promise.all(promiseList)
             }
             // clear the cache
-            if (lastLot.lot_number === event.lot_number) {
+            if (lastRecord.lot_number === event.lot_number) {
                 for (const lot of get_lot) {
                     const redisKeys = `lot:${lot._id}`
                     const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))

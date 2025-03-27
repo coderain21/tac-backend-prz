@@ -48,6 +48,7 @@ provider:
     CARTTABLE: ${opt:stage, self:provider.stage}-carts
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_API_KEY:  ${ssm:MAILCHIMP_SECRET_KEY}
+    ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
     SQS_QUEUE_ARN:  
        Fn::Join:
         - ":"
