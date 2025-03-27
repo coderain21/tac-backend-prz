@@ -274,7 +274,7 @@ resource "aws_lb" "load-balancer" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [data.aws_ssm_parameter.security_group.value]  # Security group for the Load Balancer
-  subnets            = data.aws_subnets.public.ids
+  subnets            = data.aws_ssm_parameter.subnet.value
 
   enable_deletion_protection = false
   provider = aws.deployment-eu
