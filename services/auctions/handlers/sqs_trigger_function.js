@@ -289,7 +289,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                     // Check for existing counter record
                     const counterRecord = await mongodbHelper.getCounterRecord({
                         auction_id: auctionData._id.toString(),
-                        email_address: user.email_address,
                         seller_email: auctionData.seller_email,
                         record_type: 'Orders',
                     }, Counter)
@@ -301,7 +300,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                             _id: new ObjectId(), // Add ObjectId for the counter record
                             auction_id: auctionData._id.toString(),
                             seller_email: auctionData.seller_email,
-                            email_address: user.email_address,
                             record_type: 'Orders',
                             starting_sequence: lastOrderNumber,
                         }
@@ -330,16 +328,11 @@ module.exports.sqsTriggerFunction = async (event) => {
                         auction_image: auctionData.auction_image,
                         auction_title: auctionData.title,
                         currency: auctionData.currency,
-                        lots: winningLot.map((lot) => ({
-                            lot_id: lot._id,
-                            lot_number: lot.lot_number,
-                            bid_amount: lot.bid_amount,
-                            title: lot.title,
-                        })),
+                        lots: winningLot.map((lot) => lot.lot_number),
                         amount: orderAmount,
-                        payment_status: 'pending',
-                        created_at: new Date(),
-                        updated_at: new Date(),
+                        payment_status: 'Pending',
+                        created_at: Math.floor(Date.now() / 1000),
+                        updated_at: Math.floor(Date.now() / 1000),
                     }
 
                     // Insert order into orders collection
