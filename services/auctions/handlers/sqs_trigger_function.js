@@ -32,7 +32,7 @@ const Lot = require('../entities/Lot')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
 // const pinpoint = new PinpointEmail()
-let connection = null
+const connection = null
 
 /**
  * Gets all the bidders for a given redis key, and filters them to only include
@@ -204,14 +204,16 @@ function generateOrderCode(number) {
 // }
 
 // const { MongoClient } = require('mongodb')
-
 const getNextOrderSequence = async (auctionId, sellerEmail) => {
-    const client = await mongodbHelper.connect()
-    console.log('client', client)
+    const connection = await mongodbHelper.connect()
+    const client = connection.connection.getClient() // Get native MongoClient
     const session = client.startSession()
 
     try {
-        const result = await session.withTransaction(async () => {
+        let orderNumber
+
+        // Use session with transaction
+        await session.withTransaction(async () => {
             const query = {
                 auction_id: auctionId.toString(),
                 seller_email: { $regex: `^${sellerEmail}$`, $options: 'i' },
@@ -220,21 +222,16 @@ const getNextOrderSequence = async (auctionId, sellerEmail) => {
 
             console.log('Checking/updating sequence:', query)
 
-            // Use findOneAndUpdate to increment and return the updated record atomically
             const result = await client
                 .db(process.env.DATABASE)
                 .collection(process.env.COUNTER_LOT)
                 .findOneAndUpdate(
                     query,
                     {
-                        $setOnInsert: {
-                            _id: new ObjectId(),
-                            starting_sequence: 1, // Start from 1 for new record
-                        },
-                        $inc: { starting_sequence: 1 }, // Increment if found
+                        $inc: { starting_sequence: 1 }, // Atomic increment of sequence
                     },
                     {
-                        upsert: true, // Create new if not found
+                        upsert: true,
                         returnDocument: 'after',
                         session,
                     },
@@ -242,18 +239,29 @@ const getNextOrderSequence = async (auctionId, sellerEmail) => {
 
             console.log('Result from counter update:', result)
 
-            // Get the updated starting_sequence
-            const orderNumber = result.value?.starting_sequence || 1
-            return generateOrderCode(orderNumber)
+            if (!result || !result.value) {
+                throw new Error('Failed to generate order number')
+            }
+
+            // Get the updated sequence value
+            orderNumber = result.value?.starting_sequence || 1
         })
 
+        // Successfully committed the transaction
         session.endSession()
-        return result
+        return generateOrderCode(orderNumber) // Generate unique order number
     } catch (error) {
         console.error('Transaction error while generating order sequence:', error)
-        await session.abortTransaction()
-        session.endSession()
+
+        // Ensure transaction is aborted only once
+        if (session.inTransaction()) {
+            await session.abortTransaction().catch((err) => {
+                console.error('Error aborting transaction:', err)
+            })
+        }
         throw error
+    } finally {
+        session.endSession() // Always end session
     }
 }
 
@@ -269,7 +277,8 @@ const getNextOrderSequence = async (auctionId, sellerEmail) => {
 module.exports.sqsTriggerFunction = async (event) => {
     try {
         if (connection === null || !connection.readyState) {
-            connection = await mongodbHelper.connect()
+            const connection = await mongodbHelper.connect()
+            // const mongoClient = connection.connection.getClient() // Get native MongoClient
         }
 
         // Retrieve the bidders from MongoDB
@@ -368,31 +377,48 @@ module.exports.sqsTriggerFunction = async (event) => {
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
 
                     try {
-                        /// Generate order number using atomic sequence increment
-                        const orderNumber = await getNextOrderSequence(auctionData._id.toString(), auctionData.seller_email)
+                        // Start a transaction for order creation
+                        const mongoClient = connection.connection.getClient() // Get native MongoClient
+                        const mongoSession = mongoClient.startSession()
+                        await mongoSession.withTransaction(async () => {
+                            // Generate order number with transaction
+                            const orderNumber = await getNextOrderSequence(
+                                auctionData._id.toString(),
+                                auctionData.seller_email,
+                            )
 
-                        const orderData = {
-                            order_number: orderNumber, // Corrected this line
-                            seller_email: auctionData.seller_email,
-                            email_address: user.email_address,
-                            name: user.name,
-                            auction_id: auctionData.auction_id,
-                            auction_image: auctionData.auction_image,
-                            auction_title: auctionData.title,
-                            currency: auctionData.currency,
-                            lots: winningLot.map((lot) => lot.lot_number),
-                            amount: orderAmount,
-                            payment_status: 'Pending',
-                            created_at: Math.floor(Date.now() / 1000),
-                            updated_at: Math.floor(Date.now() / 1000),
-                        }
+                            const orderData = {
+                                order_number: orderNumber, // Corrected this line
+                                seller_email: auctionData.seller_email,
+                                email_address: user.email_address,
+                                name: user.name,
+                                auction_id: auctionData.auction_id,
+                                auction_image: auctionData.auction_image,
+                                auction_title: auctionData.title,
+                                currency: auctionData.currency,
+                                lots: winningLot.map((lot) => lot.lot_number),
+                                amount: orderAmount,
+                                payment_status: 'Pending',
+                                created_at: Math.floor(Date.now() / 1000),
+                                updated_at: Math.floor(Date.now() / 1000),
+                            }
 
-                        // Insert order into orders collection
-                        await mongodbHelper.createOrder(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.ORDERS_COLLECTION, orderData)
+                            // Insert order into orders collection with session
+                            await mongodbHelper.createOrder(
+                                process.env.MONGO_CLIENT,
+                                process.env.DATABASE,
+                                process.env.ORDERS_COLLECTION,
+                                orderData,
+                                session,
+                            )
+                        })
+
+                        mongoSession.endSession() // Commit and end session
                     } catch (error) {
                         console.error('Error creating order:', error)
                         throw error
                     }
+
                     const subdomainQuery = {
                         seller_email: auctionData.seller_email,
                     }
