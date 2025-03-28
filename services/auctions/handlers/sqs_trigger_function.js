@@ -152,7 +152,7 @@ function formatCurrency(amount, currencyCode) {
 
 /**
  * Generates an order code with prefix "OD" and padded zeros
- * @param {number} number The order number to format 
+ * @param {number} number The order number to format
  * @returns {string} The formatted order code
  */
 function generateOrderCode(number) {
@@ -179,19 +179,17 @@ const getNextOrderSequence = async (auctionId, sellerEmail) => {
             {
                 $setOnInsert: {
                     _id: new ObjectId(),
-                    starting_sequence: 0,
+                    starting_sequence: 0, // Start from 0
                 },
                 $inc: { starting_sequence: 1 },
             },
+            { upsert: true, returnDocument: 'after' },
         )
 
-        // Validate the result and ensure it's a positive integer
-        const orderNumber = result.starting_sequence
-        if (!Number.isInteger(orderNumber) || orderNumber < 1) {
-            throw new Error('Invalid order sequence generated')
-        }
+        // Get the sequence number from the result
+        const orderNumber = result.value?.starting_sequence || 1
 
-        // Generate the formatted order code
+        // Generate and return the formatted order code
         return generateOrderCode(orderNumber)
     } catch (error) {
         console.error('Error generating order sequence:', error)
@@ -343,8 +341,9 @@ module.exports.sqsTriggerFunction = async (event) => {
                         }
 
                         // Create order document
+                        const orderNumber = await getNextOrderSequence(lastOrderNumber)
                         const orderData = {
-                            order_number: getNextOrderSequence(lastOrderNumber),
+                            order_number: orderNumber, // Corrected this line
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             name: user.name,
