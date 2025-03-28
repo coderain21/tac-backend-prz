@@ -40,20 +40,20 @@ data "aws_vpc" "default" {
 }
 
 
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-  provider = aws.deployment-eu
-}
+
 
 data "aws_ssm_parameter" "subnet" {
-  name = "SUBNET_ID"
+  name = "SUBNET_ID_PUBLIC"
+  provider = aws.deployment-eu
 }
 
 data "aws_ssm_parameter" "security_group" {
   name = "SECURITY_GROUP_ID"
+  provider = aws.deployment-eu
+}
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = "eu-west-2a"
+  provider = aws.deployment-eu
 }
 
 data "aws_acm_certificate" "existing_certificate" {
@@ -234,15 +234,19 @@ locals {
 }
 data "aws_ssm_parameter" "cpu" {
   name = "CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "memory" {
   name = "MEMORY"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "ecs_cpu" {
   name = "ECS_CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "ecs_memory" {
   name = "ECS_MEMORY"
+  provider = aws.deployment-eu
 }
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
@@ -274,7 +278,7 @@ resource "aws_lb" "load-balancer" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [data.aws_ssm_parameter.security_group.value]  # Security group for the Load Balancer
-  subnets            = [data.aws_ssm_parameter.subnet.value]
+  subnets            = [data.aws_ssm_parameter.subnet.value, resource.aws_default_subnet.default_az1.id]
 
   enable_deletion_protection = false
   provider = aws.deployment-eu
