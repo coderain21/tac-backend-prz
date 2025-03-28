@@ -89,6 +89,11 @@ def clone_auction(event, context):
         auction["status"] = "Draft"
 
         auction['total_lots'] = 0
+
+        if auction['template_name'] == 'Single Lot':
+            print('here')
+            auction['auction_image'] = ''
+
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
         return {
@@ -97,6 +102,7 @@ def clone_auction(event, context):
             "body": json.dumps({"message": "Success"})
         }
     except Exception as e:
+        print('Internal Server Error', str(e))
         return {
             "statusCode": 500,
             'headers': headers,
