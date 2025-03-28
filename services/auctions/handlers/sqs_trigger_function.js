@@ -152,28 +152,51 @@ function formatCurrency(amount, currencyCode) {
 
 /**
  * Generates an order code with prefix "OD" and padded zeros
- * @param {number} number The order number to format
+ * @param {number} number The order number to format 
  * @returns {string} The formatted order code
  */
 function generateOrderCode(number) {
-    // Validate input is positive integer
-    if (!Number.isInteger(number) || number < 1) {
-        throw new Error('Input must be a positive integer greater than 0.')
+    return `OD${String(number).padStart(6, '0')}`
+}
+
+/**
+ * Generates an order code with prefix "OD" and padded zeros
+ * @param {number} number The order number to format
+ * @returns {string} The formatted order code
+ */
+const getNextOrderSequence = async (auctionId, sellerEmail) => {
+    try {
+        // Use updateOne with atomic operations to increment the sequence
+        const result = await mongodbHelper.updateUsingMongoDB(
+            process.env.MONGO_CLIENT,
+            process.env.DATABASE,
+            process.env.COUNTER_LOT,
+            {
+                auction_id: auctionId.toString(),
+                seller_email: sellerEmail,
+                record_type: 'Orders',
+            },
+            {
+                $setOnInsert: {
+                    _id: new ObjectId(),
+                    starting_sequence: 0,
+                },
+                $inc: { starting_sequence: 1 },
+            },
+        )
+
+        // Validate the result and ensure it's a positive integer
+        const orderNumber = result.starting_sequence
+        if (!Number.isInteger(orderNumber) || orderNumber < 1) {
+            throw new Error('Invalid order sequence generated')
+        }
+
+        // Generate the formatted order code
+        return generateOrderCode(orderNumber)
+    } catch (error) {
+        console.error('Error generating order sequence:', error)
+        throw error
     }
-
-    // Define prefix
-    const prefix = 'OD'
-
-    // Get number of digits
-    const numDigits = number.toString().length
-
-    // Calculate padding needed
-    const padding = Math.max(0, 3 - numDigits)
-
-    // Generate formatted code with padding
-    const formattedCode = `${prefix}${'0'.repeat(padding)}${number}`
-
-    return formattedCode
 }
 
 /**
@@ -286,58 +309,62 @@ module.exports.sqsTriggerFunction = async (event) => {
                     orderAmount = Number(totalBidAmount.toFixed(2))
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
 
-                    // Check for existing counter record
-                    const counterRecord = await mongodbHelper.getCounterRecord({
-                        auction_id: auctionData._id.toString(),
-                        seller_email: auctionData.seller_email,
-                        record_type: 'Orders',
-                    }, Counter)
-
-                    let lastOrderNumber = 1
-                    // Initialize counter if it doesn't exist
-                    if (!counterRecord) {
-                        const newCounterRecord = {
-                            _id: new ObjectId(), // Add ObjectId for the counter record
+                    try {
+                        // Check for existing counter record
+                        const counterRecord = await mongodbHelper.getCounterRecord({
                             auction_id: auctionData._id.toString(),
                             seller_email: auctionData.seller_email,
                             record_type: 'Orders',
-                            starting_sequence: lastOrderNumber,
+                        }, Counter)
+
+                        let lastOrderNumber = 1
+                        // Initialize counter if it doesn't exist
+                        if (!counterRecord) {
+                            const newCounterRecord = {
+                                _id: new ObjectId(), // Add ObjectId for the counter record
+                                auction_id: auctionData._id.toString(),
+                                seller_email: auctionData.seller_email,
+                                record_type: 'Orders',
+                                starting_sequence: lastOrderNumber,
+                            }
+
+                            await mongodbHelper.createCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, newCounterRecord)
+                        } else {
+                            lastOrderNumber = counterRecord.starting_sequence + 1
+
+                            // Update counter record with new sequence
+                            const updateData = {
+                                starting_sequence: lastOrderNumber,
+                            }
+                            const updateQuery = {
+                                _id: counterRecord._id,
+                            }
+                            await mongodbHelper.updateCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, updateQuery, updateData)
                         }
 
-                        await mongodbHelper.createCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, newCounterRecord)
-                    } else {
-                        lastOrderNumber = counterRecord.starting_sequence + 1
+                        // Create order document
+                        const orderData = {
+                            order_number: getNextOrderSequence(lastOrderNumber),
+                            seller_email: auctionData.seller_email,
+                            email_address: user.email_address,
+                            name: user.name,
+                            auction_id: auctionData.auction_id,
+                            auction_image: auctionData.auction_image,
+                            auction_title: auctionData.title,
+                            currency: auctionData.currency,
+                            lots: winningLot.map((lot) => lot.lot_number),
+                            amount: orderAmount,
+                            payment_status: 'Pending',
+                            created_at: Math.floor(Date.now() / 1000),
+                            updated_at: Math.floor(Date.now() / 1000),
+                        }
 
-                        // Update counter record with new sequence
-                        const updateData = {
-                            starting_sequence: lastOrderNumber,
-                        }
-                        const updateQuery = {
-                            _id: counterRecord._id,
-                        }
-                        await mongodbHelper.updateCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, updateQuery, updateData)
+                        // Insert order into orders collection
+                        await mongodbHelper.createOrder(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.ORDERS_COLLECTION, orderData)
+                    } catch (error) {
+                        console.error('Error creating order:', error)
+                        throw error
                     }
-
-                    // Create order document
-                    const orderData = {
-                        order_number: generateOrderCode(lastOrderNumber),
-                        seller_email: auctionData.seller_email,
-                        email_address: user.email_address,
-                        name: user.name,
-                        auction_id: auctionData.auction_id,
-                        auction_image: auctionData.auction_image,
-                        auction_title: auctionData.title,
-                        currency: auctionData.currency,
-                        lots: winningLot.map((lot) => lot.lot_number),
-                        amount: orderAmount,
-                        payment_status: 'Pending',
-                        created_at: Math.floor(Date.now() / 1000),
-                        updated_at: Math.floor(Date.now() / 1000),
-                    }
-
-                    // Insert order into orders collection
-                    await mongodbHelper.createOrder(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.ORDERS_COLLECTION, orderData)
-
                     const subdomainQuery = {
                         seller_email: auctionData.seller_email,
                     }
