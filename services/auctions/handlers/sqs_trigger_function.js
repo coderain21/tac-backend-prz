@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable prefer-regex-literals */
 /* eslint-disable consistent-return */
 /* eslint-disable no-undef */
@@ -164,35 +165,94 @@ function generateOrderCode(number) {
  * @param {number} number The order number to format
  * @returns {string} The formatted order code
  */
+// const getNextOrderSequence = async (auctionId, sellerEmail) => {
+//     try {
+//         console.log('Order Sequence Query:', {
+//             auction_id: auctionId.toString(), // Ensure String type
+//             seller_email: sellerEmail,
+//             record_type: 'Orders',
+//         })
+
+//         const result = await mongodbHelper.updateUsingMongoDB(
+//             process.env.MONGO_CLIENT,
+//             process.env.DATABASE,
+//             process.env.COUNTER_LOT,
+//             {
+//                 auction_id: auctionId.toString(), // 🔥 Ensuring type consistency
+//                 seller_email: { $regex: new RegExp(`^${sellerEmail}$`, 'i') }, // Case-insensitive match
+//                 record_type: 'Orders',
+//             },
+//             {
+//                 $setOnInsert: {
+//                     _id: new ObjectId(), // Ensuring unique ID if inserted
+//                     starting_sequence: 0, // Start from 0 if document is created
+//                 },
+//                 $inc: { starting_sequence: 1 }, // Increment on match
+//             },
+//             { upsert: true, returnDocument: 'after' }, // Return updated document
+//         )
+
+//         // Get the sequence number from the result
+//         const orderNumber = result.value?.starting_sequence || 1
+
+//         // Generate and return the formatted order code
+//         return generateOrderCode(orderNumber)
+//     } catch (error) {
+//         console.error('Error generating order sequence:', error)
+//         throw error
+//     }
+// }
+
+// const { MongoClient } = require('mongodb')
+
 const getNextOrderSequence = async (auctionId, sellerEmail) => {
+    const client = await mongodbHelper.connect()
+    console.log('client', client)
+    const session = client.startSession()
+
     try {
-        // Use updateOne with atomic operations to increment the sequence
-        const result = await mongodbHelper.updateUsingMongoDB(
-            process.env.MONGO_CLIENT,
-            process.env.DATABASE,
-            process.env.COUNTER_LOT,
-            {
+        const result = await session.withTransaction(async () => {
+            const query = {
                 auction_id: auctionId.toString(),
-                seller_email: sellerEmail,
+                seller_email: { $regex: `^${sellerEmail}$`, $options: 'i' },
                 record_type: 'Orders',
-            },
-            {
-                $setOnInsert: {
-                    _id: new ObjectId(),
-                    starting_sequence: 0, // Start from 0
-                },
-                $inc: { starting_sequence: 1 },
-            },
-            { upsert: true, returnDocument: 'after' },
-        )
+            }
 
-        // Get the sequence number from the result
-        const orderNumber = result.value?.starting_sequence || 1
+            console.log('Checking/updating sequence:', query)
 
-        // Generate and return the formatted order code
-        return generateOrderCode(orderNumber)
+            // Use findOneAndUpdate to increment and return the updated record atomically
+            const result = await client
+                .db(process.env.DATABASE)
+                .collection(process.env.COUNTER_LOT)
+                .findOneAndUpdate(
+                    query,
+                    {
+                        $setOnInsert: {
+                            _id: new ObjectId(),
+                            starting_sequence: 1, // Start from 1 for new record
+                        },
+                        $inc: { starting_sequence: 1 }, // Increment if found
+                    },
+                    {
+                        upsert: true, // Create new if not found
+                        returnDocument: 'after',
+                        session,
+                    },
+                )
+
+            console.log('Result from counter update:', result)
+
+            // Get the updated starting_sequence
+            const orderNumber = result.value?.starting_sequence || 1
+            return generateOrderCode(orderNumber)
+        })
+
+        session.endSession()
+        return result
     } catch (error) {
-        console.error('Error generating order sequence:', error)
+        console.error('Transaction error while generating order sequence:', error)
+        await session.abortTransaction()
+        session.endSession()
         throw error
     }
 }
@@ -308,40 +368,9 @@ module.exports.sqsTriggerFunction = async (event) => {
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
 
                     try {
-                        // Check for existing counter record
-                        const counterRecord = await mongodbHelper.getCounterRecord({
-                            auction_id: auctionData._id.toString(),
-                            seller_email: auctionData.seller_email,
-                            record_type: 'Orders',
-                        }, Counter)
+                        /// Generate order number using atomic sequence increment
+                        const orderNumber = await getNextOrderSequence(auctionData._id.toString(), auctionData.seller_email)
 
-                        let lastOrderNumber = 1
-                        // Initialize counter if it doesn't exist
-                        if (!counterRecord) {
-                            const newCounterRecord = {
-                                _id: new ObjectId(), // Add ObjectId for the counter record
-                                auction_id: auctionData._id.toString(),
-                                seller_email: auctionData.seller_email,
-                                record_type: 'Orders',
-                                starting_sequence: lastOrderNumber,
-                            }
-
-                            await mongodbHelper.createCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, newCounterRecord)
-                        } else {
-                            lastOrderNumber = counterRecord.starting_sequence + 1
-
-                            // Update counter record with new sequence
-                            const updateData = {
-                                starting_sequence: lastOrderNumber,
-                            }
-                            const updateQuery = {
-                                _id: counterRecord._id,
-                            }
-                            await mongodbHelper.updateCounterRecord(process.env.MONGO_CLIENT, process.env.DATABASE, process.env.COUNTER_LOT, updateQuery, updateData)
-                        }
-
-                        // Create order document
-                        const orderNumber = await getNextOrderSequence(lastOrderNumber)
                         const orderData = {
                             order_number: orderNumber, // Corrected this line
                             seller_email: auctionData.seller_email,
