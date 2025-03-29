@@ -30,7 +30,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "64fb20f0939c60e7641d82f7"
+            "example": "67e77cd47f92f9023f21f22d"
           }
         ],
         "responses": {
@@ -86,22 +86,34 @@
                 },
                 "example": {
                   "data": [
-                    {
-                      "_id": "656d9f68803eee9eaf8e9f6e",
-                      "payment_status": "Paid",
-                      "amount": 22000,
-                      "order_number": "OD002",
-                      "created_at": 1701683046,
-                      "auction_title": "Demo auction (here)+",
-                      "auction_image": "DomainName/Auctions/images/ef8c5208-0915-76e2-644a-e5b5fd4e275d/image_30.png",
-                      "lots": ""
-                    }
+                      {
+                          "_id": "67e77e1a6128d0416cddae53",
+                          "order_number": "OD00002",
+                          "name": "Bidder",
+                          "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
+                          "auction_title": "Classic auction",
+                          "currency": "USD",
+                          "amount": 6200,
+                          "payment_status": "Pending",
+                          "created_at": 1743224346
+                      },
+                      {
+                          "_id": "67e77e186128d0416cddae4e",
+                          "order_number": "OD00001",
+                          "name": "",
+                          "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
+                          "auction_title": "Classic auction",
+                          "currency": "USD",
+                          "amount": 1600,
+                          "payment_status": "Pending",
+                          "created_at": 1743224344
+                      }
                   ],
                   "total_pages": 1,
+                  "total_records": 2,
                   "current_page": 1,
-                  "total_orders": 3,
-                  "total_records": 10
-                }
+                  "total_orders": 2
+              }
               }
             }
           },

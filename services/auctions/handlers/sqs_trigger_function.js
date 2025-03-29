@@ -280,7 +280,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             name: user.name,
-                            auction_id: auctionData._id,
+                            auction_id: auctionData._id.toString(),
                             auction_image: auctionData.auction_image,
                             auction_title: auctionData.title,
                             currency: auctionData.currency,
