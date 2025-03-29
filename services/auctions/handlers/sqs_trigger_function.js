@@ -27,7 +27,7 @@ const BidInformation = require('../entities/BidInformation')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
-const Counter = require('../entities/Counter')
+// const Counter = require('../entities/Counter')
 const Lot = require('../entities/Lot')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
