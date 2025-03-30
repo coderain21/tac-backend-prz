@@ -52,15 +52,15 @@ run_command terraform -chdir=devops/dependency/python init
 run_command terraform -chdir=devops/dependency/python apply -auto-approve
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
-    run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongodb apply -auto-approve
-    run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/ecs apply -auto-approve
-    run_command terraform -chdir=devops/redis-cluster init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis-cluster/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/redis-cluster init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis-cluster/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/redis-cluster apply -auto-approve
 fi
 if [ "${STAGE}" = "pre-production" ] ; then
-    run_command terraform -chdir=devops/vpc init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/vpc/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/vpc init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/vpc/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/vpc apply -auto-approve
     # terraform -chdir=devops/ecs init
     # terraform -chdir=devops/ecs destroy -auto-approve 
@@ -68,16 +68,16 @@ if [ "${STAGE}" = "pre-production" ] ; then
     # terraform -chdir=devops/redis-cluster destroy -auto-approve
     # terraform -chdir=devops/mongodb init
     # terraform -chdir=devops/mongodb destroy -auto-approve
-    run_command terraform -chdir=devops/mongodb_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb_new/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/mongodb_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongodb_new apply -auto-approve
-    run_command terraform -chdir=devops/redis_cluster_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis_cluster_new/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/redis_cluster_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis_cluster_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/redis_cluster_new apply -auto-approve
-    run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/ecs_new apply -auto-approve
 fi
 
 if [ "${STAGE}" = "pre-production" ]; then
-    run_command terraform -chdir=devops/mongobetween init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/mongobetween init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongobetween apply -auto-approve
 
     parameter_names=(
@@ -112,7 +112,7 @@ fi
 
 if [ "${STAGE}" = "prod"  ]; then
 
-    run_command terraform -chdir=devops/mongobetween-prod init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween-prod/run_command terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/mongobetween-prod init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween-prod/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongobetween-prod apply -auto-approve
    
 
@@ -176,18 +176,14 @@ export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE
-run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/lambda-authorizer
 run_command sls deploy --region $REGION --stage $STAGE
-run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/auctions
-run_command sls deploy --region $REGION --stage $STAGE
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
