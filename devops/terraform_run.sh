@@ -180,9 +180,9 @@ cd ../..
 cd services/users
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
-cd services/lambda-authorizer
-run_command sls deploy --region $REGION --stage $STAGE
-cd ../..
+# cd services/lambda-authorizer
+# run_command sls deploy --region $REGION --stage $STAGE
+# cd ../..
 cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
