@@ -35,9 +35,6 @@ services:
   seller-bidder-management:
     path: services/seller-bidder-management
     config: ${env:config}
-  # bdd-api:
-  #   path: services/bdd-api
-  #   config: ${env:config}
   site-banner:
     path: services/site-banner
     config: ${env:config}
@@ -50,7 +47,4 @@ services:
   access-logs:
     path: services/access-logs
     config: ${env:config}
-  quicksight-dashboards:
-    path: services/quicksight-dashboards
-    config: ${env:config}
-  
+

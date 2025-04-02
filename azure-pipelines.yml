@@ -4,6 +4,7 @@ trigger:
       - qa
       - pre-prod
       - master
+      - bidding-engine
 pr:
   branches:
     include:
@@ -16,6 +17,8 @@ variables:
     - group: qa
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-prod') }}:
     - group: pre-production
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/bidding-engine') }}:
+    - group: bidding-engine
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     - group: develop
 
@@ -255,6 +258,70 @@ stages:
                     exit 1
                   fi
                 displayName: 'Deployment'
+    
+    - job: Bidding_Deployment_One
+      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
+      displayName: Deployment
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npmV2 | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+          displayName: Cache npm
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - script: npm config set registry https://registry.npmmirror.com
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - script: |
+            bash devops/deployment.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
+          displayName: 'Deployment'
+
+    - job: Bidding_Deployment_Two
+      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
+      displayName: Deployment
+      pool:
+        vmImage: 'ubuntu-latest'
+      steps:
+        - checkout: self
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npmV2 | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+          displayName: Cache npm
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - script: npm config set registry https://registry.npmmirror.com
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - script: |
+            bash devops/deployment-2.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
+          displayName: 'Deployment'
 
 
 # - stage: DisposableDeploy
