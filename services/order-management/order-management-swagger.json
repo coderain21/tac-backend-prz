@@ -86,28 +86,68 @@
                 },
                 "example": {
                   "data": [
-                      {
-                          "_id": "67e77e1a6128d0416cddae53",
-                          "order_number": "OD00002",
-                          "name": "Bidder",
-                          "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
-                          "auction_title": "Classic auction",
-                          "currency": "USD",
-                          "amount": 6200,
-                          "payment_status": "Pending",
-                          "created_at": 1743224346
+                    {
+                      "_id": "65b9f391626a58087a621b9c",
+                      "email_address": "sthuthi+test1@7edge.com",
+                      "payment_intent": "pi_3OeY16C5wvaI16p70qSAXdD1",
+                      "client_secret": "pi_3OeY16C5wvaI16p70qSAXdD1_secret_oWduMZyfRGcCwbEqBLNzI1RRR",
+                      "status": "requires_payment_method",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "application_amount": 9,
+                      "currency": "GBP",
+                      "seller_email": "aishwarya+30@7edge.com",
+                      "shipping_address": {
+                        "_id": {
+                          "$oid": "6569734504bebdf5cc4bb24f"
+                        },
+                        "first_name": "Aishwarya",
+                        "last_name": "K",
+                        "address_line1": "Mangalore Junction Railway Station Rd",
+                        "address_line2": "Mangalore Junction Railway Station Road",
+                        "city": "Mangaluru",
+                        "state": "Karnataka",
+                        "postal_code": "575007",
+                        "country": "India",
+                        "type": "shipping",
+                        "default": true,
+                        "created_at": {
+                          "$date": "2023-12-01T05:46:45.422Z"
+                        },
+                        "email_address": "aishwarya@7edge.com"
                       },
-                      {
-                          "_id": "67e77e186128d0416cddae4e",
-                          "order_number": "OD00001",
-                          "name": "",
-                          "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
-                          "auction_title": "Classic auction",
-                          "currency": "USD",
-                          "amount": 1600,
-                          "payment_status": "Pending",
-                          "created_at": 1743224344
-                      }
+                      "billing_address": {
+                        "_id": {
+                          "$oid": "6569734504bebdf5cc4bb24f"
+                        },
+                        "first_name": "Aishwarya",
+                        "last_name": "K",
+                        "address_line1": "Mangalore Junction Railway Station Rd",
+                        "address_line2": "Mangalore Junction Railway Station Road",
+                        "city": "Mangaluru",
+                        "state": "Karnataka",
+                        "postal_code": "575007",
+                        "country": "India",
+                        "type": "shipping",
+                        "default": true,
+                        "created_at": {
+                          "$date": "2023-12-01T05:46:45.422Z"
+                        },
+                        "email_address": "aishwarya@7edge.com"
+                      },
+                      "order_number": "OD001",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "auction_image": "DomainName/Auctions/images/17bfeb70-08ce-8e19-8140-662fd62d59cf/auction_img.jpg",
+                      "purchases": [],
+                      "lots": [],
+                      "auction_id": "6520008e74542648a5819807",
+                      "name": "",
+                      "payment_method_types": [
+                        "card"
+                      ]
+                    }
                   ],
                   "total_pages": 1,
                   "total_records": 2,
@@ -203,7 +243,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "65b9f39a626a58087a621ba3"
+            "example": "65b9f391626a58087a621b9c"
           }
         ],
         "responses": {
@@ -654,7 +694,7 @@
               "schema": {
               "type": "string"
               },
-              "example": "656d66fd3c32ca65775aca29"
+              "example": "65b9f391626a58087a621b9c"
           }
           ],
           "responses": {
