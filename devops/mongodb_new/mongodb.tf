@@ -68,12 +68,12 @@ data "aws_subnets" "all_subnets" {
 data "aws_subnets" "filtered_subnets" {
   provider = aws.deployment-eu
   filter {
-    name   = "availabilityZoneId"
-    values = ["euw2-az1",	"euw2-az2"]
-  }
-   filter {
     name   = "vpc-id"
     values = [data.aws_ssm_parameter.vpc_id.value]
+  }
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
   }
 }
 
