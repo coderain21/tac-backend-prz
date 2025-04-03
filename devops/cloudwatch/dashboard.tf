@@ -398,6 +398,97 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   }
 }
 
+resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_out" {
+  provider             = aws.deployment-eu
+  alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkBytesOut"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "NetworkBytesOut"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 12582912  # 12 MB (adjust based on analysis)
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_in" {
+  provider             = aws.deployment-eu
+  alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkBytesIn"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "NetworkBytesIn"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 10485760  # 10 MB
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
+  provider             = aws.deployment-eu
+  alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkPacketsAllowanceExceeded"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "NetworkPacketsPerSecondAllowanceExceeded"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 0  # Alert when allowance is exceeded
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
+  provider             = aws.deployment-eu
+  alarm_name          = "indyauction-${var.STAGE}-Redis-MemoryEvictions"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Evictions"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Sum"
+  threshold           = 1  # Trigger if more than 10 evictions occur
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
+  provider             = aws.deployment-eu
+  alarm_name          = "indyauction-${var.STAGE}-Redis-MemoryUsage"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DatabaseMemoryUsagePercentage"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 70  # Alert if memory usage exceeds 80%
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
 
 
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_3" {
