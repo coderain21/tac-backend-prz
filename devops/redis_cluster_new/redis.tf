@@ -85,7 +85,7 @@ data "aws_ssm_parameter" "redis_node_replica_groups" {
 resource "aws_elasticache_parameter_group" "custom_redis" {
   name   = "custom-redis7-cluster"
   family = "redis7"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 
   parameter {
     name  = "maxmemory-policy"
