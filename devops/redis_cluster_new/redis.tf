@@ -82,6 +82,16 @@ data "aws_ssm_parameter" "redis_node_replica_groups" {
   provider                  = aws.deployment-eu
 }
 
+resource "aws_elasticache_parameter_group" "custom_redis" {
+  name   = "custom-redis7-cluster"
+  family = "redis7"
+  provider = aws.deployment-eu
+
+  parameter {
+    name  = "maxmemory-policy"
+    value = "noeviction"
+  }
+}
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
@@ -90,7 +100,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   node_type                   = data.aws_ssm_parameter.redis_node_type.value
   num_node_groups         = data.aws_ssm_parameter.redis_node_groups.value
   replicas_per_node_group = data.aws_ssm_parameter.redis_node_replica_groups.value
-  parameter_group_name        = "default.redis7.cluster.on"
+  parameter_group_name        = aws_elasticache_parameter_group.custom_redis.name
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
   snapshot_name               = "pre-production-snapsot"
