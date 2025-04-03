@@ -85,11 +85,15 @@ data "aws_ssm_parameter" "redis_node_replica_groups" {
 resource "aws_elasticache_parameter_group" "custom_redis" {
   name   = "custom-redis7-cluster"
   family = "redis7"
-  provider = aws.deployment-eu
+  provider = aws.deployment-us
 
   parameter {
     name  = "maxmemory-policy"
     value = "noeviction"
+  }
+  parameter {
+    name  = "cluster-enabled"
+    value = "yes"  # Must match the existing cluster setting
   }
 }
 resource "aws_elasticache_replication_group" "websocket" {

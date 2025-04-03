@@ -90,6 +90,10 @@ resource "aws_elasticache_parameter_group" "custom_redis" {
     name  = "maxmemory-policy"
     value = "noeviction"
   }
+  parameter {
+    name  = "cluster-enabled"
+    value = "yes"  # Must match the existing cluster setting
+  }
 }
 
 resource "aws_elasticache_replication_group" "websocket" {
