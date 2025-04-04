@@ -151,6 +151,9 @@ def import_lots(event, context):
             }
         start_date=auction_record['start_date']
         end_date= auction_record['end_date']
+        if email_address == "namratha.shettigar+stripe@7edge.com" and os.environ.get("STAGE") == "pre-production":
+            static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+            static_image_data = [{"url": static_image_url, "featured": True}]
         additional_fields = {
             "auction_id": auction_id,
             "seller_email": email_address,
@@ -230,7 +233,7 @@ def import_lots(event, context):
                 else:
                     dict1["tags"] = []
                 dict1.update(additional_fields)
-                if email_address == 'anusha.k+subdomain2@7edge.com':
+                if email_address == "namratha.shettigar+stripe@7edge.com" and os.environ.get("STAGE") == "pre-production":
                     static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
                     static_image_data = {"url": static_image_url, "featured": True}
                     dict1['images']=[static_image_data]
