@@ -318,7 +318,7 @@ def subdomain(event, context):
                 # Update subdomain record in MongoDB
                 subdomain_collection.update_one(
                     {'seller_email': seller_email},
-                    {"$set": {'subdomain': new_subdomain, "default": False}},
+                    {"$set": {'subdomain': new_subdomain, "default": False, "marketingMessage": request_body['marketingMessage']}},
                     session=session
                 )
 
