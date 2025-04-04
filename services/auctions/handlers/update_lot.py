@@ -93,18 +93,19 @@ def update_lot(event):
             # updating the featured image to the latest in auction collection
             if lot_updated:
                 if auction_record['template_name'] == 'Single Lot':
-                    auction_image = None
-                    #getting the featured image , so that we can update the auction image for the single with the feature image
-                    for image in update_data['images']:
-                        if image.get('featured')==True:
-                            auction_image = image['url']
-                            break
+                    update_operations = {"$set": {"auction_image": request_body['images']}}
 
                     collection_auction.update_one(
                         {"auction_id": auction_id, "seller_email": seller_email},
-                        {"$set": {"auction_image": auction_image}},
+                        update_operations,
                         session=session
                     )
+
+                    # collection_auction.update_one(
+                    #     {"auction_id": auction_id, "seller_email": seller_email},
+                    #     {"$set": {"auction_image": auction_image}},
+                    #     session=session
+                    # )
 
             lot_id = str(lot_information['_id'])
             if auction_record['status'] in ['Accepting bids' , 'Published']:

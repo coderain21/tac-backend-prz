@@ -28,10 +28,6 @@ from datetime import datetime, timezone
 from lib.common_helper import Encoder
 
 
-
-
-
-
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -173,11 +169,19 @@ def lambda_handler(event, context):
         # After inserting the lot, update the total_lots count for the associated auction
         auction_id = request_body["auction_id"]
         # skipping the total lots conditions as some of the auction is not having the total lots count
-        if auction_record:                      #and "total_lots" in auction_record:
+        if auction_record:
             # Increment the existing "total_lots" count
+            # Prepare updates for auction document
+            update_operations = {"$inc": {"total_lots": 1}}
+
+            # Add auction image update if Single Lot template
+            if auction_record['template_name'] == 'Single Lot':
+                update_operations["$set"] = {"auction_image": request_body['images']}
+
+            # Execute single update with combined operations
             auction_collection.update_one(
                 {"auction_id": auction_id, "seller_email": seller_email},
-                {"$inc": {"total_lots": 1}},
+                update_operations,
                 upsert=True
             )
         else:
