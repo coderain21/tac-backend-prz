@@ -110,14 +110,20 @@ def update_payment_data(payment_intent_id,update_data):
 
             update_condition = { "seller_email": seller_email, "email_address": buyer_email, "auction_id": auction_id, "order_number": order_number}
 
+            insert_result = update_order( update_condition, update_data)
+            print('insert_result', insert_result)
+            if not insert_result:
+                print('order updating failed')
+                return None
+
             # Check if the payment status is "Paid"
             if update_data.get("payment_status") == "Paid":
                 print('inside payment paiddd')
 
-                combined_data = {**payment_details, **update_data}
+                # combined_data = {**payment_details, **update_data}
 
                 # Create the order using the temporary payment data
-                insert_result = update_order( update_condition, combined_data)
+                # insert_result = update_order( update_condition, update_data)
 
                 # print('here')
                 seller = user_collection.find_one({"email_address": seller_email})      #, {'_id': 0})
@@ -208,9 +214,9 @@ def update_payment_data(payment_intent_id,update_data):
 
             elif update_data.get('payment_status') == 'Failed' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
-                combined_data = {**payment_details, **update_data}
+                # combined_data = {**payment_details, **update_data}
 
-                insert_result = update_order( update_condtion, combined_data)
+                # insert_result = update_order( update_condtion, update_data)
 
                 print('here in failed status')
                 # Delete the cart data
@@ -232,7 +238,7 @@ def update_payment_data(payment_intent_id,update_data):
         raise
 
 
-def update_order(insert_data):
+def update_order(update_condition, update_data):
     """
     Add payment data to the MongoDB collection.
 
@@ -251,12 +257,13 @@ def update_order(insert_data):
         db = client[os.environ['DATABASE']]
         orders_collection = db[os.environ['ORDERS_COLLECTION']]
 
-        insert_result = orders_collection.insert_one(insert_data)
-        if insert_result:
-            print("order created")
-
-        if insert_result:
-            return insert_result
+        update_result = orders_collection.update_one(
+            update_condition,
+            {"$set": update_data}
+        )
+        if update_result:
+            print("order updated")
+            return update_result
 
         return None
 

@@ -294,6 +294,8 @@ def create_intent(event, context):
                 "status": stripe_data["status"],
                 "payment": "Stripe",
                 "application_amount": application_fee,
+                "email_address": email_address,
+                "seller_email": seller_data_of_auction["seller_email"]
             }
             body_data = {'data': stripe_data["client_secret"], 'account_id': account_id}
         elif payment == "paypal":
@@ -375,8 +377,8 @@ def create_intent(event, context):
         # insert_data["auction_image"] = auction_image
         insert_data["purchases"] = cart_data
         # insert_data["lots"] = res
-        # insert_data["auction_id"] = auction_id
-        # insert_data["name"] = name
+        insert_data["auction_id"] = auction_id
+        insert_data["name"] = name
 
         #add the order data in orders collection
         orderCreate = create_order(insert_data)
