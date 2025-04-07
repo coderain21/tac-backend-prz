@@ -100,7 +100,7 @@ def update_payment_data(payment_intent_id,update_data):
             buyer_email = payment_details.get("email_address")
             auction_id = payment_details.get("auction_id")
             order_number = payment_details.get("order_number")
-            
+
             # # Create the order using the temporary payment data
             # insert_result = create_order(payment_details)
 
