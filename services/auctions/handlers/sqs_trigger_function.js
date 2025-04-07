@@ -274,6 +274,23 @@ module.exports.sqsTriggerFunction = async (event) => {
                         // Get the first winning lot number to generate order number
                         const firstWinningLotNumber = winningLot[0].lot_number
                         const orderNumber = generateOrderCode(firstWinningLotNumber)
+                        let auctionImage = null
+
+                        if (auctionData.template_name?.trim() === 'Single Lot') {
+                            const images = Array.isArray(auctionData.images) ? auctionData.images : [auctionData.images]
+                            console.log('Images:', images)
+
+                            if (images.length > 0) {
+                                const featured = images.find((img) => img.featured)
+                                console.log('Featured:', featured)
+
+                                auctionImage = featured?.url || images[0]?.url || null
+                            }
+                        } else {
+                            auctionImage = auctionData.images
+                        }
+
+                        console.log('Final Auction Image:', auctionImage)
 
                         const orderData = {
                             order_number: orderNumber, // Corrected this line
@@ -281,7 +298,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             email_address: user.email_address,
                             name: user.name,
                             auction_id: auctionData._id.toString(),
-                            auction_image: auctionData.auction_image,
+                            auction_image: auctionImage,
                             auction_title: auctionData.title,
                             currency: auctionData.currency,
                             lots: winningLot.map((lot) => lot.lot_number),
