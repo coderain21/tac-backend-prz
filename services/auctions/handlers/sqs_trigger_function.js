@@ -276,18 +276,22 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const orderNumber = generateOrderCode(firstWinningLotNumber)
                         let auctionImage = null
 
+                        console.log('auction data', auctionData)
+
                         if (auctionData.template_name?.trim() === 'Single Lot') {
-                            const images = Array.isArray(auctionData.images) ? auctionData.images : [auctionData.images]
-                            console.log('Images:', images)
+                            const imagesRaw = auctionData.auction_image
 
-                            if (images.length > 0) {
-                                const featured = images.find((img) => img.featured)
-                                console.log('Featured:', featured)
-
-                                auctionImage = featured?.url || images[0]?.url || null
+                            if (Array.isArray(imagesRaw) && imagesRaw.length > 0) {
+                                const featured = imagesRaw.find((img) => img && img.featured)
+                                auctionImage = featured?.url || imagesRaw[0]?.url || null
+                            } else if (imagesRaw && typeof imagesRaw === 'object' && imagesRaw.url) {
+                                // In case it's a single image object, not an array
+                                auctionImage = imagesRaw.url
+                            } else {
+                                console.warn('Images missing or in unexpected format:', imagesRaw)
                             }
                         } else {
-                            auctionImage = auctionData.images
+                            auctionImage = auctionData.auction_image
                         }
 
                         console.log('Final Auction Image:', auctionImage)
