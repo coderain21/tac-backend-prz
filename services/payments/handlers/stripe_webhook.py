@@ -91,31 +91,40 @@ def update_payment_data(payment_intent_id,update_data):
 
         # update_result = payments_collection.update_one({"payment_intent": id},{"$set": update_data})
 
-        temp_payment_details = temp_payments_collection.find_one({"payment_intent": payment_intent_id})
-        print('payment_details', temp_payment_details)
+        payment_details = payments_collection.find_one({"payment_intent": payment_intent_id})
+        print('payment_details', payment_details)
 
-        if temp_payment_details:
+        if payment_details:
             # Retrieve seller email, buyer email, and auction ID
-            seller_email = temp_payment_details.get("seller_email")
-            buyer_email = temp_payment_details.get("email_address")
-            auction_id = temp_payment_details.get("auction_id")
+            seller_email = payment_details.get("seller_email")
+            buyer_email = payment_details.get("email_address")
+            auction_id = payment_details.get("auction_id")
+            order_number = payment_details.get("order_number")
 
             # # Create the order using the temporary payment data
-            # insert_result = create_order(temp_payment_details)
+            # insert_result = create_order(payment_details)
 
             # Update the payment data
-            update_result = temp_payments_collection.update_one({"payment_intent": payment_intent_id}, {"$set": update_data})
+            update_result = payments_collection.update_one({"payment_intent": payment_intent_id}, {"$set": update_data})
             print('update_data', update_data)
+
+            update_condition = { "seller_email": seller_email, "email_address": buyer_email, "auction_id": auction_id, "order_number": order_number}
+
+            insert_result = update_order( update_condition, update_data)
+            print('insert_result', insert_result)
+            if not insert_result:
+                print('order updating failed')
+                return None
 
             # Check if the payment status is "Paid"
             if update_data.get("payment_status") == "Paid":
                 print('inside payment paiddd')
 
-                combined_data = {**temp_payment_details, **update_data}
+                # combined_data = {**payment_details, **update_data}
 
                 # Create the order using the temporary payment data
-                insert_result = create_order(combined_data)
-                delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
+                # insert_result = update_order( update_condition, update_data)
+
                 # print('here')
                 seller = user_collection.find_one({"email_address": seller_email})      #, {'_id': 0})
                 # print('seller', seller)
@@ -155,10 +164,10 @@ def update_payment_data(payment_intent_id,update_data):
                 end_time = end_date_time_local.time().strftime('%H:%M:%S')
                 print('auction ends', end_date, end_time)
 
-                currency = temp_payment_details.get("currency", "")
+                currency = payment_details.get("currency", "")
                 # if currency in currencySymbolMapping:
                 #     currency = currencySymbolMapping.get(currency, "")
-                amount_paid = currency + ' ' + str(temp_payment_details['amount'])
+                amount_paid = currency + ' ' + str(payment_details['amount'])
                 if not auction_data['logo_image']:
                     logo_img = f"{os.environ.get('CDN_URL')}Logo.png"
                 else:
@@ -170,16 +179,16 @@ def update_payment_data(payment_intent_id,update_data):
                     seller_name = 'Seller'
 
                 template_data = {
-                    "auction_title":temp_payment_details['auction_title'],
+                    "auction_title":payment_details['auction_title'],
                     "logo_image": logo_img,
                     "auction_end_date": end_date,
-                    'account_name': ' '.join(filter(None, [temp_payment_details['billing_address']['first_name'], temp_payment_details['billing_address']['last_name']])),    
-                    "address_line1": temp_payment_details['billing_address']['address_line1'],
-                    "address_line2": temp_payment_details['billing_address']['address_line2'],
-                    "city": temp_payment_details['billing_address']['city'],
-                    "state": temp_payment_details['billing_address']['state'],
-                    "country": temp_payment_details['billing_address']['country'],
-                    "zip_code": temp_payment_details['billing_address']['postal_code'],
+                    'account_name': ' '.join(filter(None, [payment_details['billing_address']['first_name'], payment_details['billing_address']['last_name']])),    
+                    "address_line1": payment_details['billing_address']['address_line1'],
+                    "address_line2": payment_details['billing_address']['address_line2'],
+                    "city": payment_details['billing_address']['city'],
+                    "state": payment_details['billing_address']['state'],
+                    "country": payment_details['billing_address']['country'],
+                    "zip_code": payment_details['billing_address']['postal_code'],
                     "email_address": buyer_email,
                     "seller_name": seller_name,      
                     "currency": currency, 
@@ -200,18 +209,18 @@ def update_payment_data(payment_intent_id,update_data):
                     print("An exception occurred: {}".format(error.text))
 
                 # print('template_name', template_name)
-                send_mailchimp_payment_email(temp_payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
+                send_mailchimp_payment_email(payment_details['email_address'], template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
                 cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
 
-            elif update_data.get('payment_status') == 'Unpaid' and update_data.get('last_payment_error'):
+            elif update_data.get('payment_status') == 'Failed' and update_data.get('last_payment_error'):
                 # Create the order using the temporary payment data
-                combined_data = {**temp_payment_details, **update_data}
+                # combined_data = {**payment_details, **update_data}
 
-                insert_result = create_order(combined_data)
-                delete_temp = temp_payments_collection.delete_one({"payment_intent": payment_intent_id})
-                print('here')
+                # insert_result = update_order( update_condtion, update_data)
+
+                print('here in failed status')
                 # Delete the cart data
-                cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
+                # cart_collection.delete_many({"email_address": buyer_email,"seller_email": seller_email,"auction_id": auction_id})
                 # print('after')
             return update_result
 
@@ -229,7 +238,7 @@ def update_payment_data(payment_intent_id,update_data):
         raise
 
 
-def create_order(insert_data):
+def update_order(update_condition, update_data):
     """
     Add payment data to the MongoDB collection.
 
@@ -248,12 +257,13 @@ def create_order(insert_data):
         db = client[os.environ['DATABASE']]
         orders_collection = db[os.environ['ORDERS_COLLECTION']]
 
-        insert_result = orders_collection.insert_one(insert_data)
-        if insert_result:
-            print("order created")
-
-        if insert_result:
-            return insert_result
+        update_result = orders_collection.update_one(
+            update_condition,
+            {"$set": update_data}
+        )
+        if update_result:
+            print("order updated")
+            return update_result
 
         return None
 
@@ -314,7 +324,7 @@ def update(event, context):
             payment_id = data["object"]["id"]
             update_data= {
                 "status": data["object"]["status"],
-                "payment_status": "Paid" if data["object"]["status"] == "succeeded" else "Unpaid",
+                "payment_status": "Paid" if data["object"]["status"] == "succeeded" else "Failed",
                 "payment_method_types": data["object"]["payment_method_types"]
             }
             if data["object"]["last_payment_error"] is not None:
