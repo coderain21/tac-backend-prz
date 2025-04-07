@@ -242,7 +242,7 @@
           "schema": {
             "type": "string"
           },
-          "example": "All Buyers"
+          "example": "All Sellers"
         }
       ],
       "responses": {
@@ -319,7 +319,7 @@
       }
     }
    },
-   "/{notification_id}": {
+   "/delete/{notification_id}": {
     "delete": {
       "summary": "Delete Site Banner Notification by Admin",
       "description": "Deleting the notification.",
@@ -340,7 +340,7 @@
           "schema": {
             "type": "string"
           },
-          "example": ""
+          "example": "67f3bf494d4a369d223917f5"
         }
       ],
       "responses": {

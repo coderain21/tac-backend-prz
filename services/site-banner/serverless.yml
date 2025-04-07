@@ -218,7 +218,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /{notification_id}
+          path: /delete/{notification_id}
           method: DELETE
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN} 
