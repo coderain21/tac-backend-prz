@@ -174,7 +174,7 @@ module.exports.sqsTriggerFunction = async (event) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
-
+        console.log('event', event)
         // Retrieve the bidders from MongoDB
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
@@ -318,6 +318,24 @@ module.exports.sqsTriggerFunction = async (event) => {
                             process.env.DATABASE,
                             process.env.ORDERS_COLLECTION,
                             orderData,
+                        )
+                        cartUpdateCondition = {
+                            seller_email: auctionData.seller_email,
+                            email_address: user.email_address,
+                            auction_id: auctionData._id.toString(),
+                        }
+                        cartUpdateData = {
+                            payment_status: 'Pending',
+                            order_number: orderNumber,
+
+                        }
+                        await mongodbHelper.updateCart(
+                            process.env.MONGO_CLIENT,
+                            process.env.DATABASE,
+                            process.env.CARTTABLE,
+                            cartUpdateCondition,
+                            cartUpdateData,
+
                         )
                     } catch (error) {
                         console.error('Error creating order:', error)
