@@ -324,7 +324,7 @@ def update(event, context):
             payment_id = data["object"]["id"]
             update_data= {
                 "status": data["object"]["status"],
-                "payment_status": "Paid" if data["object"]["status"] == "succeeded" else "Failed",
+                "payment_status": "Paid" if data["object"]["status"] == "succeeded" else "Pending",
                 "payment_method_types": data["object"]["payment_method_types"]
             }
             if data["object"]["last_payment_error"] is not None:
@@ -332,6 +332,7 @@ def update(event, context):
                     "message": data["object"]["last_payment_error"]["message"],
                     "decline_code": data["object"]["last_payment_error"]["decline_code"]
                 }
+                update_data["payment_status"] = 'Failed'
 
             update_payment_data(payment_id,update_data)
             print('updatedata', update_data)
