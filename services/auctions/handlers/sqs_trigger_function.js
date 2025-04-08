@@ -274,6 +274,27 @@ module.exports.sqsTriggerFunction = async (event) => {
                         // Get the first winning lot number to generate order number
                         const firstWinningLotNumber = winningLot[0].lot_number
                         const orderNumber = generateOrderCode(firstWinningLotNumber)
+                        let auctionImage = null
+
+                        console.log('auction data', auctionData)
+
+                        if (auctionData.template_name?.trim() === 'Single Lot') {
+                            const imagesRaw = auctionData.auction_image
+
+                            if (Array.isArray(imagesRaw) && imagesRaw.length > 0) {
+                                const featured = imagesRaw.find((img) => img && img.featured)
+                                auctionImage = featured?.url || imagesRaw[0]?.url || null
+                            } else if (imagesRaw && typeof imagesRaw === 'object' && imagesRaw.url) {
+                                // In case it's a single image object, not an array
+                                auctionImage = imagesRaw.url
+                            } else {
+                                console.warn('Images missing or in unexpected format:', imagesRaw)
+                            }
+                        } else {
+                            auctionImage = auctionData.auction_image
+                        }
+
+                        console.log('Final Auction Image:', auctionImage)
 
                         const orderData = {
                             order_number: orderNumber, // Corrected this line
@@ -281,7 +302,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             email_address: user.email_address,
                             name: user.name,
                             auction_id: auctionData._id.toString(),
-                            auction_image: auctionData.auction_image,
+                            auction_image: auctionImage,
                             auction_title: auctionData.title,
                             currency: auctionData.currency,
                             lots: winningLot.map((lot) => lot.lot_number),
