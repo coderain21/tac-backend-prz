@@ -162,7 +162,7 @@ def create_order(insert_data):
         #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
         #                 )
         #db = client[os.environ['DATABASE']]
-        payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
+        payments_collection = db[os.environ['ORDERS_COLLECTION']]
         insert_result = payments_collection.update_one(
                                                     {
                                                     "auction_id": insert_data["auction_id"], 
@@ -290,12 +290,15 @@ def create_intent(event, context):
                 account_id, amount, seller_data_of_auction["currency"], application_fee)
             insert_data = {
                 "payment_intent": stripe_data["id"],
-                "client_secret": stripe_data["client_secret"],
+                "client_secret": stripe_data["client_secret"], 
                 "status": stripe_data["status"],
                 "payment": "Stripe",
                 "application_amount": application_fee,
                 "email_address": email_address,
-                "seller_email": seller_data_of_auction["seller_email"]
+                "seller_email": seller_data_of_auction["seller_email"],
+                "payment_status": "Pending",
+                "amount": amount,
+                "currency": seller_data_of_auction["currency"]
             }
             body_data = {'data': stripe_data["client_secret"], 'account_id': account_id}
         elif payment == "paypal":
@@ -334,7 +337,7 @@ def create_intent(event, context):
 
         # counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
-        orders_collection = db[os.environ["TEMP_ORDERS_COLLECTION"]]
+        orders_collection = db[os.environ["ORDERS_COLLECTION"]]
 
         #fetch address data and add to order data
         billing_address = address_collection.find_one({"_id": ObjectId(billing)})
