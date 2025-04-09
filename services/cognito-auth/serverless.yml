@@ -190,13 +190,6 @@ functions:
       subnetIds:
       - ${ssm:SUBNET_ID}
   
-  subdomain-callback:
-    handler: handlers/cognito_callback.handler
-    events:
-      - http:
-          path: /auth/login
-          method: get
-          cors: true
 
 resources:
    Resources:

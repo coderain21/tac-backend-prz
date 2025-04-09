@@ -16,12 +16,8 @@ const uuid = require('uuid')
 const AWS = require('aws-sdk')
 
 const cognito = new AWS.CognitoIdentityServiceProvider()
-const Users = require('../entities/Buyers')
-const Counter = require('../entities/Counter')
+const Subdomain = require('../entities/SubDomain')
 const mongoConnection = require('../lib/mongodb_helper')
-const helpers = require('../lib/helper')
-
-
 
 /* eslint-disable no-console */
 exports.handler = async (event) => {
@@ -48,7 +44,10 @@ exports.handler = async (event) => {
 
         // Validate state URL format
         try {
-            new URL(state)
+            const validatedUrl = new URL(state)
+            if (!validatedUrl.protocol || !validatedUrl.host) {
+                throw new Error('Invalid URL')
+            }
         } catch (err) {
             return {
                 statusCode: 400,
@@ -76,10 +75,5 @@ exports.handler = async (event) => {
             body: JSON.stringify({ message: 'Internal Server Error' }),
             headers: { 'Content-Type': 'application/json' },
         }
-    } finally {
-        if (client) {
-            await client.close()
-        }
     }
 }
-

@@ -490,7 +490,21 @@ functions:
               authorizer:
                 type: COGNITO_USER_POOLS
                 authorizerId: { Ref: MyApiGatewayAuthorizer }
-
+  
+  subdomain-callback:
+    handler: handlers/cognito_callback.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /auth/login
+          method: get
+          cors: true
 
 resources:
   Resources:
@@ -967,7 +981,7 @@ resources:
           - "http://localhost:3000/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
-        LogoutURLs:
+          - "https://${ssm:DOMAIN_NAME}/v1/users-management/auth/login"
           - "${ssm:BASE_URL_BUYER}/"
           - "${ssm:BASE_URL_BUYER}/login"
           - "${ssm:BASE_URL_BUYER}/register"
