@@ -133,7 +133,7 @@ def update_app_client(userpoolid, client_id, client_name, subdomain, existing_do
     # Create array of new callback URLs for the new subdomain
     new_callback_urls = [
         f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}",
-        f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/register", 
+        f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/register",
         f"https://{subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}/login"
     ]
     # Add new callback URLs to existing array
