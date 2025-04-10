@@ -32,13 +32,14 @@ exports.handler = async (event) => {
                 const url = new URL(state)
                 loginRedirect = `${url.origin}/login`
             } catch (err) {
-                console.warn('Invalid state URL, falling back to default login.')
+                console.log('Invalid state URL, falling back to default login.')
             }
         }
 
         // Redirect if state or code is missing
         if (!state || !code || typeof code !== 'string' || code.length === 0) {
-            console.warn('Missing or invalid state/code, redirecting to login.')
+            console.log('Missing or invalid state/code, redirecting to login.')
+            console.log(`${loginRedirect}/pageNotFound`)
             return {
                 statusCode: 302,
                 headers: {
@@ -54,7 +55,7 @@ exports.handler = async (event) => {
         try {
             validatedUrl = new URL(state)
         } catch (err) {
-            console.error('Error validating state URL:', err)
+            console.log('Error validating state URL:', err)
             return {
                 statusCode: 302,
                 headers: {
@@ -67,7 +68,7 @@ exports.handler = async (event) => {
 
         const secretKey = process.env.SUB_ENC_KEY
         if (!secretKey) {
-            console.error('Missing SUB_ENC_KEY env variable')
+            console.log('Missing env variable')
             return {
                 statusCode: 302,
                 headers: {
