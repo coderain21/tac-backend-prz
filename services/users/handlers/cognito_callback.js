@@ -55,6 +55,37 @@ exports.handler = async (event) => {
                 headers: { 'Content-Type': 'application/json' },
             }
         }
+        // Extract subdomain from state URL
+        const getSub = (state) => {
+            const url = new URL(state)
+            const hostParts = url.hostname.split('.')
+            // Check if hostname has at least 3 parts (subdomain.domain.tld)
+            if (hostParts.length >= 3) {
+                return hostParts[0]
+            }
+            return null
+        }
+
+        // Add subdomain extraction to handler
+        const subd = getSub(state)
+        if (!subd) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Invalid subdomain in state URL' }),
+                headers: { 'Content-Type': 'application/json' },
+            }
+        }
+        const query = { subdomain: subd }
+        const domain = await mongoConnection.getSubdomain(query, Subdomain)
+
+        if (!domain) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ message: 'Invalid subdomain in state URL' }),
+                headers: { 'Content-Type': 'application/json' },
+            }
+        }
+
 
         // Ensure the redirect URL is clean
         const frontendRedirectUrl = `${state}?code=${encodeURIComponent(code)}`

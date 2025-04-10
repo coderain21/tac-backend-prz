@@ -493,6 +493,7 @@ functions:
   
   subdomain-callback:
     handler: handlers/cognito_callback.handler
+    timeout: 30
     layers:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
