@@ -14,6 +14,7 @@ client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["LOT_COLLECTION_NAME"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+counter_collection = db[os.environ["COUNTER_LOT"]]
 
 
 
@@ -29,7 +30,7 @@ def update_lot_numbers(auction_id, seller_email, deleted_lot_number):
             "lot_number": {"$gt": deleted_lot_number}
         }).sort("lot_number", 1)
 
-        # Bulk update operation
+        # Setting the condition for the Bulk update operation 
         bulk_ops = []
         for lot in lots_to_update:
             bulk_ops.append(
@@ -39,6 +40,7 @@ def update_lot_numbers(auction_id, seller_email, deleted_lot_number):
                 )
             )
 
+        # bulk operation to update the lot number when a lot is deleted
         if bulk_ops:
             collection.bulk_write(bulk_ops)
             return True
@@ -103,12 +105,25 @@ def delete_lot(event, context):
             "lot_number":lot_number, "seller_email": seller_email,"auction_id": auction_id
             })
 
-        # Update lot numbers after deletion
-        if update_lot_numbers(auction_id, seller_email, lot_number):
-            print("Lot numbers updated successfully.")
-
         if delete_result.deleted_count == 1:
             auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+            # print('auction', auction_record.get('status'))
+            # Update lot numbers after deletion
+            if auction_record.get('status') == 'Draft':
+
+                # updating the lot number to maintain the order
+                # the deleted lots number will be assigned to the lot which is in front of it , example lot 1 is deleted, so lot2 will be converted to lot1
+                if update_lot_numbers(auction_id, seller_email, lot_number):
+                    print("Lot numbers updated successfully.")
+            
+            counter_update = counter_collection.update_one(
+                {"auction_id": auction_id, "seller_email": seller_email},
+                {"$inc": {"starting_sequence": -1}}
+            )
+            if counter_update.modified_count == 1:
+                print("Counter updated successfully.")
+
+
 
             if auction_record and "total_lots" in auction_record and auction_record["total_lots"] > 0:
                 # Decrease the existing "total_lots" count
