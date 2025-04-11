@@ -26,7 +26,6 @@ exports.handler = async (event) => {
         const queryParams = event.queryStringParameters || {}
         const { state, code } = queryParams // Capture state (frontend URL) and auth code
 
-
         if (state) {
             try {
                 const url = new URL(state)
