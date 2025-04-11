@@ -21,43 +21,65 @@ const mongoConnection = require('../lib/mongodb_helper')
 
 /* eslint-disable no-console */
 exports.handler = async (event) => {
+    let loginRedirect = `https://${process.env.DEFAULT_SUB_DOMAIN}.${process.env.AMPLIFY_DOMAIN_NAME}`
     try {
         const queryParams = event.queryStringParameters || {}
         const { state, code } = queryParams // Capture state (frontend URL) and auth code
 
-        if (!state || !code) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Missing state or code' }),
-                headers: { 'Content-Type': 'application/json' },
+        if (state) {
+            try {
+                const url = new URL(state)
+                loginRedirect = `${url.origin}/login`
+            } catch (err) {
+                console.log('Invalid state URL, falling back to default login.')
             }
         }
 
-        // Validate code format
-        if (typeof code !== 'string' || code.length === 0) {
+        // Redirect if state or code is missing
+        if (!state || !code || typeof code !== 'string' || code.length === 0) {
+            console.log('Missing or invalid state/code, redirecting to login.')
+            console.log(`${loginRedirect}/pageNotFound`)
             return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Invalid code format' }),
-                headers: { 'Content-Type': 'application/json' },
+                statusCode: 302,
+                headers: {
+                    Location: `${loginRedirect}/pageNotFound`,
+                    'Cache-Control': 'no-cache',
+                },
+                body: '',
             }
         }
 
-        // Validate state URL format
+        // Validate state URL format again (safe)
+        let validatedUrl
         try {
-            const validatedUrl = new URL(state)
-            if (!validatedUrl.protocol || !validatedUrl.host) {
-                throw new Error('Invalid URL')
-            }
+            validatedUrl = new URL(state)
         } catch (err) {
+            console.log('Error validating state URL:', err)
             return {
-                statusCode: 400,
-                body: JSON.stringify({ message: 'Invalid state URL format' }),
-                headers: { 'Content-Type': 'application/json' },
+                statusCode: 302,
+                headers: {
+                    Location: `${loginRedirect}/pageNotFound`,
+                    'Cache-Control': 'no-cache',
+                },
+                body: '',
             }
         }
 
-        // Ensure the redirect URL is clean
-        const frontendRedirectUrl = `${state}?code=${encodeURIComponent(code)}`
+        const secretKey = process.env.SUB_ENC_KEY
+        if (!secretKey) {
+            console.log('Missing env variable')
+            return {
+                statusCode: 302,
+                headers: {
+                    Location: loginRedirect,
+                    'Cache-Control': 'no-cache',
+                },
+                body: '',
+            }
+        }
+
+        const encryptedCode = CryptoJS.AES.encrypt(code, secretKey).toString()
+        const frontendRedirectUrl = `${state}?code=${encodeURIComponent(encryptedCode)}`
         console.log('Redirecting to:', frontendRedirectUrl)
 
         return {
@@ -69,11 +91,14 @@ exports.handler = async (event) => {
             body: '',
         }
     } catch (err) {
-        console.log('Error:', err)
+        console.error('Unexpected error:', err)
         return {
-            statusCode: 500,
-            body: JSON.stringify({ message: 'Internal Server Error' }),
-            headers: { 'Content-Type': 'application/json' },
+            statusCode: 302,
+            headers: {
+                Location: `${loginRedirect}/pageNotFound`,
+                'Cache-Control': 'no-cache',
+            },
+            body: '',
         }
     }
 }
