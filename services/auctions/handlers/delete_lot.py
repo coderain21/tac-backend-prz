@@ -15,6 +15,42 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["LOT_COLLECTION_NAME"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 
+
+
+def update_lot_numbers(auction_id, seller_email, deleted_lot_number):
+    """
+    Updates lot numbers after a lot is deleted to maintain sequential ordering
+    """
+    try:
+        # Find all lots with lot number greater than deleted lot, sorted by lot number
+        lots_to_update = collection.find({
+            "auction_id": auction_id,
+            "seller_email": seller_email,
+            "lot_number": {"$gt": deleted_lot_number}
+        }).sort("lot_number", 1)
+
+        # Bulk update operation
+        bulk_ops = []
+        for lot in lots_to_update:
+            bulk_ops.append(
+                pymongo.UpdateOne(
+                    {"_id": lot["_id"]},
+                    {"$set": {"lot_number": lot["lot_number"] - 1}}
+                )
+            )
+
+        if bulk_ops:
+            collection.bulk_write(bulk_ops)
+            return True
+        return False
+
+    except Exception as e:
+        print(f"Error updating lot numbers: {str(e)}")
+        return False
+
+
+
+
 def delete_lot(event, context):
     """
     The function "delete_lot" is used to delete a lot.
@@ -66,6 +102,10 @@ def delete_lot(event, context):
         delete_result = collection.delete_one({
             "lot_number":lot_number, "seller_email": seller_email,"auction_id": auction_id
             })
+
+        # Update lot numbers after deletion
+        if update_lot_numbers(auction_id, seller_email, lot_number):
+            print("Lot numbers updated successfully.")
 
         if delete_result.deleted_count == 1:
             auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
