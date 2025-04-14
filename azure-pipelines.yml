@@ -234,7 +234,7 @@ stages:
             parameters:
               envName: 'staging' 
       - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-          - template: devops/deploy.yml
+          - template: devops/deploy-bidding.yml
             parameters:
               envName: 'testing'
       - ${{ else }}:
