@@ -197,3 +197,9 @@ variable "LAUNCHDARKLY_CLIENT_ID" {
   description = "Description of the variable"
 }
 
+variable "SUB_ENC_KEY" {
+  type        = string
+  description = "Description of the variable"
+}
+
+
