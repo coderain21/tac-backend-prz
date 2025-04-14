@@ -232,6 +232,8 @@ def create(event, context):
             }
         # default = sub_domain_name == os.environ["DEFAULT_SUB_DOMAIN"]
         data = fetch_seller_email_from_auction(auction_id)
+        user_collection = db[os.environ["USERPOOLS_MONGO"]]
+        user_data = user_collection.find_one({"email_address":data})
         if not data:
             return {
                 "statusCode": 400,
@@ -247,7 +249,7 @@ def create(event, context):
         return {
             "statusCode": 201,
             "headers": headers,
-            "body": json.dumps({"seller_email": data})
+            "body": json.dumps({"seller_email": data, "marketing_optin_message": user_data.get("marketing_optin_message")})
         }
     except Exception as err:
         print(err)
