@@ -4,7 +4,7 @@ parameters:
 
 jobs:
     - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
+      # condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
       displayName: Deployment
       environment: ${{ parameters.envName }}
       pool:
@@ -41,9 +41,9 @@ jobs:
                 displayName: 'Deployment'
     
     - job: Bidding_Deployment_One
-      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
+      # condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
       displayName: Deployment
-      environment: ${{ parameters.envName }}
+      # environment: ${{ parameters.envName }}
       pool:
         vmImage: 'ubuntu-latest'
       steps:
@@ -74,9 +74,9 @@ jobs:
           displayName: 'Deployment'
 
     - job: Bidding_Deployment_Two
-      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
+      # condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
       displayName: Deployment
-      environment: ${{ parameters.envName }}
+      # environment: ${{ parameters.envName }}
       pool:
         vmImage: 'ubuntu-latest'
       steps:
