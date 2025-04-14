@@ -76,6 +76,8 @@ provider:
     MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}  #ADDED THIS FOR MAILCHIMP API CALL
     ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
+    SUB_ENC_KEY: ${ssm:SUB_ENC_KEY}
+    AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
 
    
     
@@ -490,7 +492,22 @@ functions:
               authorizer:
                 type: COGNITO_USER_POOLS
                 authorizerId: { Ref: MyApiGatewayAuthorizer }
-
+  
+  subdomain-callback:
+    handler: handlers/cognito_callback.handler
+    timeout: 30
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /auth/login
+          method: get
+          cors: true
 
 resources:
   Resources:
@@ -967,7 +984,7 @@ resources:
           - "http://localhost:3000/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
-        LogoutURLs:
+          - "https://${ssm:DOMAIN_NAME}/v1/users-management/auth/login"
           - "${ssm:BASE_URL_BUYER}/"
           - "${ssm:BASE_URL_BUYER}/login"
           - "${ssm:BASE_URL_BUYER}/register"

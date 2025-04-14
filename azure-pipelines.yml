@@ -30,7 +30,7 @@ stages:
     #   displayName: "GPT Pull Request Review"
     #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
     #   pool:
-    #       vmImage: "ubuntu-latest"
+    #       vmImage: "ubuntu-22.04"
     #   steps:
     #     - checkout: self
     #       persistCredentials: true
@@ -43,7 +43,7 @@ stages:
       displayName: "Code Quality"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - task: Cache@2
           inputs:
@@ -81,7 +81,7 @@ stages:
       displayName: "Secret Checking"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - script: |
             pip3 install detect-secrets
@@ -95,7 +95,7 @@ stages:
       displayName: "License Compliance"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - script: npm config set registry https://registry.npmmirror.com
         - script: |
@@ -111,7 +111,7 @@ stages:
       displayName: 'Static Application Security Testing (SAST)'
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - script: |
             pip3 install njsscan
@@ -129,7 +129,7 @@ stages:
     - job: "Download_Environment"
       displayName: "Build"
       pool:
-        vmImage: "ubuntu-latest"
+        vmImage: "ubuntu-22.04"
       steps:
         - script: |
             ./envs.sh
@@ -143,8 +143,11 @@ stages:
       displayName: "Unit Testing"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-        vmImage: "ubuntu-latest"
+        vmImage: "ubuntu-22.04"
       steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.11'
         - task: Cache@2
           inputs:
             key: 'npmV2 | "$(Agent.OS)" | package.json'
@@ -185,7 +188,7 @@ stages:
       dependsOn: APITesting
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - checkout: self
           clean: true
@@ -213,116 +216,32 @@ stages:
           displayName: 'Dynamic Application Security Testing (DAST)'
 
     
+
 - stage: Deploy
+  displayName: Deploy
+  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
   jobs:
-    - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
-      displayName: Deployment
-      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          environment: 'Production'
-      ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-          environment: 'Testing'
-      ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-          environment: 'Pre-Production'
-      ${{ else }}:
-        environment: 'Development'
-      pool:
-        vmImage: 'ubuntu-latest'
-      strategy:
-        # Default deployment strategy, more coming...
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - task: Cache@2
-                inputs:
-                  key: 'npmV2 | "$(Agent.OS)" | package.json'
-                  restoreKeys: |
-                    npmV2 | "$(Agent.OS)"
-                  path: "$(System.DefaultWorkingDirectory)/node_modules"
-                  cacheHitVar: CACHE_RESTORED
-                displayName: Cache npm
-              - task: DownloadPipelineArtifact@2
-                name: environment
-                inputs:
-                  artifact: environment
-                  targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: npm config set registry https://registry.npmmirror.com
-              - script: |
-                  npm install --cache .npm
-                condition: ne(variables.CACHE_RESTORED, 'true')
-              - script: |
-                  bash devops/terraform_run.sh
-                  if [ $? -ne 0 ]; then
-                    echo "API testing failed"
-                    exit 1
-                  fi
-                displayName: 'Deployment'
-    
-    - job: Bidding_Deployment_One
-      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
-      displayName: Deployment
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: Cache@2
-          inputs:
-            key: 'npmV2 | "$(Agent.OS)" | package.json'
-            restoreKeys: |
-              npmV2 | "$(Agent.OS)"
-            path: "$(System.DefaultWorkingDirectory)/node_modules"
-            cacheHitVar: CACHE_RESTORED
-          displayName: Cache npm
-        - task: DownloadPipelineArtifact@2
-          name: environment
-          inputs:
-            artifact: environment
-            targetPath: '$(System.DefaultWorkingDirectory)'
-        - script: npm config set registry https://registry.npmmirror.com
-        - script: |
-            npm install --cache .npm
-          condition: ne(variables.CACHE_RESTORED, 'true')
-        - script: |
-            bash devops/deployment.sh
-            if [ $? -ne 0 ]; then
-              echo "API testing failed"
-              exit 1
-            fi
-          displayName: 'Deployment'
-
-    - job: Bidding_Deployment_Two
-      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
-      displayName: Deployment
-      pool:
-        vmImage: 'ubuntu-latest'
-      steps:
-        - checkout: self
-        - task: Cache@2
-          inputs:
-            key: 'npmV2 | "$(Agent.OS)" | package.json'
-            restoreKeys: |
-              npmV2 | "$(Agent.OS)"
-            path: "$(System.DefaultWorkingDirectory)/node_modules"
-            cacheHitVar: CACHE_RESTORED
-          displayName: Cache npm
-        - task: DownloadPipelineArtifact@2
-          name: environment
-          inputs:
-            artifact: environment
-            targetPath: '$(System.DefaultWorkingDirectory)'
-        - script: npm config set registry https://registry.npmmirror.com
-        - script: |
-            npm install --cache .npm
-          condition: ne(variables.CACHE_RESTORED, 'true')
-        - script: |
-            bash devops/deployment-2.sh
-            if [ $? -ne 0 ]; then
-              echo "API testing failed"
-              exit 1
-            fi
-          displayName: 'Deployment'
-
+      - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'production'
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'testing'
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'staging' 
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+          - template: devops/deploy-bidding.yml
+            parameters:
+              envName: 'testing'
+      - ${{ else }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'development'
+  
 
 # - stage: DisposableDeploy
 #   jobs:
