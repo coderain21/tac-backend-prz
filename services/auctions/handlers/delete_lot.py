@@ -30,7 +30,7 @@ def update_lot_numbers(auction_id, seller_email, deleted_lot_number):
             "lot_number": {"$gt": deleted_lot_number}
         }).sort("lot_number", 1)
 
-        # Setting the condition for the Bulk update operation 
+        # Setting the condition for the Bulk update operation
         bulk_ops = []
         for lot in lots_to_update:
             bulk_ops.append(
@@ -115,7 +115,7 @@ def delete_lot(event, context):
                 # the deleted lots number will be assigned to the lot which is in front of it , example lot 1 is deleted, so lot2 will be converted to lot1
                 if update_lot_numbers(auction_id, seller_email, lot_number):
                     print("Lot numbers updated successfully.")
-            
+
             counter_update = counter_collection.update_one(
                 {"auction_id": auction_id, "seller_email": seller_email},
                 {"$inc": {"starting_sequence": -1}}
