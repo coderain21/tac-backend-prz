@@ -219,7 +219,7 @@ stages:
 
 - stage: Deploy
   displayName: Deploy
-  condition: succeeded()
+  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
   jobs:
       - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
           - template: devops/deploy.yml
