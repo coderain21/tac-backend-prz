@@ -43,7 +43,7 @@ jobs:
     - job: Bidding_Deployment_One
       condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
       displayName: Deployment
-      # environment: ${{ parameters.envName }}
+      environment: ${{ parameters.envName }}
       pool:
         vmImage: 'ubuntu-latest'
       steps:
@@ -76,7 +76,7 @@ jobs:
     - job: Bidding_Deployment_Two
       condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
       displayName: Deployment
-      # environment: ${{ parameters.envName }}
+      environment: ${{ parameters.envName }}
       pool:
         vmImage: 'ubuntu-latest'
       steps:
