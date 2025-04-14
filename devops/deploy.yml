@@ -4,7 +4,7 @@ parameters:
 
 jobs:
     - deployment: Deployment
-      # condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
+      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
       displayName: Deployment
       environment: ${{ parameters.envName }}
       pool:
