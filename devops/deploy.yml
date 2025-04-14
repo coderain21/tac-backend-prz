@@ -41,7 +41,7 @@ jobs:
                 displayName: 'Deployment'
     
     - job: Bidding_Deployment_One
-      # condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
+      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
       displayName: Deployment
       # environment: ${{ parameters.envName }}
       pool:
@@ -74,7 +74,7 @@ jobs:
           displayName: 'Deployment'
 
     - job: Bidding_Deployment_Two
-      # condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
+      condition: and(contains(variables['build.SourceBranch'], 'bidding-engine'), succeeded())
       displayName: Deployment
       # environment: ${{ parameters.envName }}
       pool:
