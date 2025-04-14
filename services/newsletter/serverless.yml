@@ -20,7 +20,7 @@ provider:
     COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions

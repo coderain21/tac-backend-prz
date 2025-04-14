@@ -49,7 +49,7 @@ provider:
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
     FORGOT_PASSWORD_EMAIL_TEMPLATE_SELLER: ${self:provider.stage}-forgot-password
       # Fn::Join:
@@ -488,8 +488,23 @@ functions:
               path: /save-log
               method: POST
               authorizer:
-                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
+  
+  subdomain-callback:
+    handler: handlers/cognito_callback.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /auth/login
+          method: get
+          cors: true
 
 resources:
   Resources:
@@ -966,7 +981,7 @@ resources:
           - "http://localhost:3000/"
           - "http://localhost:3000/login"
           - "http://localhost:3000/register"
-        LogoutURLs:
+          - "https://${ssm:DOMAIN_NAME}/v1/users-management/auth/login"
           - "${ssm:BASE_URL_BUYER}/"
           - "${ssm:BASE_URL_BUYER}/login"
           - "${ssm:BASE_URL_BUYER}/register"

@@ -18,83 +18,31 @@ data "aws_vpc" "default" {
   provider = aws.deployment-us
 }
 
-resource "aws_default_subnet" "default_az1" {
-  availability_zone = "eu-west-2c"
-  provider = aws.deployment-us
-}
+
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
-  subnet_ids = [resource.aws_default_subnet.default_az1.id]
+  subnet_ids = [data.aws_ssm_parameter.subnet.value]
   provider = aws.deployment-us
 }
 
-resource "aws_security_group" "security_groups" {
-  name        = "redis-security-group-cluster-enabled"
-  description = "Allow inbound traffic on ports 22, 80, 443, and 6379"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-   egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-  provider = aws.deployment-us
-}
 
 data "aws_ssm_parameter" "redis_node_type" {
   name = "REDIS_NODE_TYPE"
-  provider = aws.deployment-us
 }
 data "aws_ssm_parameter" "redis_node_groups" {
   name = "REDIS_NODE_GROUPS"
-  provider = aws.deployment-us
 }
 data "aws_ssm_parameter" "redis_node_replica_groups" {
   name = "REDIS_NODE_REPLICA_GROUPS"
-  provider = aws.deployment-us
 }
-resource "aws_elasticache_parameter_group" "custom_redis" {
-  name   = "custom-redis7-cluster"
-  family = "redis7"
-  provider = aws.deployment-us
+data "aws_ssm_parameter" "security_group" {
+  name = "SECURITY_GROUP_ID"
+}
+data "aws_ssm_parameter" "subnet" {
+  name = "SUBNET_ID"
+}
 
-  parameter {
-    name  = "maxmemory-policy"
-    value = "noeviction"
-  }
-  parameter {
-    name  = "cluster-enabled"
-    value = "yes"  # Must match the existing cluster setting
-  }
-}
+
 
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
@@ -104,9 +52,9 @@ resource "aws_elasticache_replication_group" "websocket" {
   node_type                   = data.aws_ssm_parameter.redis_node_type.value
   num_node_groups         = data.aws_ssm_parameter.redis_node_groups.value
   replicas_per_node_group = data.aws_ssm_parameter.redis_node_replica_groups.value
-  parameter_group_name        = aws_elasticache_parameter_group.custom_redis.name
+  parameter_group_name        = "default.redis7.cluster.on"
   port                        = 6379
-  security_group_ids = [resource.aws_security_group.security_groups.id]
+  security_group_ids = [data.aws_ssm_parameter.security_group.value]
   apply_immediately          = true
   provider                  = aws.deployment-us
 }

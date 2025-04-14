@@ -23,7 +23,7 @@ provider:
     REGION: ${env:REGION}
     ADMIN_COGNITO_CLIENT_ID: { Ref: AdminUsersClient } 
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${self:custom.mongodbConnectionString}
@@ -189,6 +189,8 @@ functions:
       - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
       - ${ssm:SUBNET_ID}
+  
+
 resources:
    Resources:
     Buyers:
