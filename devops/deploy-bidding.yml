@@ -8,7 +8,7 @@ jobs:
       displayName: Deployment
       environment: ${{ parameters.envName }}
       pool:
-        vmImage: 'ubuntu-latest'
+        vmImage: "ubuntu-22.04"
       steps:
         - checkout: self
         - task: Cache@2
