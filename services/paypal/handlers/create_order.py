@@ -134,7 +134,7 @@ def generate_paypal_order(payment_info, redirect_url, auction_data):
 
     for item in cart_items:
         items.append({
-            "name": item.get("lot_title", "Auction Lot"), 
+            "name": item.get("lot_title", "Auction Lot"),
             "description": f"Lot #{item.get('lot_number', '')}",
             "unit_amount": {
                 "currency_code": item.get("currency", currency),
@@ -169,7 +169,7 @@ def generate_paypal_order(payment_info, redirect_url, auction_data):
         }],
         "application_context": {
             "landing_page": "BILLING",
-            "shipping_preference": "NO_SHIPPING", 
+            "shipping_preference": "NO_SHIPPING",
             "user_action": "PAY_NOW",
             "return_url": return_url,
             "cancel_url": cancel_url
