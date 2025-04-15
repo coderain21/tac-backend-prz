@@ -116,49 +116,58 @@ def generate_paypal_order(payment_info, redirect_url):
     account_id = payment_info.get("account_id")
 
     items = []
+    item_total = 0  # Used to calculate correct item_total
+
     for item in cart_items:
+        bid_amount = float(item.get("bid_amount", 0))
+        item_total += bid_amount
         items.append({
             "name": item.get("lot_title", "Auction Lot"), 
             "description": f"Lot #{item.get('lot_number', '')}",
             "unit_amount": {
                 "currency_code": item.get("currency", currency),
-                "value": str(item.get("bid_amount", 0))
+                "value": f"{bid_amount:.2f}"
             },
             "quantity": "1",
             "category": "PHYSICAL_GOODS"
         })
+
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
             "amount": {
                 "currency_code": currency,
-                "value": str(amount),
+                "value": f"{item_total:.2f}",  # amount buyer pays
                 "breakdown": {
                     "item_total": {
                         "currency_code": currency,
-                        "value": str(amount)
+                        "value": f"{item_total:.2f}"
                     }
                 }
             },
             "items": items,
-            "payee": {"merchant_id": account_id, "email_address": seller_email},
+            "payee": {
+                "merchant_id": account_id,
+                "email_address": seller_email
+            },
             "payment_instruction": {
                 "platform_fees": [{
                     "amount": {
                         "currency_code": currency,
-                        "value": str(application_fee)
+                        "value": f"{float(application_fee):.2f}"
                     }
                 }]
             }
         }],
         "application_context": {
             "landing_page": "BILLING",
-            "shipping_preference": "NO_SHIPPING", 
+            "shipping_preference": "NO_SHIPPING",
             "user_action": "PAY_NOW",
             "return_url": return_url,
             "cancel_url": cancel_url
         }
     }
+
     print(json.dumps(order_data, indent=4))
     response = requests.post(
         f"{PAYPAL_API_URL}/v2/checkout/orders",
@@ -176,7 +185,6 @@ def generate_paypal_order(payment_info, redirect_url):
 
     response.raise_for_status()
     return response.json()
-
 
 
 
