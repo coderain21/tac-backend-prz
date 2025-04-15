@@ -104,7 +104,7 @@ def create_order(insert_data):
     return True
 
 # Create a PayPal order
-def generate_paypal_order(payment_info, redirect_url):
+def generate_paypal_order(payment_info, redirect_url, auction_data):
     currency = payment_info.get("currency")
     amount = payment_info.get("amount")
     seller_email = payment_info.get("seller_email")
@@ -116,58 +116,65 @@ def generate_paypal_order(payment_info, redirect_url):
     account_id = payment_info.get("account_id")
 
     items = []
-    item_total = 0  # Used to calculate correct item_total
+    if auction_data.get('add_buyer_fee') != 'No additional fees (default)':
+        total_bid_amount = sum(item.get("bid_amount", 0) for item in cart_items)
+
+        # Calculate the buyer fee (difference between the total amount and total bid amount)
+        buyer_fee = amount - total_bid_amount
+        items.append({
+                "name": "Buyer Fee",
+                "description": "Additional fee applied to your purchase",
+                "unit_amount": {
+                    "currency_code": currency,
+                    "value": str(buyer_fee)
+                },
+                "quantity": "1",
+                "category": "DIGITAL_GOODS"  # Or leave as PHYSICAL_GOODS if unsure
+            })
 
     for item in cart_items:
-        bid_amount = float(item.get("bid_amount", 0))
-        item_total += bid_amount
         items.append({
             "name": item.get("lot_title", "Auction Lot"), 
             "description": f"Lot #{item.get('lot_number', '')}",
             "unit_amount": {
                 "currency_code": item.get("currency", currency),
-                "value": f"{bid_amount:.2f}"
+                "value": str(item.get("bid_amount", 0))
             },
             "quantity": "1",
             "category": "PHYSICAL_GOODS"
         })
-
     order_data = {
         "intent": "CAPTURE",
         "purchase_units": [{
             "amount": {
                 "currency_code": currency,
-                "value": f"{item_total:.2f}",  # amount buyer pays
+                "value": str(amount),
                 "breakdown": {
                     "item_total": {
                         "currency_code": currency,
-                        "value": f"{item_total:.2f}"
+                        "value": str(amount)
                     }
                 }
             },
             "items": items,
-            "payee": {
-                "merchant_id": account_id,
-                "email_address": seller_email
-            },
+            "payee": {"merchant_id": account_id, "email_address": seller_email},
             "payment_instruction": {
                 "platform_fees": [{
                     "amount": {
                         "currency_code": currency,
-                        "value": f"{float(application_fee):.2f}"
+                        "value": str(application_fee)
                     }
                 }]
             }
         }],
         "application_context": {
             "landing_page": "BILLING",
-            "shipping_preference": "NO_SHIPPING",
+            "shipping_preference": "NO_SHIPPING", 
             "user_action": "PAY_NOW",
             "return_url": return_url,
             "cancel_url": cancel_url
         }
     }
-
     print(json.dumps(order_data, indent=4))
     response = requests.post(
         f"{PAYPAL_API_URL}/v2/checkout/orders",
@@ -328,7 +335,7 @@ def create_paypal_order(event, context):
                 "cancel_url": cancel_url
             }
 
-            paypal_order = generate_paypal_order(payment_info, redirect_urls)
+            paypal_order = generate_paypal_order(payment_info, redirect_urls, seller_data_of_auction)
 
 
 
