@@ -27,7 +27,7 @@ stages:
     #   displayName: "GPT Pull Request Review"
     #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
     #   pool:
-    #       vmImage: "ubuntu-latest"
+    #       vmImage: "ubuntu-22.04"
     #   steps:
     #     - checkout: self
     #       persistCredentials: true
@@ -40,7 +40,7 @@ stages:
       displayName: "Code Quality"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - task: Cache@2
           inputs:
@@ -78,7 +78,7 @@ stages:
       displayName: "Secret Checking"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - script: |
             pip3 install detect-secrets
@@ -92,7 +92,7 @@ stages:
       displayName: "License Compliance"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - script: npm config set registry https://registry.npmmirror.com
         - script: |
@@ -108,7 +108,7 @@ stages:
       displayName: 'Static Application Security Testing (SAST)'
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - script: |
             pip3 install njsscan
@@ -126,7 +126,7 @@ stages:
     - job: "Download_Environment"
       displayName: "Build"
       pool:
-        vmImage: "ubuntu-latest"
+        vmImage: "ubuntu-22.04"
       steps:
         - script: |
             ./envs.sh
@@ -140,7 +140,7 @@ stages:
       displayName: "Unit Testing"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-        vmImage: "ubuntu-latest"
+        vmImage: "ubuntu-22.04"
       steps:
         - task: Cache@2
           inputs:
@@ -182,7 +182,7 @@ stages:
       dependsOn: APITesting
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
-          vmImage: "ubuntu-latest"
+          vmImage: "ubuntu-22.04"
       steps:
         - checkout: self
           clean: true
@@ -224,7 +224,7 @@ stages:
       ${{ else }}:
         environment: 'Development'
       pool:
-        vmImage: 'ubuntu-latest'
+        vmImage: "ubuntu-22.04"
       strategy:
         # Default deployment strategy, more coming...
         runOnce:
