@@ -76,6 +76,8 @@ provider:
     MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}  #ADDED THIS FOR MAILCHIMP API CALL
     ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
+    SUB_ENC_KEY: ${ssm:SUB_ENC_KEY}
+    AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
 
    
     
@@ -493,6 +495,7 @@ functions:
   
   subdomain-callback:
     handler: handlers/cognito_callback.handler
+    timeout: 30
     layers:
       - ${ssm:COMMON_LIB_ARN}
     vpc:
