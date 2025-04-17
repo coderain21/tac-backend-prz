@@ -63,7 +63,7 @@ headers = {
 def generate_order_code(number):
     if not isinstance(number, int) or number < 1:
         raise ValueError("Input must be a positive integer greater than 0.")
-    return f"OD{str(number).zfill(3)}"
+    return f"OD{str(number).zfill(4)}"
 
 # Retrieve cart data for the buyer and seller
 def get_data_from_cart(auction_id, seller_email, buyer_email):
