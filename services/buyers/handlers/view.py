@@ -104,6 +104,7 @@ def view(event, context):
             "terms_and_condition": 1,
             "paddle": 1,
             "show_bidding_history": 1,
+            "toggle_powered_by_indy": 1,
             "hide_auction_lots": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,

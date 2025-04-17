@@ -151,6 +151,9 @@
                         "show_bidding_history": {
                           "type": "string"
                         },
+                        "toggle_powered_by_indy":{
+                          "type": "string"
+                        },
                         "hide_auction_lots": {
                           "type": "string"
                         },
