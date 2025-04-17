@@ -124,6 +124,9 @@ def list_bids(event, context):
             # Define a mapping of bid_status values to numerical values
             bid_status_mapping = {"UnderBidder": 0, "Winning": 1, "Won": 2}
 
+            if sort_by == 'updated_at':
+                sort_by = 'time_stamp'
+
             # Check if the sort_by parameter is bid_status
             if sort_by == 'bid_status':
                 # Use a lambda function to map the bid_status values to their corresponding numerical values

@@ -230,7 +230,7 @@ stages:
       ${{ else }}:
         environment: 'Development'
       pool:
-        vmImage: 'ubuntu-22.04'
+        vmImage: "ubuntu-22.04"
       strategy:
         # Default deployment strategy, more coming...
         runOnce:
