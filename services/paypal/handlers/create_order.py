@@ -63,7 +63,7 @@ headers = {
 def generate_order_code(number):
     if not isinstance(number, int) or number < 1:
         raise ValueError("Input must be a positive integer greater than 0.")
-    return f"OD{str(number).zfill(3)}"
+    return f"OD{str(number).zfill(4)}"
 
 # Retrieve cart data for the buyer and seller
 def get_data_from_cart(auction_id, seller_email, buyer_email):
@@ -104,7 +104,7 @@ def create_order(insert_data):
     return True
 
 # Create a PayPal order
-def generate_paypal_order(payment_info, redirect_url):
+def generate_paypal_order(payment_info, redirect_url, auction_data):
     currency = payment_info.get("currency")
     amount = payment_info.get("amount")
     seller_email = payment_info.get("seller_email")
@@ -116,9 +116,25 @@ def generate_paypal_order(payment_info, redirect_url):
     account_id = payment_info.get("account_id")
 
     items = []
+    if auction_data.get('add_buyer_fee') != 'No additional fees (default)':
+        total_bid_amount = sum(item.get("bid_amount", 0) for item in cart_items)
+
+        # Calculate the buyer fee (difference between the total amount and total bid amount)
+        buyer_fee = amount - total_bid_amount
+        items.append({
+                "name": "Buyer Fee",
+                "description": "Additional fee applied to your purchase",
+                "unit_amount": {
+                    "currency_code": currency,
+                    "value": str(buyer_fee)
+                },
+                "quantity": "1",
+                "category": "DIGITAL_GOODS"  # Or leave as PHYSICAL_GOODS if unsure
+            })
+
     for item in cart_items:
         items.append({
-            "name": item.get("lot_title", "Auction Lot"), 
+            "name": item.get("lot_title", "Auction Lot"),
             "description": f"Lot #{item.get('lot_number', '')}",
             "unit_amount": {
                 "currency_code": item.get("currency", currency),
@@ -153,7 +169,7 @@ def generate_paypal_order(payment_info, redirect_url):
         }],
         "application_context": {
             "landing_page": "BILLING",
-            "shipping_preference": "NO_SHIPPING", 
+            "shipping_preference": "NO_SHIPPING",
             "user_action": "PAY_NOW",
             "return_url": return_url,
             "cancel_url": cancel_url
@@ -176,7 +192,6 @@ def generate_paypal_order(payment_info, redirect_url):
 
     response.raise_for_status()
     return response.json()
-
 
 
 
@@ -320,7 +335,7 @@ def create_paypal_order(event, context):
                 "cancel_url": cancel_url
             }
 
-            paypal_order = generate_paypal_order(payment_info, redirect_urls)
+            paypal_order = generate_paypal_order(payment_info, redirect_urls, seller_data_of_auction)
 
 
 
