@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-undef */
 /* eslint-disable consistent-return */
 /* eslint-disable no-console */
 /* eslint-disable import/no-unresolved */
@@ -73,7 +75,10 @@ module.exports.handler = async (event) => {
             return {
                 statusCode: 201,
                 headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Site Banner has been created successfully' }),
+                body: JSON.stringify({
+                    message: 'Site Banner has been created successfully',
+                    notification_id: saveNotification._id,
+                }),
             }
         }
         // Log any errors that occur during the process

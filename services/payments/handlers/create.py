@@ -162,8 +162,17 @@ def create_order(insert_data):
         #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
         #                 )
         #db = client[os.environ['DATABASE']]
-        payments_collection = db[os.environ['TEMP_ORDERS_COLLECTION']]
-        insert_result = payments_collection.insert_one(insert_data)
+        payments_collection = db[os.environ['ORDERS_COLLECTION']]
+        insert_result = payments_collection.update_one(
+                                                    {
+                                                    "auction_id": insert_data["auction_id"], 
+                                                    "email_address": insert_data["email_address"],
+                                                    "seller_email": insert_data["seller_email"],
+                                                    "order_number": insert_data["order_number"]
+                                                    },
+                                                    {"$set": insert_data},
+                                                    upsert=True
+                                                )
         # client.close()
         if insert_result:
             return insert_result
@@ -198,7 +207,7 @@ def create_intent(event, context):
             }
 
         data = event['queryStringParameters']
-        expected_fields = ["id", "domain", "amount","billing","shipping","timestamp"]
+        expected_fields = ["id", "order_number", "domain", "amount","billing","shipping","timestamp"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
         if fields_not_found:
             return {"headers": headers,
@@ -280,16 +289,16 @@ def create_intent(event, context):
             stripe_data = generate_client_secret(
                 account_id, amount, seller_data_of_auction["currency"], application_fee)
             insert_data = {
-                "email_address": email_address,
                 "payment_intent": stripe_data["id"],
-                "client_secret": stripe_data["client_secret"],
+                "client_secret": stripe_data["client_secret"], 
                 "status": stripe_data["status"],
-                "payment_status": "Unpaid",
-                "amount": amount,
                 "payment": "Stripe",
                 "application_amount": application_fee,
-                "currency": seller_data_of_auction["currency"],
-                "seller_email": seller_data_of_auction["seller_email"]
+                "email_address": email_address,
+                "seller_email": seller_data_of_auction["seller_email"],
+                "payment_status": "Pending",
+                "amount": amount,
+                "currency": seller_data_of_auction["currency"]
             }
             body_data = {'data': stripe_data["client_secret"], 'account_id': account_id}
         elif payment == "paypal":
@@ -326,9 +335,9 @@ def create_intent(event, context):
         #                 )
         #db = client[os.environ['DATABASE']]
 
-        counter_collection = db[os.environ['COUNTER_LOT']]
+        # counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
-        orders_collection = db[os.environ["TEMP_ORDERS_COLLECTION"]]
+        orders_collection = db[os.environ["ORDERS_COLLECTION"]]
 
         #fetch address data and add to order data
         billing_address = address_collection.find_one({"_id": ObjectId(billing)})
@@ -337,28 +346,28 @@ def create_intent(event, context):
         insert_data["billing_address"] = billing_address
 
 
-        existing_orders_count = orders_collection.count_documents(
-            {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
-        counter_record = counter_collection.find_one({"auction_id": auction_id,
-                                                      "email_address": email_address,
-                                                      "seller_email": seller_email,
-                                                      'record_type': 'Orders'}
-                                                     )
-        if counter_record is None:
-            last_order_number = 0
-            counter_record = {
-                "auction_id": auction_id,
-                "seller_email": seller_email,
-                "email_address": email_address,
-                "record_type": "Orders",
-                "starting_sequence": last_order_number
-            }
-            result = counter_collection.insert_one(counter_record)
-        last_order_number = counter_record["starting_sequence"]+1
-        update_data = {
-            "starting_sequence": last_order_number
-        }
-        insert_data["order_number"] = generate_order_code(last_order_number)
+        # existing_orders_count = orders_collection.count_documents(
+        #     {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
+        # counter_record = counter_collection.find_one({"auction_id": auction_id,
+        #                                               "email_address": email_address,
+        #                                               "seller_email": seller_email,
+        #                                               'record_type': 'Orders'}
+        #                                              )
+        # if counter_record is None:
+        #     last_order_number = 0
+        #     counter_record = {
+        #         "auction_id": auction_id,
+        #         "seller_email": seller_email,
+        #         "email_address": email_address,
+        #         "record_type": "Orders",
+        #         "starting_sequence": last_order_number
+        #     }
+        #     result = counter_collection.insert_one(counter_record)
+        # last_order_number = counter_record["starting_sequence"]+1
+        # update_data = {
+        #     "starting_sequence": last_order_number
+        # }
+        insert_data["order_number"] = data["order_number"]
         buyer_data = fetch_buyer_data(seller_email,email_address)
         name = ""
         if buyer_data is not None:
@@ -366,21 +375,21 @@ def create_intent(event, context):
             l_name = buyer_data.get("last_name","")
             name = f_name+' '+l_name
         cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
-        insert_data["created_at"] = time_stamp
-        insert_data["auction_title"] = auction_title
-        insert_data["auction_image"] = auction_image
+        insert_data["updated_at"] = time_stamp
+        # insert_data["auction_title"] = auction_title
+        # insert_data["auction_image"] = auction_image
         insert_data["purchases"] = cart_data
-        insert_data["lots"] = res
+        # insert_data["lots"] = res
         insert_data["auction_id"] = auction_id
         insert_data["name"] = name
 
         #add the order data in orders collection
         orderCreate = create_order(insert_data)
-        counter_collection.update_one({"auction_id": auction_id,
-                                       "seller_email": seller_email,
-                                       "email_address": email_address,
-                                       "record_type": "Orders"}, {
-            "$set": update_data})
+        # counter_collection.update_one({"auction_id": auction_id,
+        #                                "seller_email": seller_email,
+        #                                "email_address": email_address,
+        #                                "record_type": "Orders"}, {
+        #     "$set": update_data})
 
         return {
             "statusCode": 201,

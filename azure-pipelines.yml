@@ -4,6 +4,7 @@ trigger:
       - qa
       - pre-prod
       - master
+      - bidding-engine
 pr:
   branches:
     include:
@@ -16,6 +17,8 @@ variables:
     - group: qa
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-prod') }}:
     - group: pre-production
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/bidding-engine') }}:
+    - group: bidding-engine
   - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
     - group: develop
 
@@ -142,6 +145,9 @@ stages:
       pool:
         vmImage: "ubuntu-22.04"
       steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.11'
         - task: Cache@2
           inputs:
             key: 'npmV2 | "$(Agent.OS)" | package.json'
@@ -210,52 +216,32 @@ stages:
           displayName: 'Dynamic Application Security Testing (DAST)'
 
     
-- stage: Deploy
-  jobs:
-    - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
-      displayName: Deployment
-      ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          environment: 'Production'
-      ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-          environment: 'Testing'
-      ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-          environment: 'Pre-Production'
-      ${{ else }}:
-        environment: 'Development'
-      pool:
-        vmImage: "ubuntu-22.04"
-      strategy:
-        # Default deployment strategy, more coming...
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - task: Cache@2
-                inputs:
-                  key: 'npmV2 | "$(Agent.OS)" | package.json'
-                  restoreKeys: |
-                    npmV2 | "$(Agent.OS)"
-                  path: "$(System.DefaultWorkingDirectory)/node_modules"
-                  cacheHitVar: CACHE_RESTORED
-                displayName: Cache npm
-              - task: DownloadPipelineArtifact@2
-                name: environment
-                inputs:
-                  artifact: environment
-                  targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: npm config set registry https://registry.npmmirror.com
-              - script: |
-                  npm install --cache .npm
-                condition: ne(variables.CACHE_RESTORED, 'true')
-              - script: |
-                  bash devops/terraform_run.sh
-                  if [ $? -ne 0 ]; then
-                    echo "API testing failed"
-                    exit 1
-                  fi
-                displayName: 'Deployment'
 
+- stage: Deploy
+  displayName: Deploy
+  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
+  jobs:
+      - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'production'
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'testing'
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'staging' 
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+          - template: devops/deploy-bidding.yml
+            parameters:
+              envName: 'testing'
+      - ${{ else }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'development'
+  
 
 # - stage: DisposableDeploy
 #   jobs:

@@ -304,21 +304,21 @@ def subdomain(event, context):
                 update_mapping.append({'prefix': new_subdomain, 'branchName': os.environ["AMPLIFY_BRANCH"]})
 
                 # Update Cognito app client with new subdomain URLs
-                try:
-                    update_app_client(userpoolid, userclientid, userclientname, new_subdomain,existing_domain_record)
-                except Exception as e:
-                    print('Error in update app client call:', str(e))
-                    session.abort_transaction()
-                    return {
-                        'statusCode': 400,
-                        'headers': headers,
-                        'body': json.dumps({'Error updating app client': str(e)})
-                             }
+                # try:
+                #     update_app_client(userpoolid, userclientid, userclientname, new_subdomain,existing_domain_record)
+                # except Exception as e:
+                #     print('Error in update app client call:', str(e))
+                #     session.abort_transaction()
+                #     return {
+                #         'statusCode': 400,
+                #         'headers': headers,
+                #         'body': json.dumps({'Error updating app client': str(e)})
+                #              }
 
                 # Update subdomain record in MongoDB
                 subdomain_collection.update_one(
                     {'seller_email': seller_email},
-                    {"$set": {'subdomain': new_subdomain, "default": False}},
+                    {"$set": {'subdomain': new_subdomain, "default": False, "marketingMessage": request_body['marketingMessage']}},
                     session=session
                 )
 

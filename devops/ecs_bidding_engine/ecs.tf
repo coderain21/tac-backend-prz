@@ -39,44 +39,22 @@ data "aws_vpc" "default" {
   provider = aws.deployment-eu
 }
 
-resource "aws_default_security_group" "default" {
-  vpc_id = data.aws_vpc.default.id
-  provider = aws.deployment-eu
 
-  ingress {
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # "-1" represents all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1" # "-1" represents all protocols
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
+data "aws_ssm_parameter" "subnet" {
+  name = "SUBNET_ID_PUBLIC"
   provider = aws.deployment-eu
 }
 
+data "aws_ssm_parameter" "security_group" {
+  name = "SECURITY_GROUP_ID"
+  provider = aws.deployment-eu
+}
 resource "aws_default_subnet" "default_az1" {
-  availability_zone = "eu-west-2c"
+  availability_zone = "eu-west-2a"
   provider = aws.deployment-eu
 }
-
 
 data "aws_acm_certificate" "existing_certificate" {
   domain   = "*.${local.sub_domain}"
@@ -193,72 +171,6 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
   provider = aws.deployment-eu
 }
 
-# Security Group for loadbalancer
-resource "aws_security_group" "websocket-security-group" {
-  name        = "websocket-security-group"
-  description = "Security Group for ECS and Load Balancer"
-  vpc_id      = data.aws_vpc.default.id
-  provider = aws.deployment-eu
-
-  # Inbound rules
-  ingress {
-    from_port = 6379
-    to_port   = 6379
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 11211
-    to_port   = 11211
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 0
-    to_port   = 65535
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Outbound rules (allow all traffic)
-  egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 # ECS Cluster
 resource "aws_ecs_cluster" "websocket-cluster" {
   name = "websocket-cluster"
@@ -322,15 +234,19 @@ locals {
 }
 data "aws_ssm_parameter" "cpu" {
   name = "CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "memory" {
   name = "MEMORY"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "ecs_cpu" {
   name = "ECS_CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "ecs_memory" {
   name = "ECS_MEMORY"
+  provider = aws.deployment-eu
 }
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
@@ -352,10 +268,6 @@ data "aws_subnets" "public" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
   provider = aws.deployment-eu
 }
 
@@ -365,8 +277,8 @@ resource "aws_lb" "load-balancer" {
   name               = "web-socket-load-balancer"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.websocket-security-group.id]  # Security group for the Load Balancer
-  subnets            = data.aws_subnets.public.ids
+  security_groups    = [data.aws_ssm_parameter.security_group.value]  # Security group for the Load Balancer
+  subnets            = [data.aws_ssm_parameter.subnet.value, resource.aws_default_subnet.default_az1.id]
 
   enable_deletion_protection = false
   provider = aws.deployment-eu
@@ -426,8 +338,8 @@ resource "aws_ecs_service" "ecs_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [resource.aws_default_subnet.default_az1.id]  # Fetch default subnets dynamically
-    security_groups = [aws_default_security_group.default.id]
+    subnets         = [data.aws_ssm_parameter.subnet.value]  # Fetch default subnets dynamically
+    security_groups = [data.aws_ssm_parameter.security_group.value]
     assign_public_ip = true
   }
 
