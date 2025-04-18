@@ -52,7 +52,6 @@ const UserSchema = new Schema({
     seller_id: { type: String, trim: true, default: '' },
     full_name: { type: String, trim: true, default: '' },
     plan_type: {type: String, trim: true, default: ''},
-    marketing_optin_message: { type: String, trim: true, default: '' },
 })
 
 UserSchema.plugin(mongoosePaginate)
