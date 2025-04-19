@@ -1,0 +1,12 @@
+{
+    "Rules": [
+      {
+        "ID": "DeleteOldVersions",
+        "Status": "Enabled",
+        "NoncurrentVersionExpiration": {
+          "NoncurrentDays": 3
+        }
+      }
+    ]
+  }
+  
