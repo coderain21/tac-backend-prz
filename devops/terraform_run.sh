@@ -246,3 +246,7 @@ fi
 if [ "${STAGE}" = "pre-production" ]; then
     aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
 fi
+if [ "${STAGE}" = "pre-production" ||  "${STAGE}" = "prod" ]; then
+    cd devops/disaster_recovery
+    ./s3_versioning.sh
+fi
