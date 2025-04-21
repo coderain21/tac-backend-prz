@@ -233,20 +233,21 @@ if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
 fi
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
 
+
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+fi
+if [ "${STAGE}" = "pre-production" ]; then
+    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
+fi
+if [ "${STAGE}" = "pre-production" ||  "${STAGE}" = "prod" ]; then
+    cd devops/disaster_recovery
+    ./s3_versioning.sh
+fi
+
 if [ $overall_status -ne 0 ]; then
     echo "One or more commands failed."
     exit 1
 else
     echo "All commands executed successfully."
-fi
-
-if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
-    aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
-fi
-if [ "${STAGE}" = "pre-production" ]; then
-    aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
-fi
-if [ "${STAGE}" = "pre-production" ||  "${STAGE}" = "prod" ]; then
-    cd devops/disaster_recovery
-    ./s3_versioning.sh
 fi
