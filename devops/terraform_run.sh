@@ -228,14 +228,52 @@ run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
   sls deploy --region $REGION --stage $STAGE
-  sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
+cd services/quicksight-dashboards
+run_command sls deploy --region $REGION --stage $STAGE
+cd ../..
+
+
 
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
-    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+    aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+    aws elasticache modify-replication-group \
+    --replication-group-id new-websocket-redis-cluster-enabled \
+    --region eu-west-2 \
+    --log-delivery-configurations '[
+        {
+            "LogType": "slow-log",
+            "DestinationType": "cloudwatch-logs",
+            "DestinationDetails": {
+                "CloudWatchLogsDetails": {
+                    "LogGroup": "redis-slow-logs"
+                }
+            },
+            "LogFormat": "json",
+            "Enabled": true
+        }
+    ]' \
+    --apply-immediately
+     aws elasticache modify-replication-group \
+    --replication-group-id new-websocket-redis-cluster-enabled \
+    --region eu-west-2 \
+    --log-delivery-configurations '[
+        {
+            "LogType": "engine-log",
+            "DestinationType": "cloudwatch-logs",
+            "DestinationDetails": {
+                "CloudWatchLogsDetails": {
+                    "LogGroup": "redis-engine-logs"
+                }
+            },
+            "LogFormat": "json",
+            "Enabled": true
+        }
+    ]' \
+    --apply-immediately
 fi
 if [ "${STAGE}" = "pre-production" ]; then
     run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2

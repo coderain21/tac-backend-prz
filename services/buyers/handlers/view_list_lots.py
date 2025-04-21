@@ -46,6 +46,7 @@ def get_lots(auction_id, seller_email, buyer_id, search_keyword, sort_param):
     search_criteria = {
         "$or": [
             {"title1": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}},
+            {"title2": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}},
             {"tags": {"$elemMatch": {"$regex": f".*{escaped_search_keyword}.*", "$options": "i"}}}
         ]
     }
