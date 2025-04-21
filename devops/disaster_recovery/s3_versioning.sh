@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # -------- CONFIG --------
-BUCKET_NAME="indyauction-assets-{$STAGE}-v1"  # Change this to your actual bucket name
+BUCKET_NAME="indyauction-assets-$STAGE-v1"  # Change this to your actual bucket name
 LIFECYCLE_FILE="lifecycle.json"
 # ------------------------
 
