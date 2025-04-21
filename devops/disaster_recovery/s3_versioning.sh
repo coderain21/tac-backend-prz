@@ -18,12 +18,14 @@ cat > $LIFECYCLE_FILE <<EOF
     {
       "ID": "DeleteOldVersions",
       "Status": "Enabled",
+      "Filter": {},
       "NoncurrentVersionExpiration": {
-        "NoncurrentDays": 3
+        "NoncurrentDays": 5
       }
     }
   ]
 }
+
 EOF
 
 # Step 3: Apply Lifecycle Policy
