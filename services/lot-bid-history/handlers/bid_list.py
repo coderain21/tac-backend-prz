@@ -122,19 +122,19 @@ def list_bids(event, context):
         # Define the sort criteria based on user input
         if sort_by in ['name', 'bid_status', 'lot_title', 'lot_number', 'bid_amount', 'paddle_number', 'updated_at']:
             # Define a mapping of bid_status values to numerical values
-            bid_status_mapping = {"UnderBidder": 0, "Winning": 1, "Won": 2}
+            # bid_status_mapping = {"UnderBidder": 0, "Winning": 1, "Won": 2}
 
             if sort_by == 'updated_at':
                 sort_by = 'time_stamp'
 
             # Check if the sort_by parameter is bid_status
-            if sort_by == 'bid_status':
-                # Use a lambda function to map the bid_status values to their corresponding numerical values
-                sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING,
-                                lambda x: bid_status_mapping.get(x[sort_by], float('inf')))]
-            else:
-                # For other sort_by parameters, use the default sorting criteria
-                sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING)]
+            # if sort_by == 'bid_status':
+            #     # Use a lambda function to map the bid_status values to their corresponding numerical values
+            #     sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING,
+            #                     lambda x: bid_status_mapping.get(x[sort_by], float('inf')))]
+            # else:
+            #     # For other sort_by parameters, use the default sorting criteria
+            #     sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'asc' else pymongo.DESCENDING)]
 
             sort_criteria = [(sort_by, pymongo.ASCENDING
                               if sort_order == 'asc' else pymongo.DESCENDING)]
