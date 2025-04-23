@@ -116,6 +116,19 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
     name  = "tls"
     value = "disabled"
   }
+
+  # Enables audit logging
+  parameter {
+    name  = "audit_logs"
+    value = "enabled"
+  }
+
+  # Enables profiler logging
+  parameter {
+    name  = "profiler"
+    value = "enabled"
+  }
+
   provider = aws.deployment-eu
 }
 
@@ -184,6 +197,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
   master_password         = data.aws_ssm_parameter.mongo_password.value
+  enabled_cloudwatch_logs_exports = ["audit", "profiler"]
   vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
   provider = aws.deployment-eu
 }
