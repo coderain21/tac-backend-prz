@@ -242,7 +242,7 @@
           "schema": {
             "type": "string"
           },
-          "example": "All Buyers"
+          "example": "All Sellers"
         }
       ],
       "responses": {
@@ -312,6 +312,88 @@
                     "type": "string"
                   }
                 }
+              }
+            }
+          }
+        }
+      }
+    }
+   },
+   "/delete/{notification_id}": {
+    "delete": {
+      "summary": "Delete Site Banner Notification by Admin",
+      "description": "Deleting the notification.",
+      "tags": [
+        "Admin Site Banner Notification Management"
+      ],
+      "security": [
+        {
+          "BearerAuth": []
+        }
+      ],
+      "parameters": [
+        {
+          "name": "notification_id",
+          "in": "path",
+          "required": true,
+          "description": "Notification uuid from mongodb",
+          "schema": {
+            "type": "string"
+          },
+          "example": "67f3bf494d4a369d223917f5"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully deleted notification",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "message": "Notification deleted successfully"
+              }
+            }
+          }
+        },      
+        "500": {
+          "description": "Internal server error.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "message": "Internal Server Error"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Site Banner with specific id not found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "message": "Notification not found"
               }
             }
           }

@@ -21,6 +21,7 @@ const CartSchema = new Schema({
     name: { type: String },
     type: { type: String },
     fees: { type: String },
+    order_number: { type: String },
 })
 
 const Cart = mongoose.model(`${stage}-carts`, CartSchema)

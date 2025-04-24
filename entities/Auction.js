@@ -61,8 +61,8 @@ const AuctionSchema = new Schema({
         trim: true,
     },
     auction_image: {
-        type: String,
-        trim: true,
+        type: Schema.Types.Mixed,
+        default: '',
     },
     description: {
         type: String,

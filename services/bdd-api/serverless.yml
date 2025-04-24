@@ -29,7 +29,7 @@ provider:
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
     REGION: ${ssm:REGION}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     STAGE: ${opt:stage, self:provider.stage}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users

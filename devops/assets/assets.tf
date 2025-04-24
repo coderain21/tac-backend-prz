@@ -631,6 +631,13 @@ resource "aws_ssm_parameter" "launchdarkly_client_id" {
   provider = aws.deployment-eu
   overwrite = true
 }
+resource "aws_ssm_parameter" "sub_enc_key" {
+  name  = "SUB_ENC_KEY"
+  type  = "String"
+  value = var.SUB_ENC_KEY
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
 
