@@ -199,6 +199,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   master_password         = data.aws_ssm_parameter.mongo_password.value
   enabled_cloudwatch_logs_exports = ["audit", "profiler"]
   vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
+  preferred_maintenance_window = "sun:01:00-sun:03:00"
   provider = aws.deployment-eu
 }
 
