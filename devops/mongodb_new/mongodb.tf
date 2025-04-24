@@ -194,7 +194,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   db_subnet_group_name = aws_docdb_subnet_group.subnet_group.name
-  snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
+  # snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
   master_password         = data.aws_ssm_parameter.mongo_password.value
