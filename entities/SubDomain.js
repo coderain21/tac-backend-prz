@@ -22,6 +22,8 @@ const UserSchema = new Schema({
     default: { type: Boolean, default: false },
     client_id: { type: String, trim: true },
     group_name: { type: String, trim: true },
+    created_at: { type: Number },
+    updated_at: { type: Number },
 
 })
 
