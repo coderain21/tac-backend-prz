@@ -4,6 +4,7 @@ import os
 from pymongo import MongoClient
 import boto3
 from pymongo.errors import OperationFailure
+from datetime import datetime
 
 amplify_client = boto3.client('amplify',region_name= 'eu-west-2')
 
@@ -226,8 +227,7 @@ def subdomain(event, context):
         with client.start_session() as session:
             with session.start_transaction():
                 # Get existing domain record for seller
-                existing_domain_record = subdomain_collection.find_one({"seller_email": seller_email}, session=session)
-
+                existing_domain_record = subdomain_collection.find_one({"seller_email": seller_email}, sort=[("updated_at", -1)], session=session)
                 # Handle view-only requests
                 if data and 'view' in data and data['view'] == 'True':
                     subdomain = existing_domain_record.get('subdomain')
@@ -247,6 +247,7 @@ def subdomain(event, context):
                     }
 
                 new_subdomain = request_body['subdomain']
+                prev_subdomain = request_body['prev_subdomain']
 
                 # Check if seller has Pro plan access
                 plan = seller_collection.find_one({'email_address': seller_email}, session=session)['plan_type']
@@ -317,8 +318,8 @@ def subdomain(event, context):
 
                 # Update subdomain record in MongoDB
                 subdomain_collection.update_one(
-                    {'seller_email': seller_email},
-                    {"$set": {'subdomain': new_subdomain, "default": False}},
+                    {'seller_email': seller_email, 'subdomain': prev_subdomain},
+                    {"$set": {'subdomain': new_subdomain, "updated_at": int(datetime.now().timestamp()), "default": False}},
                     session=session
                 )
 
