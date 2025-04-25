@@ -64,7 +64,7 @@ jobs:
               - script: |
                   export AWS_SDK_LOAD_CONFIG=1
 
-                  aws configure set credential_process "./aws_signing_helper credential-process --certificate $CERTIFICATE --private-key $PRIVATE_KEY --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
+                  aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUSTANCHORARN) --profile-arn $(PROFILEARN) --role-arn $(ROLEARN)" --profile indyauction-pre-production
 
                   aws sts get-caller-identity --profile indyauction-pre-production  # validate it works
 
