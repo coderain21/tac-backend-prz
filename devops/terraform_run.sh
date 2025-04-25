@@ -20,8 +20,8 @@ apt-get update && apt-get install python-is-python3 -y && apt-get install python
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
 aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
 
-aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
+# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 if [ "${STAGE}" = "pre-production" ] ; then
     aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
     aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
@@ -33,7 +33,7 @@ echo "$log_bucket"
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
-aws configure list --profile $PROFILE_ENV
+# aws configure list --profile $PROFILE_ENV
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -94,7 +94,7 @@ if [ "${STAGE}" = "pre-production" ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -130,7 +130,7 @@ if [ "${STAGE}" = "prod"  ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text )
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
