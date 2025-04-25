@@ -235,30 +235,30 @@ stages:
 
     
 
-# - stage: Deploy
-#   displayName: Deploy
-#   condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
-#   jobs:
-#       - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-#           - template: devops/deploy.yml
-#             parameters:
-#               envName: 'production'
-#       - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-#           - template: devops/deploy.yml
-#             parameters:
-#               envName: 'testing'
-#       - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-#           - template: devops/deploy.yml
-#             parameters:
-#               envName: 'staging' 
-#       - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-#           - template: devops/deploy-bidding.yml
-#             parameters:
-#               envName: 'testing'
-#       - ${{ else }}:
-#           - template: devops/deploy.yml
-#             parameters:
-#               envName: 'development'
+- stage: Deploy
+  displayName: Deploy
+  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
+  jobs:
+      - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'production'
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'testing'
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'staging' 
+      - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+          - template: devops/deploy-bidding.yml
+            parameters:
+              envName: 'testing'
+      - ${{ else }}:
+          - template: devops/deploy.yml
+            parameters:
+              envName: 'development'
   
 
 # - stage: DisposableDeploy
