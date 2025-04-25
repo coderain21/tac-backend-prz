@@ -149,6 +149,7 @@ stages:
             echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG;]1"  
           displayName: Obtain AWS Credentials
         - script: |
+            export AWS_REGION="eu-west-2"
             ./envs.sh
           displayName: 'Copy Environment Files'
         - publish: $(System.DefaultWorkingDirectory)/.env
