@@ -10,7 +10,7 @@ pr:
     include:
       - qa
 variables:
-  # - group: general
+  - group: general
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - group: master
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
