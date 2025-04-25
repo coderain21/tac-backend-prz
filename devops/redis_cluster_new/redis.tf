@@ -109,6 +109,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   security_group_ids = [resource.aws_security_group.security_groups.id]
   snapshot_name               = "pre-production-snapsot"
   apply_immediately          = true
+  maintenance_window         = "sun:01:00-sun:03:00"
   provider                  = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "distribution_id" {
