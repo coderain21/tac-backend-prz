@@ -170,11 +170,6 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-export AWS_SDK_LOAD_CONFIG=1
-export AWS_PROFILE=indyauction-pre-production
-
-
-
 
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE --profile $AWS_PROFILE
