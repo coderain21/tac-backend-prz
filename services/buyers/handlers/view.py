@@ -211,7 +211,7 @@ def view(event, context):
                 data["font"] = {
                     "header_font": result.get("font", {}).get("header_font")
                 }
-                
+
                 return {
                     "headers": headers,
                     "statusCode": 400,
