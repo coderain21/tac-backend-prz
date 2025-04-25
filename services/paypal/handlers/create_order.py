@@ -26,7 +26,7 @@ cart_collection = db[os.environ["CART_COLLECTION"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 seller_collection = db[os.environ["SELLERS_TABLE"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-payment_status = db[os.environ['PAYMENT_STATUS']]
+# payment_status = db[os.environ['PAYMENT_STATUS']]
 
 
 # JSON encoder for special types
@@ -263,30 +263,31 @@ def create_paypal_order(event, context):
         seller_email = seller_data_of_auction["seller_email"]
         seller_data = seller_collection.find_one({'email_address': seller_email})
 
-        payment_processing = payment_status.find_one({'auction_id': auction_id, 'seller_email': seller_email, 'email_address': email_address})
-        print('payment_processing', payment_processing)
-        if payment_processing:
-            order_id = payment_processing['id']
-            print('order id', order_id)
-            check_order_status = order_status(order_id)
-            print('check order', check_order_status)
-            # return
-            if check_order_status['status'] in ['APPROVED','COMPLETED']:
-                # payment_status.delete_one(
-                # {
-                #     "email_address": email_address,
-                #     "seller_email": seller_email,
-                #     "auction_id": auction_id
-                # })
-                payment_status.update_one(
-                    {'_id': payment_processing['_id']},
-                    {'$set': {'payment_status': 'Paid or Approved'}}
-                )
-                return{
-                    "statusCode": 400,
-                    "headers": headers,
-                    "body": json.dumps({"message": "Order is already created"})
-                }
+        # payment_processing = payment_status.find_one({'auction_id': auction_id, 'seller_email': seller_email, 'email_address': email_address})
+        # print('payment_processing', payment_processing)
+        # if payment_processing:
+        #     order_id = payment_processing['id']
+        #     print('order id', order_id)
+        #     check_order_status = order_status(order_id)
+        #     print('check order', check_order_status)
+        #     # return
+        #     if check_order_status['status'] in ['APPROVED','COMPLETED']:
+        #         # payment_status.delete_one(
+        #         # {
+        #         #     "email_address": email_address,
+        #         #     "seller_email": seller_email,
+        #         #     "auction_id": auction_id
+        #         # })
+        #         payment_status.update_one(
+        #             {'_id': payment_processing['_id']},
+        #             {'$set': {'payment_status': 'Paid or Approved'}}
+        #         )
+        #         return{
+        #             "statusCode": 400,
+        #             "headers": headers,
+        #             "body": json.dumps({"message": "Order is already created"})
+        #         }
+
         # print('seller data', seller_data)
         if seller_data is None:
             return {
@@ -426,20 +427,20 @@ def create_paypal_order(event, context):
 
         create_order(insert_data)
 
-        payment_process = payment_status.find_one_and_update(
-                {
-                    "email_address": email_address,
-                    "seller_email": seller_email,
-                    "auction_id": auction_id
-                },
-                {
-                    "$set": {
-                        "payment_status": "Unpaid",
-                        **paypal_order
-                    }
-                },
-                upsert=True  # Move upsert here as a parameter
-            )
+        # payment_process = payment_status.find_one_and_update(
+        #         {
+        #             "email_address": email_address,
+        #             "seller_email": seller_email,
+        #             "auction_id": auction_id
+        #         },
+        #         {
+        #             "$set": {
+        #                 "payment_status": "Unpaid",
+        #                 **paypal_order
+        #             }
+        #         },
+        #         upsert=True  # Move upsert here as a parameter
+        #     )
 
 
 
