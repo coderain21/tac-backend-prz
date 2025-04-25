@@ -49,7 +49,7 @@ jobs:
                   secureFile: 'private.key'
 
               - bash: |
-                  aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUSTANCHORARN) --profile-arn $(PROFILEARN) --role-arn $(ROLEARN)" --profile indyauction-$(STAGE)
+                  aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUSTANCHORARN) --profile-arn $(PROFILEARN) --role-arn $(ROLEARN)" --profile indyauction-pre-production
                   echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG;]1"  
                 displayName: Obtain AWS Credentials
 
@@ -60,6 +60,7 @@ jobs:
               #     awsCommand: 'sts'
               #     awsSubCommand: 'get-caller-identity'
               - script: |
+                  aws sts get-caller-identity --profile indyauction-pre-production
                   export AWS_REGION=eu-west-2
                   bash devops/terraform_run.sh
                   if [ $? -ne 0 ]; then
