@@ -10,7 +10,7 @@ pr:
     include:
       - qa
 variables:
-  - group: general
+  # - group: general
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - group: master
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
@@ -131,6 +131,23 @@ stages:
       pool:
         vmImage: "ubuntu-22.04"
       steps:
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUSTANCHORARN) --profile-arn $(PROFILEARN) --role-arn $(ROLEARN)" --profile default
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG;]1"  
+          displayName: Obtain AWS Credentials
         - script: |
             ./envs.sh
           displayName: 'Copy Environment Files'
@@ -217,30 +234,30 @@ stages:
 
     
 
-- stage: Deploy
-  displayName: Deploy
-  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
-  jobs:
-      - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'production'
-      - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'testing'
-      - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'staging' 
-      - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-          - template: devops/deploy-bidding.yml
-            parameters:
-              envName: 'testing'
-      - ${{ else }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'development'
+# - stage: Deploy
+#   displayName: Deploy
+#   condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
+#   jobs:
+#       - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+#           - template: devops/deploy.yml
+#             parameters:
+#               envName: 'production'
+#       - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+#           - template: devops/deploy.yml
+#             parameters:
+#               envName: 'testing'
+#       - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+#           - template: devops/deploy.yml
+#             parameters:
+#               envName: 'staging' 
+#       - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+#           - template: devops/deploy-bidding.yml
+#             parameters:
+#               envName: 'testing'
+#       - ${{ else }}:
+#           - template: devops/deploy.yml
+#             parameters:
+#               envName: 'development'
   
 
 # - stage: DisposableDeploy
