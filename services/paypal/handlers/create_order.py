@@ -403,7 +403,7 @@ def create_paypal_order(event, context):
             "email_address": email_address,
             "payment_intent": paypal_order['id'],
             "status": paypal_order['status'],
-            "payment_status": "Unpaid",
+            # "payment_status": "Unpaid",
             "amount": amount,
             "payment": "Paypal",
             "application_amount": application_fee,
