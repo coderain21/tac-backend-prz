@@ -23,11 +23,11 @@ jobs:
                   path: "$(System.DefaultWorkingDirectory)/node_modules"
                   cacheHitVar: CACHE_RESTORED
                 displayName: Cache npm
-              - task: DownloadPipelineArtifact@2
-                name: environment
-                inputs:
-                  artifact: environment
-                  targetPath: '$(System.DefaultWorkingDirectory)'
+              # - task: DownloadPipelineArtifact@2
+              #   name: environment
+              #   inputs:
+              #     artifact: environment
+              #     targetPath: '$(System.DefaultWorkingDirectory)'
               - script: npm config set registry https://registry.npmmirror.com
               - script: |
                   npm install --cache .npm
