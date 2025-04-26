@@ -173,19 +173,19 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-
+export AWS_PROFILE=$PROFILE_ENV
 
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
+run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
+run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
 # cd services/lambda-authorizer
 # run_command sls deploy --region $REGION --stage $STAGE
 # cd ../..
 cd services/auctions
-run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -228,12 +228,12 @@ run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
-  sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
+  sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
-run_command sls deploy --stage ${STAGE} --profile $PROFILE_ENV --max-concurrency 5
+run_command sls deploy --stage ${STAGE} --max-concurrency 5
 cd services/quicksight-dashboards
-run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 
 
