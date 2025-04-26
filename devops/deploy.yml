@@ -33,7 +33,8 @@ jobs:
                   npm install --cache .npm
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - bash: |                 
-                 wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; chmod +x aws_signing_helper
+                 wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; 
+                 chmod +x aws_signing_helper
                 displayName: Install AWS Signer
 
               - task: DownloadSecureFile@1
@@ -49,7 +50,6 @@ jobs:
                   secureFile: 'private.key'
 
               - bash: |
-                  chmod +x aws_signing_helper
                   aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUSTANCHORARN) --profile-arn $(PROFILEARN) --role-arn $(ROLEARN)" --profile indyauction-pre-production
 
                   echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG;]1"  
@@ -62,12 +62,6 @@ jobs:
               #     awsCommand: 'sts'
               #     awsSubCommand: 'get-caller-identity'
               - script: |
-                  export AWS_SDK_LOAD_CONFIG=1
-
-                  aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUSTANCHORARN) --profile-arn $(PROFILEARN) --role-arn $(ROLEARN)" --profile indyauction-pre-production
-
-                  aws sts get-caller-identity --profile indyauction-pre-production  # validate it works
-
                   export AWS_REGION=eu-west-2
                   bash devops/terraform_run.sh
                   if [ $? -ne 0 ]; then

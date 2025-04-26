@@ -33,7 +33,7 @@ echo "$log_bucket"
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
-# aws configure list --profile $PROFILE_ENV
+aws configure list --profile $PROFILE_ENV
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -94,7 +94,7 @@ if [ "${STAGE}" = "pre-production" ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -130,7 +130,7 @@ if [ "${STAGE}" = "prod"  ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text )
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -171,17 +171,18 @@ npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
 
+
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE --profile $AWS_PROFILE
+run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE --profile $AWS_PROFILE
+run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
 cd ../..
 # cd services/lambda-authorizer
 # run_command sls deploy --region $REGION --stage $STAGE
 # cd ../..
 cd services/auctions
-run_command sls deploy --region $REGION --stage $STAGE --profile $AWS_PROFILE
+run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
 cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -224,12 +225,12 @@ run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
-  sls deploy --region $REGION --stage $STAGE --profile $AWS_PROFILE
+  sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
   cd ../..
 fi
-run_command sls deploy --stage ${STAGE} --max-concurrency 5
+run_command sls deploy --stage ${STAGE} --profile $PROFILE_ENV --max-concurrency 5
 cd services/quicksight-dashboards
-run_command sls deploy --region $REGION --stage $STAGE --profile $AWS_PROFILE
+run_command sls deploy --region $REGION --stage $STAGE --profile $PROFILE_ENV
 cd ../..
 
 
