@@ -20,8 +20,8 @@ apt-get update && apt-get install python-is-python3 -y && apt-get install python
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
 aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
 
-aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
+# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 if [ "${STAGE}" = "pre-production" ] ; then
     aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
     aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
