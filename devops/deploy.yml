@@ -63,6 +63,7 @@ jobs:
               #     awsSubCommand: 'get-caller-identity'
               - script: |
                   export AWS_REGION=eu-west-2
+                  export PROFILE_ENV=indyauction-pre-production
                   bash devops/terraform_run.sh
                   if [ $? -ne 0 ]; then
                     echo "API testing failed"
