@@ -14,23 +14,14 @@ run_command() {
     return $status
 }
 
-
-CERT_PATH="$1"
-KEY_PATH="$2" 
-
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
-
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
-
-echo "Enabling AWS_SDK_LOAD_CONFIG..."
-export AWS_SDK_LOAD_CONFIG=1 
 
 # # Configure AWS CLI profiles
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
 aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
 
-# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
+aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 if [ "${STAGE}" = "pre-production" ] ; then
     aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
     aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
@@ -104,7 +95,6 @@ if [ "${STAGE}" = "pre-production" ]; then
         echo "$param_name"
         # Get parameter value
         param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -140,7 +130,6 @@ if [ "${STAGE}" = "prod"  ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
         param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
         # Set environment variable
@@ -181,16 +170,15 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
-export AWS_PROFILE="indyauction-pre-production"
-export AWS_SDK_LOAD_CONFIG=1
+export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 
 
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE 
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE 
+run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 # cd services/lambda-authorizer
 # run_command sls deploy --region $REGION --stage $STAGE
@@ -248,18 +236,18 @@ run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 
 
-if [ "${STAGE}" = "prod" ]; then
-    GROUP_ID="websocket-redis-cluster-enabled"
-elif [ "${STAGE}" = "pre-production" ]; then
-    GROUP_ID="new-websocket-redis-cluster-enabled"
+
+if [ $overall_status -ne 0 ]; then
+    echo "One or more commands failed."
+    exit 1
+else
+    echo "All commands executed successfully."
 fi
 
-
-
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
-    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
-    run_command aws elasticache modify-replication-group \
-    --replication-group-id $GROUP_ID \
+    aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+    aws elasticache modify-replication-group \
+    --replication-group-id new-websocket-redis-cluster-enabled \
     --region eu-west-2 \
     --log-delivery-configurations '[
         {
@@ -267,18 +255,7 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
             "DestinationType": "cloudwatch-logs",
             "DestinationDetails": {
                 "CloudWatchLogsDetails": {
-                "LogGroup": "redis-slow-logs"
-                }
-            },
-            "LogFormat": "json",
-            "Enabled": true
-        },
-        {
-            "LogType": "engine-log",
-            "DestinationType": "cloudwatch-logs",
-            "DestinationDetails": {
-                "CloudWatchLogsDetails": {
-                "LogGroup": "redis-engine-logs"
+                    "LogGroup": "redis-slow-logs"
                 }
             },
             "LogFormat": "json",
@@ -286,19 +263,24 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
         }
     ]' \
     --apply-immediately
-
+     aws elasticache modify-replication-group \
+    --replication-group-id new-websocket-redis-cluster-enabled \
+    --region eu-west-2 \
+    --log-delivery-configurations '[
+        {
+            "LogType": "engine-log",
+            "DestinationType": "cloudwatch-logs",
+            "DestinationDetails": {
+                "CloudWatchLogsDetails": {
+                    "LogGroup": "redis-engine-logs"
+                }
+            },
+            "LogFormat": "json",
+            "Enabled": true
+        }
+    ]' \
+    --apply-immediately
 fi
 if [ "${STAGE}" = "pre-production" ]; then
-    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
-fi
-if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
-    cd devops/disaster_recovery
-    run_command ./s3_versioning.sh
-fi
-
-if [ $overall_status -ne 0 ]; then
-    echo "One or more commands failed."
-    exit 1
-else
-    echo "All commands executed successfully."
+    aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
 fi
