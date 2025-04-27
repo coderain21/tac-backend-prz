@@ -181,7 +181,8 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-export AWS_PROFILE=$PROFILE_ENV
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
+export AWS_PROFILE="indyauction-pre-production"
 
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE 
