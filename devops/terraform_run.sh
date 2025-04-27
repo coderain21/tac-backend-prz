@@ -14,7 +14,16 @@ run_command() {
     return $status
 }
 
+
+CERT_PATH="$1"
+KEY_PATH="$2" 
+
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
+
+echo "Enabling AWS_SDK_LOAD_CONFIG..."
+export AWS_SDK_LOAD_CONFIG=1 
 
 # # Configure AWS CLI profiles
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
@@ -33,7 +42,6 @@ echo "$log_bucket"
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
-aws configure list --profile $PROFILE_ENV
 aws configure list --profile $PROFILE_ENV
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
