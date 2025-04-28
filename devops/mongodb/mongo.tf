@@ -137,6 +137,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   master_password         = random_password.password.result
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   preferred_maintenance_window = "sun:01:00-sun:03:00"
+  preferred_backup_window = "04:00-05:00"
   provider = aws.deployment-eu
 }
 
