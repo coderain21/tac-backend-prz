@@ -14,14 +14,23 @@ run_command() {
     return $status
 }
 
+
+CERT_PATH="$1"
+KEY_PATH="$2" 
+
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
+
+echo "Enabling AWS_SDK_LOAD_CONFIG..."
+export AWS_SDK_LOAD_CONFIG=1 
 
 # # Configure AWS CLI profiles
 aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
 aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
 
-aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
+# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 if [ "${STAGE}" = "pre-production" ] ; then
     aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
     aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
@@ -170,15 +179,21 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUSTANCHORARN \
+  --profile-arn $PROFILEARN \
+  --role-arn $ROLEARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
+
 
 
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
 # cd services/lambda-authorizer
 # run_command sls deploy --region $REGION --stage $STAGE
