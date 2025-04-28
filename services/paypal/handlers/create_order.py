@@ -26,7 +26,7 @@ cart_collection = db[os.environ["CART_COLLECTION"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 seller_collection = db[os.environ["SELLERS_TABLE"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-payment_status = db[os.environ['PAYMENT_STATUS']]
+# payment_status = db[os.environ['PAYMENT_STATUS']]
 
 
 # JSON encoder for special types
