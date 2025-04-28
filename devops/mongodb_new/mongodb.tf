@@ -116,6 +116,19 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
     name  = "tls"
     value = "disabled"
   }
+
+  # Enables audit logging
+  parameter {
+    name  = "audit_logs"
+    value = "enabled"
+  }
+
+  # Enables profiler logging
+  parameter {
+    name  = "profiler"
+    value = "enabled"
+  }
+
   provider = aws.deployment-eu
 }
 
@@ -167,6 +180,7 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "new-docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
   instance_class     = data.aws_ssm_parameter.instance_class.value
+  preferred_maintenance_window = "sun:01:00-sun:03:00"
   apply_immediately = true
   provider = aws.deployment-eu
 }
@@ -180,11 +194,13 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
   db_subnet_group_name = aws_docdb_subnet_group.subnet_group.name
-  snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
+  # snapshot_identifier = data.aws_ssm_parameter.snapshot_arn.value
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
   master_password         = data.aws_ssm_parameter.mongo_password.value
+  enabled_cloudwatch_logs_exports = ["audit", "profiler"]
   vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
+  preferred_maintenance_window = "sun:01:00-sun:03:00"
   provider = aws.deployment-eu
 }
 
