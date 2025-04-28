@@ -107,6 +107,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   parameter_group_name        = aws_elasticache_parameter_group.custom_redis.name
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
+  snapshot_window            = "04:00-05:00"
   maintenance_window         = "sun:01:00-sun:03:00"
   apply_immediately          = true
   provider                  = aws.deployment-us
