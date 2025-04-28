@@ -121,6 +121,8 @@ async function checkForExistingUsers(event, linkToExistingUser) {
             default: true,
             client_id: process.env.DEFAULT_CLIENT_ID,
             group_name: event.request.userAttributes.email.split('@')[0],
+            created_at: Math.floor(Date.now() / 1000),
+            updated_at: Math.floor(Date.now() / 1000),
         }
         const addToGroup = await addGroup(event.request.userAttributes.email.split('@')[0], process.env.DEFAULT_USERPOOL_ID)
         const cognitoResponse = await cognitoHelper.cognitoCreate(userData)
@@ -131,7 +133,11 @@ async function checkForExistingUsers(event, linkToExistingUser) {
                 { ...userData }, // Update fields
                 { new: true, upsert: true, setDefaultsOnInsert: true }, // Options
             )
-            const domain = await mongoConnection.save(domainInfo, SubDomain)
+            const domain = await SubDomain.findOneAndUpdate(
+                { seller_email: domainInfo.seller_email }, // Filter
+                { ...domainInfo }, // Update fields
+                { new: true, upsert: true, setDefaultsOnInsert: true },
+            )
             await linkUser(event.request.userAttributes.email, event)
             return { user, domain }
         }
