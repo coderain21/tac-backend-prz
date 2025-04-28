@@ -20,7 +20,7 @@ provider:
     COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
-    DATABASE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${self:custom.mongodbConnectionString}
@@ -205,6 +205,23 @@ functions:
           cors: true
           path: /{audience}
           method: GET
+  
+  delete:
+    handler: handlers/delete.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+        securityGroupIds:
+          - ${ssm:SECURITY_GROUP_ID}
+        subnetIds:
+          - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /delete/{notification_id}
+          method: DELETE
+          authorizer:
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN} 
             
 
 

@@ -5,27 +5,19 @@ env_object="{"
 
 # Fetch parameter names
 parameter_names=(
-    "REGION"
-    "AMPLIFY_DOMAIN_NAME"
-    "BUCKET_NAME"
-    "BASE_URL_BUYER"
-    "DOMAIN_NAME_FRONT_END"
-    "SITEKEY"
-    "GOOGLE_API_KEY"
-    "GOOGLE_API"
-    "CDN_URL"
-    "STRIPE_KEY"
-    "STRIPE_PAYMENT_KEY"
-    "STAGE"
-    "LOCATION_API"
-    "SOCKET_URL"
+    "MONGODB_CONNECTION_STRING"
     "BUYER_COGNITO_USERPOOL_ID"
-    "BUYER_COGNITO_CLIENT_ID"
-    "BUYER_COGNITO_IDENTITY_POOL_ID"
-    "BUYER_COGNITO_USERPOOL_DOMAIN"
-    "NOTIFY_KEY"
-    "LAUNCHDARKLY_CLIENT_ID"
-    "SUB_ENC_KEY"
+    "STAGE"
+    "REGION"
+    "REDIS_CLUSTER_ENDPOINT"
+    "STATE_MACHINE_LOT_ARN"
+    "WEB_PUSH_SECRET_KEY"
+    "CDN_URL"
+    "MAILCHIMP_SECRET_KEY"
+    "SENDER_EMAIL_ADDRESS"
+    "AMPLIFY_DOMAIN_NAME"
+    "ADMIN_COGNITO_USERPOOL_ID"
+    "SELLER_COGNITO_USERPOOL_ID"
 )
 
 # Loop through each parameter
@@ -36,10 +28,10 @@ for param_name in "${parameter_names[@]}"; do
     
     # Append key-value pair to environment object
     if [ "$first_param" = true ]; then
-        env_object="$env_object\"NEXT_PUBLIC_$param_name\": \"$param_value\""
+        env_object="$env_object\"$param_name\": \"$param_value\""
         first_param=false
     else
-        env_object="$env_object, \"NEXT_PUBLIC_$param_name\": \"$param_value\""
+        env_object="$env_object, \"$param_name\": \"$param_value\""
     fi
 done
 
