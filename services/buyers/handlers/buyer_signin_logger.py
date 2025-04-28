@@ -19,7 +19,7 @@ client = MongoClient(
                       maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
                         )
 db = client[os.environ['DATABASE']]
-access_logs_collection = db[os.environ["ACCESS_LOGS_TABLE"]]
+# access_logs_collection = db[os.environ["ACCESS_LOGS_TABLE"]]
 buyers_collection = db[os.environ["BUYER_COLLECTION"]]
 auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
@@ -76,25 +76,25 @@ def buyer_signin_logger(event, context):
         name = ' '.join(filter(None, [buyer_data.get('first_name'), buyer_data.get('last_name')]))
 
         # Get the current timestamp in seconds and convert to milliseconds
-        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+        # timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
 
         # Convert to float and format as a string with '.0'
-        formatted_timestamp = float(timestamp_ms)
-        access_logs = {
-            "actor_id": actor_id,
-            "updated_by": {
-                "type": 'Buyer',
-                "name": name,
-                "email_address": email_address,
-            },
-            "section": {
-                "name": 'Bidder Management',
-                "action": 'Login'
-            },
-            "updated_at": formatted_timestamp
-        }
+        # formatted_timestamp = float(timestamp_ms)
+        # access_logs = {
+        #     "actor_id": actor_id,
+        #     "updated_by": {
+        #         "type": 'Buyer',
+        #         "name": name,
+        #         "email_address": email_address,
+        #     },
+        #     "section": {
+        #         "name": 'Bidder Management',
+        #         "action": 'Login'
+        #     },
+        #     "updated_at": formatted_timestamp
+        # }
 
-        access_logs_collection.insert_one(access_logs)
+        # access_logs_collection.insert_one(access_logs)
 
         return {
             'statusCode': 201,

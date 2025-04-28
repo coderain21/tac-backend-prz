@@ -24,7 +24,7 @@ db = client[os.environ['DATABASE']]
 user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 buyer_collection = db[os.environ["BUYER_COLLECTION"]]
-access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+# access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
 
 
 def hash_password(password):
@@ -195,26 +195,26 @@ def update_password(event, context):
             }
 
         # Get the current timestamp in seconds and convert to milliseconds
-        timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
+        # timestamp_ms = int(datetime.datetime.now().timestamp() * 1000)
 
         # Convert to float and format as a string with '.0'
-        formatted_timestamp = float(timestamp_ms)
+        # formatted_timestamp = float(timestamp_ms)
 
         #adding logs of password update
-        access_logs = {
-            "actor_id": buyer.get('buyer_id'),
-            "updated_by": {
-                "type": 'Buyer',
-                "name": ' '.join(filter(None, [buyer.get('first_name'), buyer.get('last_name')])),
-                "email_address": email_address,
-            },
-            "section": {
-                "name": 'Bidder Management',
-                "action": 'Update Password'
-            },
-            "updated_at": formatted_timestamp
-        }
-        access_logs_collection.insert_one(access_logs)
+        # access_logs = {
+        #     "actor_id": buyer.get('buyer_id'),
+        #     "updated_by": {
+        #         "type": 'Buyer',
+        #         "name": ' '.join(filter(None, [buyer.get('first_name'), buyer.get('last_name')])),
+        #         "email_address": email_address,
+        #     },
+        #     "section": {
+        #         "name": 'Bidder Management',
+        #         "action": 'Update Password'
+        #     },
+        #     "updated_at": formatted_timestamp
+        # }
+        # access_logs_collection.insert_one(access_logs)
 
 
         return {
