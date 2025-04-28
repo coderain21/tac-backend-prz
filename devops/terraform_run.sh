@@ -181,9 +181,14 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
-export AWS_PROFILE="indyauction-pre-production"
-export AWS_SDK_LOAD_CONFIG=1
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUSTANCHORARN \
+  --profile-arn $PROFILEARN \
+  --role-arn $ROLEARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
+
 
 
 cd services/cognito-auth
