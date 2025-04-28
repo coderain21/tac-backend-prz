@@ -104,7 +104,6 @@ if [ "${STAGE}" = "pre-production" ]; then
         echo "$param_name"
         # Get parameter value
         param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -140,7 +139,6 @@ if [ "${STAGE}" = "prod"  ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
         param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
 
         # Set environment variable

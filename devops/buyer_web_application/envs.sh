@@ -26,6 +26,7 @@ parameter_names=(
     "NOTIFY_KEY"
     "LAUNCHDARKLY_CLIENT_ID"
     "SUB_ENC_KEY"
+    "GOOGLE_CLIENT_SECRET"
 )
 
 # Loop through each parameter
