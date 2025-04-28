@@ -120,7 +120,6 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
   instance_class     = data.aws_ssm_parameter.instance_class.value
   preferred_maintenance_window = "sun:01:00-sun:03:00"
-  preferred_backup_window = "04:00-05:00"
   apply_immediately = true
   provider = aws.deployment-eu
 }
