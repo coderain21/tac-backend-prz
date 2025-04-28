@@ -1,5 +1,5 @@
 '''this api updates the current password'''
-import datetime
+# import datetime
 import json
 import os
 import boto3

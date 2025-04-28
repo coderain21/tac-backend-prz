@@ -19,7 +19,7 @@ Environment Variables:
 import os
 import json
 from pymongo import MongoClient
-from datetime import datetime
+# from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
