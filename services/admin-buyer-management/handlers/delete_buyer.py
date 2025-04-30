@@ -78,7 +78,7 @@ def delete_buyer(event, context):
                     }
             req_url = os.environ.get("SOCKET_URL") + "/deleted"
             response = requests.request("post", req_url, data=json.dumps(payload), headers=headersList)
-    
+
             if email_status:
                 return {
                     "statusCode": 200,
