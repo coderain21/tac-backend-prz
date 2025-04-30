@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import pymongo
 import os
+import requests
 from lib.helper_python import send_pinpoint_email
 import boto3
 
@@ -47,26 +48,37 @@ def delete_buyer(event, context):
         print('result', result)
         timestamp_ms = int(datetime.now().timestamp() * 1000)
         formatted_timestamp = float(timestamp_ms)
-        access_log_data = {
-            "actor_id": admin_record.get('user_id'),
-            "updated_by": {
-                "type": 'Admin',
-                "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
-                "email_address": email_address,
-            },
-            "section": {
-                "name": 'Bidder Management',
-                "action": 'Delete',
-                "buyer_email": buyer_email,
-            },
-            "updated_at": formatted_timestamp,
-        }
+        # access_log_data = {
+        #     "actor_id": admin_record.get('user_id'),
+        #     "updated_by": {
+        #         "type": 'Admin',
+        #         "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
+        #         "email_address": email_address,
+        #     },
+        #     "section": {
+        #         "name": 'Bidder Management',
+        #         "action": 'Delete',
+        #         "buyer_email": buyer_email,
+        #     },
+        #     "updated_at": formatted_timestamp,
+        # }
 
         if result and register_result and wishlist_result:
             email_status = send_pinpoint_email(email_address, os.environ["SES_SENDER_EMAIL_ID"], json.dumps({"buyer_email": buyer_email}),
                                         os.environ["TEMPLATE_ARN_ADMIN_DELETE_BUYER"])
             print('email_status', email_status)
-            access_log_collection.insert_one(access_log_data)
+            # access_log_collection.insert_one(access_log_data)
+            payload = {
+                    "buyer": {"buyer_email": buyer_email}
+                    }
+            headersList = {
+                        "Accept": "*/*",
+                        "User-Agent": "API TEST", 
+                        "Content-Type": "application/json"
+                    }
+            req_url = os.environ.get("SOCKET_URL") + "/deleted"
+            response = requests.request("post", req_url, data=json.dumps(payload), headers=headersList)
+    
             if email_status:
                 return {
                     "statusCode": 200,
