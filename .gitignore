@@ -70,6 +70,7 @@ Thumbs.db
 env
 .vscode/launch.json
 .env
+*.pem
 logins.sh
 services/**/package-lock.json
 devops/ecs/ecs_task.env
