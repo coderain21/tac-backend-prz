@@ -286,6 +286,8 @@ cd services/quicksight-dashboards
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 
+export AWS_SDK_LOAD_CONFIG=1 
+
 
 if [ "${STAGE}" = "prod" ]; then
     GROUP_ID="websocket-redis-cluster-enabled"
