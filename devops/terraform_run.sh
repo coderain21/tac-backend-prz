@@ -29,11 +29,12 @@ if [ "${STAGE}" = "qa" ] ; then
 elif [ "${STAGE}" = "prod" ] ; then
     aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
 elif [ "${STAGE}" = "pre-production" ] ; then
-    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PRE_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
     aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
     aws configure list --profile $AWS_ENV_QA
 fi
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHORARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
+
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
 
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
