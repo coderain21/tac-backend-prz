@@ -58,8 +58,8 @@ fi
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
 
-export AWS_PROFILE="$PROFILE_ENV"
-
+export AWS_PROFILE=$PROFILE_ENV
+echo $AWS_PROFILE
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
 # Print AWS CLI configurations for verification
@@ -228,7 +228,7 @@ cd ../..
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
-export AWS_PROFILE="$PROFILE_ENV"
+export AWS_PROFILE=$PROFILE_ENV
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
@@ -271,9 +271,9 @@ unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \
   --private-key $KEY_PATH \
-  --trust-anchor-arn $TRUSTANCHORARN \
-  --profile-arn $PROFILEARN \
-  --role-arn $ROLEARN \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
 | jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
