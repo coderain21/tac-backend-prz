@@ -21,6 +21,7 @@ KEY_PATH="$2"
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
 aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
+export AWS_PROFILE="indyauction-pre-production"
 
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
@@ -179,6 +180,7 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
+unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \
   --private-key $KEY_PATH \
@@ -202,6 +204,10 @@ cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+export AWS_PROFILE="indyauction-pre-production"
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
@@ -240,6 +246,15 @@ run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 # terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
+unset AWS_PROFILE
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUSTANCHORARN \
+  --profile-arn $PROFILEARN \
+  --role-arn $ROLEARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
+
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
   sls deploy --region $REGION --stage $STAGE
