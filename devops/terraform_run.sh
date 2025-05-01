@@ -15,32 +15,33 @@ run_command() {
 }
 
 
-CERT_PATH="$1"
-KEY_PATH="$2" 
+KEY_PATH="$1" 
+CERT_PATH_QA="$2"
+CERT_PATH_PRE_PROD="$3"
+CERT_PATH_PROD="$4"
+CERT_PATH_MAIN="$5"
+
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile indyauction-pre-production
-export AWS_PROFILE="indyauction-pre-production"
+if [ "${STAGE}" = "qa" ] ; then
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile $PROFILE_ENV
+elif [ "${STAGE}" = "prod" ] ; then
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile $PROFILE_ENV
+elif [ "${STAGE}" = "pre-production" ] ; then
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUSTANCHORARN --profile-arn $PROFILEARN --role-arn $ROLEARN" --profile $PROFILE_ENV
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHORARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
+    aws configure list --profile $AWS_ENV_QA
+fi
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHORARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
+
+log_bucket="indyauction-pipeline-states"
+echo "$log_bucket"
+
+export AWS_PROFILE="$PROFILE_ENV"
 
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
-
-# # Configure AWS CLI profiles
-aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
-aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
-
-# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-if [ "${STAGE}" = "pre-production" ] ; then
-    aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
-    aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
-fi
-log_bucket="indyauction-pipeline-states"
-echo "$log_bucket"
-# aws s3 sync $log_bucket . --profile $PROFILE_MAIN
-
-
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
@@ -207,7 +208,7 @@ cd ../..
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
-export AWS_PROFILE="indyauction-pre-production"
+export AWS_PROFILE="$PROFILE_ENV"
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"

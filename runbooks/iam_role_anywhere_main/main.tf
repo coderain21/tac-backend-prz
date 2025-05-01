@@ -92,15 +92,42 @@ resource "aws_iam_role_policy" "pipeline_access_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow",
-        Action   = ["*"],
-        Resource = ["*"]
+        Sid    = "S3Access",
+        Effect = "Allow",
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ],
+        Resource = [
+          "arn:aws:s3:::indyauction-api-documentation",
+          "arn:aws:s3:::indyauction-api-documentation/*"
+        ]
+      },
+      {
+        Sid    = "CloudFrontInvalidation",
+        Effect = "Allow",
+        Action = "cloudfront:CreateInvalidation",
+        Resource = "arn:aws:cloudfront::929441721738:distribution/EVCB3HCCQC1CP"
+      },
+      {
+        Sid    = "Route53Access",
+        Effect = "Allow",
+        Action = [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListResourceRecordSets",
+          "route53:GetHostedZone",
+          "route53:ListHostedZones"
+        ],
+        Resource = "*"
       }
     ]
   })
 
   provider = aws.deployment-eu
 }
+
 
 # ----------------------------------------
 # 4. Create a RolesAnywhere Profile
@@ -111,36 +138,6 @@ resource "aws_rolesanywhere_profile" "pipeline_profile" {
   require_instance_properties = false
   enabled                     = true
   duration_seconds            = 3600
-
-  provider = aws.deployment-eu
-}
-
-# ----------------------------------------
-# 5. Store ARNs in SSM Parameter Store
-# ----------------------------------------
-resource "aws_ssm_parameter" "trust_anchor_arn" {
-  name        = "TRUST_ANCHOR_ARN"
-  description = "ARN of the IAM Roles Anywhere Trust Anchor"
-  type        = "String"
-  value       = aws_rolesanywhere_trust_anchor.external_pipeline_trust.arn
-
-  provider = aws.deployment-eu
-}
-
-resource "aws_ssm_parameter" "profile_arn" {
-  name        = "PROFILE_ARN"
-  description = "ARN of the IAM Roles Anywhere Profile"
-  type        = "String"
-  value       = aws_rolesanywhere_profile.pipeline_profile.arn
-
-  provider = aws.deployment-eu
-}
-
-resource "aws_ssm_parameter" "role_arn" {
-  name        = "IAM_ROLE_ARN"
-  description = "ARN of the IAM Role used with Roles Anywhere"
-  type        = "String"
-  value       = aws_iam_role.pipeline_deployer.arn
 
   provider = aws.deployment-eu
 }
