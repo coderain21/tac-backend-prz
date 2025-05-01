@@ -24,17 +24,36 @@ CERT_PATH_MAIN="$5"
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-if [ "${STAGE}" = "qa" ] ; then
-    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
-elif [ "${STAGE}" = "prod" ] ; then
-    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
-elif [ "${STAGE}" = "pre-production" ] ; then
-    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_PRE_PROD --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
+# Select cert path based on stage
+case "$STAGE" in
+    qa)
+        CERT_PATH="$CERT_PATH_QA"
+        ;;
+    pre-production)
+        CERT_PATH="$CERT_PATH_PRE_PROD"
+        ;;
+    prod)
+        CERT_PATH="$CERT_PATH_PROD"
+        ;;
+    *)
+        echo "Invalid STAGE: $STAGE" >&2
+        exit 1
+        ;;
+esac
+
+echo $CERT_PATH
+
+
+# Common credential setup
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
+
+
+if [ "${STAGE}" = "pre-production" ] ; then
     aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
     aws configure list --profile $AWS_ENV_QA
 fi
 
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
 
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
@@ -186,9 +205,9 @@ unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \
   --private-key $KEY_PATH \
-  --trust-anchor-arn $TRUSTANCHORARN \
-  --profile-arn $PROFILEARN \
-  --role-arn $ROLEARN \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
 | jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
 

@@ -92,35 +92,9 @@ resource "aws_iam_role_policy" "pipeline_access_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid    = "S3Access",
-        Effect = "Allow",
-        Action = [
-          "s3:PutObject",
-          "s3:GetObject",
-          "s3:DeleteObject",
-          "s3:ListBucket"
-        ],
-        Resource = [
-          "arn:aws:s3:::indyauction-api-documentation",
-          "arn:aws:s3:::indyauction-api-documentation/*"
-        ]
-      },
-      {
-        Sid    = "CloudFrontInvalidation",
-        Effect = "Allow",
-        Action = "cloudfront:CreateInvalidation",
-        Resource = "arn:aws:cloudfront::929441721738:distribution/EVCB3HCCQC1CP"
-      },
-      {
-        Sid    = "Route53Access",
-        Effect = "Allow",
-        Action = [
-          "route53:ChangeResourceRecordSets",
-          "route53:ListResourceRecordSets",
-          "route53:GetHostedZone",
-          "route53:ListHostedZones"
-        ],
-        Resource = "*"
+        Effect   = "Allow",
+        Action   = ["*"],
+        Resource = ["*"]
       }
     ]
   })
