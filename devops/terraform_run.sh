@@ -26,12 +26,12 @@ apt-get update && apt-get install python-is-python3 -y && apt-get install python
 echo "Using certificate path: $CERT_PATH"
 
 aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
-run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
+run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
 
 # Additional credential setup for pre-production
 if [ "${STAGE}" = "pre-production" ] ; then
     echo "Setting up AWS credential process for QA profile"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
     aws configure list --profile $AWS_ENV_QA
 fi
 export AWS_PROFILE=$PROFILE_ENV
