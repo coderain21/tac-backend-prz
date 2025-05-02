@@ -17,30 +17,11 @@ run_command() {
 
 
 KEY_PATH="$1" 
-CERT_PATH_QA="$2"
-CERT_PATH_PRE_PROD="$3"
-CERT_PATH_PROD="$4"
-CERT_PATH_MAIN="$5"
+CERT_PATH="$2"
+
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-
-# Select cert path based on stage
-case "$STAGE" in
-    qa)
-        CERT_PATH="$CERT_PATH_QA"
-        ;;
-    pre-production)
-        CERT_PATH="$CERT_PATH_PRE_PROD"
-        ;;
-    prod)
-        CERT_PATH="$CERT_PATH_PROD"
-        ;;
-    *)
-        echo "Invalid STAGE: $STAGE" >&2
-        exit 1
-        ;;
-esac
 
 echo "Using certificate path: $CERT_PATH"
 

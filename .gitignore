@@ -73,6 +73,9 @@ env
 .env
 *.pem
 out-*
+ca.*
+*.csr
+*.cnf
 out-main.json
 logins.sh
 services/**/package-lock.json

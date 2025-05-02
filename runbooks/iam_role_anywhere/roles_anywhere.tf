@@ -7,46 +7,19 @@ provider "aws" {
 }
 
 
-# Create the ACM PCA certificate authority with the Subject Distinguished Name
-resource "aws_acmpca_certificate_authority" "indyauction_ca" {
-  type = "ROOT" 
-  certificate_authority_configuration {
-    key_algorithm            = "RSA_2048"
-    signing_algorithm        = "SHA256WITHRSA"
-
-    subject {
-      country          = "GB"        # United Kingdom
-      state            = "England"
-      locality         = "London"
-      organization     = "IndyAuction"
-      organizational_unit = "IT Department"
-      common_name      = "IndyAuction Root CA"
-    }
-  }
-
-  tags = {
-    Name        = "IndyAuction Certificate Authority"
-    Environment = "Production"
-  }
-  provider = aws.deployment-eu
-
-}
-
-
-# ----------------------------------------
-# 1. Create a Trust Anchor from ACM PCA
-# ----------------------------------------
+# -----------------------------
+# 1. Create a Trust Anchor
+# -----------------------------
 resource "aws_rolesanywhere_trust_anchor" "external_pipeline_trust" {
-  name    = "external-pipeline-trust"
-  enabled = true
+  name = "external-pipeline-trust"
 
   source {
-    source_type = "AWS_ACM_PCA"
+    source_type = "CERTIFICATE_BUNDLE"
     source_data {
-      acm_pca_arn = aws_acmpca_certificate_authority.indyauction_ca.arn
+      x509_certificate_data = file("ca.crt") # Your trusted CA bundle (PEM)
     }
   }
-
+  enabled = true
   provider = aws.deployment-eu
 }
 
@@ -111,36 +84,6 @@ resource "aws_rolesanywhere_profile" "pipeline_profile" {
   require_instance_properties = false
   enabled                     = true
   duration_seconds            = 3600
-
-  provider = aws.deployment-eu
-}
-
-# ----------------------------------------
-# 5. Store ARNs in SSM Parameter Store
-# ----------------------------------------
-resource "aws_ssm_parameter" "trust_anchor_arn" {
-  name        = "TRUST_ANCHOR_ARN"
-  description = "ARN of the IAM Roles Anywhere Trust Anchor"
-  type        = "String"
-  value       = aws_rolesanywhere_trust_anchor.external_pipeline_trust.arn
-
-  provider = aws.deployment-eu
-}
-
-resource "aws_ssm_parameter" "profile_arn" {
-  name        = "PROFILE_ARN"
-  description = "ARN of the IAM Roles Anywhere Profile"
-  type        = "String"
-  value       = aws_rolesanywhere_profile.pipeline_profile.arn
-
-  provider = aws.deployment-eu
-}
-
-resource "aws_ssm_parameter" "role_arn" {
-  name        = "IAM_ROLE_ARN"
-  description = "ARN of the IAM Role used with Roles Anywhere"
-  type        = "String"
-  value       = aws_iam_role.pipeline_deployer.arn
 
   provider = aws.deployment-eu
 }

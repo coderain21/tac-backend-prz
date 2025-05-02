@@ -37,32 +37,17 @@ jobs:
                  chmod +x aws_signing_helper
                 displayName: Install AWS Signer
               - task: DownloadSecureFile@1
-                name: Certificate_Qa
-                displayName: 'Download certificate'
-                inputs:
-                  secureFile: 'certificate-qa.crt'
-              - task: DownloadSecureFile@1
-                name: Certificate_Pre_Prod
+                name: Certificate
                 displayName: 'Download certificate'
                 inputs:
                   secureFile: 'certificate.crt'
-              - task: DownloadSecureFile@1
-                name: Certificate_Prod
-                displayName: 'Download certificate'
-                inputs:
-                  secureFile: 'certificate-prod.crt'
-              - task: DownloadSecureFile@1
-                name: Certificate_Main
-                displayName: 'Download certificate'
-                inputs:
-                  secureFile: 'certificate-main.crt'
               - task: DownloadSecureFile@1
                 name: Privatekey
                 displayName: 'Download private key'
                 inputs:
                   secureFile: 'private.key'
               - script: |
-                  bash devops/terraform_run.sh "$(Privatekey.secureFilePath)" "$(Certificate_Qa.secureFilePath)" "$(Certificate_Pre_Prod.secureFilePath)" "$(Certificate_Prod.secureFilePath)" "$(Certificate_Main.secureFilePath)" 
+                  bash devops/terraform_run.sh "$(Privatekey.secureFilePath)" "$(Certificate_Qa.secureFilePath)" 
                   if [ $? -ne 0 ]; then
                     echo "API testing failed"
                     exit 1
