@@ -135,7 +135,7 @@ stages:
           name: Certificate
           displayName: 'Download certificate'
           inputs:
-            secureFile: 'certificate-dev.crt'
+            secureFile: 'certificate.crt'
         - task: DownloadSecureFile@1
           name: Privatekey
           displayName: 'Download private key'
