@@ -49,9 +49,10 @@ const UserSchema = new Schema({
     linkedin_link: { type: String, trim: true, default: '' },
     tiktok_link: { type: String, trim: true, default: '' },
     kyb_status: { type: String, trim: true, default: false },
-    seller_id: { type: String, trim: true, default: '' },
+    // seller_id: { type: String, trim: true, default: '' }, // Removed duplicate key
     full_name: { type: String, trim: true, default: '' },
-    plan_type: {type: String, trim: true, default: ''},
+    plan_type: { type: String, trim: true, default: '' }, // Added spaces
+    privacy_policy: { type: String, trim: true, default: '' },
 })
 
 UserSchema.plugin(mongoosePaginate)
