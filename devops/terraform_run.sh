@@ -107,28 +107,10 @@ aws configure list --profile $PROFILE_ENV
 # Proceed with Terraform deployments
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
-
-
-
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ses apply -auto-approve
-
-
-
-# Continue with remaining Terraform deployments
 run_command terraform -chdir=devops/admin_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/admin_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/admin_web_application apply -auto-approve
-
-# Rest of your script remains the same...
-# [...]
-
-# When switching to serverless deployments, ensure proper AWS_PROFILE is set
-cd services/cognito-auth
-export AWS_PROFILE=$PROFILE_ENV
-echo "Setting AWS_PROFILE to $AWS_PROFILE for serverless deployments"
-run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
-cd ../..
-
 run_command terraform -chdir=devops/seller_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/seller_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/seller_web_application apply -auto-approve
 run_command terraform -chdir=devops/api_gateway init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/api_gateway/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -259,6 +241,9 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
+# When switching to serverless deployments, ensure proper AWS_PROFILE is set
+echo "Setting AWS_PROFILE to $AWS_PROFILE for serverless deployments"
+export AWS_PROFILE=$PROFILE_ENV
 
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
@@ -280,22 +265,6 @@ STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfs
 # Check if the file exists in the S3 bucket
 if aws s3 ls "$STATE_FILE" --profile "${PROFILE_MAIN}" > /dev/null 2>&1; then
   echo "State file exists. Applying Terraform with targets..."
-# STATE_FILE="$STAGE/devops/buyer_web_application/terraform.tfstate"
-# if [ -f "$STATE_FILE" ]; then
-#     echo "cheching for subdomain"
-  # Extract the DOMAIN_ASSOCIATION_ID only if the state file exists
-#   DOMAIN_ASSOCIATION_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*id\s*=\s*"\K[^"]+')
-#   APP_ID=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*app_id\s*=\s*"\K[^"]+')
-#   AMPLIFY_DOMAIN_NAME=$(terraform -chdir=devops/buyer_web_application state show aws_amplify_domain_association.domain_association | grep -oP '^\s*domain_name\s*=\s*"\K[^"]+')
-  
-#   # Use the extracted ID (if any) in your subsequent commands
-#   echo "Extracted DOMAIN_ASSOCIATION_ID: $DOMAIN_ASSOCIATION_ID"
-#   terraform -chdir=devops/buyer_web_application state rm aws_amplify_domain_association.domain_association
-#   terraform -chdir=devops/buyer_web_application import aws_amplify_domain_association.domain_association $DOMAIN_ASSOCIATION_ID
-#   domain=$(aws amplify get-domain-association --app-id $APP_ID --domain-name $AMPLIFY_DOMAIN_NAME --profile $PROFILE_ENV --region $REGION --query 'domainAssociation.subDomains[*].subDomainSetting.prefix')
-#   echo "{\"subdomains\": $domain}" > devops/buyer_web_application/subdomains.json
-  # Add your commands here that use $DOMAIN_ASSOCIATION_ID (if needed)
-  # terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
   run_command terraform -chdir=devops/buyer_web_application apply -auto-approve -target=aws_amplify_app.customer_web_application \
                -target=aws_amplify_branch.amplify_branch \
                -target=aws_ssm_parameter.amplify_id \
