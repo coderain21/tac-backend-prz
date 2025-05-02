@@ -145,8 +145,9 @@ stages:
             wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; chmod +x aws_signing_helper
           displayName: Install AWS Signer
         - bash: |
-            aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUST_ANCHOR_ARN) --profile-arn $(PROFILE_ARN) --role-arn $(ROLE_ARN)" --profile default
+            aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUST_ANCHOR_ARN) --profile-arn $(PROFILE_ARN) --role-arn $(ROLE_ARN)" --profile indyauction-dev
             echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG;]1"  
+            export AWS_PROFILE=indyauction-dev
           displayName: Obtain AWS Credentials
         - script: |
             ./envs.sh

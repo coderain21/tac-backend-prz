@@ -1,10 +1,18 @@
 #!/bin/sh
 
-# set -a            
-# source .env
-# set +a
+# Enable error debugging
+# set -e
+
+# Debug logging
+DEBUG=true
+if [ "$DEBUG" = true ]; then
+    # Print each command before executing (helps with debugging)
+    set -x
+fi
+
 overall_status=0
 run_command() {
+    echo "Executing: $@"
     "$@"
     local status=$?
     if [ $status -ne 0 ]; then
@@ -15,6 +23,7 @@ run_command() {
 }
 
 
+
 KEY_PATH="$1" 
 CERT_PATH_QA="$2"
 CERT_PATH_PRE_PROD="$3"
@@ -22,7 +31,9 @@ CERT_PATH_PROD="$4"
 CERT_PATH_MAIN="$5"
 
 
-apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+
+# Install dependencies
+run_command apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
 # Select cert path based on stage
 case "$STAGE" in
@@ -41,38 +52,83 @@ case "$STAGE" in
         ;;
 esac
 
-echo $CERT_PATH
+echo "Using certificate path: $CERT_PATH"
 
+# Verify the certificate and key files exist
+for file in "$KEY_PATH" "$CERT_PATH" "$CERT_PATH_MAIN"; do
+    if [ ! -f "$file" ]; then
+        echo "Error: File does not exist: $file"
+        exit 1
+    fi
+done
 
-# Common credential setup
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
+# Common credential setup - with additional error checking
+echo "Setting up AWS credential process for profile $PROFILE_ENV"
+run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile $PROFILE_ENV
 
+echo "Setting up AWS credential process for profile $PROFILE_MAIN"
+run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_MAIN --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
 
+# Additional credential setup for pre-production
 if [ "${STAGE}" = "pre-production" ] ; then
-    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
+    echo "Setting up AWS credential process for QA profile"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH_QA --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
     aws configure list --profile $AWS_ENV_QA
 fi
 
+# Test the credentials
+echo "Testing AWS credentials for profile $PROFILE_ENV"
+if ! aws sts get-caller-identity --profile $PROFILE_ENV; then
+    echo "Failed to validate credentials for profile $PROFILE_ENV"
+    exit 1
+fi
+
+echo "Testing AWS credentials for profile $PROFILE_MAIN"
+if ! aws sts get-caller-identity --profile $PROFILE_MAIN; then
+    echo "Failed to validate credentials for profile $PROFILE_MAIN"
+    exit 1
+fi
 
 log_bucket="indyauction-pipeline-states"
-echo "$log_bucket"
+echo "Using S3 bucket for Terraform state: $log_bucket"
 
+# Set environment variables
 export AWS_PROFILE=$PROFILE_ENV
 export AWS_REGION="eu-west-2"
 
-echo $AWS_PROFILE
+echo "Using AWS_PROFILE: $AWS_PROFILE"
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
+
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $PROFILE_ENV
+
+# Proceed with Terraform deployments
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
+
+
+
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ses apply -auto-approve
+
+
+
+# Continue with remaining Terraform deployments
 run_command terraform -chdir=devops/admin_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/admin_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/admin_web_application apply -auto-approve
+
+# Rest of your script remains the same...
+# [...]
+
+# When switching to serverless deployments, ensure proper AWS_PROFILE is set
+cd services/cognito-auth
+export AWS_PROFILE=$PROFILE_ENV
+echo "Setting AWS_PROFILE to $AWS_PROFILE for serverless deployments"
+run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
+cd ../..
+
 run_command terraform -chdir=devops/seller_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/seller_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/seller_web_application apply -auto-approve
 run_command terraform -chdir=devops/api_gateway init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/api_gateway/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
