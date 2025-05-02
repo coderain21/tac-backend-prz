@@ -201,34 +201,21 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-unset AWS_PROFILE
-eval $( $(pwd)/aws_signing_helper credential-process \
-  --certificate $CERT_PATH \
-  --private-key $KEY_PATH \
-  --trust-anchor-arn $TRUST_ANCHOR_ARN \
-  --profile-arn $PROFILE_ARN \
-  --role-arn $ROLE_ARN \
-| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
-
-
 
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE 
+run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE 
+run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
 cd ../..
 # cd services/lambda-authorizer
 # run_command sls deploy --region $REGION --stage $STAGE
 # cd ../..
 cd services/auctions
-run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
 cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-unset AWS_ACCESS_KEY_ID
-unset AWS_SECRET_ACCESS_KEY
-unset AWS_SESSION_TOKEN
-export AWS_PROFILE=$PROFILE_ENV
+
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
@@ -267,14 +254,6 @@ run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 # terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
-unset AWS_PROFILE
-eval $( $(pwd)/aws_signing_helper credential-process \
-  --certificate $CERT_PATH \
-  --private-key $KEY_PATH \
-  --trust-anchor-arn $TRUST_ANCHOR_ARN \
-  --profile-arn $PROFILE_ARN \
-  --role-arn $ROLE_ARN \
-| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
@@ -283,10 +262,9 @@ if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
 fi
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
 cd services/quicksight-dashboards
-run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
 cd ../..
 
-export AWS_SDK_LOAD_CONFIG=1 
 
 
 if [ "${STAGE}" = "prod" ]; then
