@@ -62,7 +62,6 @@ jobs:
                 inputs:
                   secureFile: 'private.key'
               - script: |
-                  export AWS_REGION=eu-west-2
                   bash devops/terraform_run.sh "$(Privatekey.secureFilePath)" "$(Certificate_Qa.secureFilePath)" "$(Certificate_Pre_Prod.secureFilePath)" "$(Certificate_Prod.secureFilePath)" "$(Certificate_Main.secureFilePath)" 
                   if [ $? -ne 0 ]; then
                     echo "API testing failed"
