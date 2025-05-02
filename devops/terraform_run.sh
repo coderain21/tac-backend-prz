@@ -59,6 +59,8 @@ log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
 
 export AWS_PROFILE=$PROFILE_ENV
+export AWS_REGION="eu-west-2"
+
 echo $AWS_PROFILE
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
@@ -260,6 +262,7 @@ if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   sls deploy --region $REGION --stage $STAGE
   cd ../..
 fi
+export AWS_PROFILE=$PROFILE_ENV
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
 cd services/quicksight-dashboards
 run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV

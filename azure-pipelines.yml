@@ -124,18 +124,35 @@ stages:
 #             fi
 #           displayName: 'Static Application Security Testing (SAST)'
 
-# - stage: Build
-#   jobs:
-#     - job: "Download_Environment"
-#       displayName: "Build"
-#       pool:
-#         vmImage: "ubuntu-22.04"
-#       steps:
-#         - script: |
-#             ./envs.sh
-#           displayName: 'Copy Environment Files'
-#         - publish: $(System.DefaultWorkingDirectory)/.env
-#           artifact: Environment
+- stage: Build
+  jobs:
+    - job: "Download_Environment"
+      displayName: "Build"
+      pool:
+        vmImage: "ubuntu-22.04"
+      steps:
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate-dev.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "./aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath) --trust-anchor-arn $(TRUST_ANCHOR_ARN) --profile-arn $(PROFILE_ARN) --role-arn $(ROLE_ARN)" --profile default
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG;]1"  
+          displayName: Obtain AWS Credentials
+        - script: |
+            ./envs.sh
+          displayName: 'Copy Environment Files'
+        - publish: $(System.DefaultWorkingDirectory)/.env
+          artifact: Environment
   
 # - stage: Test
 #   jobs:
