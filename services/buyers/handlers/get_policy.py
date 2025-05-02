@@ -4,6 +4,7 @@ import os
 from pymongo import MongoClient
 # from bson import ObjectId
 from lib.common_helper import Encoder
+import urllib.parse
 
 headers = {
     'Content-Type': 'application/json',
@@ -30,33 +31,34 @@ def get_policy(event, context):
     """
     try:
         data = event['pathParameters']
-        seller_email = data['seller_email']
-
+        seller_email = urllib.parse.unquote(event['pathParameters']['seller_email'])
         if not seller_email:
             return {
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide seller email"})
             }
-       
-        # auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
-        projection = {
-            "privacy_policy": 1,
-            "_id": 0
-        }
-        seller_info= seller_collection.find_one({'email_address':seller_email},projection)
 
-        if not seller_info:
+        # auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        seller_info = seller_collection.find_one({'email_address': seller_email}, {"privacy_policy": 1, "_id": 0})
+
+        print("seller_info", seller_info)
+
+        if seller_info is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
                 "body": json.dumps({"message": "Seller not found"})
             }
 
-        return{
+        # Ensure privacy_policy exists, default to empty string if not
+        if 'privacy_policy' not in seller_info:
+            seller_info['privacy_policy'] = ''
+
+        return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data':seller_info},cls=Encoder)
+            "body": json.dumps({'data': seller_info}, cls=Encoder)
             }
     except Exception as e:
         print("Internal Server Error", str(e))
