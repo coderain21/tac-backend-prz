@@ -27,7 +27,7 @@ resource "aws_rolesanywhere_trust_anchor" "external_pipeline_trust" {
 # 2. Create an IAM Role for External CICD
 # ----------------------------------------
 resource "aws_iam_role" "pipeline_deployer" {
-  name = "external-pipeline-deployer"
+  name = "external-pipeline-deployer-${var.REGION}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
