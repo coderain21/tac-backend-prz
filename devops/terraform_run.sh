@@ -107,7 +107,7 @@ if [ "${STAGE}" = "pre-production" ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text  --region $REGION --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -143,7 +143,7 @@ if [ "${STAGE}" = "prod"  ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --region $REGION --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -228,6 +228,7 @@ if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd ../..
 fi
 export AWS_PROFILE=$PROFILE_ENV
+export AWS_REGION="eu-west-2"
 run_command sls deploy --stage ${STAGE} --max-concurrency 5
 cd services/quicksight-dashboards
 run_command sls deploy --region $REGION --stage $STAGE --aws-profile $PROFILE_ENV
