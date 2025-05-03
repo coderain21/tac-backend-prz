@@ -20,43 +20,11 @@ KEY_PATH="$2"
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-
-# Define per-region IAM Roles Anywhere ARNs
-declare -A TRUST_ANCHORS
-declare -A PROFILE_ARNS
-declare -A ROLE_ARNS
-
-# Region-specific Trust Anchors
-TRUST_ANCHORS["eu-west-2"]=$TRUST_ANCHOR_ARN
-TRUST_ANCHORS["us-east-1"]=$TRUST_ANCHOR_ARN_US
-
-# Region-specific Profile ARNs
-PROFILE_ARNS["eu-west-2"]=$PROFILE_ARN
-PROFILE_ARNS["us-east-1"]=$PROFILE_ARN
-
-# Region-specific Role ARNs (if needed per region)
-ROLE_ARNS["eu-west-2"]=$ROLE_ARN
-ROLE_ARNS["us-east-1"]=$ROLE_ARN_US
-
-# Function to configure profile for a specific region
-set_profile() {
-  local region=$1
-  echo "🔄 Setting up credential_process for region: $region"
-
-  # Set the region-specific configurations
-  aws configure set region "$region" --profile "$PROFILE_NAME"
-
-  # Set the credential process with region-specific values
-  aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
-    --certificate $CERT_PATH \
-    --private-key $KEY_PATH \
-    --trust-anchor-arn ${TRUST_ANCHORS[$region]} \
-    --profile-arn ${PROFILE_ARNS[$region]} \
-    --role-arn ${ROLE_ARNS[$region]}" --profile "$PROFILE_NAME"
-}
-# Configure for both regions
-set_profile "eu-west-2"
-set_profile "us-east-1"
+aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
+export AWS_PROFILE=$PROFILE_ENV
 
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
