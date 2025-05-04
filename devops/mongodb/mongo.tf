@@ -1,13 +1,5 @@
  
 
-  
-#AWS Provider with profile main account
-provider "aws" {
-  region = var.REGION
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
-}
-
 resource "random_password" "password" {
   length           = 16
   special          = false
