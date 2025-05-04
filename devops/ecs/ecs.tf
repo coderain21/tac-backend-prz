@@ -317,15 +317,19 @@ locals {
 }
 data "aws_ssm_parameter" "cpu" {
   name = "CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "memory" {
   name = "MEMORY"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "ecs_cpu" {
   name = "ECS_CPU"
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "ecs_memory" {
   name = "ECS_MEMORY"
+  provider = aws.deployment-eu
 }
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
