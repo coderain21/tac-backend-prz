@@ -171,9 +171,7 @@ if [ "${STAGE}" = "prod" ]; then
     run_command terraform -chdir=devops/cloudwatch init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
-cd devops
-run_command ./serverless-1.sh
-cd ..
+run_command ./devops/serverless-1.sh
 
 
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -194,7 +192,12 @@ else
 fi
 run_command terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-cd devops
-run_command ./serverless-2.sh
-cd ..
+run_command ./devops/serverless-2.sh
 
+
+if [ $overall_status -ne 0 ]; then
+    echo "One or more commands failed."
+    exit 1
+else
+    echo "All commands executed successfully."
+fi

@@ -50,3 +50,11 @@ cd ../..
 cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
+
+
+if [ $overall_status -ne 0 ]; then
+    echo "One or more commands failed."
+    exit 1
+else
+    echo "All commands executed successfully."
+fi
