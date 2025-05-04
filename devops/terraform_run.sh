@@ -19,7 +19,7 @@ CERT_PATH="$1"
 KEY_PATH="$2" 
 
 # --- EU-WEST-2 Profile ---
-# aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
+aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
 aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \
   --private-key $KEY_PATH \
@@ -29,7 +29,7 @@ aws configure set credential_process "$(pwd)/aws_signing_helper credential-proce
   --region eu-west-2" --profile "$PROFILE_ENV"
 
 # --- US-EAST-1 Profile ---
-# aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
+aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
 aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \
   --private-key $KEY_PATH \
