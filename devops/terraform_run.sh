@@ -15,10 +15,8 @@ run_command() {
 }
 
 
-#!/bin/bash
-
 CERT_PATH="$1"
-KEY_PATH="$2"
+KEY_PATH="$2" 
 
 # --- EU-WEST-2 Profile ---
 # aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
@@ -181,12 +179,46 @@ run_command terraform -chdir=devops/budgets apply -auto-approve
 run_command terraform -chdir=devops/stripe_webhook init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/stripe_webhook/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/stripe_webhook apply -auto-approve
 
-echo "Running first serverless script"
+# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
+npm i -g serverless@3.15.2
+npm i -g @serverless/compose
+npm i serverless-aws-documentation
+npm i serverless-domain-manager
+npm i serverless-dynamodb-autoscaling
+npm i serverless-dynamodb-ttl
+npm i serverless-offline
+npm i serverless-package-external
+npm i serverless-python-requirements
+npm i serverless-appsync-plugin
+export config=serverless.yml
+unset AWS_PROFILE
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
-run_command ./devops/serverless-1.sh
 
-echo "Running terrafom  script"
 
+cd services/cognito-auth
+run_command sls deploy --region $REGION --stage $STAGE 
+cd ../..
+cd services/users
+run_command sls deploy --region $REGION --stage $STAGE 
+cd ../..
+# cd services/lambda-authorizer
+# run_command sls deploy --region $REGION --stage $STAGE
+# cd ../..
+cd services/auctions
+run_command sls deploy --region $REGION --stage $STAGE
+cd ../..
+# terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+export AWS_PROFILE=$PROFILE_ENV
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
@@ -205,10 +237,76 @@ else
 fi
 run_command terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+# terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+# terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
+unset AWS_PROFILE
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
-echo "Running second serverless script"
-run_command ./devops/serverless-2.sh
+if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
+  cd services/bdd-api
+  sls deploy --region $REGION --stage $STAGE
+  cd ../..
+fi
+run_command sls deploy --stage ${STAGE} --max-concurrency 5
+cd services/quicksight-dashboards
+run_command sls deploy --region $REGION --stage $STAGE
+cd ../..
 
+
+if [ "${STAGE}" = "prod" ]; then
+    GROUP_ID="websocket-redis-cluster-enabled"
+elif [ "${STAGE}" = "pre-production" ]; then
+    GROUP_ID="new-websocket-redis-cluster-enabled"
+fi
+
+
+
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+    run_command aws elasticache modify-replication-group \
+    --replication-group-id $GROUP_ID \
+    --region eu-west-2 \
+    --log-delivery-configurations '[
+        {
+            "LogType": "slow-log",
+            "DestinationType": "cloudwatch-logs",
+            "DestinationDetails": {
+                "CloudWatchLogsDetails": {
+                "LogGroup": "redis-slow-logs"
+                }
+            },
+            "LogFormat": "json",
+            "Enabled": true
+        },
+        {
+            "LogType": "engine-log",
+            "DestinationType": "cloudwatch-logs",
+            "DestinationDetails": {
+                "CloudWatchLogsDetails": {
+                "LogGroup": "redis-engine-logs"
+                }
+            },
+            "LogFormat": "json",
+            "Enabled": true
+        }
+    ]' \
+    --apply-immediately
+
+fi
+if [ "${STAGE}" = "pre-production" ]; then
+    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
+fi
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+    cd devops/disaster_recovery
+    run_command ./s3_versioning.sh
+fi
 
 if [ $overall_status -ne 0 ]; then
     echo "One or more commands failed."
