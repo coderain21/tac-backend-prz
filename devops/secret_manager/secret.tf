@@ -1,14 +1,14 @@
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
 
 
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "quiksight-account"   # Specify a default AWS region here
   profile = "${var.QUICKSIGHT_ACCOUNT}"
 }
