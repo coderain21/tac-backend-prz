@@ -82,6 +82,24 @@ run_command terraform -chdir=devops/dependency/python init
 run_command terraform -chdir=devops/dependency/python apply -auto-approve
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
+    --certificate $CERT_PATH \
+    --private-key $KEY_PATH \
+    --trust-anchor-arn $TRUST_ANCHOR_ARN \
+    --profile-arn $PROFILE_ARN \
+    --role-arn $ROLE_ARN \
+    --region eu-west-2" --profile "$PROFILE_ENV"
+
+    # --- US-EAST-1 Profile ---
+    # aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
+    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
+    --certificate $CERT_PATH \
+    --private-key $KEY_PATH \
+    --trust-anchor-arn $TRUST_ANCHOR_ARN_US \
+    --profile-arn $PROFILE_ARN_US \
+    --role-arn $ROLE_ARN_US \
+    --region us-east-1" --profile "$PROFILE_ENV-us"
+
     run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongodb apply -auto-approve
     run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"

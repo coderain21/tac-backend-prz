@@ -102,6 +102,7 @@ resource "aws_default_subnet" "default_az1" {
 }
 data "aws_ssm_parameter" "instance_class" {
   name = "INSTANCE_CLASS"
+  provider = aws.deployment-eu
 }
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
