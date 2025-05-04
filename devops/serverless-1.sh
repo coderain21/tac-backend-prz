@@ -28,6 +28,7 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
+
 eval $( $(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \
   --private-key $KEY_PATH \

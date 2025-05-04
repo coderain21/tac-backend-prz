@@ -2,7 +2,7 @@
 
 # set -a            
 # source .env
-# set +a
+# set +as
 overall_status=0
 run_command() {
     "$@"
@@ -15,16 +15,31 @@ run_command() {
 }
 
 
+#!/bin/bash
+
 CERT_PATH="$1"
-KEY_PATH="$2" 
+KEY_PATH="$2"
 
-apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
+# --- EU-WEST-2 Profile ---
+# aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
+  --region eu-west-2" --profile "$PROFILE_ENV"
 
-aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
-aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
-export AWS_PROFILE=$PROFILE_ENV
+# --- US-EAST-1 Profile ---
+# aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN_US \
+  --profile-arn $PROFILE_ARN_US \
+  --role-arn $ROLE_ARN_US \
+  --region us-east-1" --profile "$PROFILE_ENV-us"
+
 
 echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
@@ -45,8 +60,12 @@ echo "$log_bucket"
 
 
 # Print AWS CLI configurations for verification
-aws configure list --profile $PROFILE_MAIN
-aws configure list --profile $PROFILE_ENV
+aws configure list --profile "$PROFILE_MAIN"
+aws configure list --profile "$PROFILE_ENV"
+aws sts get-caller-identity --profile "$PROFILE_ENV"
+aws configure list --profile "$PROFILE_ENV-us"
+aws sts get-caller-identity --profile "$PROFILE_ENV-us"
+
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -75,21 +94,12 @@ fi
 if [ "${STAGE}" = "pre-production" ] ; then
     run_command terraform -chdir=devops/vpc init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/vpc/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/vpc apply -auto-approve
-    # terraform -chdir=devops/ecs init
-    # terraform -chdir=devops/ecs destroy -auto-approve 
-    # terraform -chdir=devops/redis-cluster init
-    # terraform -chdir=devops/redis-cluster destroy -auto-approve
-    # terraform -chdir=devops/mongodb init
-    # terraform -chdir=devops/mongodb destroy -auto-approve
     run_command terraform -chdir=devops/mongodb_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongodb_new apply -auto-approve
     run_command terraform -chdir=devops/redis_cluster_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis_cluster_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/redis_cluster_new apply -auto-approve
     run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/ecs_new apply -auto-approve
-fi
-
-if [ "${STAGE}" = "pre-production" ]; then
     run_command terraform -chdir=devops/mongobetween init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongobetween apply -auto-approve
 
@@ -122,6 +132,7 @@ if [ "${STAGE}" = "pre-production" ]; then
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
     run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
 fi
+
 
 if [ "${STAGE}" = "prod"  ]; then
 
@@ -157,6 +168,8 @@ if [ "${STAGE}" = "prod"  ]; then
     run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
     run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command terraform -chdir=devops/cloudwatch init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
 
 run_command terraform -chdir=devops/secret_manager init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/secret_manager/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -167,12 +180,12 @@ run_command terraform -chdir=devops/budgets init -backend-config="bucket=${log_b
 run_command terraform -chdir=devops/budgets apply -auto-approve
 run_command terraform -chdir=devops/stripe_webhook init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/stripe_webhook/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/stripe_webhook apply -auto-approve
-if [ "${STAGE}" = "prod" ]; then
-    run_command terraform -chdir=devops/cloudwatch init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/cloudwatch apply -auto-approve
-fi
+
+echo "Running first serverless script"
+
 run_command ./devops/serverless-1.sh
 
+echo "Running terrafom  script"
 
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
@@ -192,6 +205,8 @@ else
 fi
 run_command terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
+
+echo "Running second serverless script"
 run_command ./devops/serverless-2.sh
 
 
