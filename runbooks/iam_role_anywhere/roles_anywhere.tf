@@ -7,6 +7,14 @@ provider "aws" {
 }
 
 
+terraform {
+  backend "s3" {
+    region       = "eu-west-2"  # Replace with the appropriate AWS region
+    encrypt      = true
+    use_lockfile = true  # Enable the S3 locking feature
+  }
+}
+
 # -----------------------------
 # 1. Create a Trust Anchor
 # -----------------------------
