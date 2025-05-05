@@ -2621,7 +2621,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "sthuthi+test@7edge.com"
+            "example": "sandhyashri+9999@7edge.com"
           }
         ],
         "responses": {
