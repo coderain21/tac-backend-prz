@@ -18,12 +18,6 @@ provider "aws" {
   profile = "${var.ROUTE53_ACCOUNT}"
 }
 
-provider "aws" {
-  region = "us-east-1"
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
-}
-
 terraform {
   backend "s3" {
     region       = "eu-west-2"  # Replace with the appropriate AWS region
