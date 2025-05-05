@@ -68,7 +68,7 @@ exports.handler = async (event) => {
         return {
             statusCode: 200,
             headers,
-            body: template, // Assuming mailchimpHelper returns the template in the proper format
+            body: JSON.stringify({ email_template: template }), // Assuming mailchimpHelper returns the template in the proper format
         }
     } catch (error) {
         // If the template is not found and a default template is specified, try that instead
@@ -76,15 +76,13 @@ exports.handler = async (event) => {
             try {
                 // Fetch the default template
                 const fallbackTemplate = await mailchimpHelper.fetchMandrillTemplate(defaultTemplateName)
+                const responseTemplate = { email_template: fallbackTemplate, default: true }
 
                 // Return the fallback template directly without stringifying
                 return {
                     statusCode: 200,
-                    headers: {
-                        ...headers,
-                        'X-Default-Template': 'true', // Add header to indicate this is the default template
-                    },
-                    body: fallbackTemplate,
+                    headers,
+                    body: JSON.stringify(responseTemplate),
                 }
             } catch (fallbackError) {
                 console.error(`Failed to fetch default template '${defaultTemplateName}':`, fallbackError.message)

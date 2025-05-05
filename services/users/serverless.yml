@@ -75,6 +75,7 @@ provider:
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     MAILCHIMP_API_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}  #ADDED THIS FOR MAILCHIMP API CALL
+    MAILCHIMP_ADDRESS: ${ssm:MAILCHIMP_ADDRESS}
     ACCESS_LOG_COLLECTION: ${opt:stage, self:provider.stage}-access-logs
     SUB_ENC_KEY: ${ssm:SUB_ENC_KEY}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
@@ -525,6 +526,24 @@ functions:
           method: get
           authorizer:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  create-mailchimp-template:
+    handler: handlers/create_template.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /create-template
+          method: post
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
 
 
 
