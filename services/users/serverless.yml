@@ -508,6 +508,25 @@ functions:
           path: /auth/login
           method: get
           cors: true
+  
+  get-mailchimp-template:
+    handler: handlers/get_template.handler
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /get-template/{template_name}
+          method: get
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+
 
 resources:
   Resources:
