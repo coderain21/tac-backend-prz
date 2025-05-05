@@ -97,6 +97,7 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_2" {
 }
 data "aws_ssm_parameter" "seller_cognito_id" {
   name = "SELLER_COGNITO_USERPOOL_ID"
+  provider = aws.deployment-eu
 }
 resource "aws_cognito_user_pool_domain" "seller" {
   domain          = "auth.seller.${local.sub_domain}"
@@ -120,6 +121,7 @@ resource "aws_route53_record" "auth_cognito_seller_A" {
 
 data "aws_ssm_parameter" "buyer_cognito_id" {
   name = "BUYER_COGNITO_USERPOOL_ID"
+  provider = aws.deployment-eu
 }
 resource "aws_cognito_user_pool_domain" "buyer" {
   domain          = "auth.${local.computed_variable}.${local.sub_domain}"
