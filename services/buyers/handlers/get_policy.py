@@ -40,7 +40,11 @@ def get_policy(event, context):
             }
 
         # auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
-        seller_info = seller_collection.find_one({'email_address': seller_email}, {"privacy_policy": 1, "_id": 0})
+        # Fetch required fields: privacy_policy, created_at, first_name, last_name
+        seller_info = seller_collection.find_one(
+            {'email_address': seller_email},
+            {"privacy_policy": 1, "created_at": 1, "first_name": 1, "last_name": 1, "_id": 0}
+        )
 
         print("seller_info", seller_info)
 
@@ -51,14 +55,22 @@ def get_policy(event, context):
                 "body": json.dumps({"message": "Seller not found"})
             }
 
-        # Ensure privacy_policy exists, default to empty string if not
-        if 'privacy_policy' not in seller_info:
-            seller_info['privacy_policy'] = ''
+        # Check if privacy_policy exists and is not empty
+        if seller_info.get('privacy_policy'):
+            # Return only the privacy policy if it exists and is not empty
+            response_data = {'privacy_policy': seller_info['privacy_policy']}
+        else:
+            # Return created_at, first_name, and last_name if privacy_policy is empty or missing
+            response_data = {
+                'created_at': seller_info.get('created_at'),
+                'first_name': seller_info.get('first_name'),
+                'last_name': seller_info.get('last_name')
+            }
 
         return {
             "statusCode": 200,
             "headers": headers,
-            "body": json.dumps({'data': seller_info}, cls=Encoder)
+            "body": json.dumps({'data': response_data}, cls=Encoder)
             }
     except Exception as e:
         print("Internal Server Error", str(e))
