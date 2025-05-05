@@ -1,24 +1,12 @@
- 
-
-  
-#AWS Provider with profile main account
+#AWS Provider with profile Stage account
 provider "aws" {
-  region = var.REGION
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  region ="eu-west-2"
+  alias = "deployment-eu"   # Specify a default AWS region here
+  profile = "indyauction-${var.STAGE}"
 }
-
 resource "random_password" "password" {
   length           = 16
   special          = false
-}
-
-
-#AWS Provider with profile Stage account
-provider "aws" {
-  region = var.REGION
-  alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
 }
 
 terraform {
@@ -114,6 +102,7 @@ resource "aws_default_subnet" "default_az1" {
 }
 data "aws_ssm_parameter" "instance_class" {
   name = "INSTANCE_CLASS"
+  provider = aws.deployment-eu
 }
 resource "aws_docdb_cluster_instance" "cluster_instances" {
   identifier         = "docdb-mongodb-instance"
