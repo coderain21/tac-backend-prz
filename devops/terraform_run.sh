@@ -30,7 +30,7 @@ echo "Enabling AWS_SDK_LOAD_CONFIG..."
 export AWS_SDK_LOAD_CONFIG=1 
 
 # # Configure AWS CLI profiles
-aws configure set region "eu-west-2" --profile "$$PROFILE_MAIN"
+aws configure set region "eu-west-2" --profile "$PROFILE_MAIN"
 run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
 aws configure set region "us-east-1" --profile "$PROFILE_MAIN-us"
 run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US" --profile "$PROFILE_MAIN-us"
@@ -47,14 +47,16 @@ log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
 # aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 
-run_command aws sts get-caller-identity --profile "$PROFILE_MAIN"
-run_command aws sts get-caller-identity --profile "$PROFILE_MAIN-us"
-run_command aws sts get-caller-identity --profile "$PROFILE_ENV"
+run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}"
+run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}-us"
+run_command aws sts get-caller-identity --profile "${PROFILE_ENV}"
 run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
 
 # Print AWS CLI configurations for verification
-aws configure list --profile $PROFILE_MAIN
-aws configure list --profile $PROFILE_ENV
+aws configure list --profile"$PROFILE_MAIN"
+aws configure list --profile "$PROFILE_ENV"
+aws configure list --profile"$PROFILE_MAIN-us"
+aws configure list --profile "$PROFILE_ENV-us"
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
