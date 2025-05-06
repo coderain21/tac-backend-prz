@@ -146,9 +146,8 @@ stages:
             chmod +x aws_signing_helper
           displayName: Install AWS Signer
         - bash: |
-            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "indyauction-dev"
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
             echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
-            echo "##vso[task.setvariable variable=AWS_PROFILE]indyauction-dev"
           displayName: Obtain AWS Credentials
         - script: |
             ./envs.sh
@@ -184,17 +183,6 @@ stages:
           inputs:
             artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)'
-        - script: |
-            source .env
-            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
-            npm i -g dredd
-            ./api-testing.sh
-            if [ $? -ne 0 ]; then
-              echo "API testing failed"
-              exit 1
-            fi
-            ./doc.sh
-          displayName: Unit Testing
         - task: DownloadSecureFile@1
           name: Certificate
           displayName: 'Download certificate'
@@ -209,6 +197,21 @@ stages:
             wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
             chmod +x aws_signing_helper
           displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+          displayName: Obtain AWS Credentials
+        - script: |
+            source .env
+            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
+            npm i -g dredd
+            ./api-testing.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
+            ./doc.sh
+          displayName: Unit Testing
         - bash: |
             aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile "indyauction-main"
             echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"

@@ -30,7 +30,7 @@ collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
 # access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
-admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
+# admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
 
 
 class Encoder(json.JSONEncoder):
@@ -170,7 +170,7 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        admin_record = admin_collection.find_one({"email_address": email_address})
+        # admin_record = admin_collection.find_one({"email_address": email_address})
         auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
         auction_extension_type = request_body.get('extension_type', None)
