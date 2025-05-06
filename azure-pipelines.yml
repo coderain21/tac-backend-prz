@@ -203,11 +203,16 @@ stages:
           displayName: Obtain AWS Credentials
         - script: |
             source .env
-            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
-            npm i -g dredd
+            aws configure list --profile $PROFILE_ENV
             export AWS_PROFILE="$PROFILE_ENV"
             aws sts get-caller-identity --profile "$AWS_PROFILE"
+            cp "$(Privatekey.secureFilePath)" "$(System.DefaultWorkingDirectory)/private.key"
+            chmod 600 "$(System.DefaultWorkingDirectory)/private.key"
+            cp "$(Certificate.secureFilePath)" "$(System.DefaultWorkingDirectory)/certificate.crt"
+            chmod 600 "$(System.DefaultWorkingDirectory)/certificate.crt"
             ls -l ./private.key
+            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
+            npm i -g dredd
             ./api-testing.sh
             if [ $? -ne 0 ]; then
               echo "API testing failed"
