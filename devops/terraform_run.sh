@@ -47,6 +47,10 @@ log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
 # aws s3 sync $log_bucket . --profile $PROFILE_MAIN
 
+run_command aws sts get-caller-identity --profile "$PROFILE_MAIN"
+run_command aws sts get-caller-identity --profile "$PROFILE_MAIN-us"
+run_command aws sts get-caller-identity --profile "$PROFILE_ENV"
+run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
 
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
