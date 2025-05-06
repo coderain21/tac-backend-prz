@@ -160,24 +160,24 @@ resource "aws_ssm_parameter" "redis_host_parameter" {
 ################################################### FOR PRE-PRODUCTION AND DEV  #######################################################
 
 data "aws_ssm_parameter" "subnet_id" {
-  
+  count   = local.is_deployment_stage ? 0 : 1
   name = "PUBLIC_SUBNET_ID"
   provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "vpc_id" {
+  count   = local.is_deployment_stage ? 0 : 1
   name     = "VPC_ID"
   provider = aws.deployment-eu
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
+  count   = local.is_deployment_stage ? 0 : 1
   name       = "new-redis-subnet-group-cluster-enabled"
   subnet_ids = [data.aws_ssm_parameter.subnet_id.value]
   provider = aws.deployment-eu
 }
 
-
-
-
 resource "aws_security_group" "security_groups" {
+  count   = local.is_deployment_stage ? 0 : 1
   name        = "new-redis-security-group-cluster-enabled"
   vpc_id = data.aws_ssm_parameter.vpc_id.value
   description = "Allow inbound traffic on ports 22, 80, 443, and 6379"
@@ -220,19 +220,23 @@ resource "aws_security_group" "security_groups" {
 }
 
 data "aws_ssm_parameter" "redis_node_type" {
+  count   = local.is_deployment_stage ? 0 : 1
   name = "REDIS_NODE_TYPE"
   provider                  = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_groups" {
+  count   = local.is_deployment_stage ? 0 : 1
   name = "REDIS_NODE_GROUPS"
   provider                  = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_replica_groups" {
+  count   = local.is_deployment_stage ? 0 : 1
   name = "REDIS_NODE_REPLICA_GROUPS"
   provider                  = aws.deployment-eu
 }
 
 resource "aws_elasticache_parameter_group" "custom_redis" {
+  count   = local.is_deployment_stage ? 0 : 1
   name   = "custom-redis7-cluster"
   family = "redis7"
   provider = aws.deployment-eu
@@ -247,6 +251,7 @@ resource "aws_elasticache_parameter_group" "custom_redis" {
   }
 }
 resource "aws_elasticache_replication_group" "websocket" {
+  count   = local.is_deployment_stage ? 0 : 1
   automatic_failover_enabled  = true
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
   replication_group_id        = "new-websocket-redis-cluster-enabled"
@@ -264,6 +269,7 @@ resource "aws_elasticache_replication_group" "websocket" {
   provider                  = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "distribution_id" {
+  count   = local.is_deployment_stage ? 0 : 1
   name  = "REDIS_CLUSTER_ENDPOINT"
   type  = "String"
   value = aws_elasticache_replication_group.websocket.configuration_endpoint_address
@@ -274,6 +280,7 @@ locals {
   redis_host     = split(":", aws_elasticache_replication_group.websocket.configuration_endpoint_address)[0]
 }
 resource "aws_ssm_parameter" "redis_host_parameter" {
+  count   = local.is_deployment_stage ? 0 : 1
   name  = "REDIS_CLUSTER_CONNECTION_URL"
   type  = "String"
   value = "redis://${local.redis_host}:6379"
