@@ -53,10 +53,10 @@ run_command aws sts get-caller-identity --profile "${PROFILE_ENV}"
 run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
 
 # Print AWS CLI configurations for verification
-aws configure list --profile"$PROFILE_MAIN"
-aws configure list --profile "$PROFILE_ENV"
-aws configure list --profile"$PROFILE_MAIN-us"
-aws configure list --profile "$PROFILE_ENV-us"
+aws configure list --profile "${PROFILE_MAIN}"
+aws configure list --profile "${PROFILE_MAIN}-us"
+aws configure list --profile "${PROFILE_ENV}"
+aws configure list --profile "${PROFILE_ENV}-us"
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
