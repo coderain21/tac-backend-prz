@@ -203,6 +203,7 @@ stages:
           displayName: Obtain AWS Credentials
         - script: |
             source .env
+            aws sts get-caller-identity --profile "$AWS_PROFILE"
             pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
             npm i -g dredd
             ./api-testing.sh
