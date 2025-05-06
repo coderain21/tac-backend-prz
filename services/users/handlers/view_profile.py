@@ -4,6 +4,7 @@ import json
 # allow-wildcard-with-all=yes
 from lib.mongodb_python_helper import view_profile
 from lib.common_helper import Encoder
+from urllib.parse import unquote
 
 headers = {
     'Content-Type': 'application/json',
@@ -32,8 +33,7 @@ def view_customer(event, context):
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
-            path_email_address = event['pathParameters']['email'].replace(
-            "%40", "@")
+            path_email_address = unquote(event['pathParameters']['email'])
             if email_address != path_email_address:
                 return {
                     "headers": headers,

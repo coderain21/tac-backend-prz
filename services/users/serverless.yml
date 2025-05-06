@@ -281,8 +281,8 @@ functions:
               path: /{email}
               method: PATCH
               authorizer:
-              type: COGNITO_USER_POOLS
-              authorizerId: { Ref: MyApiGatewayAuthorizer }
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   generate_token:
     handler: handlers/generate.generate_token
@@ -337,8 +337,8 @@ functions:
               path: /password-update/{email}
               method: PATCH
               authorizer:
-              type: COGNITO_USER_POOLS
-              authorizerId: { Ref: MyApiGatewayAuthorizer }
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
 
   update-plans:
         handler: handlers/update_plan.updatePlan
@@ -355,8 +355,8 @@ functions:
               path: /update-plan/{email}
               method: PATCH
               authorizer:
-              type: COGNITO_USER_POOLS
-              authorizerId: { Ref: MyApiGatewayAuthorizer }
+                type: COGNITO_USER_POOLS
+                authorizerId: { Ref: MyApiGatewayAuthorizer }
   
   kyb_generate_token:
     handler: handlers/kyb_generate.generate_token
