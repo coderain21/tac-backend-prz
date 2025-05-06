@@ -185,8 +185,8 @@ def update_order(payment_intent, update_data):
                         "country": existing_order['billing_address']['country'],
                         "zip_code": existing_order['billing_address']['postal_code'],
                         "email_address": buyer_email,
-                        "seller_name": seller_name,      
-                        "currency": currency, 
+                        "seller_name": seller_name,
+                        "currency": currency,
                         "amount_paid": amount_paid,
                         "lots": lots_list,
                     }
