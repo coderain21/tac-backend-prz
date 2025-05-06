@@ -76,6 +76,10 @@ module.exports.updateUserInformation = async (event) => {
                 const updateResult = await Auction.updateMany(filter, update)
                 console.log(updateResult, 'updateResult')
             }
+            // Check if privacy_policy is being updated and add timestamp
+            if (request_body.privacy_policy !== undefined && request_body.privacy_policy !== null) {
+                request_body.policy_updated_at = new Date()
+            }
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
             if (update_user_information.acknowledged) {
                 await cognitoHelper.cognitoUpdate(request_body, email)

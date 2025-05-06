@@ -131,6 +131,25 @@ stages:
       pool:
         vmImage: "ubuntu-22.04"
       steps:
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
+            chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "indyauction-dev"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+            echo "##vso[task.setvariable variable=AWS_PROFILE]indyauction-dev"
+          displayName: Obtain AWS Credentials
         - script: |
             ./envs.sh
           displayName: 'Copy Environment Files'
@@ -141,7 +160,7 @@ stages:
   jobs:
     - job: APITesting
       displayName: "Unit Testing"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
         vmImage: "ubuntu-22.04"
       steps:
@@ -176,11 +195,29 @@ stages:
             fi
             ./doc.sh
           displayName: Unit Testing
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
+            chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile "indyauction-main"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+            echo "##vso[task.setvariable variable=AWS_PROFILE]indyauction-main"
+          displayName: Obtain AWS Credentials
         - script: |
-            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID_MAIN}
-            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY_MAIN}
-            aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation
-            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+            aws configure list --profile "indyauction-main"
+            aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation --profile "indyauction-main" 
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
           displayName:  Unit Testing Documentation
   
     - job: "dast"
@@ -221,26 +258,26 @@ stages:
   displayName: Deploy
   condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
   jobs:
-      - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'production'
-      - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'testing'
-      - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'staging' 
-      - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-          - template: devops/deploy-bidding.yml
-            parameters:
-              envName: 'testing'
-      - ${{ else }}:
-          - template: devops/deploy.yml
-            parameters:
-              envName: 'development'
+    - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'production'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'testing'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'staging' 
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+        - template: devops/deploy-bidding.yml
+          parameters:
+            envName: 'testing'
+    - ${{ else }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'development'
   
 
 # - stage: DisposableDeploy

@@ -2,14 +2,14 @@ data "external" "env" {
   program = ["./envs.sh"]
 }
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${var.STAGE}-us"
 }
 
 provider "aws" {
