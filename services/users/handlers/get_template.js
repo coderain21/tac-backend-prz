@@ -68,7 +68,7 @@ exports.handler = async (event) => {
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ email_template: template }), // Assuming mailchimpHelper returns the template in the proper format
+            body: JSON.stringify({ email_template: template, default: false }), // Assuming mailchimpHelper returns the template in the proper format
         }
     } catch (error) {
         // If the template is not found and a default template is specified, try that instead
@@ -89,7 +89,7 @@ exports.handler = async (event) => {
                 return {
                     statusCode: 404,
                     headers,
-                    body: `Neither '${templateName}' nor fallback template found`,
+                    body: ({ message: 'Template Not found' }),
                 }
             }
         }
@@ -99,7 +99,7 @@ exports.handler = async (event) => {
         return {
             statusCode: error.response?.status || 500,
             headers,
-            body: `Error fetching template: ${error.message}`,
+            body: JSON.stringify({ message: 'Internal Server Error' }),
         }
     }
 }
