@@ -14,17 +14,34 @@ run_command() {
     return $status
 }
 
+
+CERT_PATH="$1"
+KEY_PATH="$2" 
+
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-# # Configure AWS CLI profiles
-aws configure set profile.$PROFILE_MAIN.aws_access_key_id $AWS_ACCESS_KEY_ID_MAIN
-aws configure set profile.$PROFILE_MAIN.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_MAIN
+aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
+aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
+export AWS_PROFILE=$PROFILE_ENV
 
-aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+echo "Enabling AWS_SDK_LOAD_CONFIG..."
+export AWS_SDK_LOAD_CONFIG=1 
+
+# # Configure AWS CLI profiles
+aws configure set region "eu-west-2" --profile "$$PROFILE_MAIN"
+run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
+aws configure set region "us-east-1" --profile "$PROFILE_MAIN-us"
+run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US" --profile "$PROFILE_MAIN-us"
+
+
+# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
+# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 if [ "${STAGE}" = "pre-production" ] ; then
-    aws configure set profile.$AWS_ENV_QA.aws_access_key_id $AWS_ACCESS_KEY_ID_QA
-    aws configure set profile.$AWS_ENV_QA.aws_secret_access_key $AWS_SECRET_ACCESS_KEY_QA
+    echo "Setting up AWS credential process for QA profile"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
+    aws configure list --profile $AWS_ENV_QA
 fi
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
@@ -94,7 +111,7 @@ if [ "${STAGE}" = "pre-production" ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text  --region $REGION --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -130,7 +147,7 @@ if [ "${STAGE}" = "prod"  ]; then
     for param_name in "${parameter_names[@]}"; do
         echo "$param_name"
         # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --profile $PROFILE_ENV)
+        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --region $REGION --profile $PROFILE_ENV)
 
         # Set environment variable
         export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
@@ -170,15 +187,22 @@ npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
 export config=serverless.yml
-export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+unset AWS_PROFILE
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
+
 
 
 cd services/cognito-auth
-run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
 cd services/users
-run_command sls deploy --region $REGION --stage $STAGE
+run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
 # cd services/lambda-authorizer
 # run_command sls deploy --region $REGION --stage $STAGE
@@ -187,6 +211,10 @@ cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 # terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+unset AWS_ACCESS_KEY_ID
+unset AWS_SECRET_ACCESS_KEY
+unset AWS_SESSION_TOKEN
+export AWS_PROFILE=$PROFILE_ENV
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
@@ -225,6 +253,15 @@ run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 # terraform -chdir=devops/cognito_custom_domain apply -auto-approve
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
+unset AWS_PROFILE
+eval $( $(pwd)/aws_signing_helper credential-process \
+  --certificate $CERT_PATH \
+  --private-key $KEY_PATH \
+  --trust-anchor-arn $TRUST_ANCHOR_ARN \
+  --profile-arn $PROFILE_ARN \
+  --role-arn $ROLE_ARN \
+| jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
+
 if [ "${STAGE}" = "qa" ] || [ "${STAGE}" = "pre-production" ]; then
   cd services/bdd-api
   sls deploy --region $REGION --stage $STAGE
