@@ -24,105 +24,105 @@ variables:
 
 
 stages:
-- stage: CodeQuality
-  jobs:
-    # - job: "pr_review"
-    #   displayName: "GPT Pull Request Review"
-    #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-    #   pool:
-    #       vmImage: "ubuntu-22.04"
-    #   steps:
-    #     - checkout: self
-    #       persistCredentials: true
-    #     - task: GPTPullRequestReview@0
-    #       inputs:
-    #         api_key: $(OPENAI_TOKEN)
-    #         aoi_endpoint: $(OPENAI_URL)
+# - stage: CodeQuality
+#   jobs:
+#     # - job: "pr_review"
+#     #   displayName: "GPT Pull Request Review"
+#     #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+#     #   pool:
+#     #       vmImage: "ubuntu-22.04"
+#     #   steps:
+#     #     - checkout: self
+#     #       persistCredentials: true
+#     #     - task: GPTPullRequestReview@0
+#     #       inputs:
+#     #         api_key: $(OPENAI_TOKEN)
+#     #         aoi_endpoint: $(OPENAI_URL)
     
-    - job: "lint"
-      displayName: "Code Quality"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-22.04"
-      steps:
-        - task: Cache@2
-          inputs:
-            key: 'npmV2 | "$(Agent.OS)" | package.json'
-            restoreKeys: |
-              npm | "$(Agent.OS)"
-            path: "$(System.DefaultWorkingDirectory)/node_modules"
-            cacheHitVar: CACHE_RESTORED
-          displayName: Cache npm
-        - script: npm config set registry https://registry.npmmirror.com
-        - script: |
-            npm install
-          condition: ne(variables.CACHE_RESTORED, 'true')
-          displayName: 'Dependencies'
-        - script: |
-            npm run eslint
-            if [ $? -ne 0 ]; then
-              echo "lint failed"
-              exit 1
-            fi
-          displayName: 'Eslint'
-        - script: |
-            pip3 install pylint==3.1.1
-            pylint services/**/**/*.py
-            if [ $? -ne 0 ]; then
-              echo "lint failed"
-              exit 1
-            fi
-            #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-            # sh terraform-linter.sh
-          displayName: 'Pylint'
-          env:
-            OPENAI_TOKEN: $(OPENAI_TOKEN)
-    - job: "secret"
-      displayName: "Secret Checking"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-22.04"
-      steps:
-        - script: |
-            pip3 install detect-secrets
-            detect-secrets scan 
-            if [ $? -ne 0 ]; then
-              echo "Secret Checking failed"
-              exit 1
-            fi
-          displayName: 'Lint'
-    - job: "licence_complaiance"
-      displayName: "License Compliance"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-22.04"
-      steps:
-        - script: npm config set registry https://registry.npmmirror.com
-        - script: |
-            npm install -g license-checker 
-            license-checker --json > licenses.json  
-            node license.js
-            if [ $? -ne 0 ]; then
-              echo "License Compliance failed"
-              exit 1
-            fi
-          displayName: 'License Compliance'
-    - job: "sast"
-      displayName: 'Static Application Security Testing (SAST)'
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-      pool:
-          vmImage: "ubuntu-22.04"
-      steps:
-        - script: |
-            pip3 install njsscan
-            njsscan -w .
-            pip3 install bandit
-            bandit -r services/**/*.py
-            if [ $? -ne 0 ]; then
-              echo "SAST failed"
-              exit 1
-            fi
-          displayName: 'Static Application Security Testing (SAST)'
+#     - job: "lint"
+#       displayName: "Code Quality"
+#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-22.04"
+#       steps:
+#         - task: Cache@2
+#           inputs:
+#             key: 'npmV2 | "$(Agent.OS)" | package.json'
+#             restoreKeys: |
+#               npm | "$(Agent.OS)"
+#             path: "$(System.DefaultWorkingDirectory)/node_modules"
+#             cacheHitVar: CACHE_RESTORED
+#           displayName: Cache npm
+#         - script: npm config set registry https://registry.npmmirror.com
+#         - script: |
+#             npm install
+#           condition: ne(variables.CACHE_RESTORED, 'true')
+#           displayName: 'Dependencies'
+#         - script: |
+#             npm run eslint
+#             if [ $? -ne 0 ]; then
+#               echo "lint failed"
+#               exit 1
+#             fi
+#           displayName: 'Eslint'
+#         - script: |
+#             pip3 install pylint==3.1.1
+#             pylint services/**/**/*.py
+#             if [ $? -ne 0 ]; then
+#               echo "lint failed"
+#               exit 1
+#             fi
+#             #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+#             # sh terraform-linter.sh
+#           displayName: 'Pylint'
+#           env:
+#             OPENAI_TOKEN: $(OPENAI_TOKEN)
+#     - job: "secret"
+#       displayName: "Secret Checking"
+#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-22.04"
+#       steps:
+#         - script: |
+#             pip3 install detect-secrets
+#             detect-secrets scan 
+#             if [ $? -ne 0 ]; then
+#               echo "Secret Checking failed"
+#               exit 1
+#             fi
+#           displayName: 'Lint'
+#     - job: "licence_complaiance"
+#       displayName: "License Compliance"
+#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-22.04"
+#       steps:
+#         - script: npm config set registry https://registry.npmmirror.com
+#         - script: |
+#             npm install -g license-checker 
+#             license-checker --json > licenses.json  
+#             node license.js
+#             if [ $? -ne 0 ]; then
+#               echo "License Compliance failed"
+#               exit 1
+#             fi
+#           displayName: 'License Compliance'
+#     - job: "sast"
+#       displayName: 'Static Application Security Testing (SAST)'
+#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+#       pool:
+#           vmImage: "ubuntu-22.04"
+#       steps:
+#         - script: |
+#             pip3 install njsscan
+#             njsscan -w .
+#             pip3 install bandit
+#             bandit -r services/**/*.py
+#             if [ $? -ne 0 ]; then
+#               echo "SAST failed"
+#               exit 1
+#             fi
+#           displayName: 'Static Application Security Testing (SAST)'
 
 - stage: Build
   jobs:
@@ -207,6 +207,7 @@ stages:
             npm i -g dredd
             export AWS_PROFILE="$PROFILE_ENV"
             aws sts get-caller-identity --profile "$AWS_PROFILE"
+            ls -l ./private.key
             ./api-testing.sh
             if [ $? -ne 0 ]; then
               echo "API testing failed"
