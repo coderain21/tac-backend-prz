@@ -22,7 +22,7 @@ parameter_names=(
 for param_name in "${parameter_names[@]}"; do
     echo "$param_name"
     # Get parameter value
-    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --region $REGION)
+    param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text --region "eu-west-2")
 
     # Append to .env file
     echo "${param_name##*/}=$param_value" >> .env  
