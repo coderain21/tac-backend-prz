@@ -5,6 +5,7 @@
  * This API creates or updates templates on the Mailchimp/Mandrill server
  */
 
+// eslint-disable-next-line import/no-extraneous-dependencies
 const axios = require('axios')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
