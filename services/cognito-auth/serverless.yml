@@ -189,6 +189,7 @@ functions:
       - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
       - ${ssm:SUBNET_ID}
+
   
 
 resources:
@@ -633,11 +634,8 @@ resources:
         EnablePropagateAdditionalUserContextData: false
         EnableTokenRevocation: true
         ExplicitAuthFlows:
-          - ALLOW_CUSTOM_AUTH
-          - ALLOW_REFRESH_TOKEN_AUTH
-          - ALLOW_USER_SRP_AUTH
           - ALLOW_ADMIN_USER_PASSWORD_AUTH
-          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
         IdTokenValidity: 5
         PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
