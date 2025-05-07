@@ -41,13 +41,24 @@ run_command aws configure set credential_process "$(pwd)/aws_signing_helper cred
 # aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
 if [ "${STAGE}" = "pre-production" ]; then
     echo "Setting up AWS credential process for QA profile"
-    aws configure set region "eu-west-2" --profile "$AWS_ENV_QA"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile "$AWS_ENV_QA"
-    aws configure list --profile "$AWS_ENV_QA"
+    aws configure set region "eu-west-2" --profile "$QUICKSIGHT_ACCOUNT"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile "$QUICKSIGHT_ACCOUNT"
+    aws configure list --profile "$QUICKSIGHT_ACCOUNT"
 elif [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     echo "Setting up AWS credential process for QuickSight account"
     aws configure set region "eu-west-2" --profile "$QUICKSIGHT_ACCOUNT"
     aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$QUICKSIGHT_ACCOUNT"
+fi
+
+if [ "${STAGE}" = "prod" ]; then
+    echo "Setting up AWS credential process for QA profile"
+    run_command aws configure set region "us-east-1" --profile "$ROUTE53_ACCOUNT"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US"  --profile "$ROUTE53_ACCOUNT"
+    run_command aws configure list --profile "$ROUTE53_ACCOUNT"
+elif [ "${STAGE}" = "pre-production" ] || [ "${STAGE}" = "qa" ]; then
+    echo "Setting up AWS credential process for QuickSight account"
+    run_command aws configure set region "us-east-1" --profile "$ROUTE53_ACCOUNT"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
 fi
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
