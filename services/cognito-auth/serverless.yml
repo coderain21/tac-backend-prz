@@ -190,6 +190,21 @@ functions:
       subnetIds:
       - ${ssm:SUBNET_ID}
 
+  admin-pre-signup:
+    handler: handlers/admin_pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-indyauction-admin
+          trigger: PreSignUp
+          existing: true
+
   
 
 resources:
@@ -634,8 +649,11 @@ resources:
         EnablePropagateAdditionalUserContextData: false
         EnableTokenRevocation: true
         ExplicitAuthFlows:
-          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_CUSTOM_AUTH
           - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_ADMIN_USER_PASSWORD_AUTH
+          - ALLOW_USER_PASSWORD_AUTH
         IdTokenValidity: 5
         PreventUserExistenceErrors: ENABLED
         RefreshTokenValidity: 30
