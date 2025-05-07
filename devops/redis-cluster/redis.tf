@@ -1,7 +1,7 @@
 #AWS Provider with profile Stage account
 provider "aws" {
   region = var.REGION
-  alias = "deployment-us"   # Specify a default AWS region here
+  alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
 
@@ -15,17 +15,17 @@ terraform {
 
 data "aws_vpc" "default" {
   default = true
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_default_subnet" "default_az1" {
   availability_zone = "eu-west-2c"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
   subnet_ids = [resource.aws_default_subnet.default_az1.id]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "aws_security_group" "security_groups" {
@@ -66,25 +66,25 @@ resource "aws_security_group" "security_groups" {
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
   }
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 data "aws_ssm_parameter" "redis_node_type" {
   name = "REDIS_NODE_TYPE"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_groups" {
   name = "REDIS_NODE_GROUPS"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_replica_groups" {
   name = "REDIS_NODE_REPLICA_GROUPS"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 resource "aws_elasticache_parameter_group" "custom_redis" {
   name   = "custom-redis7-cluster"
   family = "redis7"
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 
   parameter {
     name  = "maxmemory-policy"
@@ -110,13 +110,13 @@ resource "aws_elasticache_replication_group" "websocket" {
   snapshot_window            = "04:00-05:00"
   maintenance_window         = "sun:01:00-sun:03:00"
   apply_immediately          = true
-  provider                  = aws.deployment-us
+  provider                  = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "distribution_id" {
   name  = "REDIS_CLUSTER_ENDPOINT"
   type  = "String"
   value = aws_elasticache_replication_group.websocket.configuration_endpoint_address
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true 
 }
 locals {
@@ -127,5 +127,5 @@ resource "aws_ssm_parameter" "redis_host_parameter" {
   type  = "String"
   value = "redis://${local.redis_host}:6379"
   overwrite = true 
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }

@@ -22,22 +22,6 @@ collection = db[os.environ["BUYER_COLLECTION"]]
 
 def add_address(event, context):
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
@@ -48,12 +32,7 @@ def add_address(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # client = MongoClient(
-                    #   os.environ['MONGO_CLIENT'],
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                    #     )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ["BUYER_COLLECTION"]]
+
         data = event['queryStringParameters']
         seller_email = data['seller_email']
         update_data={}

@@ -28,15 +28,6 @@ def view_bidder(event, context):
     try:
         # Extract bidder ID from the path parameter
         bidder_id = ObjectId(event['pathParameters']['id'])
-
-        # Retrieve bidder details from the database
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
         projection = {
             'password': 0
         }
