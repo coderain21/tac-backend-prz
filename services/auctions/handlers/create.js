@@ -13,7 +13,7 @@ const Users = require('../entities/Users')
 const Auction = require('../entities/Auction')
 const Counter = require('../entities/Counter')
 const helpers = require('../lib/helper')
-const AccessLogs = require('../entities/AccessLogs')
+// const AccessLogs = require('../entities/AccessLogs')
 
 let connection = null
 
@@ -35,20 +35,20 @@ module.exports.create_auction = async (event) => {
         const auction = await mongoConnection.save(request_body, Auction)
         if (auction) {
             /* Start: Saving the Access logs */
-            const accessLog = {
-                actor_id: get_user[0].seller_id,
-                updated_by: {
-                    type: 'Seller',
-                    name: request_body.seller_name,
-                    email_address: get_user[0].email_address,
-                },
-                section: {
-                    name: 'Auctions Management',
-                    action: 'Create',
-                    auction_id: request_body.auction_id,
-                },
-            }
-            await mongoConnection.save(accessLog, AccessLogs)
+            // const accessLog = {
+            //     actor_id: get_user[0].seller_id,
+            //     updated_by: {
+            //         type: 'Seller',
+            //         name: request_body.seller_name,
+            //         email_address: get_user[0].email_address,
+            //     },
+            //     section: {
+            //         name: 'Auctions Management',
+            //         action: 'Create',
+            //         auction_id: request_body.auction_id,
+            //     },
+            // }
+            // await mongoConnection.save(accessLog, AccessLogs)
             /* End: Saving the Access logs */
 
             update_value = {

@@ -3,7 +3,7 @@
   
 #AWS Provider with profile main account
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "main"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
@@ -16,14 +16,14 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "root-account"   # Specify a default AWS region here
   profile = "indyauction-main"
 }
 
 #AWS Provider with profile Stage account
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }

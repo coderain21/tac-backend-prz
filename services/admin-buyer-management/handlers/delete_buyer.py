@@ -1,5 +1,5 @@
 '''This api is used to delete the buyer by admin'''
-from datetime import datetime
+# from datetime import datetime
 import json
 import pymongo
 import os
@@ -21,8 +21,8 @@ db = client[os.environ['DATABASE']]
 buyer_collection = db[os.environ['BUYER_COLLECTION']]
 register_auction_collection = db[os.environ['REGISTER_AUCTION_COLLECTION']]
 wishlist_collection = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
-access_log_collection = db[os.environ['ACCESS_LOG_COLLECTION']]
-admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
+# access_log_collection = db[os.environ['ACCESS_LOG_COLLECTION']]
+# admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
 cognito_client = boto3.client('cognito-idp', region_name=os.environ['REGION'])
 
 def delete_buyer(event, context):
@@ -42,12 +42,12 @@ def delete_buyer(event, context):
         result = buyer_collection.delete_many({"email_address": buyer_email})
         register_result = register_auction_collection.delete_many({"email_address": buyer_email})
         wishlist_result = wishlist_collection.delete_many({"email_address": buyer_email})
-        admin_record = admin_collection.find_one({"email_address": email_address})
+        # admin_record = admin_collection.find_one({"email_address": email_address})
         cognito_delete = cognito_client.admin_delete_user(UserPoolId=os.environ["BUYER_COGNITO_USERPOOL_ID"], Username=buyer_email)
         print('cognito_delete', cognito_delete)
         print('result', result)
-        timestamp_ms = int(datetime.now().timestamp() * 1000)
-        formatted_timestamp = float(timestamp_ms)
+        # timestamp_ms = int(datetime.now().timestamp() * 1000)
+        # formatted_timestamp = float(timestamp_ms)
         # access_log_data = {
         #     "actor_id": admin_record.get('user_id'),
         #     "updated_by": {

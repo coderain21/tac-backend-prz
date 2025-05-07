@@ -2606,6 +2606,90 @@
           }
         ]
       }
+    },
+    "/policy/{seller_email}": {
+      "get": {
+        "tags": ["Auction Management"],
+        "summary": "View Privacy Policy of the seller",
+        "description": "View Privacy Policy of the seller",
+        "parameters": [
+          {
+            "name": "seller_email",
+            "in": "path",
+            "required": true,
+            "description": "Fetch privacy policy for the provided seller_email",
+            "schema": {
+              "type": "string"
+            },
+            "example": "sandhyashri+9999@7edge.com"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved privacy policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "privacy_policy": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "data": {
+                      "privacy_policy": "<div class='row'><div class='col'><div class='text-block-simple__rtf-big-mt medium-body-text'>...</div></div></div>"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Please provide seller email"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Seller not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
