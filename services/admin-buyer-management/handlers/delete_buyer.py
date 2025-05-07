@@ -3,6 +3,7 @@
 import json
 import pymongo
 import os
+import requests
 from lib.helper_python import send_pinpoint_email
 import boto3
 
@@ -67,6 +68,17 @@ def delete_buyer(event, context):
                                         os.environ["TEMPLATE_ARN_ADMIN_DELETE_BUYER"])
             print('email_status', email_status)
             # access_log_collection.insert_one(access_log_data)
+            payload = {
+                    "buyer": {"buyer_email": buyer_email}
+                    }
+            headersList = {
+                        "Accept": "*/*",
+                        "User-Agent": "API TEST", 
+                        "Content-Type": "application/json"
+                    }
+            req_url = os.environ.get("SOCKET_URL") + "/deleted"
+            response = requests.request("post", req_url, data=json.dumps(payload), headers=headersList)
+
             if email_status:
                 return {
                     "statusCode": 200,
