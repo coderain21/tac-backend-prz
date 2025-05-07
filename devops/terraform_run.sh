@@ -22,6 +22,7 @@ apt-get update && apt-get install python-is-python3 -y && apt-get install python
 
 aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
 aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+echo "Configuring US region profile"
 aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
 aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
 export AWS_PROFILE=$PROFILE_ENV
