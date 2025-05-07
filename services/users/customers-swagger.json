@@ -620,7 +620,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "sthuthi+testing@7edge.com"
+              "example": "aishwarya@7edge.com"
             }
           ],
           "requestBody": {
