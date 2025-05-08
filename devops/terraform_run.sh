@@ -52,13 +52,13 @@ fi
 
 if [ "${STAGE}" = "prod" ]; then
     echo "Setting up AWS credential process for QA profile"
-    run_command aws configure set region "us-east-1" --profile "$ROUTE53_ACCOUNT"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US"  --profile "$ROUTE53_ACCOUNT"
-    run_command aws configure list --profile "$ROUTE53_ACCOUNT"
+    run_command aws configure set region "us-east-1" --profile "$TF_VAR_ROUTE53_ACCOUNT"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US"  --profile "$TF_VAR_ROUTE53_ACCOUNT"
+    run_command aws configure list --profile "$TF_VAR_ROUTE53_ACCOUNT"
 elif [ "${STAGE}" = "pre-production" ] || [ "${STAGE}" = "qa" ]; then
     echo "Setting up AWS credential process for QuickSight account"
-    run_command aws configure set region "us-east-1" --profile "$ROUTE53_ACCOUNT"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
+    run_command aws configure set region "us-east-1" --profile "$TF_VAR_ROUTE53_ACCOUNT"
+    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$TF_VAR_ROUTE53_ACCOUNT"
 fi
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
