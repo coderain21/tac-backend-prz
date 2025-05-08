@@ -1,0 +1,55 @@
+service: redis-delete
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: eu-west-2
+  environment:
+    SNS_TOPIC_ARN: 
+      Ref: RedisDeleteAlertsTopic
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: 
+        Ref: RedisDeleteAlertsTopic
+    - Effect: Allow
+      Action:
+        - cognito-idp:*
+        - ses:*
+        - s3:*
+        - lambda:*
+      Resource: "*"
+resources:
+  Resources:
+    RedisDeleteAlertsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: redis-delete-alerts
+    
+    RedisDeleteAlertsSubscription:
+      Type: AWS::SNS::Subscription 
+      Properties:
+        TopicArn: !Ref RedisDeleteAlertsTopic
+        Protocol: email
+        Endpoint: your-email@example.com
+
+functions:
+  deleteOldRedisData:
+    handler: handler.delete_old_redis_data
+    events:
+      - schedule:
+          rate: cron(0 0 * * ? *)  # Run daily at midnight UTC
+          enabled: true
+    environment:
+      REDIS_HOST: "${ssm:REDIS_HOST, 'your-redis-host.cache.amazonaws.com'}"
+      REDIS_PORT: "6379"
+      SNS_TOPIC_ARN: 
+        Ref: RedisDeleteAlertsTopic
+
+plugins:
+  - serverless-python-requirements
