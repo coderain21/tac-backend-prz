@@ -20,46 +20,77 @@ KEY_PATH="$2"
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
-echo "Configuring US region profile"
-aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
-export AWS_PROFILE=$PROFILE_ENV
+# Function to resolve and write AWS credentials to ~/.aws/credentials
+resolve_and_write_credentials() {
+  local profile=$1
+  local cert_path=$2
+  local key_path=$3
+  local trust_anchor_arn=$4
+  local profile_arn=$5
+  local role_arn=$6
+  local region=$7
 
-echo "Enabling AWS_SDK_LOAD_CONFIG..."
-export AWS_SDK_LOAD_CONFIG=1 
+  echo "Fetching credentials for profile: $profile"
 
-# # Configure AWS CLI profiles
-aws configure set region "eu-west-2" --profile "$PROFILE_MAIN"
-run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
-aws configure set region "us-east-1" --profile "$PROFILE_MAIN-us"
-run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US" --profile "$PROFILE_MAIN-us"
+  # Fetch credentials using aws_signing_helper
+  creds=$(AWS_PROFILE="$profile" $(pwd)/aws_signing_helper credential-process --certificate "$cert_path" --private-key "$key_path" --trust-anchor-arn "$trust_anchor_arn" --profile-arn "$profile_arn" --role-arn "$role_arn")
 
+  # Check if the creds are not empty
+  if [[ -z "$creds" ]]; then
+    echo "Error: Failed to fetch credentials for $profile"
+    exit 1
+  fi
 
-# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+  # Write the credentials to ~/.aws/credentials
+  echo "Writing credentials to ~/.aws/credentials for profile: $profile"
+  echo "[$profile]" >> ~/.aws/credentials
+  echo "aws_access_key_id = $(echo "$creds" | jq -r .AccessKeyId)" >> ~/.aws/credentials
+  echo "aws_secret_access_key = $(echo "$creds" | jq -r .SecretAccessKey)" >> ~/.aws/credentials
+  echo "aws_session_token = $(echo "$creds" | jq -r .SessionToken)" >> ~/.aws/credentials
+
+  # Also configure region for the profile in the config file
+  echo "Setting region for profile: $profile to $region"
+  aws configure set region "$region" --profile "$profile"
+}
+
+# Ensure ~/.aws/credentials exists and is clean before writing new data
+> ~/.aws/credentials
+
+# Configure credentials for PROFILE_MAIN and related profiles
+resolve_and_write_credentials "$PROFILE_MAIN" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN" "$PROFILE_ARN_MAIN" "$ROLE_ARN_MAIN" "eu-west-2"
+resolve_and_write_credentials "$PROFILE_MAIN-us" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN_US" "$PROFILE_ARN_MAIN_US" "$ROLE_ARN_MAIN_US" "us-east-1"
+resolve_and_write_credentials "$PROFILE_ENV" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN" "$PROFILE_ARN" "$ROLE_ARN" "eu-west-2"
+resolve_and_write_credentials "$PROFILE_ENV-us" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_US" "$PROFILE_ARN_US" "$ROLE_ARN_US" "us-east-1"
+
+# Handle stage-specific logic for QUICKSIGHT_ACCOUNT and TF_VAR_ROUTE53_ACCOUNT
 if [ "${STAGE}" = "pre-production" ]; then
     echo "Setting up AWS credential process for QA profile"
-    aws configure set region "eu-west-2" --profile "$QUICKSIGHT_ACCOUNT"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile "$QUICKSIGHT_ACCOUNT"
-    aws configure list --profile "$QUICKSIGHT_ACCOUNT"
+    resolve_and_write_credentials "$QUICKSIGHT_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_QA" "$PROFILE_ARN_QA" "$ROLE_ARN_QA" "eu-west-2"
 elif [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     echo "Setting up AWS credential process for QuickSight account"
-    aws configure set region "eu-west-2" --profile "$QUICKSIGHT_ACCOUNT"
-    aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$QUICKSIGHT_ACCOUNT"
+    resolve_and_write_credentials "$QUICKSIGHT_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN" "$PROFILE_ARN" "$ROLE_ARN" "eu-west-2"
 fi
 
+# Handle Route53 Account for prod and pre-production
 if [ "${STAGE}" = "prod" ]; then
-    echo "Setting up AWS credential process for QA profile"
-    run_command aws configure set region "us-east-1" --profile "$TF_VAR_ROUTE53_ACCOUNT"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US"  --profile "$TF_VAR_ROUTE53_ACCOUNT"
-    run_command aws configure list --profile "$TF_VAR_ROUTE53_ACCOUNT"
+    echo "Setting up AWS credential process for Route53 account"
+    resolve_and_write_credentials "$TF_VAR_ROUTE53_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN_US" "$PROFILE_ARN_MAIN_US" "$ROLE_ARN_MAIN_US" "us-east-1"
 elif [ "${STAGE}" = "pre-production" ] || [ "${STAGE}" = "qa" ]; then
-    echo "Setting up AWS credential process for QuickSight account"
-    run_command aws configure set region "us-east-1" --profile "$TF_VAR_ROUTE53_ACCOUNT"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$TF_VAR_ROUTE53_ACCOUNT"
+    echo "Setting up AWS credential process for Route53 account"
+    resolve_and_write_credentials "$TF_VAR_ROUTE53_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_US" "$PROFILE_ARN_US" "$ROLE_ARN_US" "us-east-1"
 fi
+
+# Enabling AWS SDK config loading
+export AWS_SDK_LOAD_CONFIG=1
+
+# Confirm AWS credentials and configuration
+run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}"
+run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}-us"
+run_command aws sts get-caller-identity --profile "${PROFILE_ENV}"
+run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
+run_command aws sts get-caller-identity --profile "${QUICKSIGHT_ACCOUNT}"
+run_command aws sts get-caller-identity --profile "${TF_VAR_ROUTE53_ACCOUNT}"
+
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
 # aws s3 sync $log_bucket . --profile $PROFILE_MAIN
@@ -69,6 +100,9 @@ run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}-us"
 run_command aws sts get-caller-identity --profile "${PROFILE_ENV}"
 run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
 run_command aws sts get-caller-identity --profile "${QUICKSIGHT_ACCOUNT}"
+run_command aws sts get-caller-identity --profile "${TF_VAR_ROUTE53_ACCOUNT}"
+
+
 
 # Print AWS CLI configurations for verification
 aws configure list --profile "${PROFILE_MAIN}"
@@ -238,7 +272,6 @@ cd ../..
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
-export AWS_PROFILE=$PROFILE_ENV
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
