@@ -1,0 +1,43 @@
+service: redis-delete
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  region: ap-south-1  # Replace with your desired region
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "sns:Publish"
+      Resource: "arn:aws:sns:ap-south-1:YOUR_ACCOUNT_ID:redis-delete-alerts"
+    - Effect: "Allow" 
+      Action:
+        - "elasticache:Connect" # Corrected action for ElastiCache Redis
+      Resource: "*" # Adjust the resource to your Redis cluster ARN for better security
+
+resources:
+  Resources:
+    RedisDeleteAlertsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: redis-delete-alerts
+
+functions:
+  deleteOldRedisData:
+    handler: handler.delete_old_redis_data
+    events:
+      - schedule:
+          rate: cron(0 0 * * ? *) # Run daily at midnight UTC
+          enabled: true
+    environment:
+      REDIS_HOST: "your-redis-host.cache.amazonaws.com" # Replace with your Redis host
+      REDIS_PORT: "6379" # Added quotes for string value
+      SNS_TOPIC_ARN: !Ref RedisDeleteAlertsTopic
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
