@@ -14,6 +14,7 @@ terraform {
     use_lockfile = true  # Enable the S3 locking feature
   }
 }
+
 # -----------------------------
 # 1. Create a Trust Anchor
 # -----------------------------
