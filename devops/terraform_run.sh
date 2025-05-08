@@ -173,12 +173,12 @@ if [ "${STAGE}" = "pre-production" ]; then
         echo "Set $param_name as environment variable with value: $param_value"
     done <<< "$parameter_names"
 
-    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
+    echo docker login --username AWS -p $(aws ecr get-login-password --region $REGION --profile $PROFILE_ENV) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
     sh login.sh
     run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
     run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
-    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --region $REGION --profile $PROFILE_ENV --force-new-deployment
 fi
 
 if [ "${STAGE}" = "prod"  ]; then
@@ -209,12 +209,12 @@ if [ "${STAGE}" = "prod"  ]; then
         echo "Set $param_name as environment variable with value: $param_value"
     done <<< "$parameter_names"
 
-    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
+    echo docker login --username AWS -p $(aws ecr get-login-password --region $REGION --profile $PROFILE_ENV) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
     sh login.sh
     run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
     run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
-    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --region $REGION --profile $PROFILE_ENV --force-new-deployment
 fi
 
 run_command terraform -chdir=devops/secret_manager init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/secret_manager/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -335,10 +335,11 @@ fi
 
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
-    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region $REGION --profile $PROFILE_ENV
     run_command aws elasticache modify-replication-group \
     --replication-group-id $GROUP_ID \
-    --region eu-west-2 \
+    --region $REGION \
+    --profile $PROFILE_ENV \
     --log-delivery-configurations '[
         {
             "LogType": "slow-log",
@@ -367,7 +368,7 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
 
 fi
 if [ "${STAGE}" = "pre-production" ]; then
-    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
+    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region $REGION --profile $PROFILE_ENV
 fi
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     cd devops/disaster_recovery
