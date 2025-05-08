@@ -254,6 +254,10 @@ stages:
               pip3 install botocore
               mkdir test_results
               python dast.py 
+              if [ $? -ne 0 ]; then
+                echo "API testing failed"
+                exit 1
+              fi
           displayName: 'Dynamic Application Security Testing (DAST)'
 
     
