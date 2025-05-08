@@ -2607,21 +2607,21 @@
         ]
       }
     },
-    "/policy/{seller_email}": {
+    "/policy/{auction_id}": {
       "get": {
         "tags": ["Auction Management"],
         "summary": "View Privacy Policy of the seller",
         "description": "View Privacy Policy of the seller",
         "parameters": [
           {
-            "name": "seller_email",
+            "name": "auction_id",
             "in": "path",
             "required": true,
-            "description": "Fetch privacy policy for the provided seller_email",
+            "description": "Fetch privacy policy for the provided auction id",
             "schema": {
               "type": "string"
             },
-            "example": "sandhyashri+9999@7edge.com"
+            "example": "68121972e79ee8f259aa25ca"
           }
         ],
         "responses": {
