@@ -38,6 +38,28 @@ module.exports.updatePassword = async (event) => {
             connection = await mongoConnection.connect()
         }
         const email = decodeURIComponent(event.pathParameters.email)
+
+        // Authorization check to verify user has permission to update this profile
+        try {
+            const email_address = event.requestContext.authorizer.claims.email
+            if (email_address !== email) {
+                return {
+                    headers: await helpers.getHeaders(),
+                    statusCode: 403,
+                    body: JSON.stringify({
+                        message: 'You do not have access to perform this API action',
+                    }),
+                }
+            }
+        } catch (error) {
+            return {
+                headers: await helpers.getHeaders(),
+                statusCode: 403,
+                body: JSON.stringify({
+                    message: 'You do not have access to perform this API action',
+                }),
+            }
+        }
         const get_user = await mongoConnection.view(Users, { email_address: email })
         const user_old_password = get_user[0].password
         const bytes = CryptoJS.AES.decrypt(user_old_password, process.env.PASSWORD_SECRET_KEY)
