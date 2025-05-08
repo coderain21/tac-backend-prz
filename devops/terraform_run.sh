@@ -20,38 +20,85 @@ KEY_PATH="$2"
 
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
-aws configure set region "eu-west-2" --profile "$PROFILE_ENV"
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
-echo "Configuring US region profile"
-aws configure set region "us-east-1" --profile "$PROFILE_ENV-us"
-aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_US --profile-arn $PROFILE_ARN_US --role-arn $ROLE_ARN_US" --profile "$PROFILE_ENV-us"
-export AWS_PROFILE=$PROFILE_ENV
+# Function to resolve and write AWS credentials to ~/.aws/credentials
+resolve_and_write_credentials() {
+  local profile=$1
+  local cert_path=$2
+  local key_path=$3
+  local trust_anchor_arn=$4
+  local profile_arn=$5
+  local role_arn=$6
+  local region=$7
 
-echo "Enabling AWS_SDK_LOAD_CONFIG..."
-export AWS_SDK_LOAD_CONFIG=1 
+  echo "Fetching credentials for profile: $profile"
 
-# # Configure AWS CLI profiles
-aws configure set region "eu-west-2" --profile "$PROFILE_MAIN"
-run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile $PROFILE_MAIN
-aws configure set region "us-east-1" --profile "$PROFILE_MAIN-us"
-run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN_US --profile-arn $PROFILE_ARN_MAIN_US --role-arn $ROLE_ARN_MAIN_US" --profile "$PROFILE_MAIN-us"
+  # Fetch credentials using aws_signing_helper
+  creds=$(AWS_PROFILE="$profile" $(pwd)/aws_signing_helper credential-process --certificate "$cert_path" --private-key "$key_path" --trust-anchor-arn "$trust_anchor_arn" --profile-arn "$profile_arn" --role-arn "$role_arn")
 
+  # Check if the creds are not empty
+  if [[ -z "$creds" ]]; then
+    echo "Error: Failed to fetch credentials for $profile"
+    exit 1
+  fi
+  # Also configure region for the profile in the config file
+  echo "Setting region for profile: $profile to $region"
+  aws configure set region "$region" --profile "$profile"
 
-# aws configure set profile.$PROFILE_ENV.aws_access_key_id $AWS_ACCESS_KEY_ID
-# aws configure set profile.$PROFILE_ENV.aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-if [ "${STAGE}" = "pre-production" ] ; then
-    echo "Setting up AWS credential process for QA profile"
-    run_command aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $CERT_PATH --private-key $KEY_PATH --trust-anchor-arn $TRUST_ANCHOR_ARN_QA --profile-arn $PROFILE_ARN_QA --role-arn $ROLE_ARN_QA" --profile $AWS_ENV_QA
-    aws configure list --profile $AWS_ENV_QA
+  # Write the credentials to ~/.aws/credentials
+  echo "Writing credentials to ~/.aws/credentials for profile: $profile"
+  echo "[$profile]" >> ~/.aws/credentials
+  echo "aws_access_key_id = $(echo "$creds" | jq -r .AccessKeyId)" >> ~/.aws/credentials
+  echo "aws_secret_access_key = $(echo "$creds" | jq -r .SecretAccessKey)" >> ~/.aws/credentials
+  echo "aws_session_token = $(echo "$creds" | jq -r .SessionToken)" >> ~/.aws/credentials
+
+  
+}
+
+# Ensure ~/.aws/credentials exists and is clean before writing new data
+if [ ! -f ~/.aws/credentials ]; then
+  echo "Creating credentials file..."
+  touch ~/.aws/credentials
 fi
-log_bucket="indyauction-pipeline-states"
-echo "$log_bucket"
-# aws s3 sync $log_bucket . --profile $PROFILE_MAIN
+> ~/.aws/credentials
 
+# Configure credentials for PROFILE_MAIN and related profiles
+resolve_and_write_credentials "$PROFILE_MAIN-us" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN_US" "$PROFILE_ARN_MAIN_US" "$ROLE_ARN_MAIN_US" "us-east-1"
+resolve_and_write_credentials "$PROFILE_MAIN" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN" "$PROFILE_ARN_MAIN" "$ROLE_ARN_MAIN" "eu-west-2"
+resolve_and_write_credentials "$PROFILE_ENV" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN" "$PROFILE_ARN" "$ROLE_ARN" "eu-west-2"
+resolve_and_write_credentials "$PROFILE_ENV-us" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_US" "$PROFILE_ARN_US" "$ROLE_ARN_US" "us-east-1"
+
+# Handle stage-specific logic for QUICKSIGHT_ACCOUNT and TF_VAR_ROUTE53_ACCOUNT
+if [ "${STAGE}" = "pre-production" ]; then
+    echo "Setting up AWS credential process for QA profile"
+    resolve_and_write_credentials "$QUICKSIGHT_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_QA" "$PROFILE_ARN_QA" "$ROLE_ARN_QA" "eu-west-2"
+elif [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
+    echo "Setting up AWS credential process for QuickSight account"
+    resolve_and_write_credentials "$QUICKSIGHT_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN" "$PROFILE_ARN" "$ROLE_ARN" "eu-west-2"
+fi
+
+# Handle Route53 Account for prod and pre-production
+if [ "${STAGE}" = "prod" ]; then
+    echo "Setting up AWS credential process for Route53 account"
+    resolve_and_write_credentials "$TF_VAR_ROUTE53_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN_US" "$PROFILE_ARN_MAIN_US" "$ROLE_ARN_MAIN_US" "us-east-1"
+elif [ "${STAGE}" = "pre-production" ] || [ "${STAGE}" = "qa" ]; then
+    echo "Setting up AWS credential process for Route53 account"
+    resolve_and_write_credentials "$TF_VAR_ROUTE53_ACCOUNT" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_US" "$PROFILE_ARN_US" "$ROLE_ARN_US" "us-east-1"
+fi
+
+# Enabling AWS SDK config loading
+export AWS_SDK_LOAD_CONFIG=1
+
+# Confirm AWS credentials and configuration
 run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}"
 run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}-us"
 run_command aws sts get-caller-identity --profile "${PROFILE_ENV}"
 run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
+run_command aws sts get-caller-identity --profile "${QUICKSIGHT_ACCOUNT}"
+run_command aws sts get-caller-identity --profile "${TF_VAR_ROUTE53_ACCOUNT}"
+
+log_bucket="indyauction-pipeline-states"
+echo "$log_bucket"
+
 
 # Print AWS CLI configurations for verification
 aws configure list --profile "${PROFILE_MAIN}"
@@ -126,12 +173,12 @@ if [ "${STAGE}" = "pre-production" ]; then
         echo "Set $param_name as environment variable with value: $param_value"
     done <<< "$parameter_names"
 
-    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
+    echo docker login --username AWS -p $(aws ecr get-login-password --region $REGION --profile $PROFILE_ENV) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
     sh login.sh
     run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
     run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
-    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --region $REGION --profile $PROFILE_ENV --force-new-deployment
 fi
 
 if [ "${STAGE}" = "prod"  ]; then
@@ -162,12 +209,12 @@ if [ "${STAGE}" = "prod"  ]; then
         echo "Set $param_name as environment variable with value: $param_value"
     done <<< "$parameter_names"
 
-    echo docker login --username AWS -p $(aws ecr get-login-password) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
+    echo docker login --username AWS -p $(aws ecr get-login-password --region $REGION --profile $PROFILE_ENV) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
     sh login.sh
     run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
     run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
     run_command docker push $MONGOBETWEEN_ECR_REPO_URI
-    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --force-new-deployment
+    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --region $REGION --profile $PROFILE_ENV --force-new-deployment
 fi
 
 run_command terraform -chdir=devops/secret_manager init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/secret_manager/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -221,7 +268,6 @@ cd ../..
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
-export AWS_PROFILE=$PROFILE_ENV
 run_command terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 echo "{\"subdomains\": [\"www\"]}" > devops/buyer_web_application/subdomains.json
 STATE_FILE="s3://${log_bucket}/$STAGE/devops/buyer_web_application/terraform.tfstate"
@@ -289,10 +335,11 @@ fi
 
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
-    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region eu-west-2
+    run_command aws lambda update-function-configuration --function-name auctions-${STAGE}-save-to-cache --tracing-config Mode=Active --region $REGION --profile $PROFILE_ENV
     run_command aws elasticache modify-replication-group \
     --replication-group-id $GROUP_ID \
-    --region eu-west-2 \
+    --region $REGION \
+    --profile $PROFILE_ENV \
     --log-delivery-configurations '[
         {
             "LogType": "slow-log",
@@ -321,7 +368,7 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
 
 fi
 if [ "${STAGE}" = "pre-production" ]; then
-    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region eu-west-2
+    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region $REGION --profile $PROFILE_ENV
 fi
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     cd devops/disaster_recovery
