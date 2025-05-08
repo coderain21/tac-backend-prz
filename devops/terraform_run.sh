@@ -40,6 +40,9 @@ resolve_and_write_credentials() {
     echo "Error: Failed to fetch credentials for $profile"
     exit 1
   fi
+  # Also configure region for the profile in the config file
+  echo "Setting region for profile: $profile to $region"
+  aws configure set region "$region" --profile "$profile"
 
   # Write the credentials to ~/.aws/credentials
   echo "Writing credentials to ~/.aws/credentials for profile: $profile"
@@ -48,17 +51,19 @@ resolve_and_write_credentials() {
   echo "aws_secret_access_key = $(echo "$creds" | jq -r .SecretAccessKey)" >> ~/.aws/credentials
   echo "aws_session_token = $(echo "$creds" | jq -r .SessionToken)" >> ~/.aws/credentials
 
-  # Also configure region for the profile in the config file
-  echo "Setting region for profile: $profile to $region"
-  aws configure set region "$region" --profile "$profile"
+  
 }
 
 # Ensure ~/.aws/credentials exists and is clean before writing new data
+if [ ! -f ~/.aws/credentials ]; then
+  echo "Creating credentials file..."
+  touch ~/.aws/credentials
+fi
 > ~/.aws/credentials
 
 # Configure credentials for PROFILE_MAIN and related profiles
-resolve_and_write_credentials "$PROFILE_MAIN" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN" "$PROFILE_ARN_MAIN" "$ROLE_ARN_MAIN" "eu-west-2"
 resolve_and_write_credentials "$PROFILE_MAIN-us" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN_US" "$PROFILE_ARN_MAIN_US" "$ROLE_ARN_MAIN_US" "us-east-1"
+resolve_and_write_credentials "$PROFILE_MAIN" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_MAIN" "$PROFILE_ARN_MAIN" "$ROLE_ARN_MAIN" "eu-west-2"
 resolve_and_write_credentials "$PROFILE_ENV" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN" "$PROFILE_ARN" "$ROLE_ARN" "eu-west-2"
 resolve_and_write_credentials "$PROFILE_ENV-us" "$CERT_PATH" "$KEY_PATH" "$TRUST_ANCHOR_ARN_US" "$PROFILE_ARN_US" "$ROLE_ARN_US" "us-east-1"
 
@@ -93,15 +98,6 @@ run_command aws sts get-caller-identity --profile "${TF_VAR_ROUTE53_ACCOUNT}"
 
 log_bucket="indyauction-pipeline-states"
 echo "$log_bucket"
-# aws s3 sync $log_bucket . --profile $PROFILE_MAIN
-
-run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}"
-run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}-us"
-run_command aws sts get-caller-identity --profile "${PROFILE_ENV}"
-run_command aws sts get-caller-identity --profile "${PROFILE_ENV}-us"
-run_command aws sts get-caller-identity --profile "${QUICKSIGHT_ACCOUNT}"
-run_command aws sts get-caller-identity --profile "${TF_VAR_ROUTE53_ACCOUNT}"
-
 
 
 # Print AWS CLI configurations for verification
