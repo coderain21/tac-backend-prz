@@ -5,7 +5,6 @@ provider "aws" {
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
-
 resource "random_password" "password" {
   length           = 16
   special          = false

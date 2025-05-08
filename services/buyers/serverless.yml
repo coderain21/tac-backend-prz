@@ -534,6 +534,23 @@ functions:
           authorizer: 
             arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
+  
+  view-privacy-policy:
+    handler: handlers/get_policy.get_policy
+    runtime: python3.9
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /policy/{auction_id}
+          method: get
+
 
 
 resources:
