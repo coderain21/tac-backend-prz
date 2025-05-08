@@ -1891,6 +1891,9 @@
                       "show_bidding_history":{
                         "type": "boolean"
                       },
+                      "toggle_powered_by_indy":{
+                        "type": "boolean"
+                      },
                       "hide_auction_lots": {
                         "type": "Boolean"
                       },
@@ -3618,6 +3621,9 @@
             "type": "boolean"
           },
           "show_bidding_history": {
+            "type": "boolean"
+          },
+          "toggle_powered_by_indy":{
             "type": "boolean"
           },
           "hide_auction_lots": {

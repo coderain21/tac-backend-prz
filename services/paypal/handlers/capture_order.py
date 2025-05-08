@@ -113,14 +113,14 @@ def capture_order(event, context):
             status = capture_details["status"]
             print('status', status)
             if status == "COMPLETED":
-                order_data = temp_orders_collection.find_one({"payment_intent": order_id})
+                order_data = order_collection.find_one({"payment_intent": order_id})
                 print('temp', order_data)
-                temp_orders_collection.delete_many({
-                    "email_address": order_data['email_address'],
-                    "seller_email": order_data['seller_email'],
-                    "auction_id": order_data['auction_id']
-                    }
-                )
+                # temp_orders_collection.delete_many({
+                #     "email_address": order_data['email_address'],
+                #     "seller_email": order_data['seller_email'],
+                #     "auction_id": order_data['auction_id']
+                #     }
+                # )
                 order_data['payment_status'] = 'Paid'
                 order_data['status'] = 'succeeded'
                 order_collection.update_one({"payment_intent": order_id}, {"$set": order_data}, upsert=True)
@@ -135,7 +135,7 @@ def capture_order(event, context):
 
 
             else:
-                order_collection.update_one({"order_number": order_id}, {"$set": {"status": "Unpaid"}})
+                order_collection.update_one({"order_number": order_id}, {"$set": {"status": "Pending"}})
 
             return {
                 "statusCode": 200,
@@ -150,19 +150,20 @@ def capture_order(event, context):
             error_response = capture_response.json()
             error_message = error_response.get("message", "Unknown error")
             print(f"Failed to capture order (status {capture_response.status_code}):", error_response)
-            order_data = temp_orders_collection.find_one({"payment_intent": order_id})
+            order_data = order_collection.find_one({"payment_intent": order_id})
             print('temp', order_data)
-            order_data['payment_status'] = 'Unpaid'
-            order_data['status'] = 'failed'
-            order_collection.update_one({"payment_intent": order_id}, {"$set": order_data}, upsert=True)
+            if order_data:
+                order_data['payment_status'] = 'Failed'
+                order_data['status'] = 'failed'
+                order_collection.update_one({"payment_intent": order_id}, {"$set": order_data}, upsert=True)
 
-            delete_cart = cart_collection.delete_many({
-                "email_address": order_data['email_address'],
-                "seller_email": order_data['seller_email'],
-                "auction_id": order_data['auction_id']
-            })
+            # delete_cart = cart_collection.delete_many({
+            #     "email_address": order_data['email_address'],
+            #     "seller_email": order_data['seller_email'],
+            #     "auction_id": order_data['auction_id']
+            # })
 
-            print(f"Deleted cart data: {delete_cart.deleted_count}")
+            # print(f"Deleted cart data: {delete_cart.deleted_count}")
             return {
                 "statusCode": 400,
                 "headers": HEADERS,
