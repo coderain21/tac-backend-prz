@@ -1,230 +1,226 @@
-import redis # For redis.exceptions.ResponseError
 import os
 import json
 import boto3
+import redis as redis_py # Import the redis module
 from rediscluster import RedisCluster
+from pymongo import MongoClient,errors as pymongo_errors # For MongoDB interaction
 from datetime import datetime, timedelta
-from lib.mongodb_python_helper import get_lot_id_by_auction_uuid
+import traceback # For detailed error logging if needed
 
-
+# Redis client creation function (remains similar)
 def createRedisClient():
     try:
         startup_nodes = [
             {
                 "host": os.environ["REDIS_CLUSTER_ENDPOINT"],
-                "port": 6379
+                "port": 6379 # Default Redis port
             }
         ]
+        # Ensure REDIS_CLUSTER_ENDPOINT is set
+        if not os.environ.get("REDIS_CLUSTER_ENDPOINT"):
+            raise ValueError("REDIS_CLUSTER_ENDPOINT environment variable not set.")
+            
         cluster = RedisCluster(
             startup_nodes=startup_nodes,
-            decode_responses=True,
+            decode_responses=True, # Important for string responses
             skip_full_coverage_check=True
         )
+        print("Successfully connected to Redis Cluster.")
         return cluster
-    except (ConnectionError, Exception) as e:
-        print(f"Error connecting to Redis: {e}")
+    except redis_py.exceptions.RedisClusterException as rce:
+        print(f"Error connecting to Redis Cluster (RedisClusterException): {rce}")
+        raise
+    except Exception as e:
+        print(f"Generic error connecting to Redis: {e}")
+        raise
+
+# MongoDB client and collection retrieval
+def get_mongodb_collection():
+    try:
+        mongo_uri = os.environ.get("MONGO_URI")
+        db_name = os.environ.get("MONGO_DB_NAME")
+        collection_name = "redis-cron-data" # As specified
+
+        if not mongo_uri:
+            raise ValueError("MONGO_URI environment variable not set.")
+        if not db_name:
+            raise ValueError("MONGO_DB_NAME environment variable not set.")
+
+        client = MongoClient(mongo_uri)
+        # Test connection
+        client.admin.command('ping') 
+        db = client[db_name]
+        print(f"Successfully connected to MongoDB. DB: {db_name}, Collection: {collection_name}")
+        return db[collection_name]
+    except pymongo_errors.ConnectionFailure as cf:
+        print(f"MongoDB connection failed: {cf}")
+        raise
+    except Exception as e:
+        print(f"Error getting MongoDB collection: {e}")
         raise
 
 def delete_old_redis_data(event, context):
-    redis_cluster = createRedisClient()
-    sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
-    deleted_count = 0
+    redis_cluster = None
+    mongo_collection = None
 
     try:
-        cutoff_date_obj = (datetime.now() - timedelta(days=10)).date()
-        cutoff_date_iso_str = cutoff_date_obj.isoformat()
-        print(f"Cutoff date: {cutoff_date_iso_str}")
+        redis_cluster = createRedisClient()
+        mongo_collection = get_mongodb_collection()
+    except Exception as setup_e:
+        print(f"Setup error (Redis or MongoDB connection): {setup_e}")
+        # Attempt to send SNS if topic ARN is available, even for setup errors
+        sns_topic_arn_setup = os.environ.get('SNS_TOPIC_ARN')
+        if sns_topic_arn_setup:
+            try:
+                sns_client = boto3.client('sns')
+                error_message = {
+                    'error_type': 'SetupError',
+                    'error_message': str(setup_e),
+                    'details': 'Failed during Redis or MongoDB connection setup.'
+                }
+                sns_client.publish(
+                    TopicArn=sns_topic_arn_setup,
+                    Message=json.dumps(error_message),
+                    Subject='Redis Data Deletion Cron - SETUP ERROR'
+                )
+            except Exception as sns_e:
+                print(f"Failed to send SNS error alert during setup: {sns_e}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'message': f'Setup error: {str(setup_e)}'})
+        }
 
-        for key_from_scan in redis_cluster.scan_iter():
-            key_type = redis_cluster.type(key_from_scan)
-            print(f"Processing key: {key_from_scan}, type: {key_type}")
-            operation_performed_on_key_or_field = False
+    sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
+    deleted_redis_keys_count = 0
+    processed_mongo_docs_ids = [] # Store IDs of docs to be deleted from Mongo
 
-            if key_type == 'string':
-                # Rule 1: Check related "{key}:end_date" (string) for this string key
+    try:
+        # Calculate the cutoff timestamp (10 days ago, Unix timestamp in seconds)
+        cutoff_datetime = datetime.now() - timedelta(days=10)
+        cutoff_timestamp_seconds = int(cutoff_datetime.timestamp())
+
+        print(f"Cutoff timestamp for MongoDB 'created_at' (seconds): {cutoff_timestamp_seconds} ({cutoff_datetime.isoformat()})")
+
+        # Find documents in MongoDB older than the cutoff
+        # Assuming 'created_at' is stored as Unix timestamp in seconds
+        old_docs_cursor = mongo_collection.find({"created_at": {"$lt": cutoff_timestamp_seconds}})
+
+        mongo_docs_found_count = 0 # To count how many docs match the query
+
+        for doc in old_docs_cursor:
+            mongo_docs_found_count += 1
+            doc_id = doc['_id']
+            print(f"Processing MongoDB document ID: {doc_id}, created_at: {doc.get('created_at')}")
+
+            redis_keys_in_doc = [
+                doc.get("lot_key"),
+                doc.get("lot_history_key"),
+                doc.get("auction_history_key")
+            ]
+            # Filter out None values if a key is not present in the document
+            redis_keys_to_delete = [key for key in redis_keys_in_doc if key]
+
+            if not redis_keys_to_delete:
+                print(f"No valid Redis keys found in document {doc_id}. Marking for deletion from Mongo.")
+                processed_mongo_docs_ids.append(doc_id)
+                continue
+
+            deleted_for_this_doc_session = 0
+            for redis_key in redis_keys_to_delete:
                 try:
-                    related_end_date_key = f"{key_from_scan}:end_date"
-                    if redis_cluster.type(related_end_date_key) == 'string':
-                        last_modified_str = redis_cluster.get(related_end_date_key)
-                        if last_modified_str:
-                            last_modified_dt = datetime.fromisoformat(last_modified_str.replace('Z', '+00:00'))
-                            if last_modified_dt.date() < cutoff_date_obj:
-                                # Ensure key_from_scan is still a string and exists before deleting
-                                if redis_cluster.type(key_from_scan) == 'string' and redis_cluster.exists(key_from_scan):
-                                    if redis_cluster.delete(key_from_scan):
-                                        deleted_count += 1
-                                        operation_performed_on_key_or_field = True
-                                        print(f"Deleted string key: {key_from_scan} (reason: related key {related_end_date_key} value {last_modified_str} older than {cutoff_date_iso_str})")
-                except redis.exceptions.ResponseError as r_e:
-                    print(f"Redis error (Rule 1) for key {key_from_scan}, related {related_end_date_key if 'related_end_date_key' in locals() else 'N/A'}: {r_e}")
-                except ValueError as v_e:
-                    print(f"Date parsing error (Rule 1) for key {key_from_scan}, related {related_end_date_key if 'related_end_date_key' in locals() else 'N/A'}: {v_e}")
+                    # redis_cluster.delete returns the number of keys deleted (0 or 1 for a single key)
+                    if redis_cluster.delete(redis_key) > 0:
+                        print(f"Successfully deleted Redis key: {redis_key}")
+                        deleted_redis_keys_count += 1
+                        deleted_for_this_doc_session += 1
+                    else:
+                        # This means key did not exist or delete failed for other reason (though delete is usually robust)
+                        print(f"Redis key not found or not deleted: {redis_key}")
+                except redis_py.exceptions.RedisError as re:
+                    print(f"RedisError deleting key {redis_key}: {re}")
                 except Exception as e:
-                    print(f"Generic error (Rule 1) for key {key_from_scan}: {e}")
+                    print(f"Unexpected error deleting Redis key {redis_key}: {e}")
+            
+            # Mark MongoDB document for deletion if its Redis keys were processed
+            processed_mongo_docs_ids.append(doc_id)
 
-                # Rule 2: Check this string key's content for 'end_date'
-                if not operation_performed_on_key_or_field and redis_cluster.exists(key_from_scan) and redis_cluster.type(key_from_scan) == 'string':
-                    try:
-                        data_str = redis_cluster.get(key_from_scan)
-                        if data_str:
-                            data = json.loads(data_str)
-                            end_date_value = data.get('end_date')
-                            if end_date_value:
-                                parsed_date_obj = None
-                                try:
-                                    parsed_date_obj = datetime.fromtimestamp(float(end_date_value) / 1000.0).date()
-                                except (TypeError, ValueError):
-                                    try:
-                                        parsed_date_obj = datetime.strptime(str(end_date_value), '%d-%m-%Y').date()
-                                    except ValueError: pass
-                                
-                                if parsed_date_obj and parsed_date_obj < cutoff_date_obj:
-                                    if redis_cluster.delete(key_from_scan):
-                                        deleted_count += 1
-                                        operation_performed_on_key_or_field = True
-                                        print(f"Deleted string key: {key_from_scan} (reason: 'end_date' {end_date_value} in JSON older than {cutoff_date_iso_str})")
-                    except redis.exceptions.ResponseError as r_e:
-                        print(f"Redis error (Rule 2) for string key {key_from_scan}: {r_e}")
-                    except (json.JSONDecodeError, KeyError, TypeError) as e_json:
-                        print(f"Data error (Rule 2) for string key {key_from_scan}: {e_json}")
-                    except Exception as e:
-                        print(f"Generic error (Rule 2) for string key {key_from_scan}: {e}")
-                
-                # Rule 3: Auction-specific logic for this string key
-                if not operation_performed_on_key_or_field and key_from_scan.startswith("auction:") and \
-                   redis_cluster.exists(key_from_scan) and redis_cluster.type(key_from_scan) == 'string':
-                    try:
-                        data_str = redis_cluster.get(key_from_scan)
-                        if data_str:
-                            data = json.loads(data_str)
-                            auction_end_date_ts = data.get('auciton_end_date') or data.get('auction_end_date')
-                            if auction_end_date_ts:
-                                auction_end_dt_obj = datetime.fromtimestamp(float(auction_end_date_ts) / 1000.0).date()
-                                if auction_end_dt_obj < cutoff_date_obj:
-                                    if redis_cluster.delete(key_from_scan):
-                                        deleted_count += 1
-                                        operation_performed_on_key_or_field = True
-                                        print(f"Deleted string auction key: {key_from_scan} (reason: end date {auction_end_date_ts} older than {cutoff_date_iso_str})")
-                                        
-                                        auction_uuid = key_from_scan.split(":", 1)[1] if ":" in key_from_scan else None
-                                        if auction_uuid:
-                                            lot_id = get_lot_id_by_auction_uuid(auction_uuid)
-                                            if lot_id:
-                                                related_keys_to_delete = [f"lot:{lot_id}", f"A0001#{lot_id}", f"lot-history:{lot_id}"]
-                                                for rel_key in related_keys_to_delete:
-                                                    if redis_cluster.exists(rel_key):
-                                                        if redis_cluster.delete(rel_key): # Deletes key regardless of its type
-                                                            deleted_count += 1
-                                                            print(f"Deleted related top-level key: {rel_key} (triggered by expired string key {key_from_scan})")
-                    except redis.exceptions.ResponseError as r_e:
-                        print(f"Redis error (Rule 3) for string key {key_from_scan}: {r_e}")
-                    except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e_data: # Added ValueError for timestamp
-                        print(f"Data error (Rule 3) for string key {key_from_scan}: {e_data}")
-                    except Exception as e:
-                        print(f"Generic error (Rule 3) for string key {key_from_scan}: {e}")
+        print(f"Found {mongo_docs_found_count} documents in MongoDB older than cutoff.")
 
-            elif key_type == 'hash':
-                fields_to_delete_names = []
-                for field_name, field_value_str in redis_cluster.hscan_iter(key_from_scan):
-                    try:
-                        field_data = json.loads(field_value_str)
-                        parsed_field_date_obj = None
-                        date_value_for_log = "N/A"
-                        is_auction_context_field = False # Is this field's data auction-related?
+        # Batch delete processed documents from MongoDB
+        mongo_docs_deleted_successfully_count = 0
+        if processed_mongo_docs_ids:
+            try:
+                delete_result = mongo_collection.delete_many({"_id": {"$in": processed_mongo_docs_ids}})
+                mongo_docs_deleted_successfully_count = delete_result.deleted_count
+                print(f"Attempted to delete {len(processed_mongo_docs_ids)} docs from MongoDB. Successfully deleted: {mongo_docs_deleted_successfully_count}.")
+                if mongo_docs_deleted_successfully_count != len(processed_mongo_docs_ids):
+                    print(f"Warning: Mismatch in MongoDB deletions. Expected {len(processed_mongo_docs_ids)}, got {mongo_docs_deleted_successfully_count}.")
+            except pymongo_errors.PyMongoError as pme:
+                print(f"Error deleting documents from MongoDB: {pme}")
+                # Continue to SNS reporting, but note the failure.
+        else:
+            print("No MongoDB documents were marked for deletion.")
 
-                        # Determine date based on HASH key name and field content
-                        if key_from_scan == "auction": # Fields within HASH "auction"
-                            is_auction_context_field = True
-                            target_date_ts = field_data.get('auciton_end_date') or field_data.get('auction_end_date')
-                            date_value_for_log = target_date_ts
-                            if target_date_ts:
-                                parsed_field_date_obj = datetime.fromtimestamp(float(target_date_ts) / 1000.0).date()
-                        elif key_from_scan == "lot": # Fields within HASH "lot"
-                            target_date_value = field_data.get('end_date')
-                            date_value_for_log = target_date_value
-                            if target_date_value:
-                                try:
-                                    parsed_field_date_obj = datetime.fromtimestamp(float(target_date_value) / 1000.0).date()
-                                except (TypeError, ValueError):
-                                    try:
-                                        parsed_field_date_obj = datetime.strptime(str(target_date_value), '%d-%m-%Y').date()
-                                    except ValueError: pass
-                        # Add other specific hash key handlers here if needed (e.g. "lot-history")
-
-                        if parsed_field_date_obj and parsed_field_date_obj < cutoff_date_obj:
-                            fields_to_delete_names.append(field_name)
-                            print(f"Marked field for deletion: {field_name} from hash {key_from_scan} (reason: date {date_value_for_log} older than {cutoff_date_iso_str})")
-                            operation_performed_on_key_or_field = True # A field will be deleted
-
-                            if is_auction_context_field:
-                                auction_uuid_from_field_data = field_data.get("auction_id") or field_data.get("_id")
-                                if auction_uuid_from_field_data:
-                                    lot_id = get_lot_id_by_auction_uuid(auction_uuid_from_field_data)
-                                    if lot_id:
-                                        related_top_level_keys_to_delete = [f"lot:{lot_id}", f"A0001#{lot_id}", f"lot-history:{lot_id}"]
-                                        for rel_key in related_top_level_keys_to_delete:
-                                            if redis_cluster.exists(rel_key):
-                                                if redis_cluster.delete(rel_key): # Deletes key regardless of its type
-                                                    deleted_count += 1
-                                                    print(f"Deleted related top-level key: {rel_key} (due to expired field {field_name} in hash {key_from_scan})")
-                                else:
-                                    print(f"Warning: Could not get auction_uuid from field {field_name} data in hash {key_from_scan} for related lot deletion.")
-                    except redis.exceptions.ResponseError as r_e:
-                        print(f"Redis error processing field {field_name} in hash {key_from_scan}: {r_e}")
-                    except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e_data: # Added ValueError for timestamp
-                        print(f"Data error for field {field_name} in hash {key_from_scan} (value: {field_value_str[:100]}...): {e_data}")
-                    except Exception as e_gen:
-                        print(f"Generic error processing field {field_name} in hash {key_from_scan}: {e_gen}")
-                
-                if fields_to_delete_names:
-                    num_deleted_fields = redis_cluster.hdel(key_from_scan, *fields_to_delete_names)
-                    if num_deleted_fields > 0:
-                        deleted_count += num_deleted_fields
-                        print(f"Successfully deleted {num_deleted_fields} fields from hash {key_from_scan}.")
-
-            elif key_type != 'none':
-                print(f"Skipping key {key_from_scan} due to unhandled type: {key_type}")
 
         # Send alert to SNS
         if sns_topic_arn:
             sns_client = boto3.client('sns')
             message_payload = {
-                'deleted_count': deleted_count,
-                'redis_cluster': os.environ.get("REDIS_CLUSTER_ENDPOINT", "Unknown"),
-                'cutoff_date': cutoff_date_iso_str
+                'status': 'SUCCESS',
+                'deleted_redis_keys_count': deleted_redis_keys_count,
+                'mongo_docs_queried_count': mongo_docs_found_count,
+                'mongo_docs_processed_for_deletion_count': len(processed_mongo_docs_ids),
+                'mongo_docs_actually_deleted_count': mongo_docs_deleted_successfully_count,
+                'redis_cluster_endpoint': os.environ.get("REDIS_CLUSTER_ENDPOINT", "Unknown"),
+                'cutoff_timestamp_seconds': cutoff_timestamp_seconds,
+                'report_time': datetime.now().isoformat()
             }
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(message_payload),
-                Subject='Redis Data Deletion Alert'
+                Subject='Redis Data Deletion Cron Alert (via MongoDB)'
             )
-            print(f"Successfully deleted {deleted_count} keys/fields and sent alert to SNS.")
+            print(f"Summary: Deleted {deleted_redis_keys_count} Redis keys. Processed {len(processed_mongo_docs_ids)} MongoDB docs. Alert sent to SNS.")
         else:
-            print(f"Successfully deleted {deleted_count} keys/fields. SNS_TOPIC_ARN not set, so no alert sent.")
+            print(f"Summary: Deleted {deleted_redis_keys_count} Redis keys. Processed {len(processed_mongo_docs_ids)} MongoDB docs. SNS_TOPIC_ARN not set, no alert sent.")
 
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'message': f'Successfully processed Redis data. Deleted {deleted_count} keys/fields.'
+                'message': f'Successfully processed. Deleted {deleted_redis_keys_count} Redis keys. Processed {len(processed_mongo_docs_ids)} MongoDB docs for deletion ({mongo_docs_deleted_successfully_count} actually deleted).'
             })
         }
 
     except Exception as e:
-        print(f"Error in delete_old_redis_data: {e}")
+        detailed_error = traceback.format_exc()
+        print(f"Critical error in delete_old_redis_data: {e}\n{detailed_error}")
         if sns_topic_arn:
             sns_client = boto3.client('sns')
             error_message = {
-                'error': str(e),
-                'redis_cluster': os.environ.get("REDIS_CLUSTER_ENDPOINT", "Unknown")
+                'status': 'ERROR',
+                'error_type': type(e).__name__,
+                'error_message': str(e),
+                'traceback': detailed_error, # Provide more details in SNS for critical errors
+                'redis_cluster_endpoint': os.environ.get("REDIS_CLUSTER_ENDPOINT", "Unknown"),
+                'report_time': datetime.now().isoformat()
             }
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(error_message),
-                Subject='Redis Data Deletion Error'
+                Subject='Redis Data Deletion Cron - CRITICAL ERROR (via MongoDB)'
             )
         return {
             'statusCode': 500,
             'body': json.dumps({
-                'message': f'Error deleting old Redis data: {str(e)}'
+                'message': f'Critical error during Redis data deletion via MongoDB: {str(e)}'
             })
         }
+
+# Example of how to manually test (if run locally, not in Lambda)
+#if __name__ == '__main__':
+#    # Set environment variables for local testing
+#    os.environ['REDIS_CLUSTER_ENDPOINT'] = 'your-redis-endpoint.com'
+#    os.environ['MONGO_URI'] = 'mongodb://user:pass@host:port/'
+#    os.environ['MONGO_DB_NAME'] = 'your_db_name'
+#    os.environ['SNS_TOPIC_ARN'] = 'arn:aws:sns:region:account-id:your-sns-topic'
+#    delete_old_redis_data({}, {})
