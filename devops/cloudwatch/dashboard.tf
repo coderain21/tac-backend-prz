@@ -411,8 +411,8 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_out" {
   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
   dimensions = {
-    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
-    CacheNodeId    = "0001"
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
   }
 }
 
@@ -423,14 +423,14 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_in" {
   evaluation_periods  = 1
   metric_name         = "NetworkBytesIn"
   namespace           = "AWS/ElastiCache"
-  period              = 300  # 5 minutes
+  period              = 3000  # 5 minutes
   statistic           = "Maximum"
   threshold           = 10485760  # 10 MB
   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
   dimensions = {
-    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
-    CacheNodeId    = "0001"
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
   }
 }
 
@@ -447,8 +447,8 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
   dimensions = {
-    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
-    CacheNodeId    = "0001"
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
   }
 }
 
