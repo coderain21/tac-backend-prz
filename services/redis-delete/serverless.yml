@@ -10,6 +10,8 @@ provider:
     SNS_TOPIC_ARN: 
       Ref: RedisDeleteAlertsTopic
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-auctions
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
 
   iamRoleStatements:
     - Effect: "Allow"
@@ -36,20 +38,23 @@ resources:
       Properties:
         TopicArn: !Ref RedisDeleteAlertsTopic
         Protocol: email
-        Endpoint: your-email@example.com
+        Endpoint: ibrahim.khaleel@7edge.com
 
 functions:
   deleteOldRedisData:
     handler: handler.delete_old_redis_data
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
     events:
       - schedule:
           rate: cron(0 0 * * ? *)  # Run daily at midnight UTC
           enabled: true
-    environment:
-      REDIS_HOST: "${ssm:REDIS_HOST, 'your-redis-host.cache.amazonaws.com'}"
-      REDIS_PORT: "6379"
-      SNS_TOPIC_ARN: 
-        Ref: RedisDeleteAlertsTopic
+    # environment:
+    #   REDIS_HOST: "${ssm:REDIS_HOST}"
+    #   REDIS_PORT: "6379"
+    #   SNS_TOPIC_ARN: 
+    #     Ref: RedisDeleteAlertsTopic
 
 plugins:
   - serverless-python-requirements
