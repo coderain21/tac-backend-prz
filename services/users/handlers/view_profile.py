@@ -4,6 +4,7 @@ import json
 # allow-wildcard-with-all=yes
 from lib.mongodb_python_helper import view_profile
 from lib.common_helper import Encoder
+from urllib.parse import unquote
 
 headers = {
     'Content-Type': 'application/json',
@@ -30,9 +31,25 @@ def view_customer(event, context):
     - 'body': A string containing the body of the response.
     """
     try:
+        try:
+            email_address = event['requestContext']['authorizer']['claims']['email']
+            path_email_address = unquote(event['pathParameters']['email'])
+            if email_address != path_email_address:
+                return {
+                    "headers": headers,
+                    "statusCode": 403,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
+        except:
+            return {
+                "headers": headers,
+                "statusCode": 403,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
+
         print('entering funct')
-        email_address = event['pathParameters']['email'].replace(
-            "%40", "@")  # Unescape the email address
+        # email_address = event['pathParameters']['email'].replace(
+        #     "%40", "@")  # Unescape the email address
         print(email_address)
         customer_details = view_profile(email_address)
         if not customer_details:

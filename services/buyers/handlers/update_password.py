@@ -121,15 +121,6 @@ def update_password(event, context):
     try:
         print('event', event['requestContext']['authorizer']['claims'] )
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            # print('email', email_address)
-            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-            #     print('here in first')
-            #     return {
-            #         "statusCode": 403,
-            #         "headers": headers,
-            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-            #     }
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
@@ -145,14 +136,7 @@ def update_password(event, context):
         confirm_password = data.get('confirm_password')
         domain = data.get('domain')
         auction_id = data.get('auction_id')
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # user_pools_collection = db[os.environ["USERPOOLS_MONGO"]]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
-        # buyer_collection = db[os.environ["BUYER_COLLECTION"]]
+
         seller_email = auction_collection.find_one({"_id": ObjectId(auction_id)},
                                                 {'seller_email': 1}).get('seller_email')
 
