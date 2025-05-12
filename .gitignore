@@ -87,6 +87,6 @@ devops/buyer_web_application/subdomains.json
 logins.sh
 .serverless
 tf-*
-aws_signing_helper
+aws_signing_helper*
 certificate.crt
 private.key
