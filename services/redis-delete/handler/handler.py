@@ -93,12 +93,13 @@ def delete_old_redis_data(event, context):
     sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
     deleted_redis_keys_count = 0
     processed_mongo_docs_ids = [] # Store IDs of docs to be deleted from Mongo
+    deleted_redis_keys = [] # Store deleted Redis keys
 
     try:
         # Calculate the cutoff timestamp (10 days ago, Unix timestamp in seconds)
         cutoff_datetime = datetime.now() - timedelta(days=10)
-        # cutoff_timestamp_seconds = int(cutoff_datetime.timestamp())
-        cutoff_timestamp_seconds = 1747033629
+        cutoff_timestamp_seconds = int(cutoff_datetime.timestamp())
+        # cutoff_timestamp_seconds = 1747033629
 
         print(f"Cutoff timestamp for MongoDB 'created_at' (seconds): {cutoff_timestamp_seconds} ({cutoff_datetime.isoformat()})")
 
@@ -121,6 +122,8 @@ def delete_old_redis_data(event, context):
             # Filter out None values if a key is not present in the document
             redis_keys_to_delete = [key for key in redis_keys_in_doc if key]
 
+            print(f"Redis keys to attempt deletion for doc {doc_id}: {redis_keys_to_delete}")
+
             if not redis_keys_to_delete:
                 print(f"No valid Redis keys found in document {doc_id}. Marking for deletion from Mongo.")
                 processed_mongo_docs_ids.append(doc_id)
@@ -129,19 +132,30 @@ def delete_old_redis_data(event, context):
             deleted_for_this_doc_session = 0
             for redis_key in redis_keys_to_delete:
                 try:
-                    # redis_cluster.delete returns the number of keys deleted (0 or 1 for a single key)
-                    if redis_cluster.delete(redis_key) > 0:
-                        print(f"Successfully deleted Redis key: {redis_key}")
-                        deleted_redis_keys_count += 1
-                        deleted_for_this_doc_session += 1
+                    # redis_cluster.hdel returns the number of keys deleted (0 or 1 for a single key)
+                    if redis_key.startswith("lot:"):
+                        if redis_cluster.hdel("lot", redis_key) > 0:
+                            print(f"Successfully deleted Redis key: {redis_key}")
+                            deleted_redis_keys_count += 1
+                            deleted_for_this_doc_session += 1
+                            deleted_redis_keys.append(redis_key)
+                        else:
+                            # This means key did not exist or delete failed for other reason (though delete is usually robust)
+                            print(f"Redis key not found or not deleted: {redis_key}")
                     else:
-                        # This means key did not exist or delete failed for other reason (though delete is usually robust)
-                        print(f"Redis key not found or not deleted: {redis_key}")
+                        if redis_cluster.delete(redis_key) > 0:
+                            print(f"Successfully deleted Redis key: {redis_key}")
+                            deleted_redis_keys_count += 1
+                            deleted_for_this_doc_session += 1
+                            deleted_redis_keys.append(redis_key)
+                        else:
+                            # This means key did not exist or delete failed for other reason (though delete is usually robust)
+                            print(f"Redis key not found or not deleted: {redis_key}")
                 except redis_py.exceptions.RedisError as re:
                     print(f"RedisError deleting key {redis_key}: {re}")
                 except Exception as e:
                     print(f"Unexpected error deleting Redis key {redis_key}: {e}")
-            
+
             # Mark MongoDB document for deletion if its Redis keys were processed
             processed_mongo_docs_ids.append(doc_id)
 
@@ -172,13 +186,17 @@ def delete_old_redis_data(event, context):
                 'mongo_docs_queried_count': mongo_docs_found_count,
                 'mongo_docs_processed_for_deletion_count': len(processed_mongo_docs_ids),
                 'mongo_docs_actually_deleted_count': mongo_docs_deleted_successfully_count,
+                'deleted_redis_keys': deleted_redis_keys,
                 'redis_cluster_endpoint': os.environ.get("REDIS_CLUSTER_ENDPOINT", "Unknown"),
                 'cutoff_timestamp_seconds': cutoff_timestamp_seconds,
                 'report_time': datetime.now().isoformat()
             }
+
+            formatted_message = json.dumps(message_payload, indent=4)
+
             sns_client.publish(
                 TopicArn=sns_topic_arn,
-                Message=json.dumps(message_payload),
+                Message=formatted_message,
                 Subject='Redis Data Deletion Cron Alert (via MongoDB)'
             )
             print(f"Summary: Deleted {deleted_redis_keys_count} Redis keys. Processed {len(processed_mongo_docs_ids)} MongoDB docs. Alert sent to SNS.")
