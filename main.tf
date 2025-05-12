@@ -78,7 +78,7 @@ data "aws_ssm_parameter" "redis_node_groups" {
   provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "snapshot_name" {
-  name = "REDIS_SNAPSHOT_NAME"
+  name = "SNAPSHOT_NAME"
   provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "redis_node_replica_groups" {
