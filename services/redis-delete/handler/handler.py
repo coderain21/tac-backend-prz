@@ -1,3 +1,4 @@
+'''This function is used to delete the data from redis using the keys stored in db using a schedule'''
 import os
 import json
 import boto3
