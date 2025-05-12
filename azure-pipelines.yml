@@ -205,6 +205,7 @@ stages:
             source .env
             aws sts get-caller-identity --profile "$PROFILE_ENV"
             pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
+            python access_token_generation.py
             npm i -g dredd
             ./api-testing.sh
             if [ $? -ne 0 ]; then
