@@ -22,6 +22,7 @@ provider:
     MONGODB_NAME: ${opt:stage, self:provider.stage}
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${self:custom.mongodbConnectionString}
+    REDIS_KEYS_COLLECTION: ${opt:stage, self:provider.stage}-redis-data-keys
   
      
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
@@ -97,7 +98,7 @@ resources:
       Properties:
         TopicArn: !Ref RedisDeleteAlertsTopic
         Protocol: email
-        Endpoint: ibrahim.khaleel@7edge.com
+        Endpoint: ${ssm:ADMIN_USERNAME}
 
 functions:
   deleteOldRedisData:

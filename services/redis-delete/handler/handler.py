@@ -1,29 +1,31 @@
 import os
 import json
 import boto3
-import redis as redis_py # Import the redis module
-from rediscluster import RedisCluster
-from pymongo import MongoClient,errors as pymongo_errors # For MongoDB interaction
-from datetime import datetime, timedelta
-import traceback # For detailed error logging if needed
+import redis as redis_py  # Redis module for exceptions
+from rediscluster import RedisCluster  # For connecting to Redis Cluster
+from pymongo import MongoClient, errors as pymongo_errors  # MongoDB client and error handling
+from datetime import datetime, timedelta  # For time-based filtering
+import traceback  # For detailed stack trace in case of errors
 
-# Redis client creation function (remains similar)
+# Function to create and return a Redis Cluster client
 def createRedisClient():
     try:
+        # Define Redis cluster nodes
         startup_nodes = [
             {
                 "host": os.environ["REDIS_CLUSTER_ENDPOINT"],
-                "port": 6379 # Default Redis port
+                "port": 6379  # Default Redis port
             }
         ]
-        # Ensure REDIS_CLUSTER_ENDPOINT is set
+        # Ensure the Redis endpoint environment variable is set
         if not os.environ.get("REDIS_CLUSTER_ENDPOINT"):
             raise ValueError("REDIS_CLUSTER_ENDPOINT environment variable not set.")
-            
+
+        # Create Redis cluster connection
         cluster = RedisCluster(
             startup_nodes=startup_nodes,
-            decode_responses=True, # Important for string responses
-            skip_full_coverage_check=True
+            decode_responses=True,  # Decode responses to string
+            skip_full_coverage_check=True  # Skip coverage check for flexibility
         )
         print("Successfully connected to Redis Cluster.")
         return cluster
@@ -34,21 +36,21 @@ def createRedisClient():
         print(f"Generic error connecting to Redis: {e}")
         raise
 
-# MongoDB client and collection retrieval
+# Function to connect to MongoDB and return the relevant collection
 def get_mongodb_collection():
     try:
         mongo_uri = os.environ.get("MONGO_CLIENT")
         db_name = os.environ.get("MONGODB_NAME")
-        collection_name = "redis-data-keys" # As specified
+        collection_name = os.environ.get("REDIS_KEYS_COLLECTION")
 
+        # Validate MongoDB environment variables
         if not mongo_uri:
             raise ValueError("MONGO_URI environment variable not set.")
         if not db_name:
             raise ValueError("MONGO_DB_NAME environment variable not set.")
 
         client = MongoClient(mongo_uri)
-        # Test connection
-        client.admin.command('ping') 
+        client.admin.command('ping')  # Test MongoDB connection
         db = client[db_name]
         print(f"Successfully connected to MongoDB. DB: {db_name}, Collection: {collection_name}")
         return db[collection_name]
@@ -59,16 +61,18 @@ def get_mongodb_collection():
         print(f"Error getting MongoDB collection: {e}")
         raise
 
+# Main function to delete old Redis keys based on data in MongoDB
 def delete_old_redis_data(event, context):
     redis_cluster = None
     mongo_collection = None
 
     try:
+        # Setup Redis and MongoDB connections
         redis_cluster = createRedisClient()
         mongo_collection = get_mongodb_collection()
     except Exception as setup_e:
+        # Send SNS alert if setup fails
         print(f"Setup error (Redis or MongoDB connection): {setup_e}")
-        # Attempt to send SNS if topic ARN is available, even for setup errors
         sns_topic_arn_setup = os.environ.get('SNS_TOPIC_ARN')
         if sns_topic_arn_setup:
             try:
@@ -92,47 +96,43 @@ def delete_old_redis_data(event, context):
 
     sns_topic_arn = os.environ.get('SNS_TOPIC_ARN')
     deleted_redis_keys_count = 0
-    processed_mongo_docs_ids = [] # Store IDs of docs to be deleted from Mongo
-    deleted_redis_keys = [] # Store deleted Redis keys
+    processed_mongo_docs_ids = []  # Track MongoDB documents processed
+    deleted_redis_keys = []  # Track Redis keys deleted
 
     try:
-        # Calculate the cutoff timestamp (10 days ago, Unix timestamp in seconds)
+        # Determine cutoff datetime (10 days ago)
         cutoff_datetime = datetime.now() - timedelta(days=10)
         cutoff_timestamp_seconds = int(cutoff_datetime.timestamp())
-        # cutoff_timestamp_seconds = 1747033629
+        print(f"Cutoff timestamp: {cutoff_timestamp_seconds} ({cutoff_datetime.isoformat()})")
 
-        print(f"Cutoff timestamp for MongoDB 'created_at' (seconds): {cutoff_timestamp_seconds} ({cutoff_datetime.isoformat()})")
-
-        # Find documents in MongoDB older than the cutoff
-        # Assuming 'created_at' is stored as Unix timestamp in seconds
+        # Find MongoDB documents older than cutoff timestamp
         old_docs_cursor = mongo_collection.find({"created_at": {"$lte": cutoff_timestamp_seconds}})
-
-        mongo_docs_found_count = 0 # To count how many docs match the query
+        mongo_docs_found_count = 0
 
         for doc in old_docs_cursor:
             mongo_docs_found_count += 1
             doc_id = doc['_id']
-            print(f"Processing MongoDB document ID: {doc_id}, created_at: {doc.get('created_at')}")
+            print(f"Processing document ID: {doc_id}, created_at: {doc.get('created_at')}")
 
+            # Extract possible Redis keys from document
             redis_keys_in_doc = [
                 doc.get("lot_key"),
                 doc.get("lot_history_key"),
                 doc.get("auction_history_key")
             ]
-            # Filter out None values if a key is not present in the document
             redis_keys_to_delete = [key for key in redis_keys_in_doc if key]
 
             print(f"Redis keys to attempt deletion for doc {doc_id}: {redis_keys_to_delete}")
 
+            # If no keys to delete, mark doc for deletion from MongoDB anyway
             if not redis_keys_to_delete:
-                print(f"No valid Redis keys found in document {doc_id}. Marking for deletion from Mongo.")
                 processed_mongo_docs_ids.append(doc_id)
                 continue
 
             deleted_for_this_doc_session = 0
             for redis_key in redis_keys_to_delete:
                 try:
-                    # redis_cluster.hdel returns the number of keys deleted (0 or 1 for a single key)
+                    # If key is part of 'lot' hash, delete it from that hash
                     if redis_key.startswith("lot:"):
                         if redis_cluster.hdel("lot", redis_key) > 0:
                             print(f"Successfully deleted Redis key: {redis_key}")
@@ -140,7 +140,6 @@ def delete_old_redis_data(event, context):
                             deleted_for_this_doc_session += 1
                             deleted_redis_keys.append(redis_key)
                         else:
-                            # This means key did not exist or delete failed for other reason (though delete is usually robust)
                             print(f"Redis key not found or not deleted: {redis_key}")
                     else:
                         if redis_cluster.delete(redis_key) > 0:
@@ -149,35 +148,32 @@ def delete_old_redis_data(event, context):
                             deleted_for_this_doc_session += 1
                             deleted_redis_keys.append(redis_key)
                         else:
-                            # This means key did not exist or delete failed for other reason (though delete is usually robust)
                             print(f"Redis key not found or not deleted: {redis_key}")
                 except redis_py.exceptions.RedisError as re:
                     print(f"RedisError deleting key {redis_key}: {re}")
                 except Exception as e:
                     print(f"Unexpected error deleting Redis key {redis_key}: {e}")
 
-            # Mark MongoDB document for deletion if its Redis keys were processed
+            # Mark document for deletion after processing Redis keys
             processed_mongo_docs_ids.append(doc_id)
 
-        print(f"Found {mongo_docs_found_count} documents in MongoDB older than cutoff.")
+        print(f"Found {mongo_docs_found_count} documents older than cutoff.")
 
-        # Batch delete processed documents from MongoDB
+        # Attempt to delete processed documents from MongoDB
         mongo_docs_deleted_successfully_count = 0
         if processed_mongo_docs_ids:
             try:
                 delete_result = mongo_collection.delete_many({"_id": {"$in": processed_mongo_docs_ids}})
                 mongo_docs_deleted_successfully_count = delete_result.deleted_count
-                print(f"Attempted to delete {len(processed_mongo_docs_ids)} docs from MongoDB. Successfully deleted: {mongo_docs_deleted_successfully_count}.")
+                print(f"Successfully deleted {mongo_docs_deleted_successfully_count} MongoDB documents.")
                 if mongo_docs_deleted_successfully_count != len(processed_mongo_docs_ids):
-                    print(f"Warning: Mismatch in MongoDB deletions. Expected {len(processed_mongo_docs_ids)}, got {mongo_docs_deleted_successfully_count}.")
+                    print(f"Warning: Mismatch in expected vs. actual MongoDB deletions.")
             except pymongo_errors.PyMongoError as pme:
                 print(f"Error deleting documents from MongoDB: {pme}")
-                # Continue to SNS reporting, but note the failure.
         else:
-            print("No MongoDB documents were marked for deletion.")
+            print("No MongoDB documents marked for deletion.")
 
-
-        # Send alert to SNS
+        # Send summary via SNS if topic is configured
         if sns_topic_arn:
             sns_client = boto3.client('sns')
             message_payload = {
@@ -192,16 +188,14 @@ def delete_old_redis_data(event, context):
                 'report_time': datetime.now().isoformat()
             }
 
-            formatted_message = json.dumps(message_payload, indent=4)
-
             sns_client.publish(
                 TopicArn=sns_topic_arn,
-                Message=formatted_message,
+                Message=json.dumps(message_payload, indent=4),
                 Subject='Redis Data Deletion Cron Alert (via MongoDB)'
             )
-            print(f"Summary: Deleted {deleted_redis_keys_count} Redis keys. Processed {len(processed_mongo_docs_ids)} MongoDB docs. Alert sent to SNS.")
+            print("SNS alert sent.")
         else:
-            print(f"Summary: Deleted {deleted_redis_keys_count} Redis keys. Processed {len(processed_mongo_docs_ids)} MongoDB docs. SNS_TOPIC_ARN not set, no alert sent.")
+            print("SNS_TOPIC_ARN not set. No alert sent.")
 
         return {
             'statusCode': 200,
@@ -211,6 +205,7 @@ def delete_old_redis_data(event, context):
         }
 
     except Exception as e:
+        # In case of unexpected failure, send detailed error via SNS
         detailed_error = traceback.format_exc()
         print(f"Critical error in delete_old_redis_data: {e}\n{detailed_error}")
         if sns_topic_arn:
@@ -219,9 +214,11 @@ def delete_old_redis_data(event, context):
                 'status': 'ERROR',
                 'error_type': type(e).__name__,
                 'error_message': str(e),
-                'traceback': detailed_error, # Provide more details in SNS for critical errors
+                'traceback': detailed_error,
                 'redis_cluster_endpoint': os.environ.get("REDIS_CLUSTER_ENDPOINT", "Unknown"),
-                'report_time': datetime.now().isoformat()
+                'report_time': datetime.now().isoformat(),
+                'undeleted_redis_keys': list(set(redis_keys_to_delete) - set(deleted_redis_keys)) if 'redis_keys_to_delete' in locals() else [],
+                'successfully_deleted_keys': deleted_redis_keys if 'deleted_redis_keys' in locals() else []
             }
             sns_client.publish(
                 TopicArn=sns_topic_arn,
@@ -234,12 +231,3 @@ def delete_old_redis_data(event, context):
                 'message': f'Critical error during Redis data deletion via MongoDB: {str(e)}'
             })
         }
-
-# Example of how to manually test (if run locally, not in Lambda)
-#if __name__ == '__main__':
-#    # Set environment variables for local testing
-#    os.environ['REDIS_CLUSTER_ENDPOINT'] = 'your-redis-endpoint.com'
-#    os.environ['MONGO_URI'] = 'mongodb://user:pass@host:port/'
-#    os.environ['MONGO_DB_NAME'] = 'your_db_name'
-#    os.environ['SNS_TOPIC_ARN'] = 'arn:aws:sns:region:account-id:your-sns-topic'
-#    delete_old_redis_data({}, {})

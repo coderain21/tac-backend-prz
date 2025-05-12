@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 
+const stage = process.env.STAGE
+
 const RedisDataKeysSchema = new mongoose.Schema({
     lot_key: {
         type: String,
@@ -25,4 +27,4 @@ const RedisDataKeysSchema = new mongoose.Schema({
 // Indexing created_at for faster querying of old documents
 RedisDataKeysSchema.index({ created_at: 1 })
 
-module.exports = mongoose.model('redis-data-keys', RedisDataKeysSchema, 'redis-data-keys')
+module.exports = mongoose.model(`${stage}-redis-data-keys`, RedisDataKeysSchema, `${stage}-redis-data-keys`)
