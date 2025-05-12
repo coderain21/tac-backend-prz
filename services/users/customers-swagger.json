@@ -620,7 +620,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "aishwarya@7edge.com"
+              "example": "sthuthi+testing@7edge.com"
             }
           ],
           "requestBody": {
@@ -642,7 +642,7 @@
                 },
                 "example": {
                   "current_plan": "Free",
-                  "new_plan": "Starter",
+                  "new_plan": "Pro",
                   "plan_status": "Upgrade"
 
                 }
