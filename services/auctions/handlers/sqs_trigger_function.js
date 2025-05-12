@@ -378,15 +378,15 @@ module.exports.sqsTriggerFunction = async (event) => {
             if (lastRecord.lot_number === event.lot_number) {
                 for (const lot of get_lot) {
                     const redisKeys = `lot:${lot._id}`
-                    const redisCronData = { // created_at will be handled by the schema default
+                    const redisDataKeys = { // created_at will be handled by the schema default
                         lot_key: redisKeys,
                         lot_history_key: `lot-history:${lot._id}`,
                         auction_history_key: `auction:${auctionData.auction_id}#${lot._id}`,
                     }
                     // Use the new helper function that utilizes the Mongoose model
-                    const savedCronDoc = await mongodbHelper.saveRedisDatakeys(redisCronData)
-                    if (savedCronDoc) {
-                        console.log(`Stored redis keys in redis-cron-data collection for lot ${lot._id}, doc ID: ${savedCronDoc._id}`)
+                    const savedDataKeys = await mongodbHelper.saveRedisDataKeys(redisDataKeys)
+                    if (savedDataKeys) {
+                        console.log(`Stored redis keys in redis-cron-data collection for lot ${lot._id}, doc ID: ${savedDataKeys._id}`)
                     } else {
                         console.error(`Failed to store redis keys in redis-cron-data for lot ${lot._id}`)
                     }

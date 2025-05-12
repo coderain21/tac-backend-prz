@@ -37,9 +37,9 @@ def createRedisClient():
 # MongoDB client and collection retrieval
 def get_mongodb_collection():
     try:
-        mongo_uri = os.environ.get("MONGO_URI")
-        db_name = os.environ.get("MONGO_DB_NAME")
-        collection_name = "redis-cron-data" # As specified
+        mongo_uri = os.environ.get("MONGO_CLIENT")
+        db_name = os.environ.get("MONGODB_NAME")
+        collection_name = "redis-data-keys" # As specified
 
         if not mongo_uri:
             raise ValueError("MONGO_URI environment variable not set.")
@@ -97,13 +97,14 @@ def delete_old_redis_data(event, context):
     try:
         # Calculate the cutoff timestamp (10 days ago, Unix timestamp in seconds)
         cutoff_datetime = datetime.now() - timedelta(days=10)
-        cutoff_timestamp_seconds = int(cutoff_datetime.timestamp())
+        # cutoff_timestamp_seconds = int(cutoff_datetime.timestamp())
+        cutoff_timestamp_seconds = 1747033629
 
         print(f"Cutoff timestamp for MongoDB 'created_at' (seconds): {cutoff_timestamp_seconds} ({cutoff_datetime.isoformat()})")
 
         # Find documents in MongoDB older than the cutoff
         # Assuming 'created_at' is stored as Unix timestamp in seconds
-        old_docs_cursor = mongo_collection.find({"created_at": {"$lt": cutoff_timestamp_seconds}})
+        old_docs_cursor = mongo_collection.find({"created_at": {"$lte": cutoff_timestamp_seconds}})
 
         mongo_docs_found_count = 0 # To count how many docs match the query
 
