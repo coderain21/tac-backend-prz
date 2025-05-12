@@ -81,9 +81,6 @@ def delete_lot(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         # Parse the incoming JSON request
-        # Initialize the MongoDB client
-        # collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        # auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         request_body = json.loads(event['body'])
         print(request_body)
 

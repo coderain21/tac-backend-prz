@@ -66,13 +66,6 @@ def list_lots(event, context):
         export = event['queryStringParameters'].get('export', False)
         download_link = None
 
-        client = pymongo.MongoClient(os.environ['MONGO_CLIENT'])
-        db = client[os.environ['DATABASE']]
-        collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        collection_bidders = db[os.environ["UNIQUE_BIDDERS_COLLECTIONS"]]
-        # total_bidders = collection_bidders.count_documents({"seller_email": seller_email,
-        #                                              "auction_id": auction_id})
-        # print('total_bids', total_bidders)
         pipeline = [
             {
                 "$match": {

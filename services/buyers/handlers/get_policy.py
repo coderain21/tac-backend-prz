@@ -2,7 +2,7 @@
 import json
 import os
 from pymongo import MongoClient
-# from bson import ObjectId
+from bson import ObjectId
 from lib.common_helper import Encoder
 import urllib.parse
 
@@ -20,6 +20,7 @@ client = MongoClient(
                         )
 db = client[os.environ['DATABASE']]
 seller_collection = db[os.environ["SELLERS_TABLE"]]
+auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 
 def get_policy(event, context):
@@ -31,15 +32,16 @@ def get_policy(event, context):
     """
     try:
         data = event['pathParameters']
-        seller_email = urllib.parse.unquote(event['pathParameters']['seller_email'])
-        if not seller_email:
+        auction_id = urllib.parse.unquote(event['pathParameters']['auction_id'])
+        if not auction_id:
             return {
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide seller email"})
             }
 
-        # auction_collection= db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
+        auction_info = auction_collection.find_one({"_id": ObjectId(auction_id)})
+        seller_email = auction_info.get('seller_email')
         # Fetch required fields: privacy_policy, created_at, first_name, last_name
         seller_info = seller_collection.find_one(
             {'email_address': seller_email},

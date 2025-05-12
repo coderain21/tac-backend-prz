@@ -548,7 +548,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /policy/{seller_email}
+          path: /policy/{auction_id}
           method: get
 
 

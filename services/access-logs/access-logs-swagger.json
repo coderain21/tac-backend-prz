@@ -11,8 +11,7 @@
     }
   ],
   "tags": [
-    {
-      
+    { 
       "name": "Access Logs",
       "description": "APIs to manage the access logs in the admin panel"
     }
