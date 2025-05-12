@@ -1,7 +1,7 @@
 #AWS Provider with profile Stage account
 provider "aws" {
-  region ="eu-west-2"
-  alias = "deployment-us"   # Specify a default AWS region here
+  region = var.REGION
+  alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
 
@@ -15,7 +15,7 @@ resource "null_resource" "python" {
 resource "aws_lambda_layer_version" "lambda_python_layer" {
   layer_name          = "python-dependency-${var.STAGE}"
   filename            = data.archive_file.python_layer_code_zip.output_path
-  provider=aws.deployment-us
+  provider=aws.deployment-eu
 }
 
 
@@ -31,7 +31,7 @@ resource "aws_ssm_parameter" "s3_bucket" {
   overwrite = true
   type  = "String"
   value = aws_lambda_layer_version.lambda_python_layer.arn
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 resource "null_resource" "python2" {
@@ -43,7 +43,7 @@ resource "null_resource" "python2" {
 resource "aws_lambda_layer_version" "lambda_python_layer_2" {
   layer_name          = "python-dependency-2-${var.STAGE}"
   filename            = data.archive_file.python_layer_code_zip_2.output_path
-  provider=aws.deployment-us
+  provider=aws.deployment-eu
 }
 
 
@@ -59,6 +59,6 @@ resource "aws_ssm_parameter" "python_library_2" {
   overwrite = true
   type  = "String"
   value = aws_lambda_layer_version.lambda_python_layer_2.arn
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 

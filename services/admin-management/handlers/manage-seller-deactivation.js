@@ -5,7 +5,7 @@
 const mongodbHelper = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
 const Wishlist = require('../entities/Wishlist')
-const AccessLogs = require('../entities/AccessLogs')
+// const AccessLogs = require('../entities/AccessLogs')
 
 let connection = null
 
@@ -35,7 +35,7 @@ module.exports.handler = async (event) => {
         const deleteWishlistAuctions = await mongodbHelper.deleteWishlistedAuction(sellerEmail, Wishlist)
         console.log(deleteWishlistAuctions)
 
-        await mongodbHelper.save(event, AccessLogs)
+        // await mongodbHelper.save(event, AccessLogs)
         return true
     } catch (err) {
         console.log('error', err)

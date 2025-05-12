@@ -60,12 +60,7 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Please provide auction_id"})
             }
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+
         auction_id = data["auction_id"]
         projection = {
             "_id": 1,

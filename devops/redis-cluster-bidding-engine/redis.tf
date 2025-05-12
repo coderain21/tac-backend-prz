@@ -1,7 +1,7 @@
 #AWS Provider with profile Stage account
 provider "aws" {
-  region ="eu-west-2"
-  alias = "deployment-us"   # Specify a default AWS region here
+  region = var.REGION
+  alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
 
@@ -15,14 +15,14 @@ terraform {
 
 data "aws_vpc" "default" {
   default = true
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
 resource "aws_elasticache_subnet_group" "subnet_groups" {
   name       = "redis-subnet-group-cluster-enabled"
   subnet_ids = [data.aws_ssm_parameter.subnet.value]
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }
 
 
@@ -57,13 +57,13 @@ resource "aws_elasticache_replication_group" "websocket" {
   security_group_ids = [data.aws_ssm_parameter.security_group.value]
   maintenance_window         = "sun:01:00-sun:03:00"
   apply_immediately          = true
-  provider                  = aws.deployment-us
+  provider                  = aws.deployment-eu
 }
 resource "aws_ssm_parameter" "distribution_id" {
   name  = "REDIS_CLUSTER_ENDPOINT"
   type  = "String"
   value = aws_elasticache_replication_group.websocket.configuration_endpoint_address
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
   overwrite = true 
 }
 locals {
@@ -74,5 +74,5 @@ resource "aws_ssm_parameter" "redis_host_parameter" {
   type  = "String"
   value = "redis://${local.redis_host}:6379"
   overwrite = true 
-  provider = aws.deployment-us
+  provider = aws.deployment-eu
 }

@@ -189,6 +189,22 @@ functions:
       - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
       - ${ssm:SUBNET_ID}
+
+  admin-pre-signup:
+    handler: handlers/admin_pre_signup.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-indyauction-admin
+          trigger: PreSignUp
+          existing: true
+
   
 
 resources:

@@ -32,6 +32,29 @@ module.exports.updateUserInformation = async (event) => {
         }
         const request_body = JSON.parse(event.body)
         const email = decodeURIComponent(event.pathParameters.email)
+
+        // Authorization check to verify user has permission to update this profile
+        try {
+            const email_address = event.requestContext.authorizer.claims.email
+            if (email_address !== email) {
+                return {
+                    headers,
+                    statusCode: 403,
+                    body: JSON.stringify({
+                        message: 'You do not have access to perform this API action',
+                    }),
+                }
+            }
+        } catch (error) {
+            return {
+                headers,
+                statusCode: 403,
+                body: JSON.stringify({
+                    message: 'You do not have access to perform this API action',
+                }),
+            }
+        }
+
         const keys = Object.keys(request_body)
         connection = await mongoConnection.connect()
         if (keys.length === 0) {

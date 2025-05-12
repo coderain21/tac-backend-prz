@@ -35,32 +35,7 @@ wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
 
 def create(event, context):
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            # print('email', email_address)
-            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-            #     print('here in first')
-            #     return {
-            #         "statusCode": 403,
-            #         "headers": headers,
-            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-            #     }
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
@@ -82,20 +57,11 @@ def create(event, context):
                 'body': json.dumps({'message': 'Please provide a lot id'})
             }
         lot_id = ObjectId(lot)
-        # client = MongoClient(
-                    #   os.environ['MONGO_CLIENT'],
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                    #     )
-        # db = client[os.environ['DATABASE']]
-        # lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
-        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
-        # wish_list = db[os.environ['BUYER_WISHLIST_TABLE_NAME']]
         lot_detail = lot_collection.find_one({'_id': lot_id})
         seller_email = lot_detail['seller_email']
         auction_name = body['auction_name']
         auction_uid = data['auction_uid']
 
-        # buyer_details = buyer_collection.find_one({'email_address': email_address})
         buyer_id = ObjectId(data['buyer_id'])
         insert_data = {
             'seller_email': seller_email,

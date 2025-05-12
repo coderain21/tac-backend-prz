@@ -77,22 +77,6 @@ def register_auction(event, context):
         Exception: If an internal server error occurs.
     """
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
