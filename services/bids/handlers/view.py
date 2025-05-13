@@ -25,25 +25,31 @@ buyer_collection = db[os.environ['BUYER_COLLECTION']]
 
 def view_bidder(event, context):
     try:
+        try:
+            seller_email = event['requestContext']['authorizer']['claims']['email']
+        except:
+            return {
+                "headers": headers,
+                "statusCode": 403,
+                "body": json.dumps({"message": "You do not have access to perform this API action"})
+            }
         # Extract bidder ID from the path parameter
         bidder_id = ObjectId(event['pathParameters']['id'])
 
-        # Retrieve bidder details from the database
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        # buyer_collection = db[os.environ['BUYER_COLLECTION']]
         projection = {
             'password': 0
         }
 
         # Retrieve bidder details from the buyer_collection
-        bidder_details = collection.find_one({"_id": bidder_id})
+        bidder_details = collection.find_one({"_id": bidder_id, "seller_email": seller_email})
+        if not bidder_details:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Bidder not found"})
+            }
         bidder_email = bidder_details['email_address']
-        seller_email = bidder_details['seller_email']
+        # seller_email = bidder_details['seller_email']
         buyer_bidder_details = buyer_collection.find_one({'email_address': bidder_email, 'seller_email': seller_email},projection)
 
         # Define the order of keys
