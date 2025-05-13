@@ -127,26 +127,29 @@ module.exports.updateUserInformation = async (event) => {
                 }
             }
         }
-
-        const user_id = get_user[0]._id
-        if (request_body.first_name || request_body.last_name) {
-            const filter = { seller_email: email }
-            const user = get_user[0]
-            if (request_body.first_name && request_body.last_name) {
-                // Both first and last name provided
-            } else if (request_body.first_name) {
-                request_body.last_name = user.last_name
-            } else if (request_body.last_name) {
-                request_body.first_name = user.first_name
+        if (get_user !== null) {
+            const user_id = get_user[0]._id
+            if (request_body.first_name || request_body.last_name) {
+                const filter = { seller_email: email }
+                const user = get_user[0]
+                if (request_body.first_name && request_body.last_name) {
+                    request_body.first_name = request_body.first_name || user.first_name
+                    request_body.last_name = request_body.last_name || user.last_name
+                } else if (request_body.first_name) {
+                    request_body.last_name = user.last_name
+                } else if (request_body.last_name) {
+                    request_body.first_name = user.first_name
+                }
+                const update = { $set: { seller_name: `${request_body.first_name} ${request_body.last_name}` } }
+                const updateResult = await Auction.updateMany(filter, update)
+                console.log(updateResult, 'updateResult')
             }
-            const update = { $set: { seller_name: `${request_body.first_name || user.first_name} ${request_body.last_name || user.last_name}` } }
-            const updateResult = await Auction.updateMany(filter, update)
-            console.log('Auction update result:', updateResult)
-        }
-
-        const update_user_information = await mongoConnection.update(Users, user_id, request_body)
-        if (update_user_information.acknowledged) {
-            try {
+            // Check if privacy_policy is being updated and add timestamp
+            if (request_body.privacy_policy !== undefined && request_body.privacy_policy !== null) {
+                request_body.policy_updated_at = new Date()
+            }
+            const update_user_information = await mongoConnection.update(Users, user_id, request_body)
+            if (update_user_information.acknowledged) {
                 await cognitoHelper.cognitoUpdate(request_body, email)
                 console.log('User updated successfully')
 

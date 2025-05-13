@@ -15,7 +15,6 @@ generate_token() {
 
     python3 "$PYTHON_SCRIPT" > logins.sh
     logins_file="logins.sh"
-    cat logins.sh
 
     if [ -r "$logins_file" ]; then
         while IFS= read -r line; do

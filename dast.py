@@ -9,6 +9,8 @@ import requests
 import json
 import datetime
 import jwt
+from boto3.session import Session
+
 
 # Determine the repository path using pathlib
 repo_path = git.Repo('.', search_parent_directories=True).working_tree_dir
@@ -27,7 +29,9 @@ print("Parent commit SHAs:", parent_commit_shas)
 
 
 # Initialize the Cognito client
-client = boto3.client('cognito-idp',region_name='eu-west-2')
+profile = os.environ['PROFILE_ENV']
+session = Session(profile_name=profile)
+client = session.client('cognito-idp', region_name='eu-west-2')
 
 # Function to find Swagger files in the repository
 def find_swagger_files(root_dir):
