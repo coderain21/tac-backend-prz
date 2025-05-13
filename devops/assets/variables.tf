@@ -202,4 +202,8 @@ variable "SUB_ENC_KEY" {
   description = "Description of the variable"
 }
 
+variable "ADMIN_USERNAME" {
+  type        = string
+  description = "Description of the variable"
+}
 
