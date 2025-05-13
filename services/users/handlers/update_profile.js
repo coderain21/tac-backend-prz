@@ -27,34 +27,16 @@ parameters. */
 module.exports.updateUserInformation = async (event) => {
     try {
         if (connection === null || !connection.readyState) {
-            console.log('not connected')
+            console.log('not coonected')
             connection = await mongoConnection.connect()
         }
         const request_body = JSON.parse(event.body)
         const email = decodeURIComponent(event.pathParameters.email)
 
-        console.log('Request path email:', email)
-        console.log('Authorization claims:', JSON.stringify(event.requestContext.authorizer))
-
         // Authorization check to verify user has permission to update this profile
         try {
-            if (!event.requestContext.authorizer || !event.requestContext.authorizer.claims) {
-                console.log('Missing authorization claims')
-                return {
-                    headers,
-                    statusCode: 403,
-                    body: JSON.stringify({
-                        message: 'Authorization failed - missing claims',
-                    }),
-                }
-            }
-
             const email_address = event.requestContext.authorizer.claims.email
-            console.log('Token email:', email_address)
-
-            // Compare emails case-insensitively
-            if (email_address.toLowerCase() !== email.toLowerCase()) {
-                console.log('Email mismatch:', email_address, email)
+            if (email_address !== email) {
                 return {
                     headers,
                     statusCode: 403,
@@ -64,32 +46,17 @@ module.exports.updateUserInformation = async (event) => {
                 }
             }
         } catch (error) {
-            console.log('Authorization error:', error)
             return {
                 headers,
                 statusCode: 403,
                 body: JSON.stringify({
                     message: 'You do not have access to perform this API action',
-                    error: error.message,
-                }),
-            }
-        }
-
-        // restricting the user not to update email address
-        if (request_body.email_address && request_body.email_address.toLowerCase() !== email.toLowerCase()) {
-            console.log('Email change attempt detected')
-            console.log('Requested email:', request_body.email_address)
-            console.log('Path email:', email)
-            return {
-                headers,
-                statusCode: 400,
-                body: JSON.stringify({
-                    message: 'You do not have access to change the email address',
                 }),
             }
         }
 
         const keys = Object.keys(request_body)
+        connection = await mongoConnection.connect()
         if (keys.length === 0) {
             body = JSON.stringify({
                 message: 'Please pass atleast one field',
@@ -100,22 +67,10 @@ module.exports.updateUserInformation = async (event) => {
                 body,
             }
         }
-
         const get_user = await mongoConnection.view(Users, { email_address: email })
-        if (!get_user || get_user.length === 0) {
-            body = JSON.stringify({
-                message: 'User not found',
-            })
-            return {
-                headers,
-                statusCode: 404,
-                body,
-            }
-        }
-
         if (request_body.business_registration_number) {
             const business_name = await mongoConnection.view(Users, { business_registration_number: request_body.business_registration_number })
-            if (business_name.length > 0 && business_name[0].email_address.toLowerCase() !== email.toLowerCase()) {
+            if (business_name.length > 0 && business_name[0].email_address !== email) {
                 body = JSON.stringify({
                     success_status: false,
                     message: 'Already Exists',
@@ -151,60 +106,48 @@ module.exports.updateUserInformation = async (event) => {
             const update_user_information = await mongoConnection.update(Users, user_id, request_body)
             if (update_user_information.acknowledged) {
                 await cognitoHelper.cognitoUpdate(request_body, email)
-                console.log('User updated successfully')
-
-                // For successful updates, use 200 OK with body (or 204 with NO body)
-                // return {
-                //     headers,
-                //     statusCode: 200,
-                //     body: JSON.stringify({
-                //         success_status: true,
-                //         message: 'Changes saved successfully',
-                //     }),
-                // }
-
-                // Alternative: If you want to use 204, don't include a body
+                body = JSON.stringify({
+                    success_status: true,
+                    message: 'Changes saved successfully',
+                })
                 return {
                     headers,
                     statusCode: 204,
+                    body,
                 }
-            } catch (cognitoError) {
-                console.log('Cognito update error:', cognitoError)
-                // Database was updated but Cognito failed
-                return {
-                    headers,
-                    statusCode: 207, // Partial success
-                    body: JSON.stringify({
-                        success_status: true,
-                        message: 'Database updated but identity provider sync failed',
-                        error: cognitoError.message,
-                    }),
-                }
+            }
+            body = JSON.stringify({
+                message: 'Failed to update information.',
+            })
+
+            return {
+                headers,
+                statusCode: 400,
+                body,
             }
         }
 
         body = JSON.stringify({
-            message: 'Failed to update information.',
+            message: 'User not found',
+        })
+        return {
+            headers,
+            statusCode: 404,
+            body,
+        }
+    } catch (error) {
+        console.log(error)
+        body = JSON.stringify({
+            message: 'Failed to update information',
         })
         return {
             headers,
             statusCode: 400,
             body,
         }
-    } catch (error) {
-        console.log('General error:', error)
-        body = JSON.stringify({
-            message: 'Failed to update information',
-            error: error.message,
-        })
-        return {
-            headers,
-            statusCode: 500, // Changed to 500 for server errors
-            body,
-        }
     } finally {
         // Disconnect from the MongoDB database
-        if (connection && connection.disconnect) {
+        if (connection) {
             await connection.disconnect()
         }
     }
