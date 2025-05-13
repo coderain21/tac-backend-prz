@@ -11,7 +11,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = "eu-west-2"
+  region = var.REGION
   alias = "deployment-eu"   
   profile = "indyauction-${var.STAGE}"
 }

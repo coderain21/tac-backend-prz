@@ -37,32 +37,7 @@ def paddle_number(event, context):
     response depends on the execution path of the code.
     """
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
-            # email_address = event['requestContext']['authorizer']['claims']['email']
-            # print('email', email_address)
-            # if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'buyer' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
-            #     print('here in first')
-            #     return {
-            #         "statusCode": 403,
-            #         "headers": headers,
-            #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-            #     }
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
         except:
@@ -85,13 +60,6 @@ def paddle_number(event, context):
             }
         auction_id= data['auction_id']
         auction_id= ObjectId(auction_id)
-        # client = MongoClient(
-                    #   os.environ['MONGO_CLIENT'],
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                    #     )
-        # db = client[os.environ['DATABASE']]
-        # buyer = db[os.environ["REGISTER_AUCTION_COLLECTION"]]
-        # auction=db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         auction_details= auction.find_one({'_id':auction_id})
         paddle=buyer.find_one({"seller_email":auction_details['seller_email'],
                                'email_address':email_address,'auction_id':auction_id})

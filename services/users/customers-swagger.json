@@ -36,7 +36,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "aishwarya@7edge.com"
+              "example": "sthuthi+testing@7edge.com"
             }
           ],
           "responses": {
@@ -187,7 +187,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "aishwarya@7edge.com"
+              "example": "sthuthi+testing@7edge.com"
             }
           ],
           "requestBody": {
@@ -620,7 +620,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "aishwarya@7edge.com"
+              "example": "sthuthi+testing@7edge.com"
             }
           ],
           "requestBody": {
@@ -642,7 +642,7 @@
                 },
                 "example": {
                   "current_plan": "Free",
-                  "new_plan": "Starter",
+                  "new_plan": "Pro",
                   "plan_status": "Upgrade"
 
                 }
@@ -863,7 +863,7 @@
               "schema": {
                 "type": "string"
               },
-              "example": "aishwarya@7edge.com"
+              "example": "sthuthi+testing@7edge.com"
             }
           ],
           "requestBody": {
@@ -1061,7 +1061,7 @@
                   }
                 },
                 "example": {
-                  "email_address": "aishwarya@7edge.com"
+                  "email_address": "sthuthi+testing@7edge.com"
                 }
               }
             }
