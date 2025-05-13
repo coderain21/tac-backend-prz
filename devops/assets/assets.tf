@@ -640,6 +640,15 @@ resource "aws_ssm_parameter" "sub_enc_key" {
 }
 
 
+resource "aws_ssm_parameter" "admin_username" {
+  name  = "ADMIN_USERNAME"
+  type  = "String"
+  value = var.ADMIN_USERNAME
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+
 
 
 

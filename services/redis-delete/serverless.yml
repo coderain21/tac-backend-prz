@@ -1,0 +1,128 @@
+service: redis-delete
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  
+
+provider:
+  name: aws
+  runtime: python3.9
+  endpointType: REGIONAL
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  versionFunctions: false
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
+    REDIS_KEYS_COLLECTION: ${opt:stage, self:provider.stage}-redis-data-keys
+  
+     
+    PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}}
+    DATABASE: ${ssm:DATABASE}
+    BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
+    
+  
+    SNS_TOPIC_ARN: 
+      Ref: RedisDeleteAlertsTopic
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-auctions
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "sns:Publish"
+          Resource: 
+            Ref: RedisDeleteAlertsTopic
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - lambda:*
+          Resource: "*"
+
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+
+custom:
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  # customDomain:
+  #   rest:
+  #     domainName: ${ssm:DOMAIN_NAME}
+  #     stage: ${opt:stage, self:provider.stage}
+  #     basePath: v1/${self:service}
+  #     certificateName: ${ssm:DOMAIN_CERTIFICATE}
+  #     createRoute53Record: true
+  #     securityPolicy: tls_1_2
+  #     endpointType: REGIONAL
+  serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
+resources:
+  Resources:
+    RedisDeleteAlertsTopic:
+      Type: AWS::SNS::Topic
+      Properties:
+        TopicName: redis-delete-alerts
+    
+    RedisDeleteAlertsSubscription:
+      Type: AWS::SNS::Subscription 
+      Properties:
+        TopicArn: !Ref RedisDeleteAlertsTopic
+        Protocol: email
+        Endpoint: ${ssm:ADMIN_USERNAME}
+
+functions:
+  deleteOldRedisData:
+    handler: handler/handler.delete_old_redis_data
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - schedule:
+          rate: cron(0 0 * * ? *)  # Run daily at midnight UTC
+          enabled: true
+    # environment:
+    #   REDIS_HOST: "${ssm:REDIS_HOST}"
+    #   REDIS_PORT: "6379"
+    #   SNS_TOPIC_ARN: 
+    #     Ref: RedisDeleteAlertsTopic
+
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  # - serverless-domain-manager
+  - serverless-plugin-ifelse
