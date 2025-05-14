@@ -192,7 +192,7 @@ def delete_old_redis_data(event, context):
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(message_payload, indent=4),
-                Subject='Redis Data Deletion Cron Alert (via MongoDB)'
+                Subject='Redis Data Deletion Alert'
             )
             print("SNS alert sent.")
         else:
