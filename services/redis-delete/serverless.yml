@@ -23,17 +23,13 @@ provider:
     MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
     MONGO_CLIENT: ${self:custom.mongodbConnectionString}
     REDIS_KEYS_COLLECTION: ${opt:stage, self:provider.stage}-redis-data-keys
-  
-     
     PASSWORD_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
     RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
-    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}}
+    SES_SENDER_EMAIL_ID: ${ssm:SENDER_EMAIL_ADDRESS}
     DATABASE: ${ssm:DATABASE}
     BASE_URL_SELLER: ${ssm:SELLER_APPLICATION_URL}
-    
-  
-    SNS_TOPIC_ARN: 
+    SNS_TOPIC_ARN:
       Ref: RedisDeleteAlertsTopic
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-auctions
@@ -58,11 +54,11 @@ provider:
 package:
   patterns:
     - '!./node_modules/**'
-    - ./handlers/**
-    - ./data/**
-    - ./entities/**
-    - ./utils/**
-    - ./lib/**
+    - './handlers/**'
+    - './data/**'
+    - './entities/**'
+    - './utils/**'
+    - './lib/**'
 
 
 custom:
@@ -93,16 +89,23 @@ resources:
       Properties:
         TopicName: redis-delete-alerts
     
-    RedisDeleteAlertsSubscription:
-      Type: AWS::SNS::Subscription 
+    RedisDeleteAlertsSubscription1:
+      Type: AWS::SNS::Subscription
       Properties:
         TopicArn: !Ref RedisDeleteAlertsTopic
         Protocol: email
-        Endpoint: ${ssm:ADMIN_USERNAME}
+        Endpoint: ${ssm:INTERNAL_ADMIN_USERNAME}
+
+    RedisDeleteAlertsSubscription2:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref RedisDeleteAlertsTopic
+        Protocol: email
+        Endpoint: ${ssm:EXTERNAL_ADMIN_USERNAME}
 
 functions:
-  deleteOldRedisData:
-    handler: handler/handler.delete_old_redis_data
+  delete-redis-data:
+    handler: handler/handler.delete_old_redis_data  # Fixed path
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
       - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -115,11 +118,6 @@ functions:
       - schedule:
           rate: cron(0 0 * * ? *)  # Run daily at midnight UTC
           enabled: true
-    # environment:
-    #   REDIS_HOST: "${ssm:REDIS_HOST}"
-    #   REDIS_PORT: "6379"
-    #   SNS_TOPIC_ARN: 
-    #     Ref: RedisDeleteAlertsTopic
 
 plugins:
   - serverless-offline

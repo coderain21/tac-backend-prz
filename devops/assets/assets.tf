@@ -649,6 +649,21 @@ resource "aws_ssm_parameter" "admin_username" {
 }
 
 
+resource "aws_ssm_parameter" "internal_admin_username" {
+  name  = "INTERNAL_ADMIN_USERNAME"
+  type  = "String"
+  value = var.INTERNAL_ADMIN_USERNAME
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "external_admin_username" {
+  name  = "EXTERNAL_ADMIN_USERNAME"
+  type  = "String"
+  value = var.EXTERNAL_ADMIN_USERNAME
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
 
