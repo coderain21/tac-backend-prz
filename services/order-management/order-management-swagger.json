@@ -85,47 +85,47 @@
                   }
                 },
                 "example": {
-                  "data": [
-                    {
-                      "_id": "67e77e1a6128d0416cddae53",
-                      "order_number": "OD00002",
-                      "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
-                      "auction_title": "Classic auction",
-                      "currency": "USD",
-                      "lots": [
-                        2,
-                        3
+                      "data": [
+                        {
+                          "_id": "67e77e1a6128d0416cddae53",
+                          "order_number": "OD00002",
+                          "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
+                          "auction_title": "Classic auction",
+                          "currency": "USD",
+                          "lots": [
+                            2,
+                            3
+                          ],
+                          "amount": 6200,
+                          "payment_status": "Pending",
+                          "created_at": 1743224346
+                        },
+                        {
+                          "_id": "67e77e186128d0416cddae4e",
+                          "order_number": "OD00001",
+                          "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
+                          "auction_title": "Classic auction",
+                          "currency": "USD",
+                          "lots": [
+                            1
+                          ],
+                          "amount": 1600,
+                          "payment_status": "Pending",
+                          "created_at": 1743224344
+                        },
+                        {
+                          "_id": "682435004d4a366e55636c92",
+                          "order_number": "OD0001",
+                          "amount": 9890,
+                          "currency": "USD",
+                          "payment_status": "Pending"
+                        }
                       ],
-                      "amount": 6200,
-                      "payment_status": "Pending",
-                      "created_at": 1743224346
-                    },
-                    {
-                      "_id": "67e77e186128d0416cddae4e",
-                      "order_number": "OD00001",
-                      "auction_image": "DomainName/Auctions/images/02486113-a306-089c-3444-1d1163facdb6/sbsract2.jpg",
-                      "auction_title": "Classic auction",
-                      "currency": "USD",
-                      "lots": [
-                        1
-                      ],
-                      "amount": 1600,
-                      "payment_status": "Pending",
-                      "created_at": 1743224344
-                    },
-                    {
-                      "_id": "682435004d4a366e55636c92",
-                      "order_number": "OD0001",
-                      "amount": 9890,
-                      "currency": "USD",
-                      "payment_status": "Pending"
+                      "total_pages": 1,
+                      "total_records": 3,
+                      "current_page": 1,
+                      "total_orders": 3
                     }
-                  ],
-                  "total_pages": 1,
-                  "total_records": 3,
-                  "current_page": 1,
-                  "total_orders": 3
-                }
               }
             }
           },
