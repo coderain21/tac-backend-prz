@@ -268,9 +268,7 @@ stages:
               export $(grep -v '^#' .env | xargs)
               source .env
               # Print environment variables to verify they are set correctly
-              pip3 install gitpython
-              pip3 install boto3
-              pip3 install botocore
+              pip3 install boto3 gitpython python-dotenv botocore
               mkdir test_results
               python dast.py 
               if [ $? -ne 0 ]; then
