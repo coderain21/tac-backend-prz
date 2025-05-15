@@ -226,7 +226,7 @@ def delete_old_redis_data(event, context):
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(error_message),
-                Subject=': Cron job redis cleanup'
+                Subject=f'{stage}: Cron job redis cleanup'
             )
         return {
             'statusCode': 500,
