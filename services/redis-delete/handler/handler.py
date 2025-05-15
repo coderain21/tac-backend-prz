@@ -174,6 +174,8 @@ def delete_old_redis_data(event, context):
         else:
             print("No MongoDB documents marked for deletion.")
 
+        stage = os.environ.get('STAGE', 'unknown')
+
         # Send summary via SNS if topic is configured
         if sns_topic_arn:
             sns_client = boto3.client('sns')
@@ -192,7 +194,7 @@ def delete_old_redis_data(event, context):
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(message_payload, indent=4),
-                Subject='Redis Data Deletion Alert'
+                Subject=f'{stage}: Cron job redis cleanup'
             )
             print("SNS alert sent.")
         else:
@@ -224,7 +226,7 @@ def delete_old_redis_data(event, context):
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(error_message),
-                Subject='Redis Data Deletion Cron - CRITICAL ERROR (via MongoDB)'
+                Subject=': Cron job redis cleanup'
             )
         return {
             'statusCode': 500,
