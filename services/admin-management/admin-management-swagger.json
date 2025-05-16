@@ -2718,7 +2718,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "anusha.k+subdomain@7edge.com"
+            "example": "anusha.k@7edge.com"
           }
           
         ],
