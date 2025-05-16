@@ -2232,7 +2232,7 @@
         "parameters": [
           {
             "name": "auction_id",
-            "in": "path",
+            "in": "query",
             "description": "Update auction information",
             "required": true,
             "schema": {
@@ -2778,7 +2778,7 @@
                 }
               },
               "example": {              
-                "auction_id":"A1269",
+                "auction_id":"A0067",
                 "lot_number": 1,
                 "images":[{"url": "abcdef","feature": false }],
                 "title1":"ring",

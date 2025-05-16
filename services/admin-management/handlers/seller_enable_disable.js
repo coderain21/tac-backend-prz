@@ -114,6 +114,15 @@ module.exports.handler = async (event) => {
             connection = await mongodbHelper.connect()
         }
         const payload = JSON.parse(event.body)
+        if (!payload) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Please pass the required fields',
+                }),
+            }
+        }
         /** -----------------------------------------VALIDATION-------------------------------------------------------------------------------------*/
         const validationResult = schema.validate(payload)
         if (validationResult.error) {
