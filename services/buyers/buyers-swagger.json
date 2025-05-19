@@ -2382,6 +2382,15 @@
               "type": "string"
             },
             "example": "65363ffe6ecaedfb6ffef6eb"
+          },
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65363ffe6ecaedfb6ffef6eb"
           }
         ],
         "requestBody": {
