@@ -2603,7 +2603,7 @@
         ]
       }
      },
-     "/edit-auction/{auction_id}":{
+     "/edit-auction":{
       "patch": {
         "tags": [
           "Admin Management"
@@ -2778,7 +2778,7 @@
                 }
               },
               "example": {              
-                "auction_id":"A0067",
+                "auction_id":"A0007",
                 "lot_number": 1,
                 "images":[{"url": "abcdef","feature": false }],
                 "title1":"ring",

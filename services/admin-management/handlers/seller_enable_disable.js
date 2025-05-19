@@ -138,7 +138,25 @@ module.exports.handler = async (event) => {
         /** ---------------------------------------ASSIGNING VARIABLE-------------------------------------------------------------------------------------------------- */
 
         const emailAddress = event.requestContext.authorizer.claims['cognito:username']
+        if (!emailAddress) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Please provide a valid email address',
+                }),
+            }
+        }
         const getAdmin = await mongodbHelper.getUser({ email_address: emailAddress }, Admin)
+        if (!getAdmin || getAdmin.length === 0) {
+            return {
+                statusCode: 404,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Admin not found',
+                }),
+            }
+        }
         payload.updated_by.email_address = emailAddress
         payload.updated_by.type = 'Admin'
         payload.section.name = 'Seller Management'

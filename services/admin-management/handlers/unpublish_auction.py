@@ -21,9 +21,17 @@ def handler(event, context):
         request_body = json.loads(event['body'])
         seller_email = request_body.get('seller_email')
         auction_id = event['queryStringParameters']['auction_id']
+        if not auction_id:
+            return {
+                "statusCode": 400,
+                "headers": {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                "body": json.dumps({"message": "Auction ID is required"})
+            }
         # Query Auction collection to fetch auction details and StepFunctionArn collection to fetch all ARNs
         auction_details = collection.find_one({"seller_email": seller_email, "auction_id": auction_id})
-        print('######################')
         all_arns = list(StepFunctionArn.find({"seller_email": seller_email, "auction_id": auction_id}))
 
         if auction_details:
@@ -75,7 +83,7 @@ def handler(event, context):
                 "body": json.dumps({"message": "Auction not found"})
             }
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             "statusCode": 500,
             "headers": {
