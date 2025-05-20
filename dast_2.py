@@ -155,29 +155,29 @@ async def main():
             return
 
         tokens = {
-            'admin-buyer-management': admin_token,
-            'users': users_token,
-            'buyers': users_token,
-            'auctions': users_token,
-            'address-management': buyers_token,
-            'access-logs': admin_token,
-            'admin-management': admin_token,
-            'buyer-wishlist': buyers_token,
-            'cart-management': buyers_token,
-            'lot-bid-history': users_token,
-            'newsletter': users_token,
-            # 'order-management': {
-            #     'default': buyers_token,
-            #     '/sales': users_token,
-            #     '/seller': users_token
-            # },
-            # 'payments': buyers_token,
-            # 'paypal': users_token,
-            # 'quicksight-dashboards': users_token,
-            # 'seller-bidder-management': users_token,
-            # 'site-banner': admin_token,
-            # 'subdomain': users_token,
-            # 'bids': buyers_token
+            # 'admin-buyer-management': admin_token,
+            # 'users': users_token,
+            # 'buyers': users_token,
+            # 'auctions': users_token,
+            # 'address-management': buyers_token,
+            # 'access-logs': admin_token,
+            # 'admin-management': admin_token,
+            # 'buyer-wishlist': buyers_token,
+            # 'cart-management': buyers_token,
+            # 'lot-bid-history': users_token,
+            # 'newsletter': users_token,
+            'order-management': {
+                'default': buyers_token,
+                '/sales': users_token,
+                '/seller': users_token
+            },
+            'payments': buyers_token,
+            'paypal': users_token,
+            'quicksight-dashboards': users_token,
+            'seller-bidder-management': users_token,
+            'site-banner': admin_token,
+            'subdomain': users_token,
+            'bids': buyers_token
         }
 
         # Print git changed files (for debugging/audit)
@@ -249,6 +249,20 @@ async def main():
                             if admin_endpoints:
                                 print(f"Running scan for {len(admin_endpoints)} admin endpoints with admin token")
                                 await run_dast_for_endpoints(swagger_path, admin_endpoints, admin_token)
+                        
+                        elif args.service == 'paypal':
+                            users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
+                            buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
+                            
+                            # Run scan for /sales and /seller endpoints with users token
+                            if users_endpoints:
+                                print(f"Running scan for {len(users_endpoints)} /paypal-connect or /paypal-disconnect endpoints with users token")
+                                await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+                            
+                            # Run scan for other endpoints with buyers token
+                            if buyers_endpoints:
+                                print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
+                                await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
 
                         else:
                             # For other services, use the existing token selection logic
@@ -328,6 +342,23 @@ async def main():
                         if buyers_endpoints:
                             print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
                             await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+                    
+
+                    elif service_name == 'paypal':
+                        # Split endpoints into those needing users token and those needing buyers token
+                        users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
+                        buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
+                        
+                        # Run scan for /sales and /seller endpoints with users token
+                        if users_endpoints:
+                            print(f"Running scan for {len(users_endpoints)} /paypal-connect or /paypal-disconnect endpoints with users token")
+                            await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+                        
+                        # Run scan for other endpoints with buyers token
+                        if buyers_endpoints:
+                            print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
+                            await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+                    
                     else:
                         # Normal case - use token directly or from dictionary
                         if isinstance(token_info, dict):
