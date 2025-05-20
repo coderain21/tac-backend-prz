@@ -127,6 +127,13 @@ def update_auction(event, context):
             published_status = 'false'
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
 
+        if not state:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Auction not found"})
+            }
+
         if state['status'] == 'Published' or state['status']== 'Accepting bids':
             return {
                 "statusCode": 400,

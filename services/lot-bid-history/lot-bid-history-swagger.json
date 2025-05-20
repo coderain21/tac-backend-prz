@@ -33,7 +33,7 @@
               "name": "lot_id",
               "in": "path",
               "required": true,
-              "example": "65a6857fdfa272b3f04ec5c5",
+              "example": "682acbe62ddaf4fca7223db9",
               "description": "The unique identifier of the lot.",
               "schema": {
                 "type": "string"
@@ -45,7 +45,8 @@
               "description": "Sort field (e.g., paddle_number, name, bid_amount, time_stamp)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example": "name"
             },
             {
               "name": "sort_order",
@@ -53,7 +54,8 @@
               "description": "Sort order (e.g., asc, desc)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example": "asc"
             },
             {
               "name": "page",
@@ -61,7 +63,8 @@
               "description": "Page number for pagination",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":"1"
             },
             {
               "name": "limit",
@@ -69,7 +72,8 @@
               "description": "Number of items per page",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example": "10"
             }
           ],
           "responses": {

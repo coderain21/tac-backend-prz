@@ -54,7 +54,7 @@ stages:
             path: "$(System.DefaultWorkingDirectory)/node_modules"
             cacheHitVar: CACHE_RESTORED
           displayName: Cache npm
-        - script: npm config set registry https://registry.npmmirror.com
+        # - script: npm config set registry https://registry.npmmirror.com
         - script: |
             npm install
           condition: ne(variables.CACHE_RESTORED, 'true')
