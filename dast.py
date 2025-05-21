@@ -243,7 +243,7 @@ async def process_services_for_special_endpoints(swagger_files, users_token, buy
                 
                 elif service_name == 'paypal':
                     users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
-                    buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
+                    buyers_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-order') or ep.startswith('/capture-order')]
                     
                     # Run scan for paypal-connect or paypal-disconnect endpoints with users token
                     if users_endpoints:
