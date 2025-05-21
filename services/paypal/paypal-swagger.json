@@ -9,7 +9,7 @@
     {
       "url": "https://apis.dev.indyauction.net/v1/paypal"
     }
-  ],
+  ], 
   "tags": [
     {
       "name": "Payment Management",

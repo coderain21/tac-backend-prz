@@ -65,6 +65,20 @@ def find_swagger_files(root_dir, specific_service=None):
 
     return swagger_files
 
+# Function to get changed files from the latest commit
+def get_changed_files():
+    changed_files = []
+    for parent_sha in parent_commit_shas:
+        try:
+            parent_changed_files_output = subprocess.check_output(['git', 'show', '--name-only', parent_sha], text=True)
+            parent_changed_files = parent_changed_files_output.strip().split('\n')
+            print(parent_changed_files_output, 'parent changes files output')
+            changed_files.extend(parent_changed_files)
+        except subprocess.CalledProcessError as e:
+            print(f"Error when running 'git show' for {parent_sha}:", e)
+    
+    return changed_files
+
 async def run_dast_for_swagger(url, api_token):
     command = f"docker run --user=root -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t \"{url}\" -f openapi -r test_results/report.html"
     try:
@@ -272,21 +286,37 @@ async def main():
                 'auctions': users_token,
                 'address-management': buyers_token,
                 'access-logs': admin_token,
-                'admin-management': admin_token
-                # 'buyer-wishlist': buyers_token,
-                # 'cart-management': buyers_token,
-                # 'lot-bid-history': users_token,
-                # 'newsletter': users_token,
-                # 'payments': buyers_token,
-                # 'quicksight-dashboards': users_token,
-                # 'seller-bidder-management': users_token,
-                # 'site-banner': admin_token,
-                # 'subdomain': users_token
+                'admin-management': admin_token,
+                'buyer-wishlist': buyers_token,
+                'cart-management': buyers_token,
+                'lot-bid-history': users_token,
+                'newsletter': users_token,
+                'payments': buyers_token,
+                'quicksight-dashboards': users_token,
+                'seller-bidder-management': users_token,
+                'site-banner': admin_token,
+                'subdomain': users_token
             }
 
-            # Find swagger files - if a specific service is provided, only get that service's files
-            swagger_files = find_swagger_files(repo_path, args.service)
+            # Get changed files from the latest commit
+            changed_files = get_changed_files()
+            print("Changed files:", changed_files)
+            
+            # Find swagger files from all services - if a specific service is provided, only get that service's files
+            all_swagger_files = find_swagger_files(repo_path, args.service)
+            
+            # Filter swagger files to only include those that changed in the latest commit
+            swagger_files = []
+            for swagger_file in all_swagger_files:
+                if any(swagger_file in changed_file for changed_file in changed_files):
+                    swagger_files.append(swagger_file)
+                    print(f"Added {swagger_file} to the list of files to process - it was changed in the latest commit")
+            
             print("Swagger files to process:", swagger_files)
+            
+            if not swagger_files:
+                print("No swagger files were changed in the latest commit. Exiting.")
+                return
             
             # Handle special services separately for endpoint-specific token selection
             special_services = ['order-management', 'bids', 'paypal']
@@ -308,33 +338,9 @@ async def main():
 
                 if service_name in tokens:
                     token_to_use = tokens[service_name]
-                    if not args.service or args.service == service_name:
-                        await run_dast_for_swagger(service_path, token_to_use)
+                    await run_dast_for_swagger(service_path, token_to_use)
                 else:
                     print(f"Skipping {service_name} — no token defined in tokens dictionary.")
-
-            
-            # The following code has been commented out as requested
-            # # Collect the list of changed files using git show
-            # changed_files = []
-            # for parent_sha in parent_commit_shas:
-            #     try:
-            #         parent_changed_files_output = subprocess.check_output(['git', 'show', '--name-only', parent_sha], text=True)
-            #         parent_changed_files = parent_changed_files_output.strip().split('\n')
-            #         print(parent_changed_files_output,'parent changes files output')
-            #         changed_files.extend(parent_changed_files)
-            #     except subprocess.CalledProcessError as e:
-            #         print(f"Error when running 'git show' for {parent_sha}:", e)
-            # swagger_files = [file for file in changed_files if file.endswith('.json') and 'swagger' in file]
-            # print("Swagger files:")
-            # print(swagger_files)
-            # for service_dir in find_swagger_files(repo_path):
-            #     # Check if the Swagger file has changed in the latest commit
-            #     if any(service_dir in changed_file for changed_file in changed_files):
-            #         for service_directory, token in tokens.items():
-            #             if service_directory in service_dir:
-            #                 await run_dast_for_swagger(service_dir, token)
-            #                 break  # Break the loop after finding and using the correct token
             
         else:
             print("Token generation failed")
