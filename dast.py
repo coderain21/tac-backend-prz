@@ -224,10 +224,7 @@ async def process_services_for_special_endpoints(swagger_files, users_token, buy
                     admin_endpoints = [ep for ep in endpoints if ep.startswith('admin/{id}')]
                     
                     # Correct logic: buyers_endpoints should exclude both users and admin endpoints
-                    buyers_endpoints = [
-                        ep for ep in endpoints 
-                        if ep not in users_endpoints and ep not in admin_endpoints
-                    ]
+                    buyers_endpoints = [ep for ep in endpoints if ep.startswith('/update')]
 
                     # Run scan for "/" or "/{id}" endpoints with users token
                     if users_endpoints:

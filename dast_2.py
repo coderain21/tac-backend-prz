@@ -177,89 +177,90 @@ async def generate_cognito_token(user_type):
 
     return None
 
-async def process_services_for_special_endpoints(swagger_files, users_token, buyers_token, admin_token):
-    all_endpoints = {}
+# async def process_services_for_special_endpoints(swagger_files, users_token, buyers_token, admin_token):
+#     all_endpoints = {}
     
-    # Special service handling for order-management, bids, and paypal
-    for service_path in swagger_files:
-        # Extract service name from path
-        service_name = None
-        for part in service_path.split('/'):
-            if part in ['order-management', 'bids', 'paypal']:
-                service_name = part
-                break
+#     # Special service handling for order-management, bids, and paypal
+#     for service_path in swagger_files:
+#         # Extract service name from path
+#         service_name = None
+#         for part in service_path.split('/'):
+#             if part in ['order-management', 'bids', 'paypal']:
+#                 service_name = part
+#                 break
         
-        if not service_name:
-            continue
+#         if not service_name:
+#             continue
             
-        swagger_path = os.path.join(repo_path, service_path)
+#         swagger_path = os.path.join(repo_path, service_path)
         
-        if os.path.exists(swagger_path):
-            try:
-                with open(swagger_path, 'r') as f:
-                    swagger_data = json.load(f)
+#         if os.path.exists(swagger_path):
+#             try:
+#                 with open(swagger_path, 'r') as f:
+#                     swagger_data = json.load(f)
 
-                endpoints = list(swagger_data.get("paths", {}).keys())
-                all_endpoints[service_name] = endpoints
-                print(f"Endpoints for {service_name}: {endpoints}")
+#                 endpoints = list(swagger_data.get("paths", {}).keys())
+#                 all_endpoints[service_name] = endpoints
+#                 print(f"Endpoints for {service_name}: {endpoints}")
 
-                # Special handling for order-management service
-                if service_name == 'order-management':
-                    # Split endpoints into those needing users token and those needing buyers token
-                    users_endpoints = [ep for ep in endpoints if ep.startswith('/sales') or ep.startswith('/seller')]
-                    buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
+#                 # # Special handling for order-management service
+#                 # if service_name == 'order-management':
+#                 #     # Split endpoints into those needing users token and those needing buyers token
+#                 #     users_endpoints = [ep for ep in endpoints if ep.startswith('/sales') or ep.startswith('/seller')]
+#                 #     buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
                     
-                    # Run scan for /sales and /seller endpoints with users token
-                    if users_endpoints:
-                        print(f"Running scan for {len(users_endpoints)} /sales or /seller endpoints with users token")
-                        await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+#                 #     # Run scan for /sales and /seller endpoints with users token
+#                 #     if users_endpoints:
+#                 #         print(f"Running scan for {len(users_endpoints)} /sales or /seller endpoints with users token")
+#                 #         await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
                     
-                    # Run scan for other endpoints with buyers token
-                    if buyers_endpoints:
-                        print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
-                        await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+#                 #     # Run scan for other endpoints with buyers token
+#                 #     if buyers_endpoints:
+#                 #         print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
+#                 #         await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
 
-                elif service_name == 'bids':
-                    users_endpoints = [ep for ep in endpoints if ep.startswith('/') or ep.startswith('/{id}')]
-                    admin_endpoints = [ep for ep in endpoints if ep.startswith('admin/{id}')]
+#                 # elif service_name == 'bids':
+#                 #     users_endpoints = [ep for ep in endpoints if ep.startswith('/') or ep.startswith('/{id}')]
+#                 #     admin_endpoints = [ep for ep in endpoints if ep.startswith('admin/{id}')]
                     
-                    # Correct logic: buyers_endpoints should exclude both users and admin endpoints
-                    buyers_endpoints = [
-                        ep for ep in endpoints 
-                        if ep not in users_endpoints and ep not in admin_endpoints
-                    ]
+#                 #     # Correct logic: buyers_endpoints should exclude both users and admin endpoints
+#                 #     buyers_endpoints = [
+#                 #         ep for ep in endpoints 
+#                 #         if ep not in users_endpoints and ep not in admin_endpoints
+#                 #     ]
+#                 #     print(buyers_endpoints,"buyers_endpoints for bids")
 
-                    # Run scan for "/" or "/{id}" endpoints with users token
-                    if users_endpoints:
-                        print(f"Running scan for {len(users_endpoints)} '/' or '/{{id}}' endpoints with users token")
-                        await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+#                 #     # Run scan for "/" or "/{id}" endpoints with users token
+#                 #     if users_endpoints:
+#                 #         print(f"Running scan for {len(users_endpoints)} '/' or '/{{id}}' endpoints with users token")
+#                 #         await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
 
-                    # Run scan for other endpoints with buyers token
-                    if buyers_endpoints:
-                        print(f"Running scan for {len(buyers_endpoints)} buyer endpoints with buyers token")
-                        await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+#                 #     # Run scan for other endpoints with buyers token
+#                 #     if buyers_endpoints:
+#                 #         print(f"Running scan for {len(buyers_endpoints)} buyer endpoints with buyers token")
+#                 #         await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
 
-                    # Run scan for admin endpoints with admin token
-                    if admin_endpoints:
-                        print(f"Running scan for {len(admin_endpoints)} admin endpoints with admin token")
-                        await run_dast_for_endpoints(swagger_path, admin_endpoints, admin_token)
+#                 #     # Run scan for admin endpoints with admin token
+#                 #     if admin_endpoints:
+#                 #         print(f"Running scan for {len(admin_endpoints)} admin endpoints with admin token")
+#                 #         await run_dast_for_endpoints(swagger_path, admin_endpoints, admin_token)
                 
-                elif service_name == 'paypal':
-                    users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
-                    buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
+#                 # elif service_name == 'paypal':
+#                     users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
+#                     buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
                     
-                    # Run scan for paypal-connect or paypal-disconnect endpoints with users token
-                    if users_endpoints:
-                        print(f"Running scan for {len(users_endpoints)} /paypal-connect or /paypal-disconnect endpoints with users token")
-                        await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+#                     # Run scan for paypal-connect or paypal-disconnect endpoints with users token
+#                     if users_endpoints:
+#                         print(f"Running scan for {len(users_endpoints)} /paypal-connect or /paypal-disconnect endpoints with users token")
+#                         await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
                     
-                    # Run scan for other endpoints with buyers token
-                    if buyers_endpoints:
-                        print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
-                        await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+#                     # Run scan for other endpoints with buyers token
+#                     if buyers_endpoints:
+#                         print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
+#                         await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
                         
-            except Exception as e:
-                print(f"Error processing swagger file {swagger_path}: {str(e)}")
+#             except Exception as e:
+#                 print(f"Error processing swagger file {swagger_path}: {str(e)}")
 
 async def main():
     try:
@@ -299,9 +300,9 @@ async def main():
             special_service_files = [f for f in swagger_files if any(service in f for service in special_services)]
             regular_service_files = [f for f in swagger_files if not any(service in f for service in special_services)]
             
-            # Process special services with endpoint-specific logic
-            if special_service_files:
-                await process_services_for_special_endpoints(special_service_files, users_token, buyers_token, admin_token)
+            # # Process special services with endpoint-specific logic
+            # if special_service_files:
+            #     await process_services_for_special_endpoints(special_service_files, users_token, buyers_token, admin_token)
             
             # Process regular services with standard token selection
             for service_path in regular_service_files:
