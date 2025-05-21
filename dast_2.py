@@ -306,19 +306,19 @@ async def main():
             
             # Process regular services with standard token selection
             for service_path in regular_service_files:
-                # Determine which token to use based on service name
-                token_to_use = None
-                for service_name, token in tokens.items():
-                    if service_name in service_path:
-                        token_to_use = token
-                        break
-                
-                if token_to_use:
-                    # If run without service flag or with matching service flag
-                    if not args.service or args.service in service_path:
+                # Extract service name from path
+                try:
+                    service_name = service_path.split('services/')[1].split('/')[0]
+                except IndexError:
+                    print(f"Could not parse service name from path: {service_path}")
+                    continue
+
+                if service_name in tokens:
+                    token_to_use = tokens[service_name]
+                    if not args.service or args.service == service_name:
                         await run_dast_for_swagger(service_path, token_to_use)
                 else:
-                    print(f"No token configuration found for service: {service_path}")
+                    print(f"Skipping {service_name} — no token defined in tokens dictionary.")
             
             # The following code has been commented out as requested
             # # Collect the list of changed files using git show
