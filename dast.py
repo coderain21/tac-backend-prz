@@ -277,14 +277,11 @@ async def main():
                 # 'cart-management': buyers_token,
                 # 'lot-bid-history': users_token,
                 # 'newsletter': users_token,
-                # 'order-management': users_token,  # Default token, will be handled specially
                 # 'payments': buyers_token,
-                # 'paypal': users_token,  # Default token, will be handled specially
                 # 'quicksight-dashboards': users_token,
                 # 'seller-bidder-management': users_token,
                 # 'site-banner': admin_token,
-                # 'subdomain': users_token,
-                # 'bids': buyers_token  # Default token, will be handled specially
+                # 'subdomain': users_token
             }
 
             # Find swagger files - if a specific service is provided, only get that service's files
