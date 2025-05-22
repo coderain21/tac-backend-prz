@@ -227,7 +227,7 @@ stages:
   
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
-      dependsOn: APITesting
+      # dependsOn: APITesting
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
@@ -268,9 +268,7 @@ stages:
               export $(grep -v '^#' .env | xargs)
               source .env
               # Print environment variables to verify they are set correctly
-              pip3 install gitpython
-              pip3 install boto3
-              pip3 install botocore
+              pip3 install boto3 gitpython python-dotenv botocore
               mkdir test_results
               python dast.py 
               if [ $? -ne 0 ]; then
@@ -278,7 +276,8 @@ stages:
                 exit 1
               fi
           displayName: 'Dynamic Application Security Testing (DAST)'
-
+    
+    
     
 
 - stage: Deploy

@@ -65,20 +65,6 @@ def find_swagger_files(root_dir, specific_service=None):
 
     return swagger_files
 
-# Function to get changed files from the latest commit
-def get_changed_files():
-    changed_files = []
-    for parent_sha in parent_commit_shas:
-        try:
-            parent_changed_files_output = subprocess.check_output(['git', 'show', '--name-only', parent_sha], text=True)
-            parent_changed_files = parent_changed_files_output.strip().split('\n')
-            print(parent_changed_files_output, 'parent changes files output')
-            changed_files.extend(parent_changed_files)
-        except subprocess.CalledProcessError as e:
-            print(f"Error when running 'git show' for {parent_sha}:", e)
-    
-    return changed_files
-
 async def run_dast_for_swagger(url, api_token):
     command = f"docker run --user=root -v $(pwd):/zap/wrk/:rw -t -e ZAP_AUTH_HEADER_VALUE='Bearer {api_token}' softwaresecurityproject/zap-stable zap-api-scan.py -t \"{url}\" -f openapi -r test_results/report.html"
     try:
@@ -191,86 +177,90 @@ async def generate_cognito_token(user_type):
 
     return None
 
-async def process_services_for_special_endpoints(swagger_files, users_token, buyers_token, admin_token):
-    all_endpoints = {}
+# async def process_services_for_special_endpoints(swagger_files, users_token, buyers_token, admin_token):
+#     all_endpoints = {}
     
-    # Special service handling for order-management, bids, and paypal
-    for service_path in swagger_files:
-        # Extract service name from path
-        service_name = None
-        for part in service_path.split('/'):
-            if part in ['order-management', 'bids', 'paypal']:
-                service_name = part
-                break
+#     # Special service handling for order-management, bids, and paypal
+#     for service_path in swagger_files:
+#         # Extract service name from path
+#         service_name = None
+#         for part in service_path.split('/'):
+#             if part in ['order-management', 'bids', 'paypal']:
+#                 service_name = part
+#                 break
         
-        if not service_name:
-            continue
+#         if not service_name:
+#             continue
             
-        swagger_path = os.path.join(repo_path, service_path)
+#         swagger_path = os.path.join(repo_path, service_path)
         
-        if os.path.exists(swagger_path):
-            try:
-                with open(swagger_path, 'r') as f:
-                    swagger_data = json.load(f)
+#         if os.path.exists(swagger_path):
+#             try:
+#                 with open(swagger_path, 'r') as f:
+#                     swagger_data = json.load(f)
 
-                endpoints = list(swagger_data.get("paths", {}).keys())
-                all_endpoints[service_name] = endpoints
-                print(f"Endpoints for {service_name}: {endpoints}")
+#                 endpoints = list(swagger_data.get("paths", {}).keys())
+#                 all_endpoints[service_name] = endpoints
+#                 print(f"Endpoints for {service_name}: {endpoints}")
 
-                # Special handling for order-management service
-                if service_name == 'order-management':
-                    # Split endpoints into those needing users token and those needing buyers token
-                    users_endpoints = [ep for ep in endpoints if ep.startswith('/sales') or ep.startswith('/seller')]
-                    buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
+#                 # # Special handling for order-management service
+#                 # if service_name == 'order-management':
+#                 #     # Split endpoints into those needing users token and those needing buyers token
+#                 #     users_endpoints = [ep for ep in endpoints if ep.startswith('/sales') or ep.startswith('/seller')]
+#                 #     buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
                     
-                    # Run scan for /sales and /seller endpoints with users token
-                    if users_endpoints:
-                        print(f"Running scan for {len(users_endpoints)} /sales or /seller endpoints with users token")
-                        await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+#                 #     # Run scan for /sales and /seller endpoints with users token
+#                 #     if users_endpoints:
+#                 #         print(f"Running scan for {len(users_endpoints)} /sales or /seller endpoints with users token")
+#                 #         await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
                     
-                    # Run scan for other endpoints with buyers token
-                    if buyers_endpoints:
-                        print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
-                        await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+#                 #     # Run scan for other endpoints with buyers token
+#                 #     if buyers_endpoints:
+#                 #         print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
+#                 #         await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
 
-                elif service_name == 'bids':
-                    users_endpoints = [ep for ep in endpoints if ep.startswith('/') or ep.startswith('/{id}')]
-                    admin_endpoints = [ep for ep in endpoints if ep.startswith('admin/{id}')]
+#                 # elif service_name == 'bids':
+#                 #     users_endpoints = [ep for ep in endpoints if ep.startswith('/') or ep.startswith('/{id}')]
+#                 #     admin_endpoints = [ep for ep in endpoints if ep.startswith('admin/{id}')]
                     
-                    # Correct logic: buyers_endpoints should exclude both users and admin endpoints
-                    buyers_endpoints = [ep for ep in endpoints if ep.startswith('/update')]
+#                 #     # Correct logic: buyers_endpoints should exclude both users and admin endpoints
+#                 #     buyers_endpoints = [
+#                 #         ep for ep in endpoints 
+#                 #         if ep not in users_endpoints and ep not in admin_endpoints
+#                 #     ]
+#                 #     print(buyers_endpoints,"buyers_endpoints for bids")
 
-                    # Run scan for "/" or "/{id}" endpoints with users token
-                    if users_endpoints:
-                        print(f"Running scan for {len(users_endpoints)} '/' or '/{{id}}' endpoints with users token")
-                        await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+#                 #     # Run scan for "/" or "/{id}" endpoints with users token
+#                 #     if users_endpoints:
+#                 #         print(f"Running scan for {len(users_endpoints)} '/' or '/{{id}}' endpoints with users token")
+#                 #         await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
 
-                    # Run scan for other endpoints with buyers token
-                    if buyers_endpoints:
-                        print(f"Running scan for {len(buyers_endpoints)} buyer endpoints with buyers token")
-                        await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+#                 #     # Run scan for other endpoints with buyers token
+#                 #     if buyers_endpoints:
+#                 #         print(f"Running scan for {len(buyers_endpoints)} buyer endpoints with buyers token")
+#                 #         await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
 
-                    # Run scan for admin endpoints with admin token
-                    if admin_endpoints:
-                        print(f"Running scan for {len(admin_endpoints)} admin endpoints with admin token")
-                        await run_dast_for_endpoints(swagger_path, admin_endpoints, admin_token)
+#                 #     # Run scan for admin endpoints with admin token
+#                 #     if admin_endpoints:
+#                 #         print(f"Running scan for {len(admin_endpoints)} admin endpoints with admin token")
+#                 #         await run_dast_for_endpoints(swagger_path, admin_endpoints, admin_token)
                 
-                elif service_name == 'paypal':
-                    users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
-                    buyers_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-order') or ep.startswith('/capture-order')]
+#                 # elif service_name == 'paypal':
+#                     users_endpoints = [ep for ep in endpoints if ep.startswith('/paypal-connect') or ep.startswith('/paypal-disconnect')]
+#                     buyers_endpoints = [ep for ep in endpoints if ep not in users_endpoints]
                     
-                    # Run scan for paypal-connect or paypal-disconnect endpoints with users token
-                    if users_endpoints:
-                        print(f"Running scan for {len(users_endpoints)} /paypal-connect or /paypal-disconnect endpoints with users token")
-                        await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
+#                     # Run scan for paypal-connect or paypal-disconnect endpoints with users token
+#                     if users_endpoints:
+#                         print(f"Running scan for {len(users_endpoints)} /paypal-connect or /paypal-disconnect endpoints with users token")
+#                         await run_dast_for_endpoints(swagger_path, users_endpoints, users_token)
                     
-                    # Run scan for other endpoints with buyers token
-                    if buyers_endpoints:
-                        print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
-                        await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
+#                     # Run scan for other endpoints with buyers token
+#                     if buyers_endpoints:
+#                         print(f"Running scan for {len(buyers_endpoints)} other endpoints with buyers token")
+#                         await run_dast_for_endpoints(swagger_path, buyers_endpoints, buyers_token)
                         
-            except Exception as e:
-                print(f"Error processing swagger file {swagger_path}: {str(e)}")
+#             except Exception as e:
+#                 print(f"Error processing swagger file {swagger_path}: {str(e)}")
 
 async def main():
     try:
@@ -280,13 +270,13 @@ async def main():
 
         if users_token and buyers_token and admin_token:
             tokens = {
-                'admin-buyer-management': admin_token,
-                'users': users_token,
-                'buyers': users_token,
-                'auctions': users_token,
-                'address-management': buyers_token,
-                'access-logs': admin_token,
-                'admin-management': admin_token,
+                # 'admin-buyer-management': admin_token,
+                # 'users': users_token,
+                # 'buyers': users_token,
+                # 'auctions': users_token,
+                # 'address-management': buyers_token,
+                # 'access-logs': admin_token,
+                # 'admin-management': admin_token,
                 'buyer-wishlist': buyers_token,
                 'cart-management': buyers_token,
                 'lot-bid-history': users_token,
@@ -298,34 +288,18 @@ async def main():
                 'subdomain': users_token
             }
 
-            # Get changed files from the latest commit
-            changed_files = get_changed_files()
-            print("Changed files:", changed_files)
-            
-            # Find swagger files from all services - if a specific service is provided, only get that service's files
-            all_swagger_files = find_swagger_files(repo_path, args.service)
-            
-            # Filter swagger files to only include those that changed in the latest commit
-            swagger_files = []
-            for swagger_file in all_swagger_files:
-                if any(swagger_file in changed_file for changed_file in changed_files):
-                    swagger_files.append(swagger_file)
-                    print(f"Added {swagger_file} to the list of files to process - it was changed in the latest commit")
-            
+            # Find swagger files - if a specific service is provided, only get that service's files
+            swagger_files = find_swagger_files(repo_path, args.service)
             print("Swagger files to process:", swagger_files)
-            
-            if not swagger_files:
-                print("No swagger files were changed in the latest commit. Exiting.")
-                return
             
             # Handle special services separately for endpoint-specific token selection
             special_services = ['order-management', 'bids', 'paypal']
             special_service_files = [f for f in swagger_files if any(service in f for service in special_services)]
             regular_service_files = [f for f in swagger_files if not any(service in f for service in special_services)]
             
-            # Process special services with endpoint-specific logic
-            if special_service_files:
-                await process_services_for_special_endpoints(special_service_files, users_token, buyers_token, admin_token)
+            # # Process special services with endpoint-specific logic
+            # if special_service_files:
+            #     await process_services_for_special_endpoints(special_service_files, users_token, buyers_token, admin_token)
             
             # Process regular services with standard token selection
             for service_path in regular_service_files:
@@ -338,9 +312,32 @@ async def main():
 
                 if service_name in tokens:
                     token_to_use = tokens[service_name]
-                    await run_dast_for_swagger(service_path, token_to_use)
+                    if not args.service or args.service == service_name:
+                        await run_dast_for_swagger(service_path, token_to_use)
                 else:
                     print(f"Skipping {service_name} — no token defined in tokens dictionary.")
+            
+            # The following code has been commented out as requested
+            # # Collect the list of changed files using git show
+            # changed_files = []
+            # for parent_sha in parent_commit_shas:
+            #     try:
+            #         parent_changed_files_output = subprocess.check_output(['git', 'show', '--name-only', parent_sha], text=True)
+            #         parent_changed_files = parent_changed_files_output.strip().split('\n')
+            #         print(parent_changed_files_output,'parent changes files output')
+            #         changed_files.extend(parent_changed_files)
+            #     except subprocess.CalledProcessError as e:
+            #         print(f"Error when running 'git show' for {parent_sha}:", e)
+            # swagger_files = [file for file in changed_files if file.endswith('.json') and 'swagger' in file]
+            # print("Swagger files:")
+            # print(swagger_files)
+            # for service_dir in find_swagger_files(repo_path):
+            #     # Check if the Swagger file has changed in the latest commit
+            #     if any(service_dir in changed_file for changed_file in changed_files):
+            #         for service_directory, token in tokens.items():
+            #             if service_directory in service_dir:
+            #                 await run_dast_for_swagger(service_dir, token)
+            #                 break  # Break the loop after finding and using the correct token
             
         else:
             print("Token generation failed")
