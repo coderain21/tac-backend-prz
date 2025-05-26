@@ -95,6 +95,17 @@ module.exports.updateUserInformation = async (event) => {
                     }),
                 }
             }
+            // Remove HTML tags and check string length
+            const strippedMarketing = request_body.marketing_opt_in.replace(/<[^>]*>/g, '')
+            if (strippedMarketing.length > 250) {
+                return {
+                    headers,
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        message: 'Cannot exceed 250 characters',
+                    }),
+                }
+            }
             request_body.marketing_opt_in_updated_at = new Date()
         }
 
