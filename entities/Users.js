@@ -54,6 +54,8 @@ const UserSchema = new Schema({
     plan_type: { type: String, trim: true, default: '' }, // Added spaces
     privacy_policy: { type: String, trim: true, default: '' },
     policy_updated_at: { type: Date },
+    marketing_opt_in: { type: String, default: '', trim: true },
+    marketing_opt_in_updated_at: { type: Date },
 })
 
 UserSchema.plugin(mongoosePaginate)
