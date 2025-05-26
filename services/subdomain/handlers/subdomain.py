@@ -251,7 +251,7 @@ def subdomain(event, context):
 
 
                 # Restricting certain keywords to be used in subdomain
-                if any(word in new_subdomain.lower() for word in ['seller', 'buyer', 'admin', 'support']):
+                if any(word in new_subdomain.lower() for word in ['seller', 'bid', 'admin', 'support', 'www',  'indy', 'demo', 'tac', 'theauctioncollective', 'auctioncollective']):
                     return {
                         'statusCode': 400,
                         'headers': headers,
