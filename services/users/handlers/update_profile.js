@@ -82,6 +82,22 @@ module.exports.updateUserInformation = async (event) => {
                 }
             }
         }
+
+        // checking for marketing_opt_in in the request body
+        if (request_body.marketing_opt_in !== undefined && request_body.marketing_opt_in !== null) {
+            if (get_user[0].plan_type !== 'Pro') {
+                console.log('Plan type is not Pro', email)
+                return {
+                    headers,
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        message: 'Please upgrade to Pro plan to enable this feature',
+                    }),
+                }
+            }
+            request_body.marketing_opt_in_updated_at = new Date()
+        }
+
         if (get_user !== null) {
             const user_id = get_user[0]._id
             if (request_body.first_name || request_body.last_name) {
