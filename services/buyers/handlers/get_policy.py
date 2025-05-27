@@ -45,10 +45,9 @@ def get_policy(event, context):
         # Fetch required fields: privacy_policy, created_at, first_name, last_name
         seller_info = seller_collection.find_one(
             {'email_address': seller_email},
-            {"privacy_policy": 1, "created_at": 1, "first_name": 1, "last_name": 1, "_id": 0}
+            {"privacy_policy": 1, "created_at": 1, "first_name": 1, "last_name": 1, "marketing_opt_in": 1, "_id": 0}
         )
 
-        print("seller_info", seller_info)
 
         if seller_info is None:
             return {
@@ -68,7 +67,9 @@ def get_policy(event, context):
                 'first_name': seller_info.get('first_name'),
                 'last_name': seller_info.get('last_name')
             }
-
+        # Check if marketing_opt_in exists in seller_info before accessing it
+        response_data.update({'marketing_opt_in': seller_info.get('marketing_opt_in', '')})
+        response_data.update({'seller_email': seller_email})
         return {
             "statusCode": 200,
             "headers": headers,
