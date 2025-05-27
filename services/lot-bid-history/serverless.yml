@@ -167,6 +167,25 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
+  delete-bid:
+    handler: handlers/delete_bid.handler
+    timeout: 60
+    runtime: python3.9
+    layers:
+    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+      - ${ssm:SUBNET_ID}
+    events:
+      - http:
+        cors: true
+        path: /admin/bid/{bid_id}
+        method: delete
+        authorizer:
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+  
 plugins:
   - serverless-offline
   - serverless-package-external
