@@ -328,18 +328,19 @@ def subdomain(event, context):
                 #              }
 
                 # Update subdomain record in MongoDB
-                subdomain_update = subdomain_collection.update_one(
+                subdomain_result = subdomain_collection.find_one_and_update(
                     {'seller_email': seller_email, 'subdomain': prev_subdomain},
                     {"$set": {'subdomain': new_subdomain, "updated_at": int(datetime.now().timestamp()), "default": False}},
                     session=session
                 )
-                if not subdomain_update.modified_count:
+                if not subdomain_result:
                     session.abort_transaction()
                     return {
                         'statusCode': 400,
                         'headers': headers,
-                        'body': json.dumps({'message': 'Cannot update subdomain'})
+                        'body': json.dumps({'message': 'Error in updating subdomain'})
                     }
+
 
                 # Update Amplify domain association with new mapping
                 try:
