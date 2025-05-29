@@ -4,6 +4,8 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
+// eslint-disable-next-line import/no-extraneous-dependencies
+const he = require('he')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const cognitoHelper = require('../lib/cognito_helper')
@@ -96,8 +98,11 @@ module.exports.updateUserInformation = async (event) => {
                 }
             }
             // Remove HTML tags and check string length
-            const strippedMarketing = request_body.marketing_opt_in.replace(/<[^>]*>/g, '')
-            if (strippedMarketing.length > 250) {
+
+            const stripped = request_body.marketing_opt_in.replace(/<[^>]*>/g, '')
+            const decoded = he.decode(stripped) // handles all HTML entities
+
+            if (decoded.length > 250) {
                 return {
                     headers,
                     statusCode: 400,
