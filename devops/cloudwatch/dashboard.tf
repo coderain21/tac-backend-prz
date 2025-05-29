@@ -500,6 +500,130 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
 }
 
 
+# STEP FUNCTIONS ALARMS
+resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed" {
+  alarm_name          = "StepFunction-ExecutionsFailed"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ExecutionsFailed"
+  namespace           = "AWS/States"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  dimensions = {
+    StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
+  }
+  alarm_description   = "Failed executions in Step Function"
+    alarm_actions     = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
+  alarm_name          = "StepFunction-ExecutionsTimedOut"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ExecutionsTimedOut"
+  namespace           = "AWS/States"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  dimensions = {
+    StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
+  }
+  alarm_description   = "Timed out executions in Step Function"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
+# LAMBDA ALARMS
+resource "aws_cloudwatch_metric_alarm" "lambda_throttles_all" {
+  alarm_name          = "Lambda-AllFunctions-Throttles"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Throttles"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 900
+
+  # 🔹 No dimensions block — applies across all functions
+  alarm_description   = "Total Lambda throttles across all functions > 1000"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+
+  provider            = aws.deployment-eu
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "lambda_concurrent_executions" {
+  alarm_name          = "Lambda-ConcurrentExecutions"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ConcurrentExecutions"
+  namespace           = "AWS/Lambda"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 900
+  alarm_description   = "Concurrent Lambda executions > 500"
+    alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
+# SQS ALARM FOR LARGE MESSAGE
+resource "aws_cloudwatch_metric_alarm" "sqs_large_message" {
+  alarm_name          = "SQS-SentMessageSizeExceeded"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "SentMessageSize"
+  namespace           = "AWS/SQS"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 262144  # 256 KB in bytes
+  dimensions = {
+    QueueName = "${var.STAGE}-bulk-lots-update"
+  }
+  alarm_description   = "SQS message size > 256 KB"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
+# ECS ALARMS
+resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures" {
+  alarm_name          = "ECS-TaskLaunchFailures"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "TaskLaunchFailures"
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  dimensions = {
+    ClusterName = "websocket-cluster"
+    ServiceName = "websocket-ecs-service"
+  }
+  alarm_description   = "ECS task launch failures > 1"
+    alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_task_count" {
+  alarm_name          = "ECS-TaskCountExceeded"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "RunningTaskCount"
+  namespace           = "AWS/ECS"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 1
+  dimensions = {
+    ClusterName = "websocket-cluster"
+    ServiceName = "websocket-ecs-service"
+  }
+  alarm_description   = "ECS running task count > 1"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
+
 
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_3" {
   provider = aws.deployment-eu
