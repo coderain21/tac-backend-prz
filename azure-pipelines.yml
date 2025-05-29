@@ -53,7 +53,7 @@ stages:
             path: "$(System.DefaultWorkingDirectory)/node_modules"
             cacheHitVar: CACHE_RESTORED
           displayName: Cache npm
-        - script: npm config set registry https://registry.npmmirror.com
+        # - script: npm config set registry https://registry.npmmirror.com
         - script: |
             npm install
           condition: ne(variables.CACHE_RESTORED, 'true')
@@ -97,7 +97,7 @@ stages:
       pool:
           vmImage: "ubuntu-22.04"
       steps:
-        - script: npm config set registry https://registry.npmmirror.com
+        # - script: npm config set registry https://registry.npmmirror.com
         - script: |
             npm install -g license-checker 
             license-checker --json > licenses.json  
@@ -174,7 +174,7 @@ stages:
             path: "$(System.DefaultWorkingDirectory)/node_modules"
             cacheHitVar: CACHE_RESTORED
           displayName: Cache npm
-        - script: npm config set registry https://registry.npmmirror.com
+        # - script: npm config set registry https://registry.npmmirror.com
         - script: |
             npm install --cache .npm
           condition: ne(variables.CACHE_RESTORED, 'true')
