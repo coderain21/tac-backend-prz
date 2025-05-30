@@ -22,13 +22,7 @@ terraform {
   }
 }
 
-terraform {
-  backend "s3" {
-    region       = "eu-west-2"  # Replace with the appropriate AWS region
-    encrypt      = true
-    use_lockfile = true  # Enable the S3 locking feature
-  }
-}
+
 
 resource "aws_iam_role" "ecs_task_execution_role" {
   name               = "ecs-mongobetween-task-execution-role"
