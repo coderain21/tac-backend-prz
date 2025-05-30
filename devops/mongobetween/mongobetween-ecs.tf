@@ -17,6 +17,14 @@ terraform {
   }
 }
 
+terraform {
+  required_providers {
+   aws = {
+    source  = "hashicorp/aws"
+    version = "5.98"
+    }
+  }
+}
 data "aws_vpc" "my_vpc" {
   # Use the "Name" tag filter to find the VPC by name
   filter {
