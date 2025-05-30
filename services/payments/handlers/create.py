@@ -236,6 +236,15 @@ def create_intent(event, context):
         seller_data = get_by_email(
             seller_data_of_auction["seller_email"], os.environ['SELLERS_TABLE'])
 
+        #get the cart details
+        cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
+        print('data', cart_data)
+        if not list(cart_data):
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Cart not found"})
+            }
         # Checking whether payment is already created in paypal or not
         #db = client[os.environ['DATABASE']]
         # payment_status = db[os.environ['PAYMENT_STATUS']]
@@ -328,12 +337,6 @@ def create_intent(event, context):
                 "seller_email": seller_data_of_auction["seller_email"]
             }
 
-        #Block to fetch the counter record , add the order to orders
-        # client = MongoClient(
-        #               os.environ['MONGO_CLIENT'],
-        #               maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-        #                 )
-        #db = client[os.environ['DATABASE']]
 
         # counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
@@ -374,7 +377,7 @@ def create_intent(event, context):
             f_name = buyer_data.get("first_name","")
             l_name = buyer_data.get("last_name","")
             name = f_name+' '+l_name
-        cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
+        # cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["updated_at"] = time_stamp
         # insert_data["auction_title"] = auction_title
         # insert_data["auction_image"] = auction_image

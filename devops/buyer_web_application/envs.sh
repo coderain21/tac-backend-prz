@@ -15,7 +15,6 @@ parameter_names=(
     "GOOGLE_API"
     "CDN_URL"
     "STRIPE_KEY"
-    "STRIPE_PAYMENT_KEY"
     "STAGE"
     "LOCATION_API"
     "SOCKET_URL"
@@ -23,10 +22,8 @@ parameter_names=(
     "BUYER_COGNITO_CLIENT_ID"
     "BUYER_COGNITO_IDENTITY_POOL_ID"
     "BUYER_COGNITO_USERPOOL_DOMAIN"
-    "NOTIFY_KEY"
     "LAUNCHDARKLY_CLIENT_ID"
     "SUB_ENC_KEY"
-    "GOOGLE_CLIENT_SECRET"
 )
 
 # Loop through each parameter
