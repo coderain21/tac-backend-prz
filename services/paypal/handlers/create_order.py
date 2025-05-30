@@ -241,6 +241,7 @@ def create_paypal_order(event, context):
                     }
 
         auction_id = data.get("id")
+        order_number = data.get("order_number")
         # Fetch seller data
         seller_data_of_auction = auction_collection.find_one({'_id': ObjectId(auction_id)})
         cart_data = cart_collection.find({
