@@ -32,7 +32,7 @@
                     "schema": {
                       "type": "string"
                     },
-                    "example": "False"
+                    "example": "True"
                   }
                 ],
                 "requestBody": {
@@ -51,6 +51,7 @@
                         },
                         "example":{
                             "subdomain":"ssssss",
+                            "prev_subdomain":"ssss",
                             "plan":"Pro"
                         }
                       }
