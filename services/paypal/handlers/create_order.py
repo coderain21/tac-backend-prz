@@ -229,6 +229,26 @@ def create_paypal_order(event, context):
                     }
 
         auction_id = data.get("id")
+        # Fetch seller data
+        seller_data_of_auction = auction_collection.find_one({'_id': ObjectId(auction_id)})
+        cart_data = cart_collection.find({
+            "seller_email": seller_data_of_auction['seller_email'],
+            "email_address": email_address,
+            "auction_id": auction_id
+        })
+
+        cart_data_list = list(cart_data)
+        if not cart_data_list:
+            print('cart data not found', cart_data_list)
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Cart not found"})
+            }
+
+
+
+
         amount = int(float(data.get("amount")))
         billing = data.get("billing")
         shipping = data.get("shipping")
@@ -247,8 +267,6 @@ def create_paypal_order(event, context):
         time_stamp = int(data.get("timestamp"))
         print('data', auction_id, amount, billing, shipping)
 
-        # Fetch seller data
-        seller_data_of_auction = auction_collection.find_one({'_id': ObjectId(auction_id)})
         # print('seller data of auction', seller_data_of_auction)
         if seller_data_of_auction is None:
             return {

@@ -28,7 +28,7 @@ jobs:
                 inputs:
                   artifact: environment
                   targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: npm config set registry https://registry.npmmirror.com
+              #- script: npm config set registry https://registry.npmmirror.com
               - script: |
                   npm install --cache .npm
                 condition: ne(variables.CACHE_RESTORED, 'true')

@@ -17,6 +17,14 @@ terraform {
   }
 }
 
+terraform {
+  required_providers {
+   aws = {
+    source  = "hashicorp/aws"
+    version = "5.98"
+    }
+  }
+}
 data "aws_vpc" "my_vpc" {
   # Use the "Name" tag filter to find the VPC by name
   filter {
@@ -178,6 +186,14 @@ resource "aws_ecs_task_definition" "mongobetween-task-definition" {
 data "aws_ssm_parameter" "subnet_id" {
   name = "SUBNET_ID"
   provider = aws.deployment-eu
+}
+terraform {
+  required_providers {
+   aws = {
+    source  = "hashicorp/aws"
+    version = "5.98"
+    }
+  }
 }
  
 data "aws_ecs_cluster" "ecs" {
