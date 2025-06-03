@@ -74,7 +74,7 @@ def create_app_client(userpoolid,client_name,subdomain):
 
 
 
-'''
+"""
 This function updates the subdomain for a seller in the system. Here's what it does:
 
 1. Validates the request:
@@ -121,7 +121,7 @@ Parameters:
 
 Returns:
 - API response with status code, headers and message
-'''
+"""
 def update_app_client(userpoolid, client_id, client_name, subdomain, existing_domain_record):
     # Get existing user pool client configuration
     get_userpool = cognito_client.describe_user_pool_client(
@@ -249,6 +249,17 @@ def subdomain(event, context):
                 new_subdomain = request_body['subdomain']
                 prev_subdomain = request_body['prev_subdomain']
 
+
+                # Restricting certain keywords to be used in subdomain
+                if any(word in new_subdomain.lower() for word in ['seller', 'bid', 'admin', 'support', 'www',  'indy', 'demo', 'tac', 'theauctioncollective', 'auctioncollective']):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({
+                            'message': 'Subdomain already exists'
+                            })
+                    }
+
                 # Check if seller has Pro plan access
                 plan = seller_collection.find_one({'email_address': seller_email}, session=session)['plan_type']
 
@@ -317,11 +328,19 @@ def subdomain(event, context):
                 #              }
 
                 # Update subdomain record in MongoDB
-                subdomain_collection.update_one(
+                subdomain_result = subdomain_collection.find_one_and_update(
                     {'seller_email': seller_email, 'subdomain': prev_subdomain},
                     {"$set": {'subdomain': new_subdomain, "updated_at": int(datetime.now().timestamp()), "default": False}},
                     session=session
                 )
+                if not subdomain_result:
+                    session.abort_transaction()
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'message': 'Error in updating subdomain'})
+                    }
+
 
                 # Update Amplify domain association with new mapping
                 try:
