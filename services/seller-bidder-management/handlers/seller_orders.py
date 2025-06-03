@@ -66,7 +66,6 @@ def list_orders(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
-        # email_address = 'sthuthi+test3@7edge.com'
         # Extract parameters from the request, defaulting to empty dictionary if not present
         data = event.get('queryStringParameters', {}).copy() if event.get('queryStringParameters') else {}
 

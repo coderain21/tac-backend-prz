@@ -2,7 +2,7 @@
 
 # Set the path to the Python script relative to this bash script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PYTHON_SCRIPT="$SCRIPT_DIR/access_token_genation.py"
+PYTHON_SCRIPT="$SCRIPT_DIR/access_token_generation.py"
 
 generate_token() {
     if [ ! -f "$PYTHON_SCRIPT" ]; then
@@ -10,8 +10,12 @@ generate_token() {
         exit 1
     fi
 
+    # Change to script directory (root folder) to ensure private.key is found
+    pushd "$SCRIPT_DIR" > /dev/null
+
     python3 "$PYTHON_SCRIPT" > logins.sh
     logins_file="logins.sh"
+    echo $logins_file
 
     if [ -r "$logins_file" ]; then
         while IFS= read -r line; do
@@ -21,8 +25,11 @@ generate_token() {
         done < "$logins_file"
     else
         echo "Error: $logins_file does not exist or is not readable."
+        popd > /dev/null
         exit 1
     fi
+
+    popd > /dev/null
 }
 
 while getopts ":s:" opt; do

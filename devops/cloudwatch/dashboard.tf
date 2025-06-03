@@ -66,7 +66,7 @@ resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
   name           = "Process Cart Logs Error"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-process-cart"
   pattern        = "\"TypeError: Cannot read properties of\""
-
+  provider             = aws.deployment-eu
   metric_transformation {
     name      = "ProcessCartErrorCount"
     namespace = "ProcessCartError"
@@ -88,6 +88,7 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
 
   # Actions
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
 }
 
 
@@ -117,6 +118,8 @@ resource "aws_cloudwatch_log_metric_filter" "sqs_lambda_error_metric_filter" {
     namespace = "LambdaErrors"
     value     = "1"
   }
+  provider             = aws.deployment-eu
+
 }
 
 resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
@@ -147,6 +150,7 @@ resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
 
   # Actions
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
 }
 resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_filter" {
   name           = "Save To Cache Logs Error"
@@ -158,6 +162,8 @@ resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_f
     namespace = "SaveToCacheError"
     value     = "1"
   }
+  provider             = aws.deployment-eu
+
 }
 
 # Create CloudWatch Alarm for process cart logs
@@ -174,6 +180,8 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
 
   # Actions
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+
 }
 
 
@@ -398,41 +406,43 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_out" {
-  provider             = aws.deployment-eu
-  alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkBytesOut"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "NetworkBytesOut"
-  namespace           = "AWS/ElastiCache"
-  period              = 300  # 5 minutes
-  statistic           = "Maximum"
-  threshold           = 12582912  # 12 MB (adjust based on analysis)
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  
-  dimensions = {
-    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
-    CacheNodeId    = "0001"
-  }
-}
 
-resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_in" {
-  provider             = aws.deployment-eu
-  alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkBytesIn"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "NetworkBytesIn"
-  namespace           = "AWS/ElastiCache"
-  period              = 300  # 5 minutes
-  statistic           = "Maximum"
-  threshold           = 10485760  # 10 MB
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+
+# resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_out" {
+#   provider             = aws.deployment-eu
+#   alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkBytesOut"
+#   comparison_operator = "GreaterThanOrEqualToThreshold"
+#   evaluation_periods  = 1
+#   metric_name         = "NetworkBytesOut"
+#   namespace           = "AWS/ElastiCache"
+#   period              = 300  # 5 minutes
+#   statistic           = "Maximum"
+#   threshold           = 125829120  # 12 MB (adjust based on analysis)
+#   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
-  dimensions = {
-    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
-    CacheNodeId    = "0001"
-  }
-}
+#   dimensions = {
+#     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+#     CacheNodeId = "0001"
+#   }
+# }
+
+# resource "aws_cloudwatch_metric_alarm" "redis_network_bytes_in" {
+#   provider             = aws.deployment-eu
+#   alarm_name          = "indyauction-${var.STAGE}-Redis-NetworkBytesIn"
+#   comparison_operator = "GreaterThanOrEqualToThreshold"
+#   evaluation_periods  = 1
+#   metric_name         = "NetworkBytesIn"
+#   namespace           = "AWS/ElastiCache"
+#   period              = 3000  # 5 minutes
+#   statistic           = "Maximum"
+#   threshold           = 104857600  # 10 MB
+#   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+#   dimensions = {
+#     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+#     CacheNodeId = "0001"
+#   }
+# }
 
 resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   provider             = aws.deployment-eu
@@ -447,8 +457,8 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   
   dimensions = {
-    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
-    CacheNodeId    = "0001"
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
   }
 }
 

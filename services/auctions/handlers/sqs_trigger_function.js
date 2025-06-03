@@ -198,7 +198,7 @@ module.exports.sqsTriggerFunction = async (event) => {
         if (getBidders.length > 0) {
         // Loop through bidders
             for (const user of getBidders) {
-            // Retrieve the auction lots for each bidder
+                // Retrieve the auction lots for each bidder
                 // Reset lists for each bidder
                 const winningLot = []
                 const notWinning = []
@@ -378,10 +378,18 @@ module.exports.sqsTriggerFunction = async (event) => {
             if (lastRecord.lot_number === event.lot_number) {
                 for (const lot of get_lot) {
                     const redisKeys = `lot:${lot._id}`
-                    const clearingCacheLot = await client.hset('lot', redisKeys, JSON.stringify({}))
-                    const clearingCacheLotHistory = await client.del(`lot-history:${lot._id}`)
-                    const clearAuctionHistory = await client.del(`auction:${auctionData.auction_id}#${lot._id}`)
-                    console.log('clearingCache', clearAuctionHistory, clearingCacheLotHistory, clearingCacheLot)
+                    const redisDataKeys = { // created_at will be handled by the schema default
+                        lot_key: redisKeys,
+                        lot_history_key: `lot-history:${lot._id}`,
+                        auction_history_key: `auction:${auctionData.auction_id}#${lot._id}`,
+                    }
+                    // Use the new helper function that utilizes the Mongoose model
+                    const savedDataKeys = await mongodbHelper.saveRedisDataKeys(redisDataKeys)
+                    if (savedDataKeys) {
+                        console.log(`Stored redis keys in redis-cron-data collection for lot ${lot._id}, doc ID: ${savedDataKeys._id}`)
+                    } else {
+                        console.error(`Failed to store redis keys in redis-cron-data for lot ${lot._id}`)
+                    }
                 }
             }
             return true

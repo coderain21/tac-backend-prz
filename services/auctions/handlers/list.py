@@ -24,7 +24,7 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
-access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+# access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
 
 
 def prepend_backslash(text):
@@ -146,22 +146,22 @@ def list_auction(event, context):
             timestamp_ms = int(datetime.now().timestamp() * 1000)
 
             # Convert to float and format as a string with '.0'
-            formatted_timestamp = float(timestamp_ms)
-            seller_data = collection_seller.find_one({"email_address": email_address}, {"_id": 0})
-            access_logs = {
-                "actor_id": seller_data.get('seller_id'),
-                "updated_by": {
-                    "type": 'Seller',
-                    "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
-                    "email_address": email_address,
-                },
-                "section": {
-                    "name": 'Auction Management',
-                    "action": 'Export',
-                },
-                "updated_at": formatted_timestamp
-            }
-            access_logs_collection.insert_one(access_logs)
+            # formatted_timestamp = float(timestamp_ms)
+            # seller_data = collection_seller.find_one({"email_address": email_address}, {"_id": 0})
+            # access_logs = {
+            #     "actor_id": seller_data.get('seller_id'),
+            #     "updated_by": {
+            #         "type": 'Seller',
+            #         "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+            #         "email_address": email_address,
+            #     },
+            #     "section": {
+            #         "name": 'Auction Management',
+            #         "action": 'Export',
+            #     },
+            #     "updated_at": formatted_timestamp
+            # }
+            # access_logs_collection.insert_one(access_logs)
             projection_for_export = {
                 "_id": 0,  # Exclude the ObjectId field
                 "auction_id": 1,

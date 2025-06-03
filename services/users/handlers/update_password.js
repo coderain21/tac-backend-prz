@@ -7,26 +7,26 @@
 const CryptoJS = require('crypto-js')
 const { validationCheck } = require('../data/password_validation_check')
 const Users = require('../entities/Users')
-const AccessLogs = require('../entities/AccessLogs')
+// const AccessLogs = require('../entities/AccessLogs')
 const mongoConnection = require('../lib/mongodb_helper')
 const helpers = require('../lib/helper')
 const cognitoHelper = require('../lib/cognito_helper')
 
 let connection = null
 
-function getFullname(nameObject) {
-    const fname = nameObject.first_name.trim()
-    const lname = nameObject.last_name.trim()
+// function getFullname(nameObject) {
+//     const fname = nameObject.first_name.trim()
+//     const lname = nameObject.last_name.trim()
 
-    if (fname && lname) {
-        return `${fname} ${lname}`
-    } if (fname) {
-        return fname
-    } if (lname) {
-        return lname
-    }
-    return ''
-}
+//     if (fname && lname) {
+//         return `${fname} ${lname}`
+//     } if (fname) {
+//         return fname
+//     } if (lname) {
+//         return lname
+//     }
+//     return ''
+// }
 
 /* The code you provided is a JavaScript function that exports a function called `updatePassword`. This
 function is intended to be used as a handler for an AWS Lambda function. */
@@ -38,6 +38,28 @@ module.exports.updatePassword = async (event) => {
             connection = await mongoConnection.connect()
         }
         const email = decodeURIComponent(event.pathParameters.email)
+
+        // Authorization check to verify user has permission to update this profile
+        try {
+            const email_address = event.requestContext.authorizer.claims.email
+            if (email_address !== email) {
+                return {
+                    headers: await helpers.getHeaders(),
+                    statusCode: 403,
+                    body: JSON.stringify({
+                        message: 'You do not have access to perform this API action',
+                    }),
+                }
+            }
+        } catch (error) {
+            return {
+                headers: await helpers.getHeaders(),
+                statusCode: 403,
+                body: JSON.stringify({
+                    message: 'You do not have access to perform this API action',
+                }),
+            }
+        }
         const get_user = await mongoConnection.view(Users, { email_address: email })
         const user_old_password = get_user[0].password
         const bytes = CryptoJS.AES.decrypt(user_old_password, process.env.PASSWORD_SECRET_KEY)
@@ -50,21 +72,21 @@ module.exports.updatePassword = async (event) => {
             password: CryptoJS.AES.encrypt(userData.new_password, process.env.PASSWORD_SECRET_KEY).toString(),
         }
         const update_user_information = await mongoConnection.update(Users, get_user[0]._id, request_body)
-        const fullName = getFullname(get_user[0])
-        const access_logs = {
-            actor_id: get_user[0].seller_id,
-            updated_by: {
-                type: 'Seller',
-                name: fullName,
-                email_address: email,
-            },
-            section: {
-                name: 'Seller Management',
-                action: 'Update Password',
-                user_id: email,
-            },
-        }
-        await mongoConnection.save(access_logs, AccessLogs)
+        // const fullName = getFullname(get_user[0])
+        // const access_logs = {
+        //     actor_id: get_user[0].seller_id,
+        //     updated_by: {
+        //         type: 'Seller',
+        //         name: fullName,
+        //         email_address: email,
+        //     },
+        //     section: {
+        //         name: 'Seller Management',
+        //         action: 'Update Password',
+        //         user_id: email,
+        //     },
+        // }
+        // await mongoConnection.save(access_logs, AccessLogs)
         if (update_user_information.modifiedCount > 0) {
             userData.email = email
             await cognitoHelper.cognitoResetPassword(userData)

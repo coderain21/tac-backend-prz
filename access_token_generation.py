@@ -4,15 +4,16 @@ This module interacts with AWS Cognito to generate an authentication token.
 import boto3
 import os
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
+from boto3.session import Session
 
-from dotenv import load_dotenv  # Import the library
-
-# Load environment variables from .env file
+# Load environment variables
 load_dotenv()
 
-
-
-client = boto3.client('cognito-idp',region_name='eu-west-2')
+# Create a session with a specific profile
+session = Session(profile_name=os.environ['PROFILE_ENV'])
+print(session)
+client = session.client('cognito-idp', region_name='eu-west-2')
 
 def generate_token(user_type):
     try:

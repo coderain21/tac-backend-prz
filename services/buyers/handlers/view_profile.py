@@ -38,22 +38,6 @@ def view_profile(event, context):
     body. The specific content of the response depends on the execution path of the code.
     """
     try:
-        # try:
-        #     cognito_data = json.loads(
-        #         event['requestContext']['authorizer']['data'])
-        #     email_address = cognito_data['email']
-        #     if "cognito:groups" not in cognito_data :
-        #         return {
-        #             "statusCode": 403,
-        #             "headers": headers,
-        #             "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #         }
-        # except:
-        #     return {
-        #         "statusCode": 403,
-        #         "headers": headers,
-        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
-        #     }
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
             print('email', email_address)
@@ -64,12 +48,6 @@ def view_profile(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # client = MongoClient(
-                    #   os.environ['MONGO_CLIENT'],
-                    #   maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                    #     )
-        # db = client[os.environ['DATABASE']]
-        # collection = db[os.environ["BUYER_COLLECTION"]]
         data = event['queryStringParameters']
         auction_id = data['auction_id']
         try:

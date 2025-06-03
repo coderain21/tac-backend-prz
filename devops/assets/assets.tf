@@ -1,17 +1,17 @@
 provider "aws" {
   region = "us-east-1"
   alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
+  profile = "indyauction-main-us"
 }
 
 provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
+  profile = "indyauction-${var.STAGE}-us"
 }
 
 provider "aws" {
-  region = "eu-west-2"
+  region = var.REGION
   alias = "deployment-eu"   
   profile = "indyauction-${var.STAGE}"
 }
@@ -640,6 +640,30 @@ resource "aws_ssm_parameter" "sub_enc_key" {
 }
 
 
+resource "aws_ssm_parameter" "admin_username" {
+  name  = "ADMIN_USERNAME"
+  type  = "String"
+  value = var.ADMIN_USERNAME
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+
+resource "aws_ssm_parameter" "internal_admin_username" {
+  name  = "INTERNAL_ADMIN_USERNAME"
+  type  = "String"
+  value = var.INTERNAL_ADMIN_USERNAME
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+resource "aws_ssm_parameter" "external_admin_username" {
+  name  = "EXTERNAL_ADMIN_USERNAME"
+  type  = "String"
+  value = var.EXTERNAL_ADMIN_USERNAME
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
 

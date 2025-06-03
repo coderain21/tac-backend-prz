@@ -1,18 +1,3 @@
- 
-
-  
-#AWS Provider with profile main account
-provider "aws" {
-  region = var.REGION
-  alias = "main"   # Specify a default AWS region here
-  profile = "indyauction-main"
-}
-
-resource "random_password" "password" {
-  length           = 16
-  special          = false
-}
-
 
 #AWS Provider with profile Stage account
 provider "aws" {
@@ -20,6 +5,12 @@ provider "aws" {
   alias = "deployment-eu"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}"
 }
+
+resource "random_password" "password" {
+  length           = 16
+  special          = false
+}
+
 
 terraform {
   backend "s3" {

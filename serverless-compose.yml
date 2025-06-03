@@ -47,4 +47,7 @@ services:
   access-logs:
     path: services/access-logs
     config: ${env:config}
+  redis-delete:
+    path: services/redis-delete
+    config: ${env:config}
 

@@ -29,7 +29,7 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
-access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+# access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
 
 
 class Encoder(json.JSONEncoder):
@@ -600,28 +600,28 @@ def update_auction(event, context):
             )
 
         # Get the current timestamp in seconds and convert to milliseconds
-        timestamp_ms = int(datetime.now().timestamp() * 1000)
+        # timestamp_ms = int(datetime.now().timestamp() * 1000)
 
         # Convert to float and format as a string with '.0'
-        formatted_timestamp = float(timestamp_ms)
+        # formatted_timestamp = float(timestamp_ms)
 
 
-        access_logs = {
-            "actor_id": seller_data.get('seller_id'),
-            "updated_by": {
-                "type": 'Seller',
-                "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
-                "email_address": seller_email,
-            },
-            "section": {
-                "name": 'Auction Management',
-                "action": 'Update',
-                "auction_id": auction_id,
-                "updated": update_data
-            },
-            "updated_at": formatted_timestamp
-        }
-        access_logs_collection.insert_one(access_logs)
+        # access_logs = {
+        #     "actor_id": seller_data.get('seller_id'),
+        #     "updated_by": {
+        #         "type": 'Seller',
+        #         "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+        #         "email_address": seller_email,
+        #     },
+        #     "section": {
+        #         "name": 'Auction Management',
+        #         "action": 'Update',
+        #         "auction_id": auction_id,
+        #         "updated": update_data
+        #     },
+        #     "updated_at": formatted_timestamp
+        # }
+        # access_logs_collection.insert_one(access_logs)
         return {
             "headers": headers,
             'statusCode': 204,
