@@ -5,7 +5,7 @@ provider "aws" {
 }
 
 provider "aws" {
-  region = var.REGION
+  region ="eu-west-2"
   alias = "root-account"   # Specify a default AWS region here
   profile = "indyauction-main"
 }

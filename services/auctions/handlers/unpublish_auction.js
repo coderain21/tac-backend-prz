@@ -9,6 +9,8 @@
 /* eslint-disable import/no-unresolved */
 const Joi = require('joi')
 const { StepFunctions, config } = require('aws-sdk')
+// eslint-disable-next-line import/no-extraneous-dependencies
+const axios = require('axios')
 
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
@@ -107,6 +109,22 @@ module.exports.handler = async (event) => {
                 stepFunctionEnd.push(stopExecutions(executionArn))
             }
             await Promise.all(stepFunctionEnd)
+
+            const payload = { auction: { _id: getAuctionDetails[0]._id } }
+            const headersList = {
+                Accept: '*/*',
+                'User-Agent': 'API TEST',
+                'Content-Type': 'application/json',
+            }
+            const reqUrl = `${process.env.SOCKET_URL}/cancelled`
+            const options = await axios({
+                method: 'POST',
+                url: reqUrl,
+                headers: headersList,
+                data: payload,
+            })
+            console.log('✅ Notification sent successfully. Response:', options.status)
+
             return {
                 statusCode: 204,
                 headers: helpers.getHeaders(),

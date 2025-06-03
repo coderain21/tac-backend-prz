@@ -212,8 +212,8 @@
                 }
               },
               "example": {
-                "group": "aishwarya+401",
-                "auction_id": "654cdc658f15384efe13b200"
+                "group": "anusha.k+subdomain",
+                "auction_id": "65363ffe6ecaedfb6ffef6eb"
               }
             }
           }
@@ -548,6 +548,9 @@
               "type": "boolean"
             },
             "show_bidding_history": {
+              "type": "boolean"
+            },
+            "toggle_powered_by_indy":{
               "type": "boolean"
             },
             "hide_auction_lots": {

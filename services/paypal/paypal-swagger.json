@@ -7,9 +7,9 @@
   },
   "servers": [
     {
-      "url": "https://apis.dev.indyauction.net/v1/payments"
+      "url": "https://apis.dev.indyauction.net/v1/paypal"
     }
-  ],
+  ], 
   "tags": [
     {
       "name": "Payment Management",
@@ -411,6 +411,9 @@
             "type": "boolean"
           },
           "show_bidding_history": {
+            "type": "boolean"
+          },
+          "toggle_powered_by_indy": {
             "type": "boolean"
           },
           "hide_auction_lots": {

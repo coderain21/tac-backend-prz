@@ -24,7 +24,7 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
-access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+# access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
 
 
 def prepend_backslash(text):
@@ -107,60 +107,61 @@ def list_auction(event, context):
             "note": 1,
             "created_at": 1,
             "currency": 1,
-            "description": 1,
+            # "description": 1,
             "time_zone": 1,
-            "extension_type": 1,
-            "extension_time": 1,
-            "extension_time_between_lots": 1,
-            "registration_type": 1,
-            "add_buyer_fees": 1,
-            "fees": 1,
-            "make_your_auction_private": 1,
-            "passcode": 1,
-            "menu_links": 1,
-            "footer.background_color": 1,
-            "footer.text_color": 1,
-            "buttons.background_color": 1,
-            "buttons.text_color": 1,
-            "content_area.background_color": 1,
-            "content_area.text_color": 1,
-            "header.background_color": 1,
-            "header.text_color": 1,
-            "font.hearder_font": 1,
-            "font.body_font": 1,
-            "logo_image": 1,
-            "percentage": 1,
+            # "extension_type": 1,
+            # "extension_time": 1,
+            # "extension_time_between_lots": 1,
+            # "registration_type": 1,
+            # "add_buyer_fees": 1,
+            # "fees": 1,
+            # "make_your_auction_private": 1,
+            # "passcode": 1,
+            # "menu_links": 1,
+            # "footer.background_color": 1,
+            # "footer.text_color": 1,
+            # "buttons.background_color": 1,
+            # "buttons.text_color": 1,
+            # "content_area.background_color": 1,
+            # "content_area.text_color": 1,
+            # "header.background_color": 1,
+            # "header.text_color": 1,
+            # "font.hearder_font": 1,
+            # "font.body_font": 1,
+            # "logo_image": 1,
+            # "percentage": 1,
             "template_name": 1,
-            "logo_redirection_url": 1,
-            "faq": 1,
-            "terms_and_condition": 1,
-            "paddle": 1,
-            "show_bidding_history": 1,
-            "hide_auction_lots": 1,
-            "show_bidder_location_in_bidder_history": 1,
-            "publish_auction_results": 1
+            # "logo_redirection_url": 1,
+            # "faq": 1,
+            # "terms_and_condition": 1,
+            # "paddle": 1,
+            # "show_bidding_history": 1,
+            # "toggle_powered_by_indy": 1,
+            # "hide_auction_lots": 1,
+            # "show_bidder_location_in_bidder_history": 1,
+            # "publish_auction_results": 1
         }
         if export is not None and export == 1:
             # Get the current timestamp in seconds and convert to milliseconds
             timestamp_ms = int(datetime.now().timestamp() * 1000)
 
             # Convert to float and format as a string with '.0'
-            formatted_timestamp = float(timestamp_ms)
-            seller_data = collection_seller.find_one({"email_address": email_address}, {"_id": 0})
-            access_logs = {
-                "actor_id": seller_data.get('seller_id'),
-                "updated_by": {
-                    "type": 'Seller',
-                    "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
-                    "email_address": email_address,
-                },
-                "section": {
-                    "name": 'Auction Management',
-                    "action": 'Export',
-                },
-                "updated_at": formatted_timestamp
-            }
-            access_logs_collection.insert_one(access_logs)
+            # formatted_timestamp = float(timestamp_ms)
+            # seller_data = collection_seller.find_one({"email_address": email_address}, {"_id": 0})
+            # access_logs = {
+            #     "actor_id": seller_data.get('seller_id'),
+            #     "updated_by": {
+            #         "type": 'Seller',
+            #         "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+            #         "email_address": email_address,
+            #     },
+            #     "section": {
+            #         "name": 'Auction Management',
+            #         "action": 'Export',
+            #     },
+            #     "updated_at": formatted_timestamp
+            # }
+            # access_logs_collection.insert_one(access_logs)
             projection_for_export = {
                 "_id": 0,  # Exclude the ObjectId field
                 "auction_id": 1,

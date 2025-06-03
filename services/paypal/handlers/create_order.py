@@ -21,7 +21,7 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 counter_collection = db[os.environ['COUNTER_LOT']]
 address_collection = db[os.environ["ADDRESS_COLLECTION"]]
-orders_collection = db[os.environ["TEMP_ORDERS_COLLECTION"]]
+orders_collection = db[os.environ["ORDERS_COLLECTION"]]
 cart_collection = db[os.environ["CART_COLLECTION"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 seller_collection = db[os.environ["SELLERS_TABLE"]]
@@ -100,8 +100,20 @@ def calculate_application_fee(amount, plan_type):
 # Add payment data to MongoDB
 def create_order(insert_data):
     print('data', json.dumps(insert_data, cls=Encoder))
-    insert = orders_collection.insert_one(insert_data)
-    return True
+    insert = orders_collection.update_one(
+                                            {
+                                                "email_address": insert_data["email_address"],
+                                                "seller_email": insert_data["seller_email"], 
+                                                "auction_id": insert_data["auction_id"],
+                                                "order_number": insert_data["order_number"]
+                                            },
+                                            {"$set": insert_data},
+                                            upsert=True
+                                        )
+    if insert:
+        return True
+
+    return False
 
 # Create a PayPal order
 def generate_paypal_order(payment_info, redirect_url, auction_data):
@@ -219,7 +231,7 @@ def create_paypal_order(event, context):
             }
 
         data = event['queryStringParameters']
-        expected_fields = ["id", "domain", "amount", "billing", "shipping", "timestamp"]
+        expected_fields = ["id", "order_number","domain", "amount", "billing", "shipping", "timestamp"]
         fields_not_found = list(set(expected_fields).difference(data.keys()))
 
         if fields_not_found:
@@ -229,6 +241,7 @@ def create_paypal_order(event, context):
                     }
 
         auction_id = data.get("id")
+        order_number = data.get("order_number")
         # Fetch seller data
         seller_data_of_auction = auction_collection.find_one({'_id': ObjectId(auction_id)})
         cart_data = cart_collection.find({
@@ -305,7 +318,6 @@ def create_paypal_order(event, context):
         #             "headers": headers,
         #             "body": json.dumps({"message": "Order is already created"})
         #         }
-
         # print('seller data', seller_data)
         if seller_data is None:
             return {
@@ -358,16 +370,16 @@ def create_paypal_order(event, context):
 
 
 
-            insert_data = {
-                "email_address": email_address,
-                "payment_intent": paypal_order["id"],
-                "status": paypal_order['status'],
-                "payment_status": "Unpaid",
-                "amount": amount,
-                "auction_id": auction_id,
-                "seller_email": seller_email,
-                "plan_type": plan_type
-            }
+            # insert_data = {
+            #     "email_address": email_address,
+            #     "payment_intent": paypal_order["id"],
+            #     "status": paypal_order['status'],
+            #     "payment_status": "Unpaid",
+            #     "amount": amount,
+            #     "auction_id": auction_id,
+            #     "seller_email": seller_email,
+            #     "plan_type": plan_type
+            # }
 
 
         #fetch address data and add to order data
@@ -378,30 +390,30 @@ def create_paypal_order(event, context):
 
 
 
-        existing_orders_count = orders_collection.count_documents(
-            {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
-        counter_record = counter_collection.find_one({"auction_id": auction_id,
-                                                      "email_address": email_address,
-                                                      "seller_email": seller_email,
-                                                      'record_type': 'Orders'}
-                                                     )
-        if counter_record is None:
-            last_order_number = 0
-            counter_record = {
-                "auction_id": auction_id,
-                "seller_email": seller_email,
-                "email_address": email_address,
-                "record_type": "Orders",
-                "starting_sequence": last_order_number
-            }
-            result = counter_collection.insert_one(counter_record)
+        # existing_orders_count = orders_collection.count_documents(
+        #     {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
+        # counter_record = counter_collection.find_one({"auction_id": auction_id,
+        #                                               "email_address": email_address,
+        #                                               "seller_email": seller_email,
+        #                                               'record_type': 'Orders'}
+        #                                              )
+        # if counter_record is None:
+        #     last_order_number = 0
+        #     counter_record = {
+        #         "auction_id": auction_id,
+        #         "seller_email": seller_email,
+        #         "email_address": email_address,
+        #         "record_type": "Orders",
+        #         "starting_sequence": last_order_number
+        #     }
+        #     result = counter_collection.insert_one(counter_record)
 
 
-        last_order_number = counter_record["starting_sequence"]+1
-        update_data = {
-            "starting_sequence": last_order_number
-        }
-        insert_data["order_number"] = generate_order_code(last_order_number)
+        # last_order_number = counter_record["starting_sequence"]+1
+        # update_data = {
+        #     "starting_sequence": last_order_number
+        # }
+        insert_data["order_number"] = order_number
 
 
 
@@ -409,7 +421,7 @@ def create_paypal_order(event, context):
             "email_address": email_address,
             "payment_intent": paypal_order['id'],
             "status": paypal_order['status'],
-            "payment_status": "Unpaid",
+            # "payment_status": "Unpaid",
             "amount": amount,
             "payment": "Paypal",
             "application_amount": application_fee,
@@ -423,7 +435,7 @@ def create_paypal_order(event, context):
         insert_data["created_at"] = time_stamp
         insert_data["auction_title"] = auction_title
         insert_data["auction_image"] = auction_image
-        insert_data["order_number"] = generate_order_code(last_order_number)
+        insert_data["order_number"] = order_number
         insert_data["shipping_address"] = shipping_address
         insert_data["billing_address"] = billing_address
         insert_data['auction_id'] = auction_id
@@ -443,7 +455,14 @@ def create_paypal_order(event, context):
 
         insert_data['payment_method_types'] = ["PayPal"]
 
-        create_order(insert_data)
+        create = create_order(insert_data)
+
+        if not create:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Order not created"})
+            }
 
         # payment_process = payment_status.find_one_and_update(
         #         {
@@ -463,10 +482,10 @@ def create_paypal_order(event, context):
 
 
 
-        counter_collection.update_one({"auction_id": auction_id,
-                                    "seller_email": seller_email,
-                                    "email_address": email_address,
-                                    "record_type": "Orders"}, {"$set": update_data})
+        # counter_collection.update_one({"auction_id": auction_id,
+        #                             "seller_email": seller_email,
+        #                             "email_address": email_address,
+        #                             "record_type": "Orders"}, {"$set": update_data})
 
 
         return {
