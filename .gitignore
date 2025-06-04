@@ -90,3 +90,4 @@ tf-*
 aws_signing_helper*
 certificate.crt
 private.key
+.vscode

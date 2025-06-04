@@ -113,17 +113,6 @@ resource "aws_route53_record" "route_53_certificate_records_ap_south_1_dev" {
 }
 
 
-# resource "aws_route53_record" "route_53_certificate_records_ap_south_1_prod" {
-#   count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
-#   name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
-#   allow_overwrite = true
-#   records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
-#   ttl             = 60
-#   type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
-#   zone_id         = local.zone_id
-#   provider = aws.main
-# }
-
 resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
   for_each = {
     for dvo in aws_acm_certificate.cert_us_east_1.domain_validation_options : dvo.domain_name => {
@@ -141,16 +130,6 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
   provider = aws.route53-account
 }
 
-# resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
-#   count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
-#   name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
-#   allow_overwrite = true
-#   records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
-#   ttl             = 60
-#   type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
-#   zone_id         = local.zone_id
-#   provider = aws.main
-# }
 
 resource "aws_s3_bucket" "assets" {
   bucket = "indyauction-assets-${var.STAGE}-v1"
