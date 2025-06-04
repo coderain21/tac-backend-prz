@@ -45,6 +45,7 @@ TIMEZONE_MAPPING = {
     'NZST - New Zealand Standard Time': 'Pacific/Auckland',
     'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
     'MST - Mountain Standard Time (US)': 'America/Denver',
+    'MDT - Mountain Daylight Time (US)': 'America/Denver',
     'CST - Central Standard Time (US)': 'America/Chicago',
     'EST - Eastern Standard Time (US)': 'America/New_York',
 }
