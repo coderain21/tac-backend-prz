@@ -140,14 +140,14 @@ resource "aws_s3_bucket" "assets" {
   }
   provider = aws.deployment-eu
 }
-resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_disable" {
   bucket = aws_s3_bucket.assets.id
 
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
   provider =  aws.deployment-eu
-  depends_on = [aws_s3_bucket.bucket]
+  depends_on = [aws_s3_bucket.assets]
 }
 
 
@@ -200,6 +200,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "CDN for application"
+  default_root_object = "index.html"
+
 
 
   aliases = ["cdn.${local.sub_domain}"]

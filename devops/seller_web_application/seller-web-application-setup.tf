@@ -37,13 +37,13 @@ resource "aws_s3_bucket" "b" {
   provider = aws.deployment-eu
 }
 resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_disable" {
-  bucket = aws_s3_bucket.bucket.id
+  bucket = aws_s3_bucket.b.id
   rule {
     object_ownership = "BucketOwnerEnforced"
   }
   provider = aws.deployment-eu
 
-  depends_on = [aws_s3_bucket.bucket]
+  depends_on = [aws_s3_bucket.b]
 }
 
 
