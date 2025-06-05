@@ -489,7 +489,7 @@ def update_auction(event, context):
                     winningUser = item.get('winning_user')
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
-                    if len(getExistingLot) > 0:
+                    if getExistingLot is not None and len(getExistingLot) > 0:
                         # Create a new dictionary with only the required fields
                         required_fields = {
                             # **getExistingLot,
@@ -512,17 +512,21 @@ def update_auction(event, context):
                             # Add more required fields as needed
                         }
                     else:
+                        # Handle case when getExistingLot is None or empty
                         required_fields = {
-                                '_id': item.get('_id'),
-                                'start_date': item.get('start_date'),
-                                'end_date': item.get('end_date'),
-                                'auction_id': item.get('auction_id'),
-                                'seller_email': item.get('seller_email'),
-                                'winning_user': item.get('winning_user', ''),
-                                'bid_amount': item.get('bid_amount', ''),
-                                'lot_number': item.get('lot_number'),
-                                # Add more required fields as needed
-                            }
+                            '_id': item.get('_id'),
+                            'start_date': item.get('start_date'),
+                            'end_date': item.get('end_date'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
+                            'winning_user': item.get('winning_user', ''),
+                            'bid_amount': item.get('bid_amount', ''),
+                            'lot_number': item.get('lot_number'),
+                            'starting_price': item.get('starting_price'),
+                            'images': item.get('images', []),  # Provide default empty list
+                            'title1': item.get('title1'),
+                            'title2': item.get('title2', '')  # Add missing fields with defaults
+                        }
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 batch_size_lots = 50  # Batch size for lots
