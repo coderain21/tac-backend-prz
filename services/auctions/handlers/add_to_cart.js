@@ -108,11 +108,6 @@ module.exports.handler = async (event) => {
             if (getLots.length <= 0) {
                 if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
                     await sqsTriggerFunction(event)
-                }
-                if (getLots.length <= 0) {
-                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
-                        await sqsTriggerFunction(event)
-                    }
                 } else {
                     console.log('no match')
                 }
