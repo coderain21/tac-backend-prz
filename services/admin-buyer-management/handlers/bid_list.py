@@ -265,13 +265,14 @@ def format_date(timestamp, time_zone):
         'GMT - Greenwich Mean Time': 'Etc/GMT',
         'BST - British Summer Time': 'Europe/London',
         'CET - Central European Time': 'Europe/Paris',
-        'IST - India Standard Time': 'Asia/Kolkata',  # Updated key to match received timezone information
+        'IST - India Standard Time': 'Asia/Kolkata',
         'CST - China Standard Time': 'Asia/Shanghai',
         'JST - Japan Standard Time': 'Asia/Tokyo',
         'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
         'NZST - New Zealand Standard Time': 'Pacific/Auckland',
         'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
         'MST - Mountain Standard Time (US)': 'America/Denver',
+        'MDT - Mountain Daylight Time (US)': 'America/Denver',
         'CST - Central Standard Time (US)': 'America/Chicago',
         'EST - Eastern Standard Time (US)': 'America/New_York',
     }
