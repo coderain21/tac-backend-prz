@@ -124,7 +124,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             const formattedWinningLots = bidderWinningLots.map((lot) => {
                                 const featuredImage = lot.images.find((image) => image.featured)
                                 lot.lot_image = `${process.env.CDN_LINK}${featuredImage ? featuredImage.url : lot.images[0].url}`
-                                const bidAmount = parseFloat(lot.bid_amount) // Assuming bid_amount is stored as a number
+                                const bidAmount = parseFloat(lot.current_bid) // Assuming bid_amount is stored as a number
                                 totalBidAmount += bidAmount
                                 return {
                                     ...lot,
