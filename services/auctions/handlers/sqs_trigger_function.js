@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
 /* eslint-disable no-console */
@@ -47,8 +48,8 @@ function formatCurrency(amount, currencyCode) {
         const formattedAmount = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: currencyCode,
-            minimumFractionDigits: 2, // Adjust as needed
-            maximumFractionDigits: 2, // Adjust as needed
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
         }).format(parsedAmount)
 
         return formattedAmount
@@ -80,14 +81,46 @@ module.exports.sqsTriggerFunction = async (event) => {
         }
         console.log('event', event)
 
+        // Validate input parameters
+        if (!event || !event.auction_id || !event.seller_email) {
+            throw new Error('Missing required parameters: auction_id and seller_email must be provided')
+        }
+
         const auctionId = event.auction_id
         const sellerEmail = event.seller_email
 
+        // Get auction data
+        const auctionData = await mongodbHelper.getAuction({ auction_id: auctionId, seller_email: sellerEmail }, Auction)
+        if (!auctionData) {
+            throw new Error(`Auction not found for auction_id: ${auctionId} and seller_email: ${sellerEmail}`)
+        }
+
+        // Check if emails have already been sent for this auction
+        if (auctionData.payment_emails_sent) {
+            console.log(`Payment emails already sent for auction ${auctionId}. Skipping.`)
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: 'Payment emails already sent, skipping duplicate' }),
+            }
+        }
+
         // Retrieve all winning lots for the auction
-        const winningLots = await mongodbHelper.getAuctionLots({ auction_id: auctionId, seller_email: sellerEmail, winning_user: { $exists: true } }, Lot)
+        const winningLots = await mongodbHelper.getAuctionLots(
+            { auction_id: auctionId, seller_email: sellerEmail, winning_user: { $exists: true } },
+            Lot,
+        )
+
+        if (!winningLots || winningLots.length === 0) {
+            console.log(`No winning lots found for auction ${auctionId}`)
+            return {
+                statusCode: 200,
+                body: JSON.stringify({ message: 'No winning lots found, no emails sent' }),
+            }
+        }
 
         // Group winning lots by bidder
         const winningLotsByBidder = winningLots.reduce((acc, lot) => {
+            if (!lot.winning_user) return acc
             if (!acc[lot.winning_user]) {
                 acc[lot.winning_user] = []
             }
@@ -96,177 +129,198 @@ module.exports.sqsTriggerFunction = async (event) => {
         }, {})
 
         const promiseList = []
-        let auctionData = null // Declare auctionData outside the loop
+        const currencyCode = auctionData.currency || 'USD' // Default to USD if not specified
 
-        // Iterate through unique bidders who won lots
-        for (const buyerId in winningLotsByBidder) {
-            if (Object.hasOwnProperty.call(winningLotsByBidder, buyerId)) {
-                const bidderWinningLots = winningLotsByBidder[buyerId]
+        // Process each bidder's winning lots
+        for (const [buyerId, bidderWinningLots] of Object.entries(winningLotsByBidder)) {
+            try {
+                if (!bidderWinningLots || bidderWinningLots.length === 0) continue
 
                 // Retrieve bidder information
                 const buyerInformation = await mongodbHelper.getBuyer(buyerId, Buyers)
                 if (!buyerInformation || Object.keys(buyerInformation).length === 0) {
                     console.warn(`Bidder information not found for buyerId: ${buyerId}`)
-                } else {
-                    // Retrieve seller information
-                    const sellerInformation = await mongodbHelper.getUser({ email_address: sellerEmail }, Users)
-                    if (!sellerInformation || sellerInformation.length === 0) {
-                        console.warn(`Seller information not found for email: ${sellerEmail}`)
-                    } else {
-                        // Retrieve auction data
-                        auctionData = await mongodbHelper.getAuction({ auction_id: auctionId, seller_email: sellerEmail }, Auction) // Assign to the outer scope variable
-                        if (!auctionData) {
-                            console.warn(`Auction data not found for auctionId: ${auctionId}`)
-                        } else {
-                            // Calculate total amount for winning lots and format bid amounts
-                            let totalBidAmount = 0
-                            const currencyCode = auctionData.currency // Define currencyCode before map
-                            const formattedWinningLots = bidderWinningLots.map((lot) => {
-                                const featuredImage = lot.images.find((image) => image.featured)
-                                lot.lot_image = `${process.env.CDN_LINK}${featuredImage ? featuredImage.url : lot.images[0].url}`
-                                const bidAmount = parseFloat(lot.current_bid) // Assuming bid_amount is stored as a number
-                                totalBidAmount += bidAmount
-                                return {
-                                    ...lot,
-                                    bid_amount: formatCurrency(bidAmount, currencyCode),
-                                }
-                            })
-
-                            const orderAmount = Number(totalBidAmount.toFixed(2))
-
-                            try {
-                                // Get the first winning lot number to generate order number
-                                const firstWinningLotNumber = formattedWinningLots[0].lot_number
-                                const orderNumber = generateOrderCode(firstWinningLotNumber)
-                                let auctionImage = null
-
-                                console.log('auction data', auctionData)
-
-                                if (auctionData.template_name?.trim() === 'Single Lot') {
-                                    const imagesRaw = auctionData.auction_image
-
-                                    if (Array.isArray(imagesRaw) && imagesRaw.length > 0) {
-                                        const featured = imagesRaw.find((img) => img && img.featured)
-                                        auctionImage = featured?.url || imagesRaw[0]?.url || null
-                                    } else if (imagesRaw && typeof imagesRaw === 'object' && imagesRaw.url) {
-                                        // In case it's a single image object, not an array
-                                        auctionImage = imagesRaw.url
-                                    } else {
-                                        console.warn('Images missing or in unexpected format:', imagesRaw)
-                                    }
-                                } else {
-                                    auctionImage = auctionData.auction_image
-                                }
-
-                                console.log('Final Auction Image:', auctionImage)
-
-                                const orderData = {
-                                    order_number: orderNumber, // Corrected this line
-                                    seller_email: auctionData.seller_email,
-                                    email_address: buyerInformation.email_address,
-                                    name: buyerInformation.first_name,
-                                    auction_id: auctionData._id.toString(),
-                                    auction_image: auctionImage,
-                                    auction_title: auctionData.title,
-                                    currency: auctionData.currency,
-                                    lots: formattedWinningLots.map((lot) => lot.lot_number),
-                                    amount: orderAmount,
-                                    payment_status: 'Pending',
-                                    created_at: Math.floor(Date.now() / 1000),
-                                    updated_at: Math.floor(Date.now() / 1000),
-                                }
-
-                                // Insert order into orders collection with session
-                                await mongodbHelper.createOrder(
-                                    process.env.MONGO_CLIENT,
-                                    process.env.DATABASE,
-                                    process.env.ORDERS_COLLECTION,
-                                    orderData,
-                                )
-
-                                // Check if payment request email has already been sent for this order
-                                const existingOrder = await mongodbHelper.getOrder(
-                                    process.env.MONGO_CLIENT,
-                                    process.env.DATABASE,
-                                    process.env.ORDERS_COLLECTION,
-                                    { order_number: orderNumber },
-                                )
-
-                                if (existingOrder && existingOrder.payment_email_sent) {
-                                    console.log(`Payment request email already sent for order number: ${orderNumber}. Skipping.`)
-                                } else {
-                                    const cartUpdateCondition = {
-                                        seller_email: auctionData.seller_email,
-                                        email_address: buyerInformation.email_address,
-                                        auction_id: auctionData._id.toString(),
-                                    }
-                                    const cartUpdateData = {
-                                        payment_status: 'Pending',
-                                        order_number: orderNumber,
-                                    }
-                                    await mongodbHelper.updateCart(
-                                        process.env.MONGO_CLIENT,
-                                        process.env.DATABASE,
-                                        process.env.CARTTABLE,
-                                        cartUpdateCondition,
-                                        cartUpdateData,
-                                    )
-
-                                    const subdomainQuery = {
-                                        seller_email: auctionData.seller_email,
-                                    }
-                                    const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
-                                    const auctionIdString = auctionData._id.toString()
-                                    const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionIdString}/checkout`
-
-                                    const template_data = {
-                                        winning_lot: formattedWinningLots.sort((a, b) => a.lot_number - b.lot_number),
-                                        winning_lot_count: formattedWinningLots.length,
-                                        buyer: buyerInformation.first_name === '' ? 'Customer' : `${buyerInformation.first_name} ${buyerInformation.last_name}`,
-                                        title: auctionData.title,
-                                        logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                                        not_winning_lot: [], // No non-winning lots in this consolidated email
-                                        not_winning_lot_count: 0,
-                                        seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
-                                        seller_email: auctionData.seller_email,
-                                        subject: 'Congratulations | Payment Request', // Consolidated email subject
-                                        paymentContent: 'Please follow the link below to complete your payment.', // Consolidated payment content
-                                        seller_id: sellerInformation[0]._id,
-                                        total_amount: formatCurrency(orderAmount, currencyCode),
-                                        checkout_url: checkoutURL,
-                                    }
-
-                                    promiseList.push(sendTemplateEmails(buyerInformation.email_address, template_data))
-
-                                    // Update the order record to mark email as sent
-                                    await mongodbHelper.updateOrder(
-                                        process.env.MONGO_CLIENT,
-                                        process.env.DATABASE,
-                                        process.env.ORDERS_COLLECTION,
-                                        { order_number: orderNumber },
-                                        { $set: { payment_email_sent: true } },
-                                    )
-                                }
-                            } catch (error) {
-                                console.error('Error processing bidder winning lots:', error)
-                                // Do not re-throw here, allow processing of other bidders to continue
-                            }
-                        }
-                    }
+                    continue
                 }
+
+                // Retrieve seller information
+                const sellerInformation = await mongodbHelper.getUser({ email_address: sellerEmail }, Users)
+                if (!sellerInformation || sellerInformation.length === 0) {
+                    console.warn(`Seller information not found for email: ${sellerEmail}`)
+                    continue
+                }
+
+                // Calculate total amount for winning lots and format bid amounts
+                let totalBidAmount = 0
+                const formattedWinningLots = bidderWinningLots.map((lot) => {
+                    const featuredImage = lot.images?.find((image) => image.featured)
+                    const firstImage = lot.images?.[0]?.url
+                    lot.lot_image = `${process.env.CDN_LINK}${featuredImage?.url || firstImage || ''}`
+
+                    const bidAmount = parseFloat(lot.current_bid || 0)
+                    totalBidAmount += bidAmount
+                    return {
+                        ...lot,
+                        bid_amount: formatCurrency(bidAmount, currencyCode),
+                    }
+                })
+
+                const orderAmount = Number(totalBidAmount.toFixed(2))
+
+                // Check if an order already exists for this auction and buyer
+                const existingOrderForBuyer = await mongodbHelper.getOrder(
+                    process.env.MONGO_CLIENT,
+                    process.env.DATABASE,
+                    process.env.ORDERS_COLLECTION,
+                    { auction_id: auctionData._id.toString(), email_address: buyerInformation.email_address },
+                )
+
+                let orderNumber
+                if (existingOrderForBuyer) {
+                    orderNumber = existingOrderForBuyer.order_number
+                    console.log(`Existing order found for auction ${auctionData._id} and buyer ${buyerInformation.email_address}. Using order number: ${orderNumber}`)
+                } else {
+                    // Get the first winning lot number to generate order number if no existing order
+                    const firstWinningLotNumber = formattedWinningLots[0]?.lot_number || 1
+                    orderNumber = generateOrderCode(firstWinningLotNumber)
+                    console.log(`No existing order found. Generating new order number: ${orderNumber}`)
+                }
+
+                // Handle auction image
+                let auctionImage = null
+                if (auctionData.template_name?.trim() === 'Single Lot') {
+                    const imagesRaw = auctionData.auction_image
+                    if (Array.isArray(imagesRaw) && imagesRaw.length > 0) {
+                        const featured = imagesRaw.find((img) => img?.featured)
+                        auctionImage = featured?.url || imagesRaw[0]?.url || null
+                    } else if (imagesRaw && typeof imagesRaw === 'object' && imagesRaw.url) {
+                        auctionImage = imagesRaw.url
+                    }
+                } else {
+                    auctionImage = auctionData.auction_image
+                }
+
+                const orderData = {
+                    order_number: orderNumber,
+                    seller_email: auctionData.seller_email,
+                    email_address: buyerInformation.email_address,
+                    name: buyerInformation.first_name || 'Customer',
+                    auction_id: auctionData._id.toString(),
+                    auction_image: auctionImage,
+                    auction_title: auctionData.title,
+                    currency: currencyCode,
+                    lots: formattedWinningLots.map((lot) => lot.lot_number),
+                    amount: orderAmount,
+                    payment_status: 'Pending',
+                    created_at: Math.floor(Date.now() / 1000),
+                    updated_at: Math.floor(Date.now() / 1000),
+                }
+
+                // Insert or update order
+                if (existingOrderForBuyer) {
+                    await mongodbHelper.updateOrder(
+                        process.env.MONGO_CLIENT,
+                        process.env.DATABASE,
+                        process.env.ORDERS_COLLECTION,
+                        { _id: existingOrderForBuyer._id },
+                        { $set: orderData },
+                    )
+                } else {
+                    await mongodbHelper.createOrder(
+                        process.env.MONGO_CLIENT,
+                        process.env.DATABASE,
+                        process.env.ORDERS_COLLECTION,
+                        orderData,
+                    )
+                }
+
+                // Skip if payment email was already sent
+                if (existingOrderForBuyer?.payment_email_sent) {
+                    console.log(`Payment request email already sent for order number: ${orderNumber}. Skipping.`)
+                    continue
+                }
+
+                // Update cart
+                const cartUpdateCondition = {
+                    seller_email: auctionData.seller_email,
+                    email_address: buyerInformation.email_address,
+                    auction_id: auctionData._id.toString(),
+                }
+                const cartUpdateData = {
+                    payment_status: 'Pending',
+                    order_number: orderNumber,
+                }
+                await mongodbHelper.updateCart(
+                    process.env.MONGO_CLIENT,
+                    process.env.DATABASE,
+                    process.env.CARTTABLE,
+                    cartUpdateCondition,
+                    cartUpdateData,
+                )
+
+                // Get subdomain for checkout URL
+                const subdomainQuery = { seller_email: auctionData.seller_email }
+                const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
+                if (!auctionRedirectionURL?.subdomain) {
+                    throw new Error(`Subdomain not found for seller: ${auctionData.seller_email}`)
+                }
+
+                const auctionIdString = auctionData._id.toString()
+                const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionIdString}/checkout`
+
+                // Prepare email template data
+                const template_data = {
+                    winning_lot: formattedWinningLots.sort((a, b) => (a.lot_number || 0) - (b.lot_number || 0)),
+                    winning_lot_count: formattedWinningLots.length,
+                    buyer: buyerInformation.first_name ? `${buyerInformation.first_name} ${buyerInformation.last_name || ''}`.trim() : 'Customer',
+                    title: auctionData.title || 'Auction',
+                    logo_url: auctionData.logo_image ? `${process.env.S3_BUCKET_URL}${auctionData.logo_image}` : `${process.env.S3_BUCKET_URL}Logo.png`,
+                    not_winning_lot: [],
+                    not_winning_lot_count: 0,
+                    seller_name: sellerInformation[0].first_name ? `${sellerInformation[0].first_name} ${sellerInformation[0].last_name || ''}`.trim() : 'User',
+                    seller_email: auctionData.seller_email,
+                    subject: 'Congratulations | Payment Request',
+                    paymentContent: 'Please follow the link below to complete your payment.',
+                    seller_id: sellerInformation[0]._id,
+                    total_amount: formatCurrency(orderAmount, currencyCode),
+                    checkout_url: checkoutURL,
+                }
+
+                // Add email sending to promise list
+                promiseList.push(
+                    sendTemplateEmails(buyerInformation.email_address, template_data)
+                        .catch((emailError) => {
+                            console.error(`Failed to send email to ${buyerInformation.email_address}:`, emailError)
+                        }),
+                )
+
+                // Mark email as sent in order record
+                await mongodbHelper.updateOrder(
+                    process.env.MONGO_CLIENT,
+                    process.env.DATABASE,
+                    process.env.ORDERS_COLLECTION,
+                    { order_number: orderNumber },
+                    { $set: { payment_email_sent: true, updated_at: Math.floor(Date.now() / 1000) } },
+                )
+            } catch (error) {
+                console.error(`Error processing bidder ${buyerId}:`, error)
+                // Continue with next bidder even if one fails
             }
         }
 
-        // Run all the email sending promises in parallel
+        // Wait for all emails to be sent
         await Promise.all(promiseList)
 
-        // Update the auction status to 'Completed' in MongoDB after all emails have been sent
-        // Check if auctionData is defined before attempting to update
-        if (auctionData) {
-            await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
-        } else {
-            console.warn('auctionData is not defined. Cannot update auction status.')
-        }
+        // Update auction status
+        await mongodbHelper.update(
+            Auction,
+            auctionData._id,
+            {
+                status: 'Completed',
+                payment_emails_sent: true,
+                payment_emails_sent_at: Math.floor(Date.now() / 1000),
+            },
+        )
 
         return {
             statusCode: 200,
@@ -274,6 +328,9 @@ module.exports.sqsTriggerFunction = async (event) => {
         }
     } catch (err) {
         console.error('Error in sqsTriggerFunction:', err)
-        throw err // Re-throw the error to be caught by the Step Function
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ error: err.message || 'Internal server error' }),
+        }
     }
 }

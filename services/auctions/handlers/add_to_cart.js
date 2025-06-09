@@ -63,10 +63,13 @@ module.exports.handler = async (event) => {
         const getTotalActiveSales = await mongodbHelper.getTotalActiveSales(query, Lot)
         const auctionData = await mongodbHelper.getAuction(event, Auction)
         const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
+
+        // Early return if no lots and no sales
         if (getLots.length <= 0 && getTotalActiveSales === 0) {
             await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
             return true
         }
+
         const getLotInfo = await getLot(rediskey, client, event._id)
         const get_lot = []
         for (let i = 0; i < getLotInfo.length; i++) {
@@ -75,6 +78,7 @@ module.exports.handler = async (event) => {
         const lotInformation = get_lot[0]
 
         console.log('currentTimestamp', currentTimestamp)
+
         if (auctionData.status !== 'Cancelled') {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
                 const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
@@ -86,33 +90,34 @@ module.exports.handler = async (event) => {
                     await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
                 }
                 await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
-                // const callSQS = await sqsTriggerFunction(event)
-                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                    // amazonq-ignore-next-line
-                    console.log('event after processing', event)
-                    await sqsTriggerFunction(event)
-                }
-                if (getLots.length <= 0) {
-                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
-                        await sqsTriggerFunction(event)
-                    }
-                } else {
-                    console.log('no match')
-                }
             }
         }
-        if ((lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) || (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user == null)) {
-            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                await sqsTriggerFunction(event)
-            }
-            if (getLots.length <= 0) {
-                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
-                    await sqsTriggerFunction(event)
-                } else {
-                    console.log('no match')
-                }
-            }
+
+        // NEW LOGIC: Unified SQS trigger control
+        let shouldTriggerSQS = false
+
+        // For "All Lots" - trigger only once when the first lot ends
+        if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
+            shouldTriggerSQS = true
         }
+        // For "Cascade" and "Individual Lots" - trigger only when all lots are completed
+        else if ((auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots')
+                && getLots.length <= 0) {
+            shouldTriggerSQS = true
+        }
+
+        // Execute SQS trigger only once per auction
+        if (shouldTriggerSQS) {
+            console.log('Triggering SQS for auction:', event.auction_id, 'Extension type:', auctionData.extension_type)
+            await sqsTriggerFunction(event)
+
+            // Mark the auction as processed to prevent duplicate triggers
+            await mongodbHelper.update(Auction, auctionData._id, {
+                status: 'Completed',
+                payment_emails_sent: true,
+            })
+        }
+
         return true
     } catch (err) {
         console.log('Internal Server Error', err)
