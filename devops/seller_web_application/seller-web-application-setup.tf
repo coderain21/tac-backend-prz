@@ -36,23 +36,24 @@ resource "aws_s3_bucket" "b" {
   }
   provider = aws.deployment-eu
 }
-resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_disable" {
   bucket = aws_s3_bucket.b.id
-
   rule {
-    object_ownership = "ObjectWriter"
+    object_ownership = "BucketOwnerEnforced"
   }
   provider = aws.deployment-eu
+
+  depends_on = [aws_s3_bucket.b]
 }
 
 
 resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
   bucket = aws_s3_bucket.b.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
   provider = aws.deployment-eu
 }
 
@@ -118,7 +119,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       }
     }
 
-    viewer_protocol_policy = "allow-all"
+    viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
@@ -144,6 +145,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   viewer_certificate {
     acm_certificate_arn = local.certificate_arn
     ssl_support_method = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"  
+    cloudfront_default_certificate = false    
   }
 
 }
