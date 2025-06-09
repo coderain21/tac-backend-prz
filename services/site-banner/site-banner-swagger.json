@@ -126,7 +126,8 @@
             "description": "Sort field",
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "type"
           },
           {
             "name": "sort_order",
@@ -134,7 +135,8 @@
             "description": "Sort order (e.g., asc, desc)",
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "asc"
           },
           {
             "name": "page",
@@ -142,7 +144,8 @@
             "description": "Page number for pagination",
             "schema": {
               "type": "integer"
-            }
+            },
+            "example": 1
           },
           {
             "name": "limit",
@@ -150,7 +153,8 @@
             "description": "Number of items per page",
             "schema": {
               "type": "integer"
-            }
+            },
+            "example": 10
           }
         ],
         "responses": {
@@ -513,6 +517,9 @@
             "type": "boolean"
           },
           "show_bidding_history": {
+            "type": "boolean"
+          },
+          "toggle_powered_by_indy":{
             "type": "boolean"
           },
           "make_your_auction_private":{

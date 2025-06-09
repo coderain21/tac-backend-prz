@@ -50,23 +50,8 @@
               "description": "Sort field (e.g., auction_title, lot_number, lot_title, paddle_number, bid_status, bid_amount, time_stamp)",
               "schema": {
                 "type": "string"
-              }
-            },
-            {
-              "name": "start_date",
-              "in": "query",
-              "description": "Start date for date range filter (Unix timestamp)",
-              "schema": {
-                "type": "integer"
-              }
-            },
-            {
-              "name": "end_date",
-              "in": "query",
-              "description": "End date for date range filter (Unix timestamp)",
-              "schema": {
-                "type": "integer"
-              }
+              },
+              "example":"auction_title"
             },
             {
               "name": "sort_order",
@@ -74,7 +59,8 @@
               "description": "Sort order (e.g., asc, desc)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example":"desc"
             },
             {
               "name": "page",
@@ -82,7 +68,8 @@
               "description": "Page number for pagination",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":"1"
             },
             {
               "name": "limit",
@@ -90,7 +77,8 @@
               "description": "Number of items per page",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":"10"
             }
           ],
           "responses": {
@@ -192,7 +180,8 @@
               "description": "Sort field (e.g., paddle, name,created_at, email_address)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example":"name"
             },
             {
               "name": "sort_order",
@@ -200,7 +189,8 @@
               "description": "Sort order (e.g., asc, desc)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example":"asc"
             },
             {
               "name": "page",
@@ -208,7 +198,8 @@
               "description": "Page number for pagination",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":"1"
             },
             {
               "name": "limit",
@@ -216,7 +207,8 @@
               "description": "Number of items per page",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":"10"
             }
           ],
           "responses": {
@@ -973,7 +965,8 @@
               "description": "Sort field (e.g., paddle_number, name, bid_amount, time_stamp)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example":"name"
             },
             {
               "name": "sort_order",
@@ -981,7 +974,8 @@
               "description": "Sort order (e.g., asc, desc)",
               "schema": {
                 "type": "string"
-              }
+              },
+              "example":"asc"
             },
             {
               "name": "page",
@@ -989,7 +983,8 @@
               "description": "Page number for pagination",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":1
             },
             {
               "name": "limit",
@@ -997,7 +992,8 @@
               "description": "Number of items per page",
               "schema": {
                 "type": "integer"
-              }
+              },
+              "example":10
             }
           ],
           "responses": {

@@ -104,6 +104,7 @@ def view(event, context):
             "terms_and_condition": 1,
             "paddle": 1,
             "show_bidding_history": 1,
+            "toggle_powered_by_indy": 1,
             "hide_auction_lots": 1,
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,
@@ -192,6 +193,26 @@ def view(event, context):
                 data = {}
                 data["menu_links"] = result.get("menu_links")
                 data["logo_image"] = result.get("logo_image")
+                data["footer"] = {
+                    "background_color": result.get("footer", {}).get("background_color"),
+                    "text_color": result.get("footer", {}).get("text_color")
+                }
+                data["buttons"] = {
+                    "background_color": result.get("buttons", {}).get("background_color"), 
+                    "text_color": result.get("buttons", {}).get("text_color")
+                }
+                data["content_area"] = {
+                    "background_color": result.get("content_area", {}).get("background_color"),
+                    "text_color": result.get("content_area", {}).get("text_color") 
+                }
+                data["header"] = {
+                    "background_color": result.get("header", {}).get("background_color"),
+                    "text_color": result.get("header", {}).get("text_color")
+                }
+                data["font"] = {
+                    "header_font": result.get("font", {}).get("header_font")
+                }
+
                 return {
                     "headers": headers,
                     "statusCode": 400,

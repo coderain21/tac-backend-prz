@@ -238,7 +238,7 @@ def publish(event, context):
                                 "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
                                 "fees", "faq", "time_zone", "terms_and_condition",
-                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots","toggle_powered_by_indy",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
