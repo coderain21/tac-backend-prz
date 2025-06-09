@@ -63,10 +63,13 @@ module.exports.handler = async (event) => {
         const getTotalActiveSales = await mongodbHelper.getTotalActiveSales(query, Lot)
         const auctionData = await mongodbHelper.getAuction(event, Auction)
         const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
+
+        // Check if auction should be completed
         if (getLots.length <= 0 && getTotalActiveSales === 0) {
             await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
             return true
         }
+
         const getLotInfo = await getLot(rediskey, client, event._id)
         const get_lot = []
         for (let i = 0; i < getLotInfo.length; i++) {
@@ -75,6 +78,10 @@ module.exports.handler = async (event) => {
         const lotInformation = get_lot[0]
 
         console.log('currentTimestamp', currentTimestamp)
+
+        // Flag to track if we should trigger SQS
+        let shouldTriggerSQS = false
+
         if (auctionData.status !== 'Cancelled') {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
                 const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
@@ -86,38 +93,31 @@ module.exports.handler = async (event) => {
                     await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
                 }
                 await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
-                // const callSQS = await sqsTriggerFunction(event)
+
+                // Check conditions for triggering SQS
                 if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                    // amazonq-ignore-next-line
-                    console.log('event after processing', event)
-                    await sqsTriggerFunction(event)
+                    shouldTriggerSQS = true
+                } else if (getLots.length <= 0 && (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots')) {
+                    shouldTriggerSQS = true
                 }
-                if (getLots.length <= 0) {
-                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
-                        await sqsTriggerFunction(event)
-                    }
-                } else {
-                    console.log('no match')
+            }
+
+            // Handle lots without winning users
+            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && (!lotInformation.winning_user || lotInformation.winning_user == null)) {
+                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
+                    shouldTriggerSQS = true
+                } else if (getLots.length <= 0 && (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots')) {
+                    shouldTriggerSQS = true
                 }
             }
         }
-        if ((lotInformation.end_date < currentTimestamp && get_lot.length > 0 && !lotInformation.winning_user) || (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user == null)) {
-            if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                await sqsTriggerFunction(event)
-            }
-            if (getLots.length <= 0) {
-                if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
-                    await sqsTriggerFunction(event)
-                }
-                if (getLots.length <= 0) {
-                    if (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') {
-                        await sqsTriggerFunction(event)
-                    }
-                } else {
-                    console.log('no match')
-                }
-            }
+
+        // Trigger SQS only once if conditions are met
+        if (shouldTriggerSQS) {
+            console.log('Triggering SQS function for auction completion')
+            await sqsTriggerFunction(event)
         }
+
         return true
     } catch (err) {
         console.log('Internal Server Error', err)
