@@ -355,7 +355,7 @@ resource "aws_ecs_service" "ecs_service" {
   network_configuration {
     subnets         = [data.aws_ssm_parameter.subnet.value]  # Fetch default subnets dynamically
     security_groups = [data.aws_ssm_parameter.security_group.value]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   load_balancer {

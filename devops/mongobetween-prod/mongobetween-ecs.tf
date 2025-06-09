@@ -242,7 +242,7 @@ resource "aws_ecs_service" "ecs_service" {
   network_configuration {
     subnets         = data.aws_subnets.private.ids
     security_groups = [aws_security_group.mongobetween-security-group.id]
-    assign_public_ip = false # Do not assign public IP
+    assign_public_ip = true # Do not assign public IP
   }
 
   load_balancer {

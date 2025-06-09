@@ -446,7 +446,7 @@ resource "aws_ecs_service" "ecs_service" {
   network_configuration {
     subnets         = [resource.aws_default_subnet.default_az1.id]  # Fetch default subnets dynamically
     security_groups = [aws_default_security_group.default.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   load_balancer {
