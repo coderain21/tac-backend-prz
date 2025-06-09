@@ -22,6 +22,15 @@ terraform {
   }
 }
 
+terraform {
+  required_providers {
+   aws = {
+    source  = "hashicorp/aws"
+    version = "5.98"
+    }
+  }
+}
+
 resource "aws_iam_role" "ecs_task_execution_role" {
   name               = "ecs-mongobetween-task-execution-role"
   provider           = aws.deployment-eu
