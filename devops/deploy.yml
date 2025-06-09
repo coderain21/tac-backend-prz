@@ -23,6 +23,10 @@ jobs:
                   path: "$(System.DefaultWorkingDirectory)/node_modules"
                   cacheHitVar: CACHE_RESTORED
                 displayName: Cache npm
+              - task: UseNode@1
+                inputs:
+                  version: '18.x'
+                displayName: 'Use Node.js 18'
               - task: DownloadPipelineArtifact@2
                 name: environment
                 inputs:
