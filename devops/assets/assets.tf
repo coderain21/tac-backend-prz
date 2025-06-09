@@ -247,25 +247,40 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
   bucket = aws_s3_bucket.assets.id
-  policy = data.aws_iam_policy_document.s3_policy.json
+  policy = data.aws_iam_policy_document.allow_access_from_another_account.json
   provider = aws.deployment-eu
 
 }
+data "aws_iam_policy_document" "allow_access_from_another_account" {
+  provider = aws.deployment-eu
 
-
-data "aws_iam_policy_document" "s3_policy" {
   statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.assets.arn}/*"]
+    sid    = "AllowCloudFrontServicePrincipal"
+    effect = "Allow"
 
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
     }
-  }
-  provider = aws.deployment-eu
 
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.assets.arn}/*"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [
+        aws_cloudfront_distribution.s3_distribution.arn
+      ]
+    }
+  }
 }
+
 
 resource "aws_route53_record" "assets_cname_dev" {
   name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME

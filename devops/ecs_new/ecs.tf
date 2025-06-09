@@ -56,6 +56,7 @@ resource "aws_security_group" "ecs-security-group" {
     to_port     = 27017
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow MongoDB access from anywhere"
   }
 
   ingress {
@@ -63,6 +64,7 @@ resource "aws_security_group" "ecs-security-group" {
     to_port     = 0
     protocol    = "-1" # "-1" represents all protocols
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all ingress traffic from anywhere"
   }
 
   egress {
@@ -70,6 +72,7 @@ resource "aws_security_group" "ecs-security-group" {
     to_port     = 0
     protocol    = "-1" # "-1" represents all protocols
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 }
 
@@ -241,6 +244,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 6379
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow inbound Redis traffic"
   }
 
   ingress {
@@ -248,6 +252,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 80
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP traffic"
   }
 
   ingress {
@@ -255,6 +260,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 11211
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow Memcached traffic"
   }
 
   ingress {
@@ -262,6 +268,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 8080
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow traffic on port 8080"
   }
 
   ingress {
@@ -269,6 +276,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 22
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere"
   }
 
   ingress {
@@ -276,6 +284,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 65535
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all TCP ports inbound (highly permissive)"
   }
 
   ingress {
@@ -283,6 +292,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 443
     protocol  = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTPS traffic"
   }
 
   # Outbound rules (allow all traffic)
@@ -291,6 +301,7 @@ resource "aws_security_group" "new-websocket-security-group" {
     to_port   = 0
     protocol  = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 }
 
@@ -298,18 +309,30 @@ resource "aws_security_group" "new-websocket-security-group" {
 resource "aws_ecs_cluster" "websocket-cluster" {
   name = "websocket-cluster"
   provider = aws.deployment-eu
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
+
 # ECR Repositories
 resource "aws_ecr_repository" "repo1" {
   name = "websocket-repo-new"
   provider = aws.deployment-eu
   force_delete = true
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 # ECR Repositories
 resource "aws_ecr_repository" "repo" {
   name = "update-auction-repo"
   provider = aws.deployment-eu
   force_delete = true
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 
@@ -335,6 +358,7 @@ locals {
           hostPort = 5000
         }
       ]
+      readonlyRootFilesystem = true
       environment = [
         # Loop over each key in the parsed JSON and create environment variables
         for key, value in data.external.env.result :
@@ -422,7 +446,7 @@ resource "aws_lb" "new-load-balancer" {
   security_groups    = [aws_security_group.new-websocket-security-group.id]  # Security group for the Load Balancer
   subnets            = data.aws_subnets.new-public.ids
 
-  enable_deletion_protection = false
+  enable_deletion_protection = true
   provider = aws.deployment-eu
 }
 
@@ -452,6 +476,15 @@ resource "aws_lb_target_group" "new_target_group" {
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.my_vpc.id  # Use VPC ID from default VPC
   target_type = "ip"
+  health_check {
+    enabled             = true
+    interval            = 30             # seconds between checks
+    path                = "/"            # health check URL path
+    timeout             = 5              # seconds before timeout
+    healthy_threshold   = 5             # consecutive successes to mark healthy
+    unhealthy_threshold = 2           # consecutive failures to mark unhealthy
+    matcher             = "200"      # HTTP status codes considered healthy
+  }
   provider = aws.deployment-eu
 }
 
@@ -462,7 +495,7 @@ resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.new-load-balancer.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   certificate_arn   = data.aws_acm_certificate.existing_certificate.arn
 
   default_action {
@@ -482,7 +515,7 @@ resource "aws_ecs_service" "ecs_service" {
   network_configuration {
     subnets         = [data.aws_subnet.default_az1.id]  # Fetch default subnets dynamically
     security_groups = [aws_security_group.ecs-security-group.id]
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   load_balancer {
