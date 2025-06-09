@@ -11,7 +11,8 @@ from boto3.session import Session
 load_dotenv()
 
 # Create a session with a specific profile
-session = Session(profile_name='indyauction-dev')
+session = Session(profile_name=os.environ['PROFILE_ENV'])
+print(session)
 client = session.client('cognito-idp', region_name='eu-west-2')
 
 def generate_token(user_type):

@@ -29,8 +29,8 @@ db = client[os.environ['DATABASE']]
 collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_lot = db[os.environ["LOT_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
-access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
-admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
+# access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
+# admin_collection = db[os.environ["ADMIN_USER_COLLECTION"]]
 
 
 class Encoder(json.JSONEncoder):
@@ -170,7 +170,7 @@ def update_auction(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         request_body = json.loads(event['body'])
-        admin_record = admin_collection.find_one({"email_address": email_address})
+        # admin_record = admin_collection.find_one({"email_address": email_address})
         auction_end_date = request_body.get('end_date', None)
         auction_start_date = request_body.get('start_date', None)
         auction_extension_type = request_body.get('extension_type', None)
@@ -358,7 +358,7 @@ def update_auction(event, context):
                                 "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
                                 "fees", "faq", "time_zone", "terms_and_condition",
-                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots","toggle_powered_by_indy",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }
@@ -609,27 +609,27 @@ def update_auction(event, context):
                 {"$set": update_data}
             )
         # Get the current timestamp in seconds and convert to milliseconds
-        timestamp_ms = int(datetime.now().timestamp() * 1000)
+        # timestamp_ms = int(datetime.now().timestamp() * 1000)
 
         # Convert to float and format as a string with '.0'
-        formatted_timestamp = float(timestamp_ms)
+        # formatted_timestamp = float(timestamp_ms)
 
-        access_logs = {
-            "actor_id": admin_record.get('user_id'),
-            "updated_by": {
-                "type": 'Admin',
-                "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
-                "email_address": email_address,
-            },
-            "section": {
-                "name": 'Auction Management',
-                "action": 'Update',
-                "auction_id": auction_id,
-                "updated": update_data
-            },
-            "updated_at": formatted_timestamp
-        }
-        access_logs_collection.insert_one(access_logs)
+        # access_logs = {
+        #     "actor_id": admin_record.get('user_id'),
+        #     "updated_by": {
+        #         "type": 'Admin',
+        #         "name": admin_record.get('first_name') + ' ' + admin_record.get('last_name'),
+        #         "email_address": email_address,
+        #     },
+        #     "section": {
+        #         "name": 'Auction Management',
+        #         "action": 'Update',
+        #         "auction_id": auction_id,
+        #         "updated": update_data
+        #     },
+        #     "updated_at": formatted_timestamp
+        # }
+        # access_logs_collection.insert_one(access_logs)
         return {
             "headers": headers,
             'statusCode': 204,

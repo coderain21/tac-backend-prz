@@ -34,3 +34,18 @@ def view_profile(id):
     except Exception as err:
         print('Error retrieving document by unique_id:', err)
         return None
+
+def get_lot_id_by_auction_uuid(auction_uuid):
+    try:
+        client = connect()
+        Database = client.get_database(os.environ.get('DATABASE'))
+        collection = Database.get_collection(os.environ.get('LOT_COLLECTION_NAME'))
+        lot_details = collection.find_one({'auction_id': auction_uuid}, {'lot_number': 1, '_id': 0})
+        client.close()
+        if lot_details:
+            return lot_details.get('lot_number')
+        else:
+            return None
+    except Exception as err:
+        print('Error retrieving lot_id by auction_uuid:', err)
+        return None

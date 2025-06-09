@@ -111,6 +111,12 @@ def update_user(event, context):
         group = data.get("group")
         new = data.get("new",False)
         seller_email = fetch_seller_email_from_auction(auction_id)
+        if not seller_email:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Not found"})
+            }
         # Add user to the specified Cognito group
         # x = cognito_client.admin_add_user_to_group(
         #     GroupName= group.split('@')[0],

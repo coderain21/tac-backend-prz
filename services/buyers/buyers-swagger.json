@@ -151,6 +151,9 @@
                         "show_bidding_history": {
                           "type": "string"
                         },
+                        "toggle_powered_by_indy":{
+                          "type": "string"
+                        },
                         "hide_auction_lots": {
                           "type": "string"
                         },
@@ -2382,6 +2385,15 @@
               "type": "string"
             },
             "example": "65363ffe6ecaedfb6ffef6eb"
+          },
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "65363ffe6ecaedfb6ffef6eb"
           }
         ],
         "requestBody": {
@@ -2602,6 +2614,90 @@
             "BearerAuth": []
           }
         ]
+      }
+    },
+    "/policy/{auction_id}": {
+      "get": {
+        "tags": ["Auction Management"],
+        "summary": "View Privacy Policy of the seller",
+        "description": "View Privacy Policy of the seller",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "description": "Fetch privacy policy for the provided auction id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "68121972e79ee8f259aa25ca"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved privacy policy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "privacy_policy": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "example": {
+                    "data": {
+                      "privacy_policy": "<div class='row'><div class='col'><div class='text-block-simple__rtf-big-mt medium-body-text'>...</div></div></div>"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Please provide seller email"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Seller not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "example": {
+                    "message": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   },

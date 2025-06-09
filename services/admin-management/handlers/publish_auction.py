@@ -127,6 +127,13 @@ def update_auction(event, context):
             published_status = 'false'
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
 
+        if not state:
+            return {
+                "statusCode": 404,
+                "headers": headers,
+                "body": json.dumps({"message": "Auction not found"})
+            }
+
         if state['status'] == 'Published' or state['status']== 'Accepting bids':
             return {
                 "statusCode": 400,
@@ -242,7 +249,7 @@ def update_auction(event, context):
                                 "extension_type", "extension_time", "extension_time_between_lots",
                                 "registration_type", "add_buyer_fees", "percentage",
                                 "fees", "faq", "time_zone", "terms_and_condition",
-                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots",
+                                "publish_auction_results", "show_bidder_location_in_bidder_history", "show_bidding_history","hide_auction_lots","toggle_powered_by_indy",
                                 "make_your_auction_private", "passcode",
                                 "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
                                 }

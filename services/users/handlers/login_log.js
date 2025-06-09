@@ -9,23 +9,23 @@
 const mongodbHelper = require('../lib/mongodb_helper')
 const helpers = require('../lib/helper')
 const Users = require('../entities/Users')
-const AccessLogs = require('../entities/AccessLogs')
+// const AccessLogs = require('../entities/AccessLogs')
 
 let connection = null
 
-function getFullname(nameObject) {
-    const fname = nameObject.first_name.trim()
-    const lname = nameObject.last_name.trim()
+// function getFullname(nameObject) {
+//     const fname = nameObject.first_name.trim()
+//     const lname = nameObject.last_name.trim()
 
-    if (fname && lname) {
-        return `${fname} ${lname}`
-    } if (fname) {
-        return fname
-    } if (lname) {
-        return lname
-    }
-    return ''
-}
+//     if (fname && lname) {
+//         return `${fname} ${lname}`
+//     } if (fname) {
+//         return fname
+//     } if (lname) {
+//         return lname
+//     }
+//     return ''
+// }
 
 /**
  * The function which call after seller signin to save the logs
@@ -43,38 +43,38 @@ module.exports.handler = async (event) => {
         const emailAddress = event.requestContext.authorizer.claims['cognito:username']
         const getSeller = await mongodbHelper.getUser({ email_address: emailAddress }, Users)
         console.log('getSeller', getSeller)
-        const fullName = getFullname(getSeller[0])
-        const access_logs = {
-            actor_id: getSeller[0].seller_id,
-            updated_by: {
-                type: 'Seller',
-                name: fullName,
-                email_address: emailAddress,
-            },
-            section: {
-                name: 'Seller Management',
-                action: 'Login',
-                user_id: emailAddress,
-            },
-        }
-        const saveHistory = await mongodbHelper.save(access_logs, AccessLogs)
-        if (saveHistory) {
-            return {
-                statusCode: 201,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'Logs saved successfully',
-                }),
-            }
-        }
-
+        // const fullName = getFullname(getSeller[0])
+        // const access_logs = {
+        //     actor_id: getSeller[0].seller_id,
+        //     updated_by: {
+        //         type: 'Seller',
+        //         name: fullName,
+        //         email_address: emailAddress,
+        //     },
+        //     section: {
+        //         name: 'Seller Management',
+        //         action: 'Login',
+        //         user_id: emailAddress,
+        //     },
+        // }
+        // const saveHistory = await mongodbHelper.save(access_logs, AccessLogs)
+        // if (saveHistory) {
         return {
-            statusCode: 500,
+            statusCode: 201,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'There was an error saving the logs',
+                message: 'Logs saved successfully',
             }),
         }
+        // }
+
+        // return {
+        //     statusCode: 500,
+        //     headers: await helpers.getHeaders(),
+        //     body: JSON.stringify({
+        //         message: 'There was an error saving the logs',
+        //     }),
+        // }
     } catch (error) {
         console.log(error)
         return {

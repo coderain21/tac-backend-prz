@@ -475,24 +475,24 @@ functions:
               # authorizer:
               #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  save-logs:
-      handler: handlers/login_log.handler
-      layers:
-        - ${ssm:COMMON_LIB_ARN}
-      vpc:
-        securityGroupIds:
-          - ${ssm:SECURITY_GROUP_ID}
-        subnetIds:
-          - ${ssm:SUBNET_ID}
+  # save-logs:
+  #     handler: handlers/login_log.handler
+  #     layers:
+  #       - ${ssm:COMMON_LIB_ARN}
+  #     vpc:
+  #       securityGroupIds:
+  #         - ${ssm:SECURITY_GROUP_ID}
+  #       subnetIds:
+  #         - ${ssm:SUBNET_ID}
     
-      events:
-          - http:
-              cors: true
-              path: /save-log
-              method: POST
-              authorizer:
-                type: COGNITO_USER_POOLS
-                authorizerId: { Ref: MyApiGatewayAuthorizer }
+  #     events:
+  #         - http:
+  #             cors: true
+  #             path: /save-log
+  #             method: POST
+  #             authorizer:
+  #               type: COGNITO_USER_POOLS
+  #               authorizerId: { Ref: MyApiGatewayAuthorizer }
   
   subdomain-callback:
     handler: handlers/cognito_callback.handler
