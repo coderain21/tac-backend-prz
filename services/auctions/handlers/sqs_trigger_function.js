@@ -15,24 +15,21 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-await-in-loop */
 
-// const {
-//     PinpointEmail,
-// } = require('aws-sdk')
 const { ObjectId } = require('mongodb')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
 const redisHelper = require('../lib/redis_helper')
 const BidInformation = require('../entities/BidInformation')
-// const Bid = require('../entities/Bid')
 const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
-// const Counter = require('../entities/Counter')
 const Lot = require('../entities/Lot')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
-// const pinpoint = new PinpointEmail()
 let connection = null
+
+// Add a Set to track processed auctions to prevent duplicates
+const processedAuctions = new Set()
 
 /**
  * Gets all the bidders for a given redis key, and filters them to only include
@@ -93,7 +90,6 @@ function formatCurrency(amount, currencyCode) {
 
         // Return an error string if the amount is not a valid number
         if (isNaN(parsedAmount)) {
-            // amazonq-ignore-next-line
             console.error(`Invalid amount: ${amountString}`)
             return 'Invalid amount'
         }
@@ -102,8 +98,8 @@ function formatCurrency(amount, currencyCode) {
         const formattedAmount = new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: currencyCode,
-            minimumFractionDigits: 2, // Adjust as needed
-            maximumFractionDigits: 2, // Adjust as needed
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
         }).format(parsedAmount)
 
         return formattedAmount
@@ -112,44 +108,6 @@ function formatCurrency(amount, currencyCode) {
         return 'Error formatting currency'
     }
 }
-
-/**
- * Send an email using the AWS Pinpoint service
- *
- * @param {string} destinationId The email address to send the email to
- * @param {string} sourceId The email address the email is from
- * @param {string} templateData The data to pass to the email template
- * @param {string} templateArn The ARN of the email template to use
- */
-// async function sendMail(destinationId, sourceId, templateData, templateArn) {
-//     const params = {
-//         // The content of the email
-//         Content: {
-//             // The template to use
-//             Template: {
-//                 // The ARN of the email template to use
-//                 TemplateArn: templateArn,
-//                 // The data to pass to the email template
-//                 TemplateData: templateData,
-//             },
-//         },
-//         // The email address the email is from
-//         FromEmailAddress: process.env.SENDER_EMAIL,
-//         // The email address to send the email to
-//         Destination: {
-//             // An array of email addresses to send the email to
-//             ToAddresses: [destinationId],
-//         },
-//     }
-//     try {
-//         // Send the email using the AWS Pinpoint service
-//         const sendEmail = await pinpoint.sendEmail(params).promise()
-//         console.log('sendEmail', sendEmail)
-//     } catch (error) {
-//         // Log any errors that occur
-//         console.error('Failed to send email:', error)
-//     }
-// }
 
 /**
  * Generates an order code with prefix "OD" and padded zeros
@@ -175,15 +133,35 @@ module.exports.sqsTriggerFunction = async (event) => {
             connection = await mongodbHelper.connect()
         }
         console.log('event', event)
+
+        // Create a unique identifier for this auction to prevent duplicate processing
+        const auctionKey = `${event.auction_id}_${event.seller_email}`
+
+        // Check if this auction has already been processed
+        if (processedAuctions.has(auctionKey)) {
+            console.log(`Auction ${auctionKey} already processed, skipping duplicate processing`)
+            return true
+        }
+
+        // Mark this auction as being processed
+        processedAuctions.add(auctionKey)
+        console.log(`Processing auction ${auctionKey}`)
+
         // Retrieve the bidders from MongoDB
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
         // Connect to Redis and retrieve the auction lots
         const client = await redisHelper.createRedisClient()
 
-        // Initialize empty array to store promiseList
-        const promiseList = []
         const auctionData = await mongodbHelper.getAuction(event, Auction)
+
+        // Double-check auction status to prevent processing completed auctions
+        if (auctionData.status === 'Completed') {
+            console.log(`Auction ${auctionKey} already completed, skipping processing`)
+            processedAuctions.delete(auctionKey) // Remove from processed set
+            return true
+        }
+
         const payload = {
             seller_email: auctionData.seller_email,
             auction_id: auctionData.auction_id,
@@ -191,26 +169,29 @@ module.exports.sqsTriggerFunction = async (event) => {
         const getAuctionLots = await mongodbHelper.getAuctionLots(payload, Lot)
         const lastRecord = getAuctionLots[getAuctionLots.length - 1]
         console.log(lastRecord)
+
         // Update the auction status to 'Completed' in MongoDB
         await mongodbHelper.update(Auction, auctionData._id, { status: 'Completed' })
+
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
+
         if (getBidders.length > 0) {
-        // Loop through bidders
+            // Initialize empty array to store promiseList
+            const promiseList = []
+
+            // Loop through bidders
             for (const user of getBidders) {
                 // Retrieve the auction lots for each bidder
                 // Reset lists for each bidder
                 const winningLot = []
                 const notWinning = []
 
-                // Retrieve the auction data from MongoDB
-
                 // Set up a MongoDB query to find the seller's information
                 const sellerQuery = {
                     email_address: event.seller_email,
                 }
                 const sellerInformation = await mongodbHelper.getUser(sellerQuery, Users)
-                // amazonq-ignore-next-line
                 console.log('seller', sellerInformation)
 
                 // Set up a MongoDB query to find the user's information
@@ -222,9 +203,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                 // Loop through the lots and add them to the winning or losing lists
                 for (const lot of get_lot) {
                     const rediskey = `lot:${lot._id}`
-                    // console.log('rediskey', rediskey)
                     const getLotInfo = await lotDetails(rediskey, client)
-                    // console.log('lot', getLotInfo)
                     const singleLot = []
                     for (let i = 0; i < getLotInfo.length; i++) {
                         singleLot.push(JSON.parse(getLotInfo[i]))
@@ -232,16 +211,12 @@ module.exports.sqsTriggerFunction = async (event) => {
                     // Add the CDN link to the image URL
                     const featuredImage = lot.images.find((image) => image.featured)
                     lot.lot_image = `${process.env.CDN_LINK}${featuredImage ? featuredImage.url : lot.images[0].url}`
-                    // console.log('lot image', lot)
 
                     // Add the formatted bid amount to the lot
                     if (lot.winning_user === user.buyer_id) {
                         event.lot_number = lot.lot_number
                         event.email_address = user.email_address
-                        // const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
-                        // console.log('won', getAmount)
                         lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
-                        // lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                         winningLot.push(lot)
                     } else {
                         event.lot_number = lot.lot_number
@@ -249,18 +224,20 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                         if (getAmount !== null) {
                             console.log('not null')
-                            // lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
-                            // fetching from redis instead of db
                             lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
                             notWinning.push(lot)
                         }
                     }
                 }
-                // If the user didn't win any lots, change the email subject
-                const subjectDescription = winningLot.length > 0 ? 'Congratulations | Payment Request' : 'You lost the Auction'
-                const paymentContent = winningLot.length > 0 ? 'Please follow the link below to complete your payment.' : ''
-                let totalBidAmount = 0
+
+                // Process winning lots and create orders
                 if (winningLot.length > 0) {
+                    // If the user didn't win any lots, change the email subject
+                    const subjectDescription = 'Congratulations | Payment Request'
+                    const paymentContent = 'Please follow the link below to complete your payment.'
+                    let totalBidAmount = 0
+                    let orderAmount = 0
+
                     totalBidAmount = winningLot.reduce((total, lot) => {
                         // Replace the currency symbol with an empty string and parse the amount to float
                         const bidAmount = parseFloat(lot.bid_amount.replace(new RegExp('[^0-9.]+', 'g'), ''))
@@ -297,7 +274,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         console.log('Final Auction Image:', auctionImage)
 
                         const orderData = {
-                            order_number: orderNumber, // Corrected this line
+                            order_number: orderNumber,
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             name: user.name,
@@ -312,22 +289,22 @@ module.exports.sqsTriggerFunction = async (event) => {
                             updated_at: Math.floor(Date.now() / 1000),
                         }
 
-                        // Insert order into orders collection with session
+                        // Insert order into orders collection
                         await mongodbHelper.createOrder(
                             process.env.MONGO_CLIENT,
                             process.env.DATABASE,
                             process.env.ORDERS_COLLECTION,
                             orderData,
                         )
-                        cartUpdateCondition = {
+
+                        const cartUpdateCondition = {
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             auction_id: auctionData._id.toString(),
                         }
-                        cartUpdateData = {
+                        const cartUpdateData = {
                             payment_status: 'Pending',
                             order_number: orderNumber,
-
                         }
                         await mongodbHelper.updateCart(
                             process.env.MONGO_CLIENT,
@@ -335,7 +312,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                             process.env.CARTTABLE,
                             cartUpdateCondition,
                             cartUpdateData,
-
                         )
                     } catch (error) {
                         console.error('Error creating order:', error)
@@ -348,6 +324,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                     const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
                     const auctionId = auctionData._id.toString()
                     const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
+
                     // Create the email data
                     if (buyerInformation.length > 0) {
                         const template_data = {
@@ -369,16 +346,42 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                         promiseList.push(sendTemplateEmails(user.email_address, template_data))
                     }
-                }
+                } else {
+                    // Handle users who didn't win any lots
+                    const subjectDescription = 'You lost the Auction'
+                    const paymentContent = ''
 
-                // Run all the promises in parallel
-                await Promise.all(promiseList)
+                    if (buyerInformation.length > 0) {
+                        const template_data = {
+                            winning_lot: [],
+                            winning_lot_count: 0,
+                            buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
+                            title: auctionData.title,
+                            logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
+                            not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                            not_winning_lot_count: notWinning.length,
+                            seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                            seller_email: auctionData.seller_email,
+                            subject: subjectDescription,
+                            paymentContent,
+                            seller_id: sellerInformation[0]._id,
+                            total_amount: 0,
+                            checkout_url: '',
+                        }
+
+                        promiseList.push(sendTemplateEmails(user.email_address, template_data))
+                    }
+                }
             }
-            // clear the cache
+
+            // Run all the promises in parallel
+            await Promise.all(promiseList)
+
+            // Clear the cache only after processing is complete
             if (lastRecord.lot_number === event.lot_number) {
                 for (const lot of get_lot) {
                     const redisKeys = `lot:${lot._id}`
-                    const redisDataKeys = { // created_at will be handled by the schema default
+                    const redisDataKeys = {
                         lot_key: redisKeys,
                         lot_history_key: `lot-history:${lot._id}`,
                         auction_history_key: `auction:${auctionData.auction_id}#${lot._id}`,
@@ -392,10 +395,18 @@ module.exports.sqsTriggerFunction = async (event) => {
                     }
                 }
             }
-            return true
         }
+
+        // Remove from processed set after successful completion
+        processedAuctions.delete(auctionKey)
+        console.log(`Completed processing auction ${auctionKey}`)
+
+        return true
     } catch (err) {
         console.log('err', err)
+        // Remove from processed set on error so it can be retried
+        const auctionKey = `${event.auction_id}_${event.seller_email}`
+        processedAuctions.delete(auctionKey)
         return err
     }
 }
