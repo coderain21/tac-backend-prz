@@ -750,6 +750,13 @@ resources:
         Subject: "Indy.auction - {{subject}}"
         TemplateName: ${self:provider.stage}-send-auction-completion-email
 
+    WebAclAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+
 plugins:
   - serverless-offline
   - serverless-package-external

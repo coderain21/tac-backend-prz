@@ -156,8 +156,14 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
-# resources:
-#    Resources:
+resources:
+  Resources:
+    WebAclAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
 #     GatewayResponseDefault4XX:
 #        Type: 'AWS::ApiGateway::GatewayResponse'
 #        Properties:

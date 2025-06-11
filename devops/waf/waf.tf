@@ -1,8 +1,11 @@
+ 
 provider "aws" {
-  region = "us-east-1" # Required for CloudFront; change for REGIONAL resources
+  region = var.REGION
+  alias = "deployment-eu"   # Specify a default AWS region here
+  profile = "indyauction-${var.STAGE}"
 }
 
-resource "aws_wafv2_web_acl" "standard_acl" {
+resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
   name        = "standard-waf-acl"
   description = "Standard AWS WAF ACL with global best-practice managed rule sets"
   scope       = "CLOUDFRONT" # Change to "REGIONAL" for ALB or API Gateway
@@ -110,4 +113,54 @@ resource "aws_wafv2_web_acl" "standard_acl" {
       sampled_requests_enabled   = true
     }
   }
+}
+
+
+
+resource "aws_wafv2_web_acl" "secure_api_web_acl" {
+  name        = "SecureApiWebAcl"
+  description = "WAF ACL for secure API using AWSManagedRulesCommonRuleSet"
+  scope       = "REGIONAL"
+
+  default_action {
+    allow {}
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = true
+    metric_name                = "SecureApiWebAclMetric"
+    sampled_requests_enabled   = true
+  }
+
+  rule {
+    name     = "AWSManagedRulesCommonRuleSet"
+    priority = 1
+
+    override_action {
+      none {}
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AWSManagedRulesCommonRuleSetMetric"
+      sampled_requests_enabled   = true
+    }
+
+    statement {
+      managed_rule_group_statement {
+        vendor_name = "AWS"
+        name        = "AWSManagedRulesCommonRuleSet"
+      }
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+
+resource "aws_ssm_parameter" "secure_api_web_acl_ssm" {
+  name        = "SECURE_API_WEB_ACL_ARN"
+  type        = "String"
+  value       = aws_wafv2_web_acl.secure_api_web_acl.arn
+  description = "Secure API Web ACL ARN"
+  provider    = aws.deployment-eu
 }

@@ -799,6 +799,12 @@ resources:
         HtmlPart: ${file(./templates/delete_buyer.html)}
         Subject: Indy.auction - Your Account Deactivation Notification
         TemplateName: ${self:provider.stage}-admin-delete-buyer-template
+    WebAclAssociation:
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
 
 
 
