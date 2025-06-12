@@ -21,7 +21,7 @@ terraform {
 
 
 resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
-  name        = "standard-waf-acl-cloudfront"
+  name        = "waf-web-acl-cloudfront"
   description = "Standard AWS WAF ACL with global best-practice managed rule sets"
   scope       = "CLOUDFRONT" # Change to "REGIONAL" for ALB or API Gateway
   default_action {
@@ -34,9 +34,10 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
     sampled_requests_enabled   = true
   }
 
+  # Core Protection Rule Set (most important)
   rule {
     name     = "AWS-AWSManagedRulesCommonRuleSet"
-    priority = 0
+    priority = 1
     override_action {
       none {}
     }
@@ -53,9 +54,10 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
     }
   }
 
+  # Known Bad Inputs Protection
   rule {
     name     = "AWS-AWSManagedRulesKnownBadInputsRuleSet"
-    priority = 1
+    priority = 2
     override_action {
       none {}
     }
@@ -72,9 +74,10 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
     }
   }
 
+  # IP Reputation (Amazon's IP reputation list)
   rule {
     name     = "AWS-AWSManagedRulesAmazonIpReputationList"
-    priority = 2
+    priority = 3
     override_action {
       none {}
     }
@@ -86,14 +89,15 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
     }
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "IPReputation"
+      metric_name                = "AmazonIPReputation"
       sampled_requests_enabled   = true
     }
   }
 
+  # Anonymous IP List
   rule {
     name     = "AWS-AWSManagedRulesAnonymousIpList"
-    priority = 3
+    priority = 4
     override_action {
       none {}
     }
@@ -110,9 +114,30 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
     }
   }
 
+  # SQL Injection Protection
+  rule {
+    name     = "AWS-AWSManagedRulesSQLiRuleSet"
+    priority = 5
+    override_action {
+      none {}
+    }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "SQLiRuleSet"
+      sampled_requests_enabled   = true
+    }
+  }
+
+  # Rate Limiting Rule
   rule {
     name     = "RateLimitRule"
-    priority = 4
+    priority = 10
     action {
       block {}
     }
@@ -128,15 +153,41 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
       sampled_requests_enabled   = true
     }
   }
-    provider = aws.deployment-us
 }
+
+# Optional: Add Bot Control if you need it (additional cost applies)
+# Uncomment the following rule if you want bot protection
+/*
+resource "aws_wafv2_web_acl" "standard_acl_cloudfront_with_bot_control" {
+  # ... same configuration as above ...
+  
+  rule {
+    name     = "AWS-AWSManagedRulesBotControlRuleSet"
+    priority = 6
+    override_action {
+      none {}
+    }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "BotControl"
+      sampled_requests_enabled   = true
+    }
+  }
+}
+*/
 
 
 
 resource "aws_wafv2_web_acl" "secure_api_web_acl" {
   name        = "SecureApiWebAcl"
-  description = "WAF ACL for secure API using AWSManagedRulesCommonRuleSet"
-  scope       = "REGIONAL"
+  description = "WAF ACL for secure API,Cognito and ALB"
+  scope       = "REGIONAL"  # For ALB, API Gateway, or Cognito
 
   default_action {
     allow {}
@@ -151,26 +202,101 @@ resource "aws_wafv2_web_acl" "secure_api_web_acl" {
   rule {
     name     = "AWSManagedRulesCommonRuleSet"
     priority = 1
-
     override_action {
       none {}
     }
-
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "AWSManagedRulesCommonRuleSetMetric"
+      metric_name                = "CommonRuleSet"
       sampled_requests_enabled   = true
     }
-
     statement {
       managed_rule_group_statement {
-        vendor_name = "AWS"
         name        = "AWSManagedRulesCommonRuleSet"
+        vendor_name = "AWS"
       }
     }
   }
+
+  rule {
+    name     = "AWSManagedRulesAmazonIpReputationList"
+    priority = 2
+    override_action {
+      none {}
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "AmazonIpReputation"
+      sampled_requests_enabled   = true
+    }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesAmazonIpReputationList"
+        vendor_name = "AWS"
+      }
+    }
+  }
+
+  rule {
+    name     = "AWSManagedRulesBotControlRuleSet"
+    priority = 3
+    override_action {
+      none {}
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "BotControl"
+      sampled_requests_enabled   = true
+    }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesBotControlRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+  }
+
+  rule {
+    name     = "AWSManagedRulesSQLiRuleSet"
+    priority = 4
+    override_action {
+      none {}
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "SQLiRuleSet"
+      sampled_requests_enabled   = true
+    }
+    statement {
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
+      }
+    }
+  }
+
+  rule {
+    name     = "RateLimitRule"
+    priority = 5
+    action {
+      block {}
+    }
+    visibility_config {
+      cloudwatch_metrics_enabled = true
+      metric_name                = "RateLimitRule"
+      sampled_requests_enabled   = true
+    }
+    statement {
+      rate_based_statement {
+        limit              = 2000
+        aggregate_key_type = "IP"
+      }
+    }
+  }
+
   provider = aws.deployment-eu
 }
+
 
 
 resource "aws_ssm_parameter" "secure_api_web_acl_ssm" {
@@ -221,7 +347,7 @@ resource "aws_cloudwatch_log_group" "waf_cloudfront_log_group" {
 
 resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_logging" {
   log_destination_configs = [
-    "${aws_cloudwatch_log_group.waf_secure_api_log_group.arn}:*"
+    "${aws_cloudwatch_log_group.waf_cloudfront_log_group.arn}:*"
   ]
   resource_arn = aws_wafv2_web_acl.standard_acl_cloudfront.arn
   provider     = aws.deployment-us
