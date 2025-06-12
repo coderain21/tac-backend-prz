@@ -190,6 +190,7 @@ stepFunctions:
         
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -671,6 +672,11 @@ functions:
  
 
 resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
   Resources:
     LotStateMachineSSMParameter:
       Type: 'AWS::SSM::Parameter'
@@ -751,6 +757,7 @@ resources:
         TemplateName: ${self:provider.stage}-send-auction-completion-email
 
     WebAclAssociation:
+      Condition: IsProd
       Type: AWS::WAFv2::WebACLAssociation
       Properties:
         ResourceArn:

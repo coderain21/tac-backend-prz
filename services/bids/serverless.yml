@@ -100,6 +100,7 @@ package:
     - ./lib/**
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -193,7 +194,12 @@ functions:
 
 
 resources:
-   Resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
+  Resources:
     GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
        Properties:
@@ -204,6 +210,7 @@ resources:
          RestApiId:
            Ref: 'ApiGatewayRestApi'
     WebAclAssociation:
+      Condition: IsProd
       Type: AWS::WAFv2::WebACLAssociation
       Properties:
         ResourceArn:

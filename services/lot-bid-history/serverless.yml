@@ -70,6 +70,7 @@ package:
     - ./lib/**
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -167,9 +168,15 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-resources: 
+resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
   Resources:
     WebAclAssociation:
+      Condition: IsProd
       Type: AWS::WAFv2::WebACLAssociation
       Properties:
         ResourceArn:
