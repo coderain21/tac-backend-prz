@@ -136,14 +136,14 @@ async function exportAsCsv(bidders) {
 
         try {
             await s3.putObject({
-              Bucket: s3Bucket,
-              Key: s3Key,
-              Body: fileContent,
-              ContentType: 'application/octet-stream'
-            }).promise();
-            console.log('Upload successful');
+                Bucket: s3Bucket,
+                Key: s3Key,
+                Body: fs.readFileSync(csvFilePath),
+                ContentType: 'application/octet-stream',
+            }).promise()
+            console.log('Upload successful')
         } catch (error) {
-        console.error('Upload failed:', error);
+            console.error('Upload failed:', error)
         }
 
         const s3SignedUrl = s3.getSignedUrl('getObject', {
