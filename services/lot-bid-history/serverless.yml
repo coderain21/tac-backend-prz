@@ -170,9 +170,9 @@ functions:
   delete-bid:
     handler: handlers/delete_bid.handler
     timeout: 60
-    runtime: python3.9
+    runtime: nodejs18.x
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    - ${ssm:COMMON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
