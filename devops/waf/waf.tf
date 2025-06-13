@@ -75,44 +75,44 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
   }
 
   # IP Reputation (Amazon's IP reputation list)
-  rule {
-    name     = "AWS-AWSManagedRulesAmazonIpReputationList"
-    priority = 3
-    override_action {
-      none {}
-    }
-    statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesAmazonIpReputationList"
-        vendor_name = "AWS"
-      }
-    }
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "AmazonIPReputation"
-      sampled_requests_enabled   = true
-    }
-  }
+  # rule {
+  #   name     = "AWS-AWSManagedRulesAmazonIpReputationList"
+  #   priority = 3
+  #   override_action {
+  #     none {}
+  #   }
+  #   statement {
+  #     managed_rule_group_statement {
+  #       name        = "AWSManagedRulesAmazonIpReputationList"
+  #       vendor_name = "AWS"
+  #     }
+  #   }
+  #   visibility_config {
+  #     cloudwatch_metrics_enabled = true
+  #     metric_name                = "AmazonIPReputation"
+  #     sampled_requests_enabled   = true
+  #   }
+  # }
 
-  # Anonymous IP List
-  rule {
-    name     = "AWS-AWSManagedRulesAnonymousIpList"
-    priority = 4
-    override_action {
-      none {}
-    }
-    statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesAnonymousIpList"
-        vendor_name = "AWS"
-      }
-    }
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "AnonymousIP"
-      sampled_requests_enabled   = true
-    }
-  }
+  # # Anonymous IP List
+  # rule {
+  #   name     = "AWS-AWSManagedRulesAnonymousIpList"
+  #   priority = 4
+  #   override_action {
+  #     none {}
+  #   }
+  #   statement {
+  #     managed_rule_group_statement {
+  #       name        = "AWSManagedRulesAnonymousIpList"
+  #       vendor_name = "AWS"
+  #     }
+  #   }
+  #   visibility_config {
+  #     cloudwatch_metrics_enabled = true
+  #     metric_name                = "AnonymousIP"
+  #     sampled_requests_enabled   = true
+  #   }
+  # }
 
   # SQL Injection Protection
   rule {
@@ -155,35 +155,6 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
   }
 }
 
-# Optional: Add Bot Control if you need it (additional cost applies)
-# Uncomment the following rule if you want bot protection
-/*
-resource "aws_wafv2_web_acl" "standard_acl_cloudfront_with_bot_control" {
-  # ... same configuration as above ...
-  
-  rule {
-    name     = "AWS-AWSManagedRulesBotControlRuleSet"
-    priority = 6
-    override_action {
-      none {}
-    }
-    statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesBotControlRuleSet"
-        vendor_name = "AWS"
-      }
-    }
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "BotControl"
-      sampled_requests_enabled   = true
-    }
-  }
-}
-*/
-
-
-
 resource "aws_wafv2_web_acl" "secure_api_web_acl" {
   name        = "SecureApiWebAcl"
   description = "WAF ACL for secure API,Cognito and ALB"
@@ -218,24 +189,24 @@ resource "aws_wafv2_web_acl" "secure_api_web_acl" {
     }
   }
 
-  rule {
-    name     = "AWSManagedRulesAmazonIpReputationList"
-    priority = 2
-    override_action {
-      none {}
-    }
-    visibility_config {
-      cloudwatch_metrics_enabled = true
-      metric_name                = "AmazonIpReputation"
-      sampled_requests_enabled   = true
-    }
-    statement {
-      managed_rule_group_statement {
-        name        = "AWSManagedRulesAmazonIpReputationList"
-        vendor_name = "AWS"
-      }
-    }
-  }
+  # rule {
+  #   name     = "AWSManagedRulesAmazonIpReputationList"
+  #   priority = 2
+  #   override_action {
+  #     none {}
+  #   }
+  #   visibility_config {
+  #     cloudwatch_metrics_enabled = true
+  #     metric_name                = "AmazonIpReputation"
+  #     sampled_requests_enabled   = true
+  #   }
+  #   statement {
+  #     managed_rule_group_statement {
+  #       name        = "AWSManagedRulesAmazonIpReputationList"
+  #       vendor_name = "AWS"
+  #     }
+  #   }
+  # }
 
   rule {
     name     = "AWSManagedRulesBotControlRuleSet"
