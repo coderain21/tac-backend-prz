@@ -29,7 +29,7 @@ module.exports.getNewTopBidderAfterDeletion = async (lotId, deletedBidderId, Bid
     try {
         const query = {
             lot_id: lotId,
-            buyer_id: { $ne: deletedBidderId }
+            buyer_id: { $ne: deletedBidderId },
         }
 
         const options = {
