@@ -35,6 +35,7 @@ const timeZoneMap = {
     'NZST - New Zealand Standard Time': 'Pacific/Auckland',
     'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
     'MST - Mountain Standard Time (US)': 'America/Denver',
+    'MDT - Mountain Daylight Time (US)': 'America/Denver',
     'CST - Central Standard Time (US)': 'America/Chicago',
     'EST - Eastern Standard Time (US)': 'America/New_York',
 }
@@ -133,11 +134,17 @@ async function exportAsCsv(bidders) {
 
         await s3.upload(params).promise()
 
-        await s3.putObjectAcl({
-            Bucket: s3Bucket,
-            Key: s3Key,
-            ACL: 'public-read',
-        }).promise()
+        try {
+            await s3.putObject({
+                Bucket: s3Bucket,
+                Key: s3Key,
+                Body: fs.readFileSync(csvFilePath),
+                ContentType: 'application/octet-stream',
+            }).promise()
+            console.log('Upload successful')
+        } catch (error) {
+            console.error('Upload failed:', error)
+        }
 
         const s3SignedUrl = s3.getSignedUrl('getObject', {
             Bucket: s3Bucket,

@@ -50,6 +50,7 @@ resource "aws_api_gateway_domain_name" "dev_api" {
   endpoint_configuration {
     types = ["REGIONAL"]
   }
+  security_policy = "TLS_1_2" 
   #depends_on = [
   #  aws_acm_certificate.cert_us_east_1,
   #  aws_route53_record.route_53_certificate_records_us_east_1,

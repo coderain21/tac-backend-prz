@@ -4,6 +4,8 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
+// eslint-disable-next-line import/no-extraneous-dependencies
+const he = require('he')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const cognitoHelper = require('../lib/cognito_helper')
@@ -82,6 +84,36 @@ module.exports.updateUserInformation = async (event) => {
                 }
             }
         }
+
+        // checking for marketing_opt_in in the request body
+        if (request_body.marketing_opt_in !== undefined && request_body.marketing_opt_in !== null) {
+            if (get_user[0].plan_type !== 'Pro') {
+                console.log('Plan type is not Pro', email)
+                return {
+                    headers,
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        message: 'Please upgrade to Pro plan to enable this feature',
+                    }),
+                }
+            }
+            // Remove HTML tags and check string length
+
+            const stripped = request_body.marketing_opt_in.replace(/<[^>]*>/g, '')
+            const decoded = he.decode(stripped) // handles all HTML entities
+
+            if (decoded.length > 250) {
+                return {
+                    headers,
+                    statusCode: 400,
+                    body: JSON.stringify({
+                        message: 'Cannot exceed 250 characters',
+                    }),
+                }
+            }
+            request_body.marketing_opt_in_updated_at = new Date()
+        }
+
         if (get_user !== null) {
             const user_id = get_user[0]._id
             if (request_body.first_name || request_body.last_name) {

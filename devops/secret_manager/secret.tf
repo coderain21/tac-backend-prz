@@ -53,6 +53,7 @@ resource "aws_kms_key" "kms_key" {
   depends_on = [resource.aws_iam_role.athena_ambda_role]
   provider  = aws.deployment-eu
   deletion_window_in_days = 10
+  enable_key_rotation = true
   policy = jsonencode({
     "Version": "2012-10-17",
     "Id": "key-consolepolicy-3",

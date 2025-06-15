@@ -102,6 +102,17 @@ resources:
         TopicArn: !Ref RedisDeleteAlertsTopic
         Protocol: email
         Endpoint: ${ssm:EXTERNAL_ADMIN_USERNAME}
+    
+    RedisDeleteAlertsParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: REDIS_DELETE_ALERTS_TOPIC_ARN
+        Description: 'ARN of the Redis Delete Alerts SNS Topic'
+        Type: 'String'
+        Value: !Sub
+          - arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${TopicName}
+          - TopicName: redis-delete-alerts
+
 
 functions:
   delete-redis-data:

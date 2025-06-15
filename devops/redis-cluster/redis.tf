@@ -33,6 +33,7 @@ resource "aws_security_group" "security_groups" {
   description = "Allow inbound traffic on ports 22, 80, 443, and 6379"
 
   ingress {
+    description = "Allow SSH access"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -40,6 +41,7 @@ resource "aws_security_group" "security_groups" {
   }
 
   ingress {
+    description = "Allow HTTP access"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -47,6 +49,7 @@ resource "aws_security_group" "security_groups" {
   }
 
   ingress {
+    description = "Allow HTTPS access"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -54,12 +57,14 @@ resource "aws_security_group" "security_groups" {
   }
 
   ingress {
+    description = "Allow Redis access"
     from_port   = 6379
     to_port     = 6379
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-   egress {
+  egress {
+    description      = "Allow all outbound traffic"
     from_port        = 0
     to_port          = 0
     protocol         = "-1"

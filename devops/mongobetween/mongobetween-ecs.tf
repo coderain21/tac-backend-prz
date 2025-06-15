@@ -17,6 +17,14 @@ terraform {
   }
 }
 
+terraform {
+  required_providers {
+   aws = {
+    source  = "hashicorp/aws"
+    version = "5.98"
+    }
+  }
+}
 data "aws_vpc" "my_vpc" {
   # Use the "Name" tag filter to find the VPC by name
   filter {
@@ -124,6 +132,9 @@ resource "aws_ecr_repository" "repo1" {
   name         = "mongobetween"
   provider     = aws.deployment-eu
   force_delete = true
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 locals {
@@ -140,6 +151,7 @@ locals {
           hostPort      = 27016
         }
       ]
+      readonlyRootFilesystem = true
       environment = [
         # Loop over each key in the parsed JSON and create environment variables
         for key, value in data.external.env.result :
@@ -179,6 +191,14 @@ data "aws_ssm_parameter" "subnet_id" {
   name = "SUBNET_ID"
   provider = aws.deployment-eu
 }
+terraform {
+  required_providers {
+   aws = {
+    source  = "hashicorp/aws"
+    version = "5.98"
+    }
+  }
+}
  
 data "aws_ecs_cluster" "ecs" {
   cluster_name = "websocket-cluster"
@@ -189,6 +209,7 @@ resource "aws_lb" "mongobetween_nlb" {
   name               = "mongobetween-nlb"
   internal           = true # Set to true for internal NLB
   load_balancer_type = "network"
+  enable_deletion_protection = true
   subnets            = [data.aws_ssm_parameter.subnet_id.value]
   provider           = aws.deployment-eu
 }
@@ -224,7 +245,7 @@ resource "aws_ecs_service" "ecs_service" {
   network_configuration {
     subnets         = [data.aws_ssm_parameter.subnet_id.value]
     security_groups = [aws_security_group.mongobetween-security-group.id]
-    assign_public_ip = false # Do not assign public IP
+    assign_public_ip = true # Do not assign public IP
   }
 
   load_balancer {

@@ -23,12 +23,16 @@ jobs:
                   path: "$(System.DefaultWorkingDirectory)/node_modules"
                   cacheHitVar: CACHE_RESTORED
                 displayName: Cache npm
+              - task: UseNode@1
+                inputs:
+                  version: '18.x'
+                displayName: 'Use Node.js 18'
               - task: DownloadPipelineArtifact@2
                 name: environment
                 inputs:
                   artifact: environment
                   targetPath: '$(System.DefaultWorkingDirectory)'
-              - script: npm config set registry https://registry.npmmirror.com
+              #- script: npm config set registry https://registry.npmmirror.com
               - script: |
                   npm install --cache .npm
                 condition: ne(variables.CACHE_RESTORED, 'true')

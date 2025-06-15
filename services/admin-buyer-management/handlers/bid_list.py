@@ -265,13 +265,14 @@ def format_date(timestamp, time_zone):
         'GMT - Greenwich Mean Time': 'Etc/GMT',
         'BST - British Summer Time': 'Europe/London',
         'CET - Central European Time': 'Europe/Paris',
-        'IST - India Standard Time': 'Asia/Kolkata',  # Updated key to match received timezone information
+        'IST - India Standard Time': 'Asia/Kolkata',
         'CST - China Standard Time': 'Asia/Shanghai',
         'JST - Japan Standard Time': 'Asia/Tokyo',
         'AEST - Australian Eastern Standard Time': 'Australia/Sydney',
         'NZST - New Zealand Standard Time': 'Pacific/Auckland',
         'PST - Pacific Standard Time(US)': 'America/Los_Angeles',
         'MST - Mountain Standard Time (US)': 'America/Denver',
+        'MDT - Mountain Daylight Time (US)': 'America/Denver',
         'CST - Central Standard Time (US)': 'America/Chicago',
         'EST - Eastern Standard Time (US)': 'America/New_York',
     }
@@ -368,10 +369,7 @@ def export_lots_as_csv(lots):
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file_path, s3_bucket, s3_key)
 
-        # Ensure that the file is made public
-        s3_resource = boto3.resource("s3", region_name='eu-west-2')
-        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
-        object_acl.put(ACL="public-read")
+
 
         # Generate a presigned URL
         s3_signed_url = s3_client.generate_presigned_url(

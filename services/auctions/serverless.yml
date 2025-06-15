@@ -457,7 +457,7 @@ functions:
 
   process-cart:
     handler: handlers/add_to_cart.handler
-    timeout: 60
+    timeout: ${ssm:LAMBDA_TIMEOUT}
     memorySize: ${ssm:PROCESS_LAMBDA_MEMORY}
     layers:
       - ${ssm:COMMON_LIB_ARN}
