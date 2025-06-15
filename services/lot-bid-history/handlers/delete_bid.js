@@ -27,18 +27,20 @@ const headers = {
  */
 async function deleteBid(event) {
     try {
+        console.log('Received event:', JSON.stringify(event, null, 2))
         // Connect to MongoDB using the helper
         await mongodbHelper.connect()
 
         // Initialize Redis connection using the helper
         const redisClient = await createRedisClient()
+        console.log('Connected to Redis')
 
         // Extract the bid ID from the event
         const bidId = event.pathParameters.bid_id
-
+        console.log(`Deleting bid with ID: ${bidId}`)
         // Look up the bid information using Mongoose models
         const bidInfo = await BidInformation.findById(bidId)
-
+        console.log(`Bid information found: ${JSON.stringify(bidInfo)}`)
         if (!bidInfo) {
             return {
                 statusCode: 404,
@@ -54,7 +56,7 @@ async function deleteBid(event) {
 
         // Get the lot information
         const lot = await mongodbHelper.getBuyer(lotId, Lot)
-
+        console.log(`Lot information found: ${JSON.stringify(lot)}`)
         if (!lot) {
             return {
                 statusCode: 404,
@@ -76,7 +78,7 @@ async function deleteBid(event) {
         const bidsQuery = { lot_id: lotId }
 
         const allBids = await BidInformation.find(bidsQuery).sort({ bid_amount: -1 })
-
+        console.log(`All bids found for lot ${lotId}: ${JSON.stringify(allBids)}`)
         // Only proceed if we found the bid
         if (!allBids || allBids.length === 0) {
             return {
@@ -88,14 +90,14 @@ async function deleteBid(event) {
 
         // Delete the bid from both collections
         await BidInformation.findByIdAndDelete(bidId)
-
+        console.log(`Bid with ID ${bidId} deleted from BidInformation collection`)
         // Delete from unique_bids collection
         await Bid.findOneAndDelete({
             lot_id: lotId,
             buyer_id: buyerId,
             bid_amount: bidAmount,
         })
-
+        console.log('Bid was deleted from bid collection')
         // Recalculate top bidder after deletion
         const remainingBids = await BidInformation.find(bidsQuery).sort({ bid_amount: -1 })
 
@@ -127,16 +129,17 @@ async function deleteBid(event) {
                 newTopBid._id,
                 { bid_status: 'Winning' },
             )
+            console.log(`Updated new top bidder ${newTopBid.name} with ID ${newTopBid._id} to Winning status`)
         }
 
         // Update the lot with the new top bidder information
         await Lot.findByIdAndUpdate(lotId, updateData)
-
+        console.log(`Lot with ID ${lotId} updated with new top bidder information: ${JSON.stringify(updateData)}`)
         // Update Redis cache for this lot
         const redisKey = `lot:${lotId}`
         try {
             const existingRecord = await redisClient.hget('lot', redisKey)
-
+            console.log(`Existing Redis record for ${redisKey}: ${existingRecord}`)
             if (existingRecord) {
                 const lotData = JSON.parse(existingRecord)
                 // Update the lot data with new top bidder info
@@ -145,11 +148,12 @@ async function deleteBid(event) {
                 await redisClient.multi()
                     .hset('lot', redisKey, JSON.stringify(lotData))
                     .exec()
+                console.log(`Updated Redis record for ${redisKey} with new top bidder information`)
             }
         } catch (e) {
             console.log(`Error updating Redis: ${e}`)
         }
-
+        console.log(`Bid with ID ${bidId} successfully deleted and lot updated`)
         return {
             statusCode: 200,
             headers,

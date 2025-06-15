@@ -47,7 +47,6 @@ provider:
         issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
         audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
-
   iam:
     role:
       statements:
@@ -89,9 +88,6 @@ custom:
     - If: '${param:offline, "false"} == true'
       Set:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
-
-                
-
 
 functions: 
   list-bids:
@@ -137,7 +133,6 @@ functions:
           method: GET
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
             
-
   bid-listing:
     handler: handlers/bid_list.list_bids
     timeout: 60
@@ -180,10 +175,10 @@ functions:
       - ${ssm:SUBNET_ID}
     events:
       - http:
-        cors: true
-        path: /admin/bid/{bid_id}
-        method: delete
-        authorizer:
+          cors: true
+          path: /admin/bid/{bid_id}
+          method: delete
+          authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   
 plugins:
