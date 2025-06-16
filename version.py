@@ -42,8 +42,6 @@ try:
         "updateItems": {
             "seller_web_application": {
                 "latest_version": version,
-                "min_version": version,
-                "merged_time": merged_time,
                 "released_time": merged_time
             }
         },
