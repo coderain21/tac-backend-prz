@@ -281,17 +281,17 @@ stages:
 
 - stage: Versioning
   displayName: 'Versioning'
-  condition: and(eq(variables['Build.Reason'], 'PullRequest'),
-    or(and(
-      contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
-      contains(variables['System.PullRequest.TargetBranch'], 'master')
-      ),
-      and(
-        contains(variables['System.PullRequest.SourceBranch'], 'release'),
-        contains(variables['System.PullRequest.TargetBranch'], 'pre-prod')
-      )
-    ),
-    succeeded())
+  # condition: and(eq(variables['Build.Reason'], 'PullRequest'),
+  #   or(and(
+  #     contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
+  #     contains(variables['System.PullRequest.TargetBranch'], 'master')
+  #     ),
+  #     and(
+  #       contains(variables['System.PullRequest.SourceBranch'], 'release'),
+  #       contains(variables['System.PullRequest.TargetBranch'], 'pre-prod')
+  #     )
+  #   ),
+  #   succeeded())
   jobs:
     - job: FetchAndSetVersion
       displayName: 'Fetch and Set Version from PR Label'
