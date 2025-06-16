@@ -51,7 +51,7 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
   description = "My DocumentDB Parameter Group"
   parameter {
     name  = "tls"
-    value = "enabled"
+    value = "disabled"
   }
   provider = aws.deployment-eu
 }
