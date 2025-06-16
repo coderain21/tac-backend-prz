@@ -44,7 +44,7 @@ try:
         "stage": stage
     }
 
-    url = url = os.environ['REACT_APP_DOMAIN_NAME_FRONT_END'] + "/prod/update"
+    url = 'https://3d3rtmuk4c.execute-api.eu-west-2.amazonaws.com/pre-production/update'
     print(f"Sending payload:\n{json.dumps(payload, indent=2)}")
 
     r = requests.post(url, data=json.dumps(payload), headers={"Content-type": "application/json"})
