@@ -279,81 +279,156 @@ stages:
     
     
 
-- stage: Versioning
-  displayName: 'Versioning'
-  # condition: and(
-  #   eq(variables['Build.Reason'], 'PullRequest'),
-  #   contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
-  #   contains(variables['System.PullRequest.TargetBranch'], 'master'),
-  #   succeeded())
+# - stage: Versioning
+#   displayName: 'Versioning'
+#   # condition: and(
+#   #   eq(variables['Build.Reason'], 'PullRequest'),
+#   #   contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
+#   #   contains(variables['System.PullRequest.TargetBranch'], 'master'),
+#   #   succeeded())
+#   jobs:
+#     - job: FetchAndSetVersion
+#       displayName: 'Fetch and Set Version from PR Label'
+#       pool:
+#         vmImage: 'windows-latest'
+#       steps:
+#         - checkout: self
+#           persistCredentials: true
+#         - task: DownloadPipelineArtifact@2
+#           name: environment
+#           inputs:
+#             artifact: Environment
+#             targetPath: '$(System.DefaultWorkingDirectory)'
+#         - powershell: |
+#             $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/labels?api-version=7.0"
+#             Write-Host "Fetching labels from: $uri"
+
+#             $headers = @{
+#                 Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
+#             }
+
+#             $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+#             $labels = $response.value
+
+#             if ($labels.Count -gt 0) {
+#                 $version = $labels[0].name
+#                 Write-Host "##vso[task.setvariable variable=VERSION]$version"
+#                 Write-Host "Fetched version tag: $version"
+#             } else {
+#                 Write-Host "No labels found on the PR."
+#                 Write-Host "##vso[task.setvariable variable=VERSION]unknown"
+#             }
+#           displayName: 'Fetch PR Version Tag'
+#           env:
+#             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+#         - script: |
+#             echo "Fetched version from PR tag: $(VERSION)"
+#           displayName: 'Display Fetched Version'
+
+#         - script: |
+#             pip install requests
+#             source .env
+#             python version.py $(VERSION)
+#           displayName: 'Update Version'
+
+- stage: Version
+  displayName: 'Fetch Version'
+  condition: succeeded()  # Optional: add more conditions if needed
   jobs:
     - job: FetchAndSetVersion
       displayName: 'Fetch and Set Version from PR Label'
       pool:
         vmImage: 'windows-latest'
       steps:
-        - task: DownloadPipelineArtifact@2
-          name: environment
-          inputs:
-            artifact: Environment
-            targetPath: '$(System.DefaultWorkingDirectory)'
+        - checkout: self
+          persistCredentials: true
         - powershell: |
-            $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/labels?api-version=7.0"
-            Write-Host "Fetching labels from: $uri"
+            $project = "$(System.TeamProject)"
+            $repo = "$(Build.Repository.Name)"
+            $branch = "refs/heads/ci/INDY-294-application-versioning" # You can parameterize this
+            $uri = "$(System.CollectionUri)$project/_apis/build/builds?branchName=$branch&resultFilter=succeeded&statusFilter=completed&$top=1&api-version=7.0"
 
-            $headers = @{
-                Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
-            }
-
+            $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
             $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
-            $labels = $response.value
+            $buildId = $response.value[0].id
 
-            if ($labels.Count -gt 0) {
-                $version = $labels[0].name
-                Write-Host "##vso[task.setvariable variable=VERSION]$version"
-                Write-Host "Fetched version tag: $version"
-            } else {
-                Write-Host "No labels found on the PR."
-                Write-Host "##vso[task.setvariable variable=VERSION]unknown"
-            }
-          displayName: 'Fetch PR Version Tag'
-          env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            Write-Host "##vso[task.setvariable variable=PR_BUILD_ID]$buildId"
+            Write-Host "Latest successful build ID: $buildId"
+          displayName: 'Fetch Latest PR Pipeline Build ID'
+
+
+- stage: Versioning
+  displayName: 'Versioning'
+  condition: and(
+    contains(variables['build.SourceBranch'], 'qa'),
+    succeeded())  # Optional: add more conditions if needed
+  jobs:
+    - job: FetchAndSetVersion
+      displayName: 'Fetch and Set Version from Merged PR Label'
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+        - checkout: self
+          persistCredentials: true
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download PR Metadata Artifact'
+          inputs:
+            buildType: specific
+            project: $(System.TeamProject)
+            buildId: $(PR_BUILD_ID)
+            artifact: PRMetadata
+            targetPath: '$(System.DefaultWorkingDirectory)'
+
+
+        - powershell: |
+            $version = Get-Content version.txt
+            $prId = Get-Content pr_id.txt
+
+            Write-Host "Fetched version: $version"
+            Write-Host "Fetched PR ID: $prId"
+
+            Write-Host "##vso[task.setvariable variable=VERSION]$version"
+            Write-Host "##vso[task.setvariable variable=PR_ID]$prId"
+          displayName: 'Set VERSION and PR_ID Variables'
 
         - script: |
-            echo "Fetched version from PR tag: $(VERSION)"
-          displayName: 'Display Fetched Version'
+            echo "Version from PR: $(VERSION)"
+          displayName: 'Log Version'
 
         - script: |
             pip install requests
             source .env
             python version.py $(VERSION)
-          displayName: 'Update Version'
+          displayName: 'Run version.py'
 
-- stage: Deploy
-  displayName: Deploy
-  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
-  jobs:
-    - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'production'
-    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'testing'
-    - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'staging' 
-    - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-        - template: devops/deploy-bidding.yml
-          parameters:
-            envName: 'testing'
-    - ${{ else }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'development'
+
+
+# - stage: Deploy
+#   displayName: Deploy
+#   condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
+#   jobs:
+#     - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+#         - template: devops/deploy.yml
+#           parameters:
+#             envName: 'production'
+#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+#         - template: devops/deploy.yml
+#           parameters:
+#             envName: 'testing'
+#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+#         - template: devops/deploy.yml
+#           parameters:
+#             envName: 'staging' 
+#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+#         - template: devops/deploy-bidding.yml
+#           parameters:
+#             envName: 'testing'
+#     - ${{ else }}:
+#         - template: devops/deploy.yml
+#           parameters:
+#             envName: 'development'
   
 
 # - stage: DisposableDeploy
