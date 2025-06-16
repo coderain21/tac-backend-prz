@@ -33,6 +33,9 @@ try:
     # Normalize version if too short
     if len(version) < 5:
         version = version + ".0"
+    if version.lower() == "unknown":
+        print("Version is 'unknown'. Skipping API call.")
+        sys.exit(0)
 
     # Get current UTC datetime in required format
     merged_time = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
