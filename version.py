@@ -51,7 +51,7 @@ try:
         "stage": stage
     }
 
-    url = 'https://3d3rtmuk4c.execute-api.eu-west-2.amazonaws.com/pre-production/update'
+    url = 'https://apis.pre-production.indyauction.net/v1/app-version/update'
     print(f"Sending payload:\n{json.dumps(payload, indent=2)}")
 
     r = requests.post(url, data=json.dumps(payload), headers={"Content-type": "application/json"})
