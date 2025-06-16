@@ -18,11 +18,17 @@ def execute_cli_command(command):
 
 try:
     args = sys.argv
-    version = args[1]
-    print(f"Version from tag: {version}")
 
-    # Default stage
-    stage = "master"
+    if len(sys.argv) < 3:
+        print("Usage: version.py <version> <stage>")
+        sys.exit(1)
+
+    version = sys.argv[1]
+    stage = sys.argv[2]
+
+    print(f"Running version.py with version: {version} and stage: {stage}")
+# Use `version` and `stage` as needed
+
 
     # Normalize version if too short
     if len(version) < 5:

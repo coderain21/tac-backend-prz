@@ -279,62 +279,19 @@ stages:
     
     
 
-# - stage: Versioning
-#   displayName: 'Versioning'
-#   # condition: and(
-#   #   eq(variables['Build.Reason'], 'PullRequest'),
-#   #   contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
-#   #   contains(variables['System.PullRequest.TargetBranch'], 'master'),
-#   #   succeeded())
-#   jobs:
-#     - job: FetchAndSetVersion
-#       displayName: 'Fetch and Set Version from PR Label'
-#       pool:
-#         vmImage: 'windows-latest'
-#       steps:
-#         - checkout: self
-#           persistCredentials: true
-#         - task: DownloadPipelineArtifact@2
-#           name: environment
-#           inputs:
-#             artifact: Environment
-#             targetPath: '$(System.DefaultWorkingDirectory)'
-#         - powershell: |
-#             $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/labels?api-version=7.0"
-#             Write-Host "Fetching labels from: $uri"
-
-#             $headers = @{
-#                 Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
-#             }
-
-#             $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
-#             $labels = $response.value
-
-#             if ($labels.Count -gt 0) {
-#                 $version = $labels[0].name
-#                 Write-Host "##vso[task.setvariable variable=VERSION]$version"
-#                 Write-Host "Fetched version tag: $version"
-#             } else {
-#                 Write-Host "No labels found on the PR."
-#                 Write-Host "##vso[task.setvariable variable=VERSION]unknown"
-#             }
-#           displayName: 'Fetch PR Version Tag'
-#           env:
-#             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-#         - script: |
-#             echo "Fetched version from PR tag: $(VERSION)"
-#           displayName: 'Display Fetched Version'
-
-#         - script: |
-#             pip install requests
-#             source .env
-#             python version.py $(VERSION)
-#           displayName: 'Update Version'
-
-- stage: Version
-  displayName: 'Fetch Version'
-  condition: succeeded()  # Optional: add more conditions if needed
+- stage: Versioning
+  displayName: 'Versioning'
+  condition: and(eq(variables['Build.Reason'], 'PullRequest'),
+    or(and(
+      contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
+      contains(variables['System.PullRequest.TargetBranch'], 'master')
+      ),
+      and(
+        contains(variables['System.PullRequest.SourceBranch'], 'release'),
+        contains(variables['System.PullRequest.TargetBranch'], 'master')
+      )
+    ),
+    succeeded())
   jobs:
     - job: FetchAndSetVersion
       displayName: 'Fetch and Set Version from PR Label'
@@ -343,65 +300,57 @@ stages:
       steps:
         - checkout: self
           persistCredentials: true
-        - powershell: |
-            $project = "$(System.TeamProject)"
-            $repo = "$(Build.Repository.Name)"
-            $branch = "refs/heads/ci/INDY-294-application-versioning" # You can parameterize this
-            $uri = "$(System.CollectionUri)$project/_apis/build/builds?branchName=$branch&resultFilter=succeeded&statusFilter=completed&$top=1&api-version=7.0"
-
-            $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
-            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
-            $buildId = $response.value[0].id
-
-            Write-Host "##vso[task.setvariable variable=PR_BUILD_ID]$buildId"
-            Write-Host "Latest successful build ID: $buildId"
-          displayName: 'Fetch Latest PR Pipeline Build ID'
-
-
-- stage: Versioning
-  displayName: 'Versioning'
-  condition: and(
-    contains(variables['build.SourceBranch'], 'qa'),
-    succeeded())  # Optional: add more conditions if needed
-  jobs:
-    - job: FetchAndSetVersion
-      displayName: 'Fetch and Set Version from Merged PR Label'
-      pool:
-        vmImage: 'windows-latest'
-      steps:
-        - checkout: self
-          persistCredentials: true
-
         - task: DownloadPipelineArtifact@2
-          displayName: 'Download PR Metadata Artifact'
+          name: environment
           inputs:
-            buildType: specific
-            project: $(System.TeamProject)
-            buildId: $(PR_BUILD_ID)
-            artifact: PRMetadata
+            artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)'
-
-
         - powershell: |
-            $version = Get-Content version.txt
-            $prId = Get-Content pr_id.txt
+            $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/labels?api-version=7.0"
+            Write-Host "Fetching labels from: $uri"
 
-            Write-Host "Fetched version: $version"
-            Write-Host "Fetched PR ID: $prId"
+            $headers = @{
+                Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
+            }
 
-            Write-Host "##vso[task.setvariable variable=VERSION]$version"
-            Write-Host "##vso[task.setvariable variable=PR_ID]$prId"
-          displayName: 'Set VERSION and PR_ID Variables'
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+            $labels = $response.value
+
+            if ($labels.Count -gt 0) {
+                $version = $labels[0].name
+                Write-Host "##vso[task.setvariable variable=VERSION]$version"
+                Write-Host "Fetched version tag: $version"
+            } else {
+                Write-Host "No labels found on the PR."
+                Write-Host "##vso[task.setvariable variable=VERSION]unknown"
+            }
+          displayName: 'Fetch PR Version Tag'
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        - powershell: |
+            $targetBranch = "$(System.PullRequest.TargetBranch)"
+            Write-Host "Target Branch: $targetBranch"
+
+            if ($targetBranch -like "*pre-prod*") {
+                Write-Host "##vso[task.setvariable variable=STAGE_NAME]pre-production"
+            } elseif ($targetBranch -like "*master*") {
+                Write-Host "##vso[task.setvariable variable=STAGE_NAME]prod"
+            } else {
+                Write-Host "##vso[task.setvariable variable=STAGE_NAME]unknown"
+            }
+
+            Write-Host "Stage name set as: $(STAGE_NAME)"
+          displayName: 'Set Stage Name from Target Branch'
+
 
         - script: |
-            echo "Version from PR: $(VERSION)"
-          displayName: 'Log Version'
+            echo "Fetched version from PR tag: $(VERSION)"
+          displayName: 'Display Fetched Version'
 
         - script: |
             pip install requests
-            source .env
-            python version.py $(VERSION)
-          displayName: 'Run version.py'
+            python version.py $(VERSION) $(STAGE_NAME)
+          displayName: 'Update Version'
 
 
 
