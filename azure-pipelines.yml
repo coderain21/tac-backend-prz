@@ -278,7 +278,57 @@ stages:
           displayName: 'Dynamic Application Security Testing (DAST)'
     
     
-    
+
+- stage: Versioning
+  displayName: 'Versioning'
+  # condition: and(
+  #   eq(variables['Build.Reason'], 'PullRequest'),
+  #   contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
+  #   contains(variables['System.PullRequest.TargetBranch'], 'master'),
+  #   succeeded())
+  jobs:
+    - job: FetchAndSetVersion
+      displayName: 'Fetch and Set Version from PR Label'
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - powershell: |
+            $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/labels?api-version=7.0"
+            Write-Host "Fetching labels from: $uri"
+
+            $headers = @{
+                Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
+            }
+
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+            $labels = $response.value
+
+            if ($labels.Count -gt 0) {
+                $version = $labels[0].name
+                Write-Host "##vso[task.setvariable variable=VERSION]$version"
+                Write-Host "Fetched version tag: $version"
+            } else {
+                Write-Host "No labels found on the PR."
+                Write-Host "##vso[task.setvariable variable=VERSION]unknown"
+            }
+          displayName: 'Fetch PR Version Tag'
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+        - script: |
+            echo "Fetched version from PR tag: $(VERSION)"
+          displayName: 'Display Fetched Version'
+
+        - script: |
+            pip install requests
+            source .env
+            python version.py $(VERSION)
+          displayName: 'Update Version'
 
 - stage: Deploy
   displayName: Deploy
