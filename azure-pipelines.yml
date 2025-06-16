@@ -278,7 +278,81 @@ stages:
           displayName: 'Dynamic Application Security Testing (DAST)'
     
     
-    
+
+- stage: Versioning
+  displayName: 'Versioning'
+  condition: and(eq(variables['Build.Reason'], 'PullRequest'),
+    or(and(
+      contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
+      contains(variables['System.PullRequest.TargetBranch'], 'master')
+      ),
+      and(
+        contains(variables['System.PullRequest.SourceBranch'], 'release'),
+        contains(variables['System.PullRequest.TargetBranch'], 'pre-prod')
+      )
+    ),
+    succeeded())
+  jobs:
+    - job: FetchAndSetVersion
+      displayName: 'Fetch and Set Version from PR Label'
+      pool:
+        vmImage: 'windows-latest'
+      steps:
+        - checkout: self
+          persistCredentials: true
+
+        - powershell: |
+            $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.Name)/pullRequests/$(System.PullRequest.PullRequestId)/labels?api-version=7.0"
+            Write-Host "Fetching labels from: $uri"
+
+            $headers = @{
+                Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
+            }
+
+            $response = Invoke-RestMethod -Uri $uri -Headers $headers -Method Get
+            $labels = $response.value
+
+            if ($labels.Count -gt 0) {
+                $version = $labels[0].name
+                Write-Host "##vso[task.setvariable variable=VERSION]$version"
+                Write-Host "Fetched version tag: $version"
+            } else {
+                Write-Host "No labels found on the PR."
+                Write-Host "##vso[task.setvariable variable=VERSION]unknown"
+            }
+          displayName: 'Fetch PR Version Tag'
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+        - powershell: |
+            $targetBranch = "$(System.PullRequest.TargetBranch)"
+            Write-Host "Target Branch: $targetBranch"
+
+            if ($targetBranch -like "*pre-prod*") {
+                $stage = "pre-production"
+            } elseif ($targetBranch -like "*master*") {
+                $stage = "prod"
+            } else {
+                $stage = "pre-production"
+            }
+
+            Write-Host "##vso[task.setvariable variable=STAGE_NAME]$stage"
+            Write-Host "Stage name set as: $stage"
+          displayName: 'Set Stage Name from Target Branch'
+
+
+
+        - script: |
+            echo "Fetched version from PR tag: $(VERSION)"
+          displayName: 'Display Fetched Version'
+
+        - script: |
+            echo "VERSION: $(VERSION)"
+            echo "STAGE_NAME: $(STAGE_NAME)"    
+            pip install requests
+            python version.py $(VERSION) $(STAGE_NAME)
+          displayName: 'Update Version'
+
+
 
 - stage: Deploy
   displayName: Deploy
