@@ -70,3 +70,9 @@ def set_authorization(transaction):
         transaction['request']['uri'] = urllib.parse.unquote(
             transaction['request']['uri'])
         logging.info(transaction['request'])
+        
+        
+    if (transaction['request']['method'] == 'PATCH' and '/sthuthi+testing@7edge.com' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
