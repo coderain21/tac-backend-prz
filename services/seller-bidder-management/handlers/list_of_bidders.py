@@ -243,10 +243,7 @@ def export_bidders_as_csv(buyers, email_address):
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file_path, s3_bucket, s3_key)
 
-        # Ensure that the file is made public
-        s3_resource = boto3.resource("s3", region_name='eu-west-2')
-        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
-        object_acl.put(ACL="public-read")
+
 
         # Generate a presigned URL
         s3_signed_url = s3_client.generate_presigned_url(

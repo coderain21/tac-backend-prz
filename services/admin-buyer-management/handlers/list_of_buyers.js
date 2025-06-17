@@ -100,11 +100,17 @@ async function exportAsCsv(bidders) {
         await s3.upload(params).promise()
 
         // Ensure that the file is made public
-        await s3.putObjectAcl({
-            Bucket: s3Bucket,
-            Key: s3Key,
-            ACL: 'public-read',
-        }).promise()
+        try {
+            await s3.putObject({
+                Bucket: s3Bucket,
+                Key: s3Key,
+                Body: fs.readFileSync(csvFilePath),
+                ContentType: 'application/octet-stream',
+            }).promise()
+            console.log('Upload successful')
+        } catch (error) {
+            console.error('Upload failed:', error)
+        }
 
         // Generate a presigned URL
         const s3SignedUrl = s3.getSignedUrl('getObject', {

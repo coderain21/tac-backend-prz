@@ -113,17 +113,6 @@ resource "aws_route53_record" "route_53_certificate_records_ap_south_1_dev" {
 }
 
 
-# resource "aws_route53_record" "route_53_certificate_records_ap_south_1_prod" {
-#   count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_ap_south_1.domain_validation_options) : 0
-#   name   = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_name
-#   allow_overwrite = true
-#   records         = [aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_value]
-#   ttl             = 60
-#   type            = aws_acm_certificate.cert_ap_south_1.domain_validation_options[count.index].resource_record_type
-#   zone_id         = local.zone_id
-#   provider = aws.main
-# }
-
 resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
   for_each = {
     for dvo in aws_acm_certificate.cert_us_east_1.domain_validation_options : dvo.domain_name => {
@@ -141,16 +130,6 @@ resource "aws_route53_record" "route_53_certificate_records_us_east_1_dev" {
   provider = aws.route53-account
 }
 
-# resource "aws_route53_record" "route_53_certificate_records_us_east_1_prod" {
-#   count = var.STAGE == "prod" ? length(aws_acm_certificate.cert_us_east_1.domain_validation_options) : 0
-#   name   = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_name
-#   allow_overwrite = true
-#   records         = [aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_value]
-#   ttl             = 60
-#   type            = aws_acm_certificate.cert_us_east_1.domain_validation_options[count.index].resource_record_type
-#   zone_id         = local.zone_id
-#   provider = aws.main
-# }
 
 resource "aws_s3_bucket" "assets" {
   bucket = "indyauction-assets-${var.STAGE}-v1"
@@ -161,22 +140,23 @@ resource "aws_s3_bucket" "assets" {
   }
   provider = aws.deployment-eu
 }
-resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_disable" {
   bucket = aws_s3_bucket.assets.id
 
   rule {
-    object_ownership = "ObjectWriter"
+    object_ownership = "BucketOwnerEnforced"
   }
   provider =  aws.deployment-eu
+  depends_on = [aws_s3_bucket.assets]
 }
 
 
 resource "aws_s3_bucket_public_access_block" "s3_bucket_public_access_block" {
   bucket = aws_s3_bucket.assets.id
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
   provider =  aws.deployment-eu
 }
 
@@ -220,6 +200,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   enabled             = true
   is_ipv6_enabled     = true
   comment             = "CDN for application"
+  default_root_object = "index.html"
+
 
 
   aliases = ["cdn.${local.sub_domain}"]
@@ -237,7 +219,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       }
     }
 
-    viewer_protocol_policy = "allow-all"
+    viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
@@ -256,6 +238,8 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   viewer_certificate {
     acm_certificate_arn = aws_acm_certificate.cert_us_east_1.arn
     ssl_support_method = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"  
+    cloudfront_default_certificate = false
   }
 
 
@@ -263,25 +247,40 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 }
 resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
   bucket = aws_s3_bucket.assets.id
-  policy = data.aws_iam_policy_document.s3_policy.json
+  policy = data.aws_iam_policy_document.allow_access_from_another_account.json
   provider = aws.deployment-eu
 
 }
+data "aws_iam_policy_document" "allow_access_from_another_account" {
+  provider = aws.deployment-eu
 
-
-data "aws_iam_policy_document" "s3_policy" {
   statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.assets.arn}/*"]
+    sid    = "AllowCloudFrontServicePrincipal"
+    effect = "Allow"
 
     principals {
       type        = "Service"
       identifiers = ["cloudfront.amazonaws.com"]
     }
-  }
-  provider = aws.deployment-eu
 
+    actions = [
+      "s3:GetObject",
+    ]
+
+    resources = [
+      "${aws_s3_bucket.assets.arn}/*"
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values = [
+        aws_cloudfront_distribution.s3_distribution.arn
+      ]
+    }
+  }
 }
+
 
 resource "aws_route53_record" "assets_cname_dev" {
   name    = "cdn.${local.sub_domain}" # Replace with your desired CNAME
