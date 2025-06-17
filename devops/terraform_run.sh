@@ -240,6 +240,13 @@ npm i -g serverless-offline
 npm i -g serverless-package-external
 npm i -g serverless-python-requirements
 npm i -g serverless-appsync-plugin
+npm i -g serverless-aws-step-functions
+npm i -g serverless-step-functions
+npm i -g serverless-plugin-ifelse
+npm i -g serverless-offline
+
+
+
 export config=serverless.yml
 unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
