@@ -284,6 +284,7 @@ def export_as_csv(auctions):
             'NZS': 'Pacific/Auckland',
             'PST': 'America/Los_Angeles',
             'MST': 'America/Denver',
+            'MDT': 'America/Denver',
             'CST': 'America/Chicago',
             'EST': 'America/New_York',
             'UTC': 'UTC'

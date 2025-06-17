@@ -121,6 +121,7 @@ def view(event, context):
             'NZS': 'Pacific/Auckland',
             'PST': 'America/Los_Angeles',
             'MST': 'America/Denver',
+            'MDT': 'America/Denver',
             'CST': 'America/Chicago',
             'EST': 'America/New_York',
             'UTC': 'UTC'

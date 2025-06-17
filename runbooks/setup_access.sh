@@ -26,7 +26,7 @@ echo "$log_bucket"
 # Print AWS CLI configurations for verification
 aws configure list --profile $PROFILE_MAIN
 aws configure list --profile $BASE_PROFILE
-run_command terraform -chdir=runbooks/iam_role_anywhere init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/runbooks/iam_role_anywhere/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+terraform -chdir=runbooks/iam_role_anywhere init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/runbooks/iam_role_anywhere/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 terraform -chdir=runbooks/iam_role_anywhere init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/runbooks/us/iam_role_anywhere/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=runbooks/iam_role_anywhere apply -auto-approve
 terraform -chdir=runbooks/iam_role_anywhere_main init -backend-config="bucket=${log_bucket}" -backend-config="key=main/runbooks/iam_role_anywhere_main/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
