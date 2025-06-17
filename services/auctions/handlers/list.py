@@ -359,9 +359,6 @@ def export_as_csv(auctions):
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
 
         # Generate signed URL
-        s3_resource = boto3.resource("s3", region_name='eu-west-2')
-        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
-        object_acl.put(ACL="public-read")
         s3_signed_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": s3_bucket, "Key": s3_key},
