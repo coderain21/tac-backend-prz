@@ -232,14 +232,14 @@ fi
 # aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 npm i -g serverless@3.15.2
 npm i -g @serverless/compose
-npm i serverless-aws-documentation
-npm i serverless-domain-manager
-npm i serverless-dynamodb-autoscaling
-npm i serverless-dynamodb-ttl
-npm i serverless-offline
-npm i serverless-package-external
-npm i serverless-python-requirements
-npm i serverless-appsync-plugin
+npm i -g serverless-aws-documentation
+npm i -g serverless-domain-manager
+npm i -g serverless-dynamodb-autoscaling
+npm i -g serverless-dynamodb-ttl
+npm i -g serverless-offline
+npm i -g serverless-package-external
+npm i -g serverless-python-requirements
+npm i -g serverless-appsync-plugin
 export config=serverless.yml
 unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
