@@ -664,5 +664,13 @@ resource "aws_ssm_parameter" "external_admin_username" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "api_base_url" {
+  name  = "VERSION_API_BASE_URL"
+  type  = "String"
+  value = "https://apis.pre-production.indyauction.net/v1/app-version/list"
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
 
 
