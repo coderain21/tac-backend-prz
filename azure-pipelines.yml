@@ -27,22 +27,9 @@ stages:
 
 - stage: CodeQuality
   jobs:
-    # - job: "pr_review"
-    #   displayName: "GPT Pull Request Review"
-    #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'),contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-    #   pool:
-    #       vmImage: "ubuntu-22.04"
-    #   steps:
-    #     - checkout: self
-    #       persistCredentials: true
-    #     - task: GPTPullRequestReview@0
-    #       inputs:
-    #         api_key: $(OPENAI_TOKEN)
-    #         aoi_endpoint: $(OPENAI_URL)
-    
     - job: "lint"
       displayName: "Code Quality"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -80,7 +67,7 @@ stages:
             OPENAI_TOKEN: $(OPENAI_TOKEN)
     - job: "secret"
       displayName: "Secret Checking"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -94,7 +81,7 @@ stages:
           displayName: 'Lint'
     - job: "licence_complaiance"
       displayName: "License Compliance"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -110,7 +97,7 @@ stages:
           displayName: 'License Compliance'
     - job: "sast"
       displayName: 'Static Application Security Testing (SAST)'
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -160,7 +147,7 @@ stages:
   jobs:
     - job: APITesting
       displayName: "Unit Testing"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
         vmImage: "ubuntu-22.04"
       steps:
@@ -228,7 +215,7 @@ stages:
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
       # dependsOn: APITesting
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -276,25 +263,47 @@ stages:
                 exit 1
               fi
           displayName: 'Dynamic Application Security Testing (DAST)'
-    
-    
 
+- stage: Deploy
+  displayName: Deploy
+  jobs:
+    - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'production'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'testing'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'staging' 
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+        - template: devops/deploy-bidding.yml
+          parameters:
+            envName: 'testing'
+    - ${{ else }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'development'
+  
 - stage: Versioning
   displayName: 'Versioning'
-  condition: and(eq(variables['Build.Reason'], 'PullRequest'),
-    or(and(
-      contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
-      contains(variables['System.PullRequest.TargetBranch'], 'master')
-      ),
-      and(
-        contains(variables['System.PullRequest.SourceBranch'], 'release'),
-        contains(variables['System.PullRequest.TargetBranch'], 'pre-prod')
-      )
-    ),
-    succeeded())
   jobs:
     - job: FetchAndSetVersion
       displayName: 'Fetch and Set Version from PR Label'
+      condition: and(eq(variables['Build.Reason'], 'PullRequest'),
+        or(and(
+          contains(variables['System.PullRequest.SourceBranch'], 'pre-prod'),
+          contains(variables['System.PullRequest.TargetBranch'], 'master')
+          ),
+          and(
+            contains(variables['System.PullRequest.SourceBranch'], 'release'),
+            contains(variables['System.PullRequest.TargetBranch'], 'pre-prod')
+          )
+        ),
+        succeeded())
       pool:
         vmImage: 'windows-latest'
       steps:
@@ -352,33 +361,6 @@ stages:
             python version.py $(VERSION) $(STAGE_NAME)
           displayName: 'Update Version'
 
-
-
-- stage: Deploy
-  displayName: Deploy
-  condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod'),contains(variables['build.SourceBranch'], 'bidding-engine')), succeeded())
-  jobs:
-    - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'production'
-    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'testing'
-    - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'staging' 
-    - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-        - template: devops/deploy-bidding.yml
-          parameters:
-            envName: 'testing'
-    - ${{ else }}:
-        - template: devops/deploy.yml
-          parameters:
-            envName: 'development'
-  
 
 # - stage: DisposableDeploy
 #   jobs:
