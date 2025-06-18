@@ -24,6 +24,9 @@ parameter_names=(
     "BUYER_COGNITO_USERPOOL_DOMAIN"
     "LAUNCHDARKLY_CLIENT_ID"
     "SUB_ENC_KEY"
+    "VERSION_API_BASE_URL"
+fi
+
 )
 
 # Loop through each parameter
@@ -41,8 +44,9 @@ for param_name in "${parameter_names[@]}"; do
     fi
 done
 
+
+
 # Close the environment object
 env_object="$env_object}"
-
 # Write JSON to file
 echo "$env_object"
