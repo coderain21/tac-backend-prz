@@ -17,6 +17,7 @@ parameter_names=(
     "MONGOBETWEEN_ECR_REPO_URI"
     "MONGOBETWEEN_ECS_SERVICE_NAME"
     "ECS_CLUSTER_NAME"
+    "REACT_APP_DOMAIN_NAME_FRONT_END"
 )
 # Loop through each parameter
 for param_name in "${parameter_names[@]}"; do
