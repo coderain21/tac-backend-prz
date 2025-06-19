@@ -603,7 +603,7 @@ def update_auction(event, context):
         if len(update_data) > 0:
             # Add this block to include first_lot_end_date if end_date is updated
             if auction_end_date is not None and first_lot_end_date is not None:
-                 update_data['first_lot_end_date'] = first_lot_end_date
+                update_data['first_lot_end_date'] = first_lot_end_date
 
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
