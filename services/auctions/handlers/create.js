@@ -32,6 +32,7 @@ module.exports.create_auction = async (event) => {
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
         request_body.auction_id = sequenceNumber
         request_body.seller_name = `${get_user[0].first_name} ${get_user[0].last_name}`
+        request_body.first_lot_end_date = request_body.first_lot_end_date ? request_body.first_lot_end_date : request_body.end_date
         const auction = await mongoConnection.save(request_body, Auction)
         if (auction) {
             /* Start: Saving the Access logs */
