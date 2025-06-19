@@ -177,6 +177,9 @@ def update_auction(event, context):
         request_body = json.loads(event['body'])
         auction_start_date = request_body.get('start_date', None)
         auction_end_date = request_body.get('end_date', None)
+
+        # INDY - 41
+        first_lot_end_date = request_body.get('first_lot_end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
         auction_extension_between_lots = request_body.get('extension_time_between_lots', None)
         auction_id = event['pathParameters']['auction_id']
@@ -598,6 +601,10 @@ def update_auction(event, context):
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
         if len(update_data) > 0:
+            # Add this block to include first_lot_end_date if end_date is updated
+            if auction_end_date is not None and first_lot_end_date is not None:
+                 update_data['first_lot_end_date'] = first_lot_end_date
+
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
                 {"$set": update_data}
