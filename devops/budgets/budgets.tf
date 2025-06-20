@@ -18,21 +18,27 @@ terraform {
 }
 
 resource "aws_budgets_budget" "budgets" {
-  count   = 60
-  name    = format("indyauction ${var.STAGE} Budget - $%d", 50 * (count.index + 1)) 
-  limit_amount = 50 * (count.index + 1)
-  limit_unit = "USD"
-  budget_type = "COST"
-  time_unit = "MONTHLY"
-  provider = aws.deployment-eu
+  count   = 15
+  name    = format("indyauction ${var.STAGE} Budget - $%d", 300 + (count.index * 100))
+  
+  limit_amount = 300 + (count.index * 100)
+  limit_unit   = "USD"
+  budget_type  = "COST"
+  time_unit    = "MONTHLY"
+  provider     = aws.deployment-eu
+
   notification {
     threshold_type             = "PERCENTAGE"
     notification_type          = "ACTUAL"
-    comparison_operator = "GREATER_THAN"
-    threshold = 90
-    subscriber_email_addresses = ["namratha.shettigar@7edge.com", "ranjith.n@7edge.com"] 
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 90
+    subscriber_email_addresses = [
+      "namratha.shettigar@7edge.com",
+      "ranjith.n@7edge.com"
+    ]
   }
 }
+
 
 
 
