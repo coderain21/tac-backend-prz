@@ -18,7 +18,7 @@ terraform {
 }
 
 resource "aws_budgets_budget" "budgets" {
-  count   = 15
+  count   = 8
   name    = format("indyauction ${var.STAGE} Budget - $%d", 300 + (count.index * 100))
   
   limit_amount = 300 + (count.index * 100)
