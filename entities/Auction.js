@@ -78,6 +78,9 @@ const AuctionSchema = new Schema({
     end_date: {
         type: Number,
     },
+    first_lot_end_date: {
+        type: Number,
+    },
     extension_type: {
         type: String, trim: true,
     },
