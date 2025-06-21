@@ -25,7 +25,6 @@ parameter_names=(
     "LAUNCHDARKLY_CLIENT_ID"
     "SUB_ENC_KEY"
     "VERSION_API_BASE_URL"
-fi
 
 )
 
