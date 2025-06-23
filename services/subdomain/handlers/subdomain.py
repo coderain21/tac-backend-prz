@@ -5,6 +5,7 @@ from pymongo import MongoClient
 import boto3
 from pymongo.errors import OperationFailure
 from datetime import datetime
+import re
 
 amplify_client = boto3.client('amplify',region_name= 'eu-west-2')
 
@@ -249,6 +250,15 @@ def subdomain(event, context):
                 new_subdomain = request_body['subdomain']
                 prev_subdomain = request_body['prev_subdomain']
 
+                pattern = r'^(?!-)[a-zA-Z0-9-]+(?<!-)$'
+
+                if not re.match(pattern, new_subdomain):
+                    return {
+                        'statusCode': 400,
+                        'headers': headers,
+                        'body': json.dumps({'message': 'Invalid subdomain format'})
+                    }
+
 
                 # Restricting certain keywords to be used in subdomain
                 if any(word in new_subdomain.lower() for word in ['seller', 'bid', 'admin', 'support', 'www',  'indy', 'demo', 'tac', 'theauctioncollective', 'auctioncollective']):
@@ -294,7 +304,7 @@ def subdomain(event, context):
                 # existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
                 # subdomain_exists = new_subdomain in [domain['prefix'] for domain in existing_subdomains]
 
-                subdomain_exists = subdomain_collection.find_one({'subdomain': new_subdomain}, session=session)
+                subdomain_exists = subdomain_collection.find_one({'subdomain': new_subdomain, 'seller_email': seller_email}, session=session)
 
                 if subdomain_exists:
                     session.abort_transaction()
