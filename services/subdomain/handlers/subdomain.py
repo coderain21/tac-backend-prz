@@ -271,28 +271,30 @@ def subdomain(event, context):
                     }
 
                 # Get current Amplify domain associations
-                try:
-                    response = amplify_client.get_domain_association(
-                                appId=os.environ['AMPLIFY_APP_ID'],
-                                domainName=os.environ['AMPLIFY_DOMAIN_NAME']
-                            )
-                except Exception as e:
-                    print('Error in get domain association', e)
-                    session.abort_transaction()
-                    return {
-                        'statusCode': 400,
-                        'headers': headers,
-                        'body': json.dumps({'Error in Domain association': str(e)})
-                    }
+                # try:
+                #     response = amplify_client.get_domain_association(
+                #                 appId=os.environ['AMPLIFY_APP_ID'],
+                #                 domainName=os.environ['AMPLIFY_DOMAIN_NAME']
+                #             )
+                # except Exception as e:
+                #     print('Error in get domain association', e)
+                #     session.abort_transaction()
+                #     return {
+                #         'statusCode': 400,
+                #         'headers': headers,
+                #         'body': json.dumps({'Error in Domain association': str(e)})
+                #     }
 
                 # Extract DNS record for CNAME mapping
-                dns_record = None
-                if len(response['domainAssociation']['subDomains'])>0:
-                    dns_record = response['domainAssociation']['subDomains'][0]['dnsRecord'].split(' ')[2]
+                # dns_record = None
+                # if len(response['domainAssociation']['subDomains'])>0:
+                #     dns_record = response['domainAssociation']['subDomains'][0]['dnsRecord'].split(' ')[2]
 
-                # Check if requested subdomain already exists
-                existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
-                subdomain_exists = new_subdomain in [domain['prefix'] for domain in existing_subdomains]
+                # # Check if requested subdomain already exists
+                # existing_subdomains = [domain['subDomainSetting'] for domain in response['domainAssociation']['subDomains']]
+                # subdomain_exists = new_subdomain in [domain['prefix'] for domain in existing_subdomains]
+
+                subdomain_exists = subdomain_collection.find_one({'subdomain': new_subdomain}, session=session)
 
                 if subdomain_exists:
                     session.abort_transaction()
@@ -303,17 +305,17 @@ def subdomain(event, context):
                     }
 
                 # Prepare domain mapping updates
-                remove_old = False
-                update_mapping = []
-                for domain in existing_subdomains:
-                    if domain['prefix'] != os.environ['DEFAULT_SUB_DOMAIN'] and domain['prefix'] == existing_domain_record['subdomain']:
-                        print("Removing old subdomain - new subdomain ", domain['prefix'], "default subdomain", os.environ['DEFAULT_SUB_DOMAIN'] , "existing subdomain" , existing_domain_record['subdomain'])
-                        remove_old = True
-                    else:
-                        update_mapping.append(domain)
+                # remove_old = False
+                # update_mapping = []
+                # for domain in existing_subdomains:
+                #     if domain['prefix'] != os.environ['DEFAULT_SUB_DOMAIN'] and domain['prefix'] == existing_domain_record['subdomain']:
+                #         print("Removing old subdomain - new subdomain ", domain['prefix'], "default subdomain", os.environ['DEFAULT_SUB_DOMAIN'] , "existing subdomain" , existing_domain_record['subdomain'])
+                #         remove_old = True
+                #     else:
+                #         update_mapping.append(domain)
 
-                print('update_mapping', update_mapping)
-                update_mapping.append({'prefix': new_subdomain, 'branchName': os.environ["AMPLIFY_BRANCH"]})
+                # print('update_mapping', update_mapping)
+                # update_mapping.append({'prefix': new_subdomain, 'branchName': os.environ["AMPLIFY_BRANCH"]})
 
                 # Update Cognito app client with new subdomain URLs
                 # try:
@@ -343,95 +345,98 @@ def subdomain(event, context):
 
 
                 # Update Amplify domain association with new mapping
-                try:
-                    response = amplify_client.update_domain_association(
-                        appId=os.environ['AMPLIFY_APP_ID'],
-                        domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
-                        enableAutoSubDomain=True,
-                        subDomainSettings=update_mapping
-                    )
-                except Exception as e:
-                    print('Error in update domain association', e)
-                    session.abort_transaction()
-                    return {
-                        'statusCode': 400,
-                        'headers': headers,
-                        'body': json.dumps({'Error in Update Domain association': str(e)})
-                    }
+                # commenting this because we will be using wildcard subdomain
+                # try:
+                #     response = amplify_client.update_domain_association(
+                #         appId=os.environ['AMPLIFY_APP_ID'],
+                #         domainName=os.environ['AMPLIFY_DOMAIN_NAME'],
+                #         enableAutoSubDomain=True,
+                #         subDomainSettings=update_mapping
+                #     )
+                # except Exception as e:
+                #     print('Error in update domain association', e)
+                #     session.abort_transaction()
+                #     return {
+                #         'statusCode': 400,
+                #         'headers': headers,
+                #         'body': json.dumps({'Error in Update Domain association': str(e)})
+                #     }
 
+
+                # commenting this because we will be using wildcard subdomain
                 # Handle Route53 DNS records in production
-                if(os.environ.get('STAGE')) == 'prod':
-                    # Assume cross-account role for Route53 access
-                    sts_client = boto3.client('sts')
-                    assumed_role_object = sts_client.assume_role(
-                        RoleArn=os.environ.get('CROSS_ACCOUNT_ARN'),
-                        RoleSessionName="AssumeRoleSession1"
-                    )
-                    credentials = assumed_role_object['Credentials']
-                    route53_client = boto3.client(
-                        'route53',
-                        aws_access_key_id=credentials['AccessKeyId'],
-                        aws_secret_access_key=credentials['SecretAccessKey'],
-                        aws_session_token=credentials['SessionToken']
-                    )
+                # if(os.environ.get('STAGE')) == 'prod':
+                #     # Assume cross-account role for Route53 access
+                #     sts_client = boto3.client('sts')
+                #     assumed_role_object = sts_client.assume_role(
+                #         RoleArn=os.environ.get('CROSS_ACCOUNT_ARN'),
+                #         RoleSessionName="AssumeRoleSession1"
+                #     )
+                #     credentials = assumed_role_object['Credentials']
+                #     route53_client = boto3.client(
+                #         'route53',
+                #         aws_access_key_id=credentials['AccessKeyId'],
+                #         aws_secret_access_key=credentials['SecretAccessKey'],
+                #         aws_session_token=credentials['SessionToken']
+                #     )
 
-                    # Prepare Route53 record details
-                    hosted_zone_id = os.environ.get('HOSTED_ZONE_ID')
-                    record_name = f"{new_subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"
-                    record_type = 'CNAME'
-                    record_value = dns_record
+                #     # Prepare Route53 record details
+                #     hosted_zone_id = os.environ.get('HOSTED_ZONE_ID')
+                #     record_name = f"{new_subdomain}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}"
+                #     record_type = 'CNAME'
+                #     record_value = dns_record
 
-                    # Create change batch for DNS updates
-                    change_batch = {
-                        'Changes': [
-                            {
-                                'Action': 'UPSERT',
-                                'ResourceRecordSet': {
-                                    'Name': record_name,
-                                    'Type': record_type,
-                                    'TTL': 300,
-                                    'ResourceRecords': [
-                                        {
-                                            'Value': record_value
-                                        }
-                                    ]
-                                }
-                            }
-                        ]
-                    }
+                #     # Create change batch for DNS updates
+                #     change_batch = {
+                #         'Changes': [
+                #             {
+                #                 'Action': 'UPSERT',
+                #                 'ResourceRecordSet': {
+                #                     'Name': record_name,
+                #                     'Type': record_type,
+                #                     'TTL': 300,
+                #                     'ResourceRecords': [
+                #                         {
+                #                             'Value': record_value
+                #                         }
+                #                     ]
+                #                 }
+                #             }
+                #         ]
+                #     }
 
-                    # Add deletion of old DNS record if needed
-                    if remove_old is True:
-                        change_batch['Changes'].append(
-                            {
-                                'Action': 'DELETE',
-                                'ResourceRecordSet': {
-                                    'Name': f"{existing_domain_record['subdomain']}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}",
-                                    'Type': record_type,
-                                    'TTL': 300,
-                                    'ResourceRecords': [
-                                        {
-                                            'Value': record_value
-                                        }
-                                    ]
-                                }
-                            }
-                        )
+                #     # Add deletion of old DNS record if needed
+                #     if remove_old is True:
+                #         change_batch['Changes'].append(
+                #             {
+                #                 'Action': 'DELETE',
+                #                 'ResourceRecordSet': {
+                #                     'Name': f"{existing_domain_record['subdomain']}.{os.environ.get('AMPLIFY_DOMAIN_NAME')}",
+                #                     'Type': record_type,
+                #                     'TTL': 300,
+                #                     'ResourceRecords': [
+                #                         {
+                #                             'Value': record_value
+                #                         }
+                #                     ]
+                #                 }
+                #             }
+                #         )
 
-                    # Apply DNS changes
-                    try:
-                        response1 = route53_client.change_resource_record_sets(
-                            HostedZoneId=hosted_zone_id,
-                            ChangeBatch=change_batch
-                        )
-                    except Exception as err:
-                        print('Error in route53 client',str(err))
-                        session.abort_transaction()
-                        return {
-                            'statusCode': 500,
-                            'headers': headers,
-                            'body': json.dumps({'message': "Internal server error"})
-                        }
+                #     # Apply DNS changes
+                #     try:
+                #         response1 = route53_client.change_resource_record_sets(
+                #             HostedZoneId=hosted_zone_id,
+                #             ChangeBatch=change_batch
+                #         )
+                #     except Exception as err:
+                #         print('Error in route53 client',str(err))
+                #         session.abort_transaction()
+                #         return {
+                #             'statusCode': 500,
+                #             'headers': headers,
+                #             'body': json.dumps({'message': "Internal server error"})
+                #         }
 
                 # Commit transaction if everything succeeded
                 session.commit_transaction()
