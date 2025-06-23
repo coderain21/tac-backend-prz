@@ -133,6 +133,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   snapshot_identifier = data.aws_ssm_parameter.snapshot_name.value
   preferred_maintenance_window = "sun:01:00-sun:03:00"
   preferred_backup_window = "04:00-05:00"
+  backup_retention_period = 2
   provider = aws.deployment-eu
 }
 
@@ -176,20 +177,27 @@ resource "aws_security_group" "ssh_sg_1" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere (use with caution)"
   }
+
+  # Allow all inbound traffic
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all inbound traffic (NOT recommended for prod)"
   }
+
+  # Allow all outbound traffic
   egress {
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+    description      = "Allow all outbound traffic"
   }
   lifecycle {
     ignore_changes = [egress]

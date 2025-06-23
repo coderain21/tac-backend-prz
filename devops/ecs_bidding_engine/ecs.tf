@@ -170,18 +170,28 @@ resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attach
 resource "aws_ecs_cluster" "websocket-cluster" {
   name = "websocket-cluster"
   provider = aws.deployment-eu
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
 # ECR Repositories
 resource "aws_ecr_repository" "repo1" {
   name = "websocket-repo"
   provider = aws.deployment-eu
   force_delete = true
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 # ECR Repositories
 resource "aws_ecr_repository" "repo" {
   name = "update-auction-repo"
   provider = aws.deployment-eu
   force_delete = true
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
 
 
@@ -207,6 +217,7 @@ locals {
           hostPort = 5000
         }
       ]
+      readonlyRootFilesystem = true
       environment = [
         # Loop over each key in the parsed JSON and create environment variables
         for key, value in data.external.env.result :
@@ -275,7 +286,7 @@ resource "aws_lb" "load-balancer" {
   security_groups    = [data.aws_ssm_parameter.security_group.value]  # Security group for the Load Balancer
   subnets            = [data.aws_ssm_parameter.subnet.value, resource.aws_default_subnet.default_az1.id]
 
-  enable_deletion_protection = false
+  enable_deletion_protection = true
   provider = aws.deployment-eu
 }
 
@@ -304,6 +315,15 @@ resource "aws_lb_target_group" "target_group" {
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id  # Use VPC ID from default VPC
   target_type = "ip"
+  health_check {
+    enabled             = true
+    interval            = 30             # seconds between checks
+    path                = "/"            # health check URL path
+    timeout             = 5              # seconds before timeout
+    healthy_threshold   = 5             # consecutive successes to mark healthy
+    unhealthy_threshold = 2           # consecutive failures to mark unhealthy
+    matcher             = "200"      # HTTP status codes considered healthy
+  }
   provider = aws.deployment-eu
 }
 
@@ -314,7 +334,7 @@ resource "aws_lb_listener" "listener" {
   load_balancer_arn = aws_lb.load-balancer.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   certificate_arn   = data.aws_acm_certificate.existing_certificate.arn
 
   default_action {

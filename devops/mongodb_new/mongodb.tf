@@ -125,7 +125,6 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
 
 
 resource "aws_eip" "nat_gateway" {
-  vpc = true
   provider = aws.deployment-eu
 }
 
@@ -193,6 +192,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   vpc_security_group_ids = [aws_security_group.ssh_sg_new.id]
   preferred_maintenance_window = "sun:01:00-sun:03:00"
   preferred_backup_window = "04:00-05:00"
+  backup_retention_period = 2
   provider = aws.deployment-eu
 }
 
@@ -210,29 +210,28 @@ resource "aws_security_group" "ssh_sg_new" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere (use with caution)"
   }
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all inbound traffic (NOT recommended for prod)"
   }
-  lifecycle {
-    ignore_changes = [ingress]
-  }
-  # ingress {
-  #   from_port       = 27017
-  #   to_port         = 27017
-  #   protocol        = "tcp"
-  #   security_groups = [data.aws_ssm_parameter.security_group_b.value] # Replace with the security group ID of the Lambda function in Account B
-  # }
+
+  # Allow all outbound traffic
   egress {
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+    description      = "Allow all outbound traffic"
+  }
+  lifecycle {
+    ignore_changes = [ingress]
   }
   provider = aws.deployment-eu
 }

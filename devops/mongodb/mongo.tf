@@ -58,7 +58,6 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
 
 
 resource "aws_eip" "nat_gateway" {
-  vpc = true
   provider = aws.deployment-eu
 }
 
@@ -128,38 +127,13 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   preferred_maintenance_window = "sun:01:00-sun:03:00"
   preferred_backup_window = "04:00-05:00"
+  backup_retention_period = 2
   provider = aws.deployment-eu
 }
 
 
 
 # Create a security group to allow SSH access
-resource "aws_security_group" "ssh_sg" {
-  name        = "ssh-security-group"
-  description = "SSH Security Group"
-  vpc_id = aws_default_vpc.def_vpc.id
-  # Allow SSH traffic
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
-  }
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
-  }
-  egress {
-    from_port        = 0
-    to_port          = 0
-    protocol         = "-1"
-    cidr_blocks      = ["0.0.0.0/0"]
-    ipv6_cidr_blocks = ["::/0"]
-  }
-  provider = aws.deployment-eu
-}
 
 
 resource "aws_security_group" "ssh_sg_1" {
@@ -171,20 +145,27 @@ resource "aws_security_group" "ssh_sg_1" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere (use with caution)"
   }
+
+  # Allow all inbound traffic
   ingress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"] # Be cautious with this rule in a production environment
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all inbound traffic (NOT recommended for prod)"
   }
+
+  # Allow all outbound traffic
   egress {
     from_port        = 0
     to_port          = 0
     protocol         = "-1"
     cidr_blocks      = ["0.0.0.0/0"]
     ipv6_cidr_blocks = ["::/0"]
+    description      = "Allow all outbound traffic"
   }
   lifecycle {
     ignore_changes = [egress]
@@ -235,7 +216,7 @@ resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
 # Create an EC2 instance
 resource "aws_instance" "ssh_tunnel" {
   ami           = "ami-0e5f882be1900e43b" # Specify a valid Amazon Linux AMI ID
-  instance_type = "t2.micro"          # Choose an appropriate instance type
+  instance_type = "t2.micro"          # Choose an appropriate instance typeaws_eip
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-eu
