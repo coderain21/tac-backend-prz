@@ -58,7 +58,6 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
 
 
 resource "aws_eip" "nat_gateway" {
-  vpc = true
   provider = aws.deployment-eu
 }
 
@@ -217,7 +216,7 @@ resource "aws_iam_role_policy_attachment" "s3_full_policy_attachment" {
 # Create an EC2 instance
 resource "aws_instance" "ssh_tunnel" {
   ami           = "ami-0e5f882be1900e43b" # Specify a valid Amazon Linux AMI ID
-  instance_type = "t2.micro"          # Choose an appropriate instance type
+  instance_type = "t2.micro"          # Choose an appropriate instance typeaws_eip
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   provider = aws.deployment-eu
