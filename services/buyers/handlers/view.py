@@ -73,6 +73,7 @@ def view(event, context):
             "title": 1,
             "start_date": 1,
             "end_date": 1,
+            "first_lot_end_date": 1,
             "status": 1,
             "auction_image": 1,
             "currency": 1,

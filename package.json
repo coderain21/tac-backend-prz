@@ -24,5 +24,4 @@
     "eslint-config-airbnb": "19.0.4",
     "aws-sdk": "^2.1469.0"
   }
-
 }
