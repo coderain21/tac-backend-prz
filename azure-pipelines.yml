@@ -85,11 +85,34 @@ stages:
       pool:
           vmImage: "ubuntu-22.04"
       steps:
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
+            chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+          displayName: Obtain AWS Credentials
         # - script: npm config set registry https://registry.npmmirror.com
         - script: |
-            npm install -g license-checker 
-            license-checker --json > licenses.json  
             node license.js
+            aws s3 cp licenses.json s3://$DOCS_BUCKET_NAME/licences/backend/licenses.json --profile "indyauction-main"
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
             if [ $? -ne 0 ]; then
               echo "License Compliance failed"
               exit 1
