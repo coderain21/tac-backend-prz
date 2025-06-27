@@ -117,8 +117,8 @@ stages:
         - script: |
             node generate-node-licenses.js
             python generate-python-licenses.py
-            aws s3 cp node-licenses.json s3://$DOCS_BUCKET_NAME/licenses/node/backend/node-licenses.json --profile "indyauction-main"
-            aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licenses/python/backend/python-licenses.json --profile "indyauction-main"
+            aws s3 cp node-licenses.json s3://$DOCS_BUCKET_NAME/licenses/node/backend/licenses.json --profile "indyauction-main"
+            aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licenses/python/backend/licenses.json --profile "indyauction-main"
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
           displayName: 'License Compliance Report'
 
