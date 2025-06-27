@@ -50,7 +50,7 @@ function checkLicenses() {
         console.error(nonOpenSourcePackages.join('\n'))
         process.exit(1) // Exit with a non-zero status to fail the build
     } else {
-        console.log('packages found are opensource!')
+        console.log('Node packages found are opensource!')
     }
 }
 

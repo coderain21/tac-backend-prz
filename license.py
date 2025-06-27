@@ -78,7 +78,7 @@ def check_licenses():
             print(f"- {pkg}")
         sys.exit(1)
     else:
-        print("✅ All packages are open source.")
+        print("✅ All python packages are open source.")
 
 # Run
 check_licenses()
