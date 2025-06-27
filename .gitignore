@@ -9,7 +9,7 @@ services/**/.env
 node_modules/
 package-lock.json
 dist/
-licenses.json
+*licenses.json
 services/**/package-lock.json
 services/**/node_modules
 services/**/.env
