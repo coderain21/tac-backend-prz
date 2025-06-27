@@ -116,6 +116,11 @@ stages:
           displayName: 'License Compliance'
         - script: |
             node generate-node-licenses.js
+            pip3 install pip-licenses PyGithub requests
+            python -m venv venv
+            source venv/bin/activate
+            pip3 install -r devops/dependency/python/requirements.txt || true
+            pip3 install -r devops/dependency/python/requirements2.txt || true
             python generate-python-licenses.py
             aws s3 cp node-licenses.json s3://$DOCS_BUCKET_NAME/licences/node/licenses.json --profile "indyauction-main"
             aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licences/python/licenses.json --profile "indyauction-main"
@@ -385,7 +390,7 @@ stages:
         - script: |
             echo "VERSION: $(VERSION)"
             echo "STAGE_NAME: $(STAGE_NAME)"    
-            pip install requests
+            pip3 install requests
             python version.py $(VERSION) $(STAGE_NAME)
           displayName: 'Update Version'
 
