@@ -110,7 +110,10 @@ def view(event, context):
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,
             "passcode": 1,
-            "seller_email": 1
+            "seller_email": 1,
+            "start_time_zone": 1,
+            "end_time_zone": 1,
+            "location":1
         }
         time_zones = {
             'GMT': 'GMT',
