@@ -286,7 +286,7 @@ def format_date(timestamp, time_zone):
     'EST - Eastern Standard Time (US)': 'America/New_York',
     }
 
-    timezone_identifier = timeZoneMap.get(time_zone, 'Etc/UTC')  # Default to 'Etc/UTC' if timezone not found
+    timezone_identifier = timeZoneMap.get(time_zone) if time_zone in timeZoneMap else time_zone  # Default to 'Etc/UTC' if timezone not found
     print('Timezone identifier:', timezone_identifier)
 
     try:

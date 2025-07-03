@@ -158,7 +158,7 @@ def view(event, context):
 
         # Convert time_zone_str to a timezone object
         time_zone_str = time_zone_str[:3]
-        time_zone = time_zones[time_zone_str]
+        time_zone = time_zones[time_zone_str] if time_zone_str in time_zones else time_zone_str
         # Get the current time in the specified timezone
         current_time = datetime.now(pytz.timezone(time_zone))
         current_time= datetime.timestamp(current_time)
