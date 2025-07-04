@@ -178,6 +178,11 @@ def update_auction(event, context):
         auction_start_date = request_body.get('start_date', None)
         auction_end_date = request_body.get('end_date', None)
 
+        #INDY-412  dynamic timezone
+        start_time_zone = request_body.get('start_time_zone', None)
+        end_time_zone = request_body.get('end_time_zone', None)
+        location = request_body.get('location', None)
+
         # INDY - 41
         first_lot_end_date = request_body.get('first_lot_end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
@@ -604,6 +609,12 @@ def update_auction(event, context):
             # Add this block to include first_lot_end_date if end_date is updated
             if auction_end_date is not None and first_lot_end_date is not None:
                 update_data['first_lot_end_date'] = first_lot_end_date
+            if end_time_zone is not None:
+                update_data['end_time_zone'] = end_time_zone
+            if start_time_zone is not None:
+                update_data['start_time_zone'] = start_time_zone
+            if location is not None:
+                update_data['location'] = location
 
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},
