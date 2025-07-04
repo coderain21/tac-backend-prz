@@ -613,7 +613,7 @@ def update_auction(event, context):
                 update_data['end_time_zone'] = end_time_zone
             if start_time_zone is not None:
                 update_data['start_time_zone'] = start_time_zone
-            if location is not None: 
+            if location is not None:
                 update_data['location'] = location
 
             collection.update_one(

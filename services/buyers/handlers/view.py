@@ -1,11 +1,11 @@
 """This module is used to view the auction with auction id"""
 import json
 import os
-from datetime import datetime
+# from datetime import datetime
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-import pytz
+# import pytz
 from lib.get import fetch_seller_data_from_subdomain
 
 headers = {
