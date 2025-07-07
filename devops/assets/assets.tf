@@ -671,6 +671,12 @@ resource "aws_ssm_parameter" "api_base_url" {
   provider = aws.deployment-eu
   overwrite = true
 }
-
+resource "aws_ssm_parameter" "timezone_api" {
+  name = "GOOGLE_TIMEZONE_API"
+  type = "String"
+  value = "https://maps.googleapis.com/maps/api/timezone/json"
+  provider = aws.deployment-eu
+  overwrite = true
+}
 
 
