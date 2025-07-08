@@ -284,15 +284,7 @@ resource "aws_ssm_parameter" "standard_acl_cloudfront_ssm" {
   description = "Standard ACL CloudFront ARN"
   provider    = aws.deployment-eu
 }
-data "aws_ssm_parameter" "alb_arn" {
-  name = "ALB_ARN"
-  provider = aws.deployment-eu
-}
-resource "aws_wafv2_web_acl_association" "web_acl_association" {
-  web_acl_arn = aws_wafv2_web_acl.secure_api_web_acl.arn
-  resource_arn = data.aws_ssm_parameter.alb_arn.value
-  provider = aws.deployment-eu
-}
+
 
 resource "aws_cloudwatch_log_group" "waf_secure_api_log_group" {
   name              = "aws-waf-logs-alb-cognito-apigateway"
