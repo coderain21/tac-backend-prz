@@ -214,6 +214,7 @@ package:
 
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -902,6 +903,11 @@ functions:
           arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
 resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - qa
   Resources:
     GatewayResponseDefault4XX:
       Type: "AWS::ApiGateway::GatewayResponse"
@@ -912,6 +918,13 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: "ApiGatewayRestApi"
+    WebAclAssociation:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
 
 
     # UpdatePassword:

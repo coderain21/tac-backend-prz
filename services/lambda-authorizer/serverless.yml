@@ -36,6 +36,7 @@ package:
     - ./assets/**
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -60,7 +61,12 @@ functions:
 
 
 resources:
-   Resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - qa
+  Resources:
      UserPoolInvokePreAuth:
       Type: AWS::Lambda::Permission
       Properties:
