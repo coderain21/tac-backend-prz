@@ -533,10 +533,9 @@ resource "aws_ssm_parameter" "ecr_repo_tag" {
 }
 
 
-resource "aws_ssm_parameter" "alb_arn" {
-  name  = "ALB_ARN"
-  type  = "String"
-  value = aws_lb.load-balancer.arn
+
+resource "aws_wafv2_web_acl_association" "web_acl_association" {
+  web_acl_arn = aws_wafv2_web_acl.secure_api_web_acl.arn
+  resource_arn = aws_lb.load-balancer.arn
   provider = aws.deployment-eu
-  overwrite = true
 }
