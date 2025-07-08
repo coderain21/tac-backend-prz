@@ -158,7 +158,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - prod
+        - qa
   Resources:
     GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'

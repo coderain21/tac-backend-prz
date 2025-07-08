@@ -553,7 +553,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - dev
+        - qa
   Resources:
     WebAclAssociationApi:
       Condition: IsProd

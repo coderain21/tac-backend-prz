@@ -150,6 +150,10 @@ if [ "${STAGE}" = "pre-production" ] ; then
     run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/ecs_new apply -auto-approve
 fi
+if ["${STAGE}" = "qa" ]; then
+    run_command terraform -chdir=devops/waf init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/waf/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/waf apply -auto-approve
+fi
 
 if [ "${STAGE}" = "pre-production" ]; then
     run_command terraform -chdir=devops/mongobetween init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"

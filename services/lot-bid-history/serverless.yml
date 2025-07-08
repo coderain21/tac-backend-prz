@@ -168,7 +168,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - prod
+        - qa
   Resources:
     WebAclAssociation:
       Condition: IsProd

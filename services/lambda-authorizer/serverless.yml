@@ -65,7 +65,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - prod
+        - qa
   Resources:
      UserPoolInvokePreAuth:
       Type: AWS::Lambda::Permission
