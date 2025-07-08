@@ -109,6 +109,10 @@ run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bu
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ses apply -auto-approve
+if [ "${STAGE}" = "prod" ]; then
+    run_command terraform -chdir=devops/waf init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/waf/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/waf apply -auto-approve
+fi
 run_command terraform -chdir=devops/admin_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/admin_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/admin_web_application apply -auto-approve
 run_command terraform -chdir=devops/seller_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/seller_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
