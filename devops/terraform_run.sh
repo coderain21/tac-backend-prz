@@ -105,7 +105,7 @@ aws configure list --profile "${PROFILE_MAIN}"
 aws configure list --profile "${PROFILE_MAIN}-us"
 aws configure list --profile "${PROFILE_ENV}"
 aws configure list --profile "${PROFILE_ENV}-us"
-if ["${STAGE}" = "qa" ]; then
+if [ "${STAGE}" = "qa" ]; then
     run_command terraform -chdir=devops/waf init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/waf/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/waf apply -auto-approve
 fi
