@@ -266,8 +266,6 @@ resource "aws_wafv2_web_acl" "secure_api_web_acl" {
       }
     }
   }
-
-  provider = aws.deployment-eu
 }
 
 
