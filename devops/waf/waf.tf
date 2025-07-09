@@ -1,15 +1,15 @@
- 
-provider "aws" {
-  region = var.REGION
-  alias = "deployment-eu"   # Specify a default AWS region here
-  profile = "indyauction-${var.STAGE}"
-}
-
-provider "aws" {
+ provider "aws" {
   region = "us-east-1"
   alias = "deployment-us"   # Specify a default AWS region here
   profile = "indyauction-${var.STAGE}-us"
 }
+
+provider "aws" {
+  region = var.REGION
+  alias = "deployment-eu"   
+  profile = "indyauction-${var.STAGE}"
+}
+
   
 terraform {
   backend "s3" {
@@ -21,6 +21,7 @@ terraform {
 
 
 resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
+  
   name        = "waf-web-acl-cloudfront"
   description = "Standard AWS WAF ACL with global best-practice managed rule sets"
   scope       = "CLOUDFRONT" # Change to "REGIONAL" for ALB or API Gateway
@@ -157,6 +158,7 @@ resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
 
 resource "aws_wafv2_web_acl" "secure_api_web_acl" {
   name        = "SecureApiWebAcl"
+  provider = aws.deployment-eu
   description = "WAF ACL for secure API,Cognito and ALB"
   scope       = "REGIONAL"  # For ALB, API Gateway, or Cognito
 
@@ -319,6 +321,7 @@ resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_logging" {
 
 resource "aws_cloudwatch_log_resource_policy" "waf_logging_policy" {
   policy_name = "AWSWAFLoggingPolicy"
+  provider = aws.deployment-eu
 
   policy_document = jsonencode({
     Version = "2012-10-17",
