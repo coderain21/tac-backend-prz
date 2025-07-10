@@ -175,7 +175,8 @@ def list_auction(event, context):
                 "extension_type": 1,
                 "extension_time": 1,
                 "total_lots": 1,
-                "status": 1
+                "status": 1,
+                "location":1,
             }
         if start_date and end_date:
             date_range_condition = {
@@ -316,11 +317,11 @@ def export_as_csv(auctions):
                         timezone_str = time_zones[time_zone_str]
                     if start_date_epoch != "":
                         start_date = datetime.utcfromtimestamp(start_date_epoch)
-                        timezone = pytz.timezone(time_zones.get(timezone_str, 'UTC'))
+                        timezone = pytz.timezone(time_zones.get(timezone_str) if timezone_str in time_zones else time_zone)
                         start_date = timezone.localize(start_date)
                     if end_date_epoch != "":
                         end_date = datetime.utcfromtimestamp(end_date_epoch)
-                        timezone = pytz.timezone(time_zones.get(timezone_str, 'UTC'))
+                        timezone = pytz.timezone(time_zones.get(timezone_str) if timezone_str in time_zones else time_zone)
                         end_date = timezone.localize(end_date)
                     modified_auction = {}
                     modified_auction["Auction ID"] = auction["auction_id"]

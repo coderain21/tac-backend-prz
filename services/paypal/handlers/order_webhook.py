@@ -154,7 +154,7 @@ def update_order(payment_intent, update_data):
 
                     # Handle timezone conversion
                     common_time_zone = auction_data.get('time_zone', 'UTC')
-                    time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')
+                    time_zone = TIMEZONE_MAPPING.get(common_time_zone) if common_time_zone in TIMEZONE_MAPPING else time_zone
                     try:
                         tz = pytz.timezone(time_zone)
                     except pytz.UnknownTimeZoneError:

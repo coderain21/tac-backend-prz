@@ -1,11 +1,11 @@
 """This module is used to view the auction with auction id"""
 import json
 import os
-from datetime import datetime
+# from datetime import datetime
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
-import pytz
+# import pytz
 from lib.get import fetch_seller_data_from_subdomain
 
 headers = {
@@ -110,7 +110,10 @@ def view(event, context):
             "show_bidder_location_in_bidder_history": 1,
             "publish_auction_results": 1,
             "passcode": 1,
-            "seller_email": 1
+            "seller_email": 1,
+            "start_time_zone": 1,
+            "end_time_zone": 1,
+            "location":1
         }
         time_zones = {
             'GMT': 'GMT',
@@ -154,13 +157,14 @@ def view(event, context):
             }
 
         # Convert time_zone_str to a timezone object
-        time_zone_str = time_zone_str[:3]
-        time_zone = time_zones[time_zone_str]
-        # Get the current time in the specified timezone
-        current_time = datetime.now(pytz.timezone(time_zone))
-        current_time= datetime.timestamp(current_time)
-        current_time=current_time*1000
-        print(current_time)
+        # time_zone_str = time_zone_str
+        # time_zone = time_zones[time_zone_str] if time_zone_str in time_zones else time_zone_str
+        # print('time zone', time_zone)
+        # # Get the current time in the specified timezone
+        # current_time = datetime.now(pytz.timezone(time_zone))
+        # current_time= datetime.timestamp(current_time)
+        # current_time=current_time*1000
+        # print(current_time)
         if not time_zone_str:
             return {
                 "headers": headers,
@@ -233,7 +237,7 @@ def view(event, context):
             "body": json.dumps(body, cls=Encoder)
         }
     except Exception as e:
-        print(e)
+        print('Internal Server Error',e)
         return {
             "headers": headers,
             "statusCode": 500,

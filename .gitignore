@@ -9,6 +9,8 @@ services/**/.env
 node_modules/
 package-lock.json
 dist/
+venv
+*licenses.json
 services/**/package-lock.json
 services/**/node_modules
 services/**/.env
@@ -28,6 +30,12 @@ terraform.tfstate.backup
 .terraform.lock.hcl
 nodejs.zip
 nodejs
+generate_architecture_diagram_final.py
+generate_architecture_diagram_simple.py
+generate_architecture_diagram.py
+ARCHITECTURE_DOCUMENTATION.md
+requirements.txt
+indy_auction_architecture.png
 python_lib
 python2.zip
 python_lib2
