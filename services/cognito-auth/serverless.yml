@@ -213,7 +213,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - dev
+        - qa
   Resources:
     Buyers:
       Type: "AWS::Cognito::UserPool"
@@ -795,13 +795,13 @@ resources:
         HtmlPart: ${file(./templates/delete_buyer.html)}
         Subject: Indy.auction - Your Account Deactivation Notification
         TemplateName: ${self:provider.stage}-admin-delete-buyer-template
-    # WebAclAssociationCognitoBuyer:
-    #   Condition: IsProd
-    #   Type: AWS::WAFv2::WebACLAssociation
-    #   Properties:
-    #     ResourceArn:
-    #       Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:BUYER_COGNITO_USERPOOL_ID}
-    #     WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+    WebAclAssociationCognitoBuyer:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:BUYER_COGNITO_USERPOOL_ID}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
 
 
 
