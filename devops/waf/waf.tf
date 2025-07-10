@@ -277,13 +277,13 @@ resource "aws_ssm_parameter" "secure_api_web_acl_ssm" {
   description = "Secure API Web ACL ARN"
   provider    = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "standard_acl_cloudfront_ssm" {
-  name        = "WEB_ACL_CLOUDFRONT_ARN"
-  type        = "String"
-  value       = aws_wafv2_web_acl.standard_acl_cloudfront.arn
-  description = "Standard ACL CloudFront ARN"
-  provider    = aws.deployment-eu
-}
+# resource "aws_ssm_parameter" "standard_acl_cloudfront_ssm" {
+#   name        = "WEB_ACL_CLOUDFRONT_ARN"
+#   type        = "String"
+#   value       = aws_wafv2_web_acl.standard_acl_cloudfront.arn
+#   description = "Standard ACL CloudFront ARN"
+#   provider    = aws.deployment-eu
+# }
 
 
 resource "aws_cloudwatch_log_group" "waf_secure_api_log_group" {
