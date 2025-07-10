@@ -163,21 +163,6 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-resources:
-  Conditions:
-    IsProd:
-      Fn::Equals:
-        - ${self:custom.isProd}
-        - prod
-  Resources:
-    # WebAclAssociation:
-    #   Condition: IsProd
-    #   Type: AWS::WAFv2::WebACLAssociation
-    #   Properties:
-    #     ResourceArn:
-    #       Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
-    #     WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
-  
   delete-bid:
     handler: handlers/delete_bid.handler
     timeout: 60
@@ -196,6 +181,22 @@ resources:
           method: delete
           authorizer:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+# resources:
+#   Conditions:
+#     IsProd:
+#       Fn::Equals:
+#         - ${self:custom.isProd}
+#         - prod
+  # Resources:
+  #   # WebAclAssociation:
+  #   #   Condition: IsProd
+  #   #   Type: AWS::WAFv2::WebACLAssociation
+  #   #   Properties:
+  #   #     ResourceArn:
+  #   #       Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+  #   #     WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+  
+ 
   
 plugins:
   - serverless-offline
