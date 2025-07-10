@@ -21,7 +21,7 @@ terraform {
 
 
 resource "aws_wafv2_web_acl" "standard_acl_cloudfront" {
-  
+  provider = aws.deployment-us
   name        = "waf-web-acl-cloudfront"
   description = "Standard AWS WAF ACL with global best-practice managed rule sets"
   scope       = "CLOUDFRONT" # Change to "REGIONAL" for ALB or API Gateway
@@ -308,18 +308,11 @@ resource "aws_cloudwatch_log_group" "waf_cloudfront_log_group" {
 
 
 
-resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_logging" {
-  log_destination_configs = [
-    "${aws_cloudwatch_log_group.waf_cloudfront_log_group.arn}:*"
-  ]
-  resource_arn = aws_wafv2_web_acl.standard_acl_cloudfront.arn
-  provider     = aws.deployment-us
-}
 
 
 resource "aws_cloudwatch_log_resource_policy" "waf_logging_policy" {
   policy_name = "AWSWAFLoggingPolicy"
-  provider = aws.deployment-eu
+  provider = aws.deployment-us
 
   policy_document = jsonencode({
     Version = "2012-10-17",
@@ -330,11 +323,23 @@ resource "aws_cloudwatch_log_resource_policy" "waf_logging_policy" {
         Principal = {
           Service = "waf.amazonaws.com"
         },
-        Action = "logs:PutLogEvents",
+       Action = [
+          "logs:PutLogEvents",
+          "logs:CreateLogStream"
+        ],
         Resource = "*"
       }
     ]
   })
+}
+
+resource "aws_wafv2_web_acl_logging_configuration" "cloudfront_logging" {
+  depends_on = [ aws_cloudwatch_log_resource_policy.waf_logging_policy ]
+  log_destination_configs = [
+    "${aws_cloudwatch_log_group.waf_cloudfront_log_group.arn}:*"
+  ]
+  resource_arn = aws_wafv2_web_acl.standard_acl_cloudfront.arn
+  provider     = aws.deployment-us
 }
 
 

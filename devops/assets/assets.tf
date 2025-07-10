@@ -183,10 +183,10 @@ resource "aws_cloudfront_origin_access_control" "cdn" {
   signing_protocol                  = "sigv4"
   provider = aws.deployment-eu
 }
-# data "aws_ssm_parameter" "waf_web_acl" {
-#   name ="WEB_ACL_CLOUDFRONT_ARN"
-#   provider = aws.deployment-eu
-# }
+data "aws_ssm_parameter" "waf_web_acl" {
+  name ="WEB_ACL_CLOUDFRONT_ARN"
+  provider = aws.deployment-eu
+}
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
   depends_on = [
@@ -245,7 +245,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     minimum_protocol_version = "TLSv1.2_2021"  
     cloudfront_default_certificate = false
   }
-  # web_acl_id = var.STAGE == "prod" ? data.aws_ssm_parameter.waf_web_acl.value : null
+  web_acl_id = var.STAGE == "prod" ? data.aws_ssm_parameter.waf_web_acl.value : null
 
 
 
