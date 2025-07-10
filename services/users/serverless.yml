@@ -553,22 +553,22 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - qa
+        - prod
   Resources:
-    WebAclAssociationApi:
-      Condition: IsProd
-      Type: AWS::WAFv2::WebACLAssociation
-      Properties:
-        ResourceArn:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
-    WebAclAssociationCognito:
-      Condition: IsProd
-      Type: AWS::WAFv2::WebACLAssociation
-      Properties:
-        ResourceArn:
-          Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:SELLER_COGNITO_USERPOOL_ID}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+  #   WebAclAssociationApi:
+  #     Condition: IsProd
+  #     Type: AWS::WAFv2::WebACLAssociation
+  #     Properties:
+  #       ResourceArn:
+  #         Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+  #       WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+  #   WebAclAssociationCognito:
+  #     Condition: IsProd
+  #     Type: AWS::WAFv2::WebACLAssociation
+  #     Properties:
+  #       ResourceArn:
+  #         Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:SELLER_COGNITO_USERPOOL_ID}
+  #       WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
 
     
     EmailOtp:

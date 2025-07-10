@@ -315,7 +315,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - qa
+        - prod
   Resources:
     GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
@@ -328,13 +328,13 @@ resources:
            Ref: 'ApiGatewayRestApi'
     
 
-    WebAclAssociation:
-      Condition: IsProd
-      Type: AWS::WAFv2::WebACLAssociation
-      Properties:
-        ResourceArn:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+    # WebAclAssociation:
+    #   Condition: IsProd
+    #   Type: AWS::WAFv2::WebACLAssociation
+    #   Properties:
+    #     ResourceArn:
+    #       Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+    #     WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
     # BuyerEmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate
     #   Properties: 
