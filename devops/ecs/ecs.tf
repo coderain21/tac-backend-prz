@@ -533,12 +533,12 @@ resource "aws_ssm_parameter" "ecr_repo_tag" {
 }
 
 data "aws_ssm_parameter" "waf_web_acl" {
-  name ="WEB_ACL_CLOUDFRONT_ARN"
+  name ="SECURE_API_WEB_ACL_ARN"
   provider = aws.deployment-eu
 }
 
 resource "aws_wafv2_web_acl_association" "web_acl_association" {
-  web_acl_arn = aws_ssm_parameter.waf_web_acl.value
+  web_acl_arn = data.aws_ssm_parameter.waf_web_acl.value
   resource_arn = aws_lb.load-balancer.arn
   provider = aws.deployment-eu
 }

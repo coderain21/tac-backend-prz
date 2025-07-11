@@ -187,6 +187,13 @@ resource "aws_wafv2_web_acl" "secure_api_web_acl" {
       managed_rule_group_statement {
         name        = "AWSManagedRulesCommonRuleSet"
         vendor_name = "AWS"
+
+        rule_action_override {
+          name            = "SizeRestrictions_BODY"
+          action_to_use {
+            allow {}  # or count {} if you want to monitor instead
+          }
+        }
       }
     }
   }
