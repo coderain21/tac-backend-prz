@@ -538,7 +538,7 @@ data "aws_ssm_parameter" "waf_web_acl" {
 }
 
 resource "aws_wafv2_web_acl_association" "web_acl_association" {
-  web_acl_arn = aws_ssm_parameter.waf_web_acl.value
+  web_acl_arn = data.aws_ssm_parameter.waf_web_acl.value
   resource_arn = aws_lb.load-balancer.arn
   provider = aws.deployment-eu
 }
