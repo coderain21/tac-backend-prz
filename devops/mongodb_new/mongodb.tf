@@ -125,7 +125,6 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
 
 
 resource "aws_eip" "nat_gateway" {
-  vpc = true
   provider = aws.deployment-eu
 }
 
