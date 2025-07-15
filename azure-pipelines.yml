@@ -5,6 +5,7 @@ trigger:
       - pre-prod
       - master
       - bidding-engine
+      - qa-tac
 pr:
   branches:
     include:
