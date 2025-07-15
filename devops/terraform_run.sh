@@ -105,10 +105,18 @@ aws configure list --profile "${PROFILE_MAIN}"
 aws configure list --profile "${PROFILE_MAIN}-us"
 aws configure list --profile "${PROFILE_ENV}"
 aws configure list --profile "${PROFILE_ENV}-us"
+if [ "${STAGE}" = "qa" ]; then
+    run_command terraform -chdir=devops/waf init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/waf/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/waf apply -auto-approve
+fi
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ses apply -auto-approve
+# if [ "${STAGE}" = "prod" ]; then
+#     run_command terraform -chdir=devops/waf init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/waf/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+#     run_command terraform -chdir=devops/waf apply -auto-approve
+# fi
 run_command terraform -chdir=devops/admin_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/admin_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/admin_web_application apply -auto-approve
 run_command terraform -chdir=devops/seller_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/seller_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -146,6 +154,7 @@ if [ "${STAGE}" = "pre-production" ] ; then
     run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/ecs_new apply -auto-approve
 fi
+
 
 if [ "${STAGE}" = "pre-production" ]; then
     run_command terraform -chdir=devops/mongobetween init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"

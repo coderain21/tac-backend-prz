@@ -100,6 +100,7 @@ package:
     - ./lib/**
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -193,7 +194,12 @@ functions:
 
 
 resources:
-   Resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - qa
+  Resources:
     GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
        Properties:
@@ -203,6 +209,13 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+    WebAclAssociation:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
     # BuyerEmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate
     #   Properties: 

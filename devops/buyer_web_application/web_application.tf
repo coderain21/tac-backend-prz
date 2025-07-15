@@ -69,7 +69,7 @@ resource "aws_amplify_app" "customer_web_application" {
       phases:
         preBuild:
           commands:
-            - npm i --f
+            - npm i 
         build:
           commands:
             - npm run build
@@ -80,7 +80,7 @@ resource "aws_amplify_app" "customer_web_application" {
       cache:
         paths:
           - node_modules/**/*
-
+          - .next/cache/**/*   
   EOT
 
   # The default rewrites and redirects added by the Amplify Console.
