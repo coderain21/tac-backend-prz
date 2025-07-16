@@ -19,19 +19,24 @@ const originalResolveFilename = (Module as any)._resolveFilename;
 // --- END OF PATCH ---
 
 import { test, expect } from '@playwright/test';
-import { MongoClient, ObjectId } from 'mongodb';
+import { Db, MongoClient, ObjectId } from 'mongodb';
 import { loadEnvironmentVariables } from '../lib/env_loader';
 import { LambdaEventFactory } from '../lib/lambda_event_factory';
 import { lotTestData, bidTestData } from '../lib/test_data_manager';
 
 // --- Test Setup ---
 loadEnvironmentVariables();
+
+// // Set required environment variables for the test
+// process.env.STAGE = "test";
+// process.env.BID_COLLECTION_NAME = "test-unique-bids";
+
 const { handler } = require('../../services/lot-bid-history/handlers/list.js');
 
 // --- Test Suite ---
 test.describe('Lot Bid History API', () => {
   let client: MongoClient;
-  let db;
+  let db: Db;
 
   test.beforeAll(async () => {
     if (!process.env.MONGO_CLIENT) {
@@ -51,21 +56,12 @@ test.describe('Lot Bid History API', () => {
   test('should return 200 OK and a list of bids for a valid lot ID', async () => {
     const lots = db.collection(process.env.LOT_COLLECTION_NAME!);
     const bidInformation = db.collection(process.env.BID_INFORMATION_COLLECTION_NAME!);
-    
-    // Check if BID_COLLECTION_NAME exists, otherwise use a default or skip
-    let bids;
-    if (process.env.BID_COLLECTION_NAME) {
-      bids = db.collection(process.env.BID_COLLECTION_NAME);
-    } else {
-      // If no separate bid collection, use the same as bidInformation
-      bids = bidInformation;
-    }
+    const uniqueBids = db.collection(`${process.env.STAGE}-unique-bids`);
 
+    // Clear all collections
     await lots.deleteMany({});
     await bidInformation.deleteMany({});
-    if (bids !== bidInformation) {
-      await bids.deleteMany({}); // Clear both collections only if they're different
-    }
+    await uniqueBids.deleteMany({});
 
     // Generate a fresh ObjectId and string version
     const lotObjectId = new ObjectId();
@@ -79,55 +75,58 @@ test.describe('Lot Bid History API', () => {
     lotData.seller_email = 'test-seller@example.com';
     await lots.insertOne(lotData);
 
-    // Insert test bids into BidInformation collection (main query)
+    // Prepare bid data with all required fields
     const bidInfoData = [
-      bidTestData.getData('highBid', {
-        lot_id: lotIdAsString,
-        name: 'Katrina Stokes',
-        bid_amount: 300,
-        paddle_number: 28,
-        timestamp: Date.now(), // Schema uses timestamp, not time_stamp
-      }),
-      bidTestData.getData('lowBid', {
-        lot_id: lotIdAsString,
-        name: 'Beverly Kirlin I',
-        bid_amount: 250,
-        paddle_number: 87,
-        timestamp: Date.now(),
-      }),
-    ];
-    await bidInformation.insertMany(bidInfoData);
-
-    // Insert test bids into Bid collection (for count query) - only if different from bidInformation
-    if (bids !== bidInformation) {
-      const bidData = [
-        bidTestData.getData('highBid', {
+      {
+        ...bidTestData.getData('highBid', {
           lot_id: lotIdAsString,
           name: 'Katrina Stokes',
           bid_amount: 300,
           paddle_number: 28,
-          timestamp: Date.now(),
         }),
-        bidTestData.getData('lowBid', {
+        timestamp: Date.now(),
+        auction_id: 'test-auction-123',
+        seller_email: 'test-seller@example.com',
+        buyer_id: 'buyer-123',
+        email_address: 'katrina@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        location: 'New York',
+      },
+      {
+        ...bidTestData.getData('lowBid', {
           lot_id: lotIdAsString,
           name: 'Beverly Kirlin I',
           bid_amount: 250,
           paddle_number: 87,
-          timestamp: Date.now(),
         }),
-      ];
-      await bids.insertMany(bidData);
-    }
+        timestamp: Date.now(),
+        auction_id: 'test-auction-123',
+        seller_email: 'test-seller@example.com',
+        buyer_id: 'buyer-456',
+        email_address: 'beverly@example.com',
+        created_at: new Date(),
+        updated_at: new Date(),
+        location: 'California',
+      },
+    ];
+
+    // Insert into BidInformation collection (main query)
+    await bidInformation.insertMany(bidInfoData);
+
+    // Insert into unique-bids collection (for count query)
+    await uniqueBids.insertMany(bidInfoData);
 
     // 🛠️ Wait briefly to ensure MongoDB write visibility
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Verify inserted data
+    // Debug logs
+    console.log('STAGE:', process.env.STAGE);
+    console.log('Expected BidInformation collection:', `${process.env.STAGE}-bid-informations`);
+    console.log('Expected Bid collection:', `${process.env.STAGE}-unique-bids`);
     console.log('Inserted lot:', await lots.findOne({ _id: lotObjectId }));
     console.log('Inserted bid information:', await bidInformation.find({ lot_id: lotIdAsString }).toArray());
-    if (bids !== bidInformation) {
-      console.log('Inserted bids:', await bids.find({ lot_id: lotIdAsString }).toArray());
-    }
+    console.log('Inserted unique bids:', await uniqueBids.find({ lot_id: lotIdAsString }).toArray());
 
     // Prepare event
     const event = LambdaEventFactory.createGetEvent(
@@ -154,7 +153,6 @@ test.describe('Lot Bid History API', () => {
     const event = LambdaEventFactory.createGetEvent(null, { lot_id: nonExistentLotId }, null);
     const response = await handler(event);
     console.log('Response 2:', response);
-    expect(response.statusCode).toBe(404);
     expect(response.statusCode).toBe(404);
   });
 });
