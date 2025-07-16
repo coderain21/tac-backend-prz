@@ -100,4 +100,4 @@ certificate.crt
 private.key
 .vscode
 .jira
-playwright-report/
+results.xml
