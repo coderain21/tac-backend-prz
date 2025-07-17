@@ -28,9 +28,9 @@ import { lotTestData, bidTestData } from '../lib/test_data_manager';
 loadEnvironmentVariables();
 
 // // Set required environment variables for the test
-process.env.STAGE = "test";
-process.env.MONGO_CLIENT = "mongodb://testAdmin:testPassword@localhost:27017";
-process.env.DATABASE = "test";// process.env.BID_COLLECTION_NAME = "test-unique-bids";
+// process.env.STAGE = "test";
+// process.env.MONGO_CLIENT = "mongodb://testAdmin:testPassword@localhost:27017";
+// process.env.DATABASE = "test";// process.env.BID_COLLECTION_NAME = "test-unique-bids";
 
 const { handler } = require('../../services/lot-bid-history/handlers/list.js');
 
@@ -45,7 +45,7 @@ test.describe('Lot Bid History API', () => {
     }
     client = new MongoClient(process.env.MONGO_CLIENT);
     await client.connect();
-    db = client.db(process.env.DATABASE!);
+    db = client.db(process.env.DATABASE);
   });
 
   test.afterAll(async () => {

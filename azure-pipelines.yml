@@ -286,7 +286,6 @@ stages:
             docker compose up -d
           displayName: Docker Launch
         - script: |
-            cp test/.env .env
             chmod +x ./tdd-test.sh
             ./tdd-test.sh  
           displayName: Run TDD Tests
