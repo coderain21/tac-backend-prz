@@ -30,9 +30,13 @@ for param_name in "${parameter_names[@]}"; do
    
     # echo "Added $param_name to .env file with value: $param_value"
 done
-printenv | awk -F= '$1 ~ /^(TDD_MONGO_USERNAME|TDD_MONGO_PASSWORD|TDD_MONGO_CLIENT|TDD_DATABASE)$/ {
+printenv | awk -F= '$1 ~ /^(TDD_MONGO_USERNAME|TDD_MONGO_PASSWORD|TDD_MONGO_CLIENT|TDD_DATABASE|TDD_STAGE)$/ {
     printf "%s=%s\n", $1, $2;
     if ($1 == "TDD_MONGO_CLIENT") {
-        printf "MONGO_CLIENT=%s\n", $2
+        printf "MONGO_CLIENT=%s\n", $2;
+    }
+    if ($1 == "TDD_STAGE") {
+        printf "STAGE=%s\n", $2;
     }
 }' >> .env
+
