@@ -269,8 +269,7 @@ stages:
             path: "$(System.DefaultWorkingDirectory)/node_modules"
             cacheHitVar: CACHE_RESTORED
         - script: |
-            cp test/.env .env
-            ls -la
+            cd test
             sed -i '/^STAGE=/d' .env
             echo "STAGE=test" >> .env
             cat .env
@@ -287,6 +286,7 @@ stages:
             docker compose up -d
           displayName: Docker Launch
         - script: |
+            cp test/.env .env
             chmod +x ./tdd-test.sh
             ./tdd-test.sh  
           displayName: Run TDD Tests
