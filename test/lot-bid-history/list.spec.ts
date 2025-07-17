@@ -28,8 +28,9 @@ import { lotTestData, bidTestData } from '../lib/test_data_manager';
 loadEnvironmentVariables();
 
 // // Set required environment variables for the test
-// process.env.STAGE = "test";
-// process.env.BID_COLLECTION_NAME = "test-unique-bids";
+process.env.STAGE = "test";
+process.env.MONGO_CLIENT = "mongodb://testAdmin:testPassword@localhost:27017";
+process.env.DATABASE = "test";// process.env.BID_COLLECTION_NAME = "test-unique-bids";
 
 const { handler } = require('../../services/lot-bid-history/handlers/list.js');
 
