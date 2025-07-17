@@ -36,7 +36,7 @@ test.describe('In Person Auction Create handler tests', () => {
   let client: MongoClient;
   let db: Db;
   let authToken: string;
-  const sellerEmail = process.env.API_USERNAME!; // The user must exist in Cognito
+  const sellerEmail = 'example.com'  //process.env.API_USERNAME!; // The user must exist in Cognito
 
   test.beforeAll(() => {
     // Run the script and capture its full output
@@ -59,7 +59,7 @@ test.describe('In Person Auction Create handler tests', () => {
     db = client.db(process.env.DATABASE!);
 
     // Ensure the test user exists in the database for the handler to find
-    const users = db.collection(process.env.USERS_COLLECTION_NAME!);
+    const users = db.collection('test-users');
     await users.deleteMany({});
     await users.insertOne({
       email_address: sellerEmail,
@@ -75,7 +75,7 @@ test.describe('In Person Auction Create handler tests', () => {
 
   // --- Test Cases ---
   test('should create a new in person auction with a valid token', async () => {
-    const auctions = db.collection(process.env.AUCTION_COLLECTION_NAME!);
+    const auctions = db.collection('test-auctions');
     await auctions.deleteMany({});
 
     const auctionData = auctionTestData.getData('Classic');

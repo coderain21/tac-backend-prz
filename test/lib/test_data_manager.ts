@@ -54,7 +54,7 @@ export class TestDataManager {
         
         if (value === 'DYNAMIC_AUCTION_TITLE') return faker.commerce.productName();
         if (value === 'DYNAMIC_AUCTION_DESCRIPTION') return faker.lorem.paragraph();
-        if (value === 'DYNAMIC_AUCTION_START_DATE') return faker.date.future().toISOString();
+        if (value === 'DYNAMIC_AUCTION_START_DATE') return (Math.floor(faker.date.future().getTime() / 1000));
 
         return value;
     }

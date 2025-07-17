@@ -52,7 +52,7 @@ module.exports.create_auction = async (event) => {
             // await mongoConnection.save(accessLog, AccessLogs)
             /* End: Saving the Access logs */
 
-            update_value = {
+            const update_value = {
                 auctions_count: helpers.leftPad(counter.starting_sequence, 1),
             }
             await mongoConnection.updateUsingMongoDB(process.env.MONGO_CLIENT, process.env.MONGODB_NAME, process.env.SELLERS_TABLE, get_user[0]._id, update_value)
@@ -73,7 +73,7 @@ module.exports.create_auction = async (event) => {
             message: 'Something went wrong. Please try again!',
         }
     } catch (error) {
-        console.log('err', error)
+        console.log('error', error)
         return {
             headers: await helpers.getHeaders(),
             statusCode: 500,
