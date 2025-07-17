@@ -191,14 +191,7 @@ data "aws_ssm_parameter" "subnet_id" {
   name = "SUBNET_ID"
   provider = aws.deployment-eu
 }
-terraform {
-  required_providers {
-   aws = {
-    source  = "hashicorp/aws"
-    version = "5.98"
-    }
-  }
-}
+
  
 data "aws_ecs_cluster" "ecs" {
   cluster_name = "websocket-cluster"

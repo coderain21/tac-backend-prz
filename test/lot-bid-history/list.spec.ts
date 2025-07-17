@@ -121,12 +121,12 @@ test.describe('Lot Bid History API', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Debug logs
-    console.log('STAGE:', process.env.STAGE);
-    console.log('Expected BidInformation collection:', `${process.env.STAGE}-bid-informations`);
-    console.log('Expected Bid collection:', `${process.env.STAGE}-unique-bids`);
-    console.log('Inserted lot:', await lots.findOne({ _id: lotObjectId }));
-    console.log('Inserted bid information:', await bidInformation.find({ lot_id: lotIdAsString }).toArray());
-    console.log('Inserted unique bids:', await uniqueBids.find({ lot_id: lotIdAsString }).toArray());
+    // console.log('STAGE:', process.env.STAGE);
+    // console.log('Expected BidInformation collection:', `${process.env.STAGE}-bid-informations`);
+    // console.log('Expected Bid collection:', `${process.env.STAGE}-unique-bids`);
+    // console.log('Inserted lot:', await lots.findOne({ _id: lotObjectId }));
+    // console.log('Inserted bid information:', await bidInformation.find({ lot_id: lotIdAsString }).toArray());
+    // console.log('Inserted unique bids:', await uniqueBids.find({ lot_id: lotIdAsString }).toArray());
 
     // Prepare event
     const event = LambdaEventFactory.createGetEvent(
@@ -137,7 +137,7 @@ test.describe('Lot Bid History API', () => {
 
     // Invoke handler
     const response = await handler(event);
-    console.log('Response:', response);
+    // console.log('Response:', response);
 
     expect(response.statusCode).toBe(200);
     const body = JSON.parse(response.body);
@@ -152,7 +152,7 @@ test.describe('Lot Bid History API', () => {
     const nonExistentLotId = new ObjectId().toHexString();
     const event = LambdaEventFactory.createGetEvent(null, { lot_id: nonExistentLotId }, null);
     const response = await handler(event);
-    console.log('Response 2:', response);
+    // console.log('Response 2:', response);
     expect(response.statusCode).toBe(404);
   });
 });
