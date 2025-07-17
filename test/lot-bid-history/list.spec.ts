@@ -39,12 +39,12 @@ test.describe('Lot Bid History API', () => {
   let db: Db;
 
   test.beforeAll(async () => {
-    if (!process.env.MONGO_CLIENT) {
-      throw new Error('MONGO_CLIENT environment variable is not set. Please check test/.env');
+    if (!process.env.TDD_MONGO_CLIENT) {
+      throw new Error('TDD_MONGO_CLIENT environment variable is not set. Please check test/.env');
     }
-    client = new MongoClient(process.env.MONGO_CLIENT);
+    client = new MongoClient(process.env.TDD_MONGO_CLIENT);
     await client.connect();
-    db = client.db(process.env.DATABASE!);
+    db = client.db(process.env.TDD_DATABASE!);
   });
 
   test.afterAll(async () => {
@@ -54,9 +54,9 @@ test.describe('Lot Bid History API', () => {
   // --- Test Cases ---
 
   test('should return 200 OK and a list of bids for a valid lot ID', async () => {
-    const lots = db.collection(process.env.LOT_COLLECTION_NAME!);
-    const bidInformation = db.collection(process.env.BID_INFORMATION_COLLECTION_NAME!);
-    const uniqueBids = db.collection(`${process.env.STAGE}-unique-bids`);
+    const lots = db.collection(`test-lots`);
+    const bidInformation = db.collection(`test-bid-informations`);
+    const uniqueBids = db.collection(`test-unique-bids`);
 
     // Clear all collections
     await lots.deleteMany({});
@@ -121,9 +121,8 @@ test.describe('Lot Bid History API', () => {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     // Debug logs
-    console.log('STAGE:', process.env.STAGE);
-    console.log('Expected BidInformation collection:', `${process.env.STAGE}-bid-informations`);
-    console.log('Expected Bid collection:', `${process.env.STAGE}-unique-bids`);
+    console.log('Expected BidInformation collection:', `test-bid-informations`);
+    console.log('Expected Bid collection:', `test-unique-bids`);
     console.log('Inserted lot:', await lots.findOne({ _id: lotObjectId }));
     console.log('Inserted bid information:', await bidInformation.find({ lot_id: lotIdAsString }).toArray());
     console.log('Inserted unique bids:', await uniqueBids.find({ lot_id: lotIdAsString }).toArray());
