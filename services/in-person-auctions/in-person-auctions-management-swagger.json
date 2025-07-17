@@ -49,12 +49,7 @@
                 "examples": {
                   "example1": {
                     "value": {
-                      "message": "Validation failed"
-                    }
-                  },
-                  "example4": {
-                    "value": {
-                      "message": "Invalid request"
+                      "message": "Something went wrong. Please try again!"
                     }
                   }
                 }

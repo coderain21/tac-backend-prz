@@ -107,6 +107,11 @@ functions:
 
   create:
     handler: handlers/create.create_auction
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
