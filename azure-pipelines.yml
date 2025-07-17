@@ -271,6 +271,7 @@ stages:
         - script: |
             cp test/.env .env
             ls -la
+            cat .env
           displayName: Copy Environment Variables
         - script: |
             python3 -m venv venv
