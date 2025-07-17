@@ -101,3 +101,5 @@ private.key
 .vscode
 .jira
 results.xml
+.nyc_output
+coverage/

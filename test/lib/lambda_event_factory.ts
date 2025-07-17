@@ -2,9 +2,6 @@ export class LambdaEventFactory {
   
   /**
    * Creates a mock API Gateway event for a GET request.
-   * @param claims - The user claims for authorization.
-   * @param pathParameters - The parameters from the URL path.
-   * @param queryStringParameters - The query string parameters.
    */
   public static createGetEvent(
     claims: object | null,
@@ -22,5 +19,24 @@ export class LambdaEventFactory {
     };
   }
 
-  // We can add createPostEvent, etc. here later if needed
+  /**
+   * Creates a mock API Gateway event for a POST request.
+   */
+  public static createPostEvent(
+    claims: object | null,
+    body: object | null,
+    pathParameters: object | null = null,
+    headers: object | null = null // Added headers parameter
+  ) {
+    return {
+      requestContext: {
+        authorizer: {
+          claims: claims,
+        },
+      },
+      body: JSON.stringify(body),
+      pathParameters: pathParameters,
+      headers: headers, // Added headers to the event
+    };
+  }
 }

@@ -49,6 +49,13 @@ export class TestDataManager {
         if (value === 'DYNAMIC_NAME') return faker.person.fullName();
         if (value === 'DYNAMIC_BID_AMOUNT') return faker.number.int({ min: 100, max: 5000 });
         if (value === 'DYNAMIC_PADDLE_NUMBER') return faker.number.int({ min: 1, max: 100 });
+        // Inside the replacePlaceholder method
+
+        
+        if (value === 'DYNAMIC_AUCTION_TITLE') return faker.commerce.productName();
+        if (value === 'DYNAMIC_AUCTION_DESCRIPTION') return faker.lorem.paragraph();
+        if (value === 'DYNAMIC_AUCTION_START_DATE') return faker.date.future().toISOString();
+
         return value;
     }
 }
@@ -56,3 +63,4 @@ export class TestDataManager {
 // Create instances for our entities
 export const lotTestData = new TestDataManager('lots');
 export const bidTestData = new TestDataManager('bids');
+export const auctionTestData = new TestDataManager('auctions');

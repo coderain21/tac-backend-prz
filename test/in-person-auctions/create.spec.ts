@@ -1,5 +1,6 @@
 import Module from 'module';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // --- MONKEY-PATCH TO FIX BROKEN REQUIRE PATHS ---
 const originalResolveFilename = (Module as any)._resolveFilename;
@@ -23,67 +24,79 @@ import { test, expect } from '@playwright/test';
 import { Db, MongoClient, ObjectId } from 'mongodb';
 import { loadEnvironmentVariables } from '../lib/env_loader';
 import { LambdaEventFactory } from '../lib/lambda_event_factory';
-import { lotTestData, bidTestData } from '../lib/test_data_manager';
+import { auctionTestData } from '../lib/test_data_manager';
 
 // --- Test Setup ---
 loadEnvironmentVariables();
 
-// // Set required environment variables for the test
-// process.env.STAGE = "test";
-// process.env.BID_COLLECTION_NAME = "test-unique-bids";
-
-const { handler } = require('../../services/in-person-auctions/handlers/create.js');
+const { create_auction } = require('../../services/in-person-auctions/handlers/create.js');
 
 // --- Test Suite ---
 test.describe('In Person Auction Create handler tests', () => {
   let client: MongoClient;
   let db: Db;
+  let authToken: string;
+  const sellerEmail = process.env.API_USERNAME!; // The user must exist in Cognito
 
-  test.beforeAll(async () => {
+  test.beforeAll(() => {
+    // Run the script and capture its full output
+    const output = execSync('python3 access_token_generation.py').toString();
+    
+    // Use a regex to find the line for the USER token and extract it
+    const match = output.match(/export USER="([^"]+)"/);
+    if (!match || !match[1]) {
+      throw new Error('Could not parse USER token from python script output.');
+    }
+    authToken = match[1];
+  });
+
+  test.beforeEach(async () => {
     if (!process.env.MONGO_CLIENT) {
       throw new Error('MONGO_CLIENT environment variable is not set. Please check test/.env');
     }
     client = new MongoClient(process.env.MONGO_CLIENT);
     await client.connect();
     db = client.db(process.env.DATABASE!);
+
+    // Ensure the test user exists in the database for the handler to find
+    const users = db.collection(process.env.USERS_COLLECTION_NAME!);
+    await users.deleteMany({});
+    await users.insertOne({
+      email_address: sellerEmail,
+      first_name: 'Api',
+      last_name: 'User',
+      seller_id: 'S-API'
+    });
   });
 
-  test.afterAll(async () => {
+  test.afterEach(async () => {
     await client.close();
   });
 
   // --- Test Cases ---
+  test('should create a new in person auction with a valid token', async () => {
+    const auctions = db.collection(process.env.AUCTION_COLLECTION_NAME!);
+    await auctions.deleteMany({});
 
-  test.describe('Create In Person Auction', () => {
-    test('should create a new in person auction', async () => {
-      const auctions = db.collection(process.env.AUCTION_COLLECTION_NAME!);
+    const auctionData = auctionTestData.getData('Classic');
 
-      // Clear all collections
-      await auctions.deleteMany({});
+    const event = LambdaEventFactory.createPostEvent(
+      { 'cognito:username': sellerEmail },
+      auctionData,
+      null,
+      { 'Authorization': `Bearer ${authToken}` }
+    );
 
-      // Generate a fresh ObjectId and string version
-      const auctionObjectId = new ObjectId();
-      const auctionIdAsString = auctionObjectId.toHexString();
+    const response = await create_auction(event);
+    
+    expect(response.statusCode).toBe(201);
+    const body = JSON.parse(response.body);
 
-      // Prepare auction data with all required fields
-      const auctionData = lotTestData.getData('baseAuction');
-      auctionData._id = auctionObjectId;
-      auctionData.current_bid = 300;
-      auctionData.top_bidder = 'Katrina Stokes';
-      auctionData.seller_email = 'test-seller@example.com';
-      const event = LambdaEventFactory.createPostEvent(null, { ...auctionData }, null);
-      const response = await handler(event);
-      console.log('Response:', response);
+    expect(body).toHaveProperty('_id');
+    expect(body.title).toBe(auctionData.title);
 
-      expect(response.statusCode).toBe(200);
-      const body = JSON.parse(response.body);
-
-      expect(body.data).toHaveProperty('id');
-      expect(body.data.id).toBe(auctionIdAsString);
-      expect(body.data.current_bid).toBe(300);
-      expect(body.data.top_bidder).toBe('Katrina Stokes');
-      expect(body.data.seller_email).toBe('test-seller@example.com');
-    });
-  })
+    const newAuction = await auctions.findOne({ _id: new ObjectId(body._id) });
+    expect(newAuction).not.toBeNull();
+    expect(newAuction.seller_email).toBe(sellerEmail);
+  });
 });
-
