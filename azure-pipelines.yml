@@ -262,9 +262,6 @@ stages:
             artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)/tests'
         - script: |
-            sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
-            sudo chmod +x /usr/local/bin/yq
-            yq --version
             cp tests/.env .env
             ls -la
           displayName: Copy Environment Variables
