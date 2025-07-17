@@ -52,8 +52,8 @@
         "background_color": "",
         "text_color": ""
     },
-    "accept_absentee_bids": false,
-    "accept_in_person_bids": false,
+    "accept_absentee_bid": false,
+    "accept_telephone_bid": false,
     "auction_type": "live"
     
   }

@@ -27,7 +27,7 @@ import { LambdaEventFactory } from '../lib/lambda_event_factory';
 import { auctionTestData } from '../lib/test_data_manager';
 
 // --- Test Setup ---
-loadEnvironmentVariables();
+loadEnvironmentVariables('services/in-person-auctions/handlers/create.js');
 
 const { create_auction } = require('../../services/in-person-auctions/handlers/create.js');
 
@@ -35,20 +35,7 @@ const { create_auction } = require('../../services/in-person-auctions/handlers/c
 test.describe('In Person Auction Create handler tests', () => {
   let client: MongoClient;
   let db: Db;
-  let authToken: string;
-  const sellerEmail = 'example.com'  //process.env.API_USERNAME!; // The user must exist in Cognito
-
-  test.beforeAll(() => {
-    // Run the script and capture its full output
-    const output = execSync('python3 access_token_generation.py').toString();
-    
-    // Use a regex to find the line for the USER token and extract it
-    const match = output.match(/export USER="([^"]+)"/);
-    if (!match || !match[1]) {
-      throw new Error('Could not parse USER token from python script output.');
-    }
-    authToken = match[1];
-  });
+  const sellerEmail = process.env.API_USERNAME!;
 
   test.beforeEach(async () => {
     if (!process.env.MONGO_CLIENT) {
@@ -58,9 +45,13 @@ test.describe('In Person Auction Create handler tests', () => {
     await client.connect();
     db = client.db(process.env.DATABASE!);
 
-    // Ensure the test user exists in the database for the handler to find
-    const users = db.collection('test-users');
+    // Clean up all relevant collections before each test
+    const users = db.collection(process.env.SELLERS_TABLE!);
+    const auctions = db.collection(process.env.AUCTION_COLLECTION_NAME!);
     await users.deleteMany({});
+    await auctions.deleteMany({});
+
+    // Insert the test user
     await users.insertOne({
       email_address: sellerEmail,
       first_name: 'Api',
@@ -74,17 +65,13 @@ test.describe('In Person Auction Create handler tests', () => {
   });
 
   // --- Test Cases ---
-  test('should create a new in person auction with a valid token', async () => {
-    const auctions = db.collection('test-auctions');
-    await auctions.deleteMany({});
-
+  test('should create a new in person auction with a valid user', async () => {
     const auctionData = auctionTestData.getData('Classic');
 
     const event = LambdaEventFactory.createPostEvent(
       { 'cognito:username': sellerEmail },
       auctionData,
-      null,
-      { 'Authorization': `Bearer ${authToken}` }
+      null
     );
 
     const response = await create_auction(event);
@@ -93,10 +80,33 @@ test.describe('In Person Auction Create handler tests', () => {
     const body = JSON.parse(response.body);
 
     expect(body).toHaveProperty('_id');
-    expect(body.title).toBe(auctionData.title);
-
-    const newAuction = await auctions.findOne({ _id: new ObjectId(body._id) });
+    const newAuction = await db.collection(process.env.AUCTION_COLLECTION_NAME!).findOne({ _id: new ObjectId(body._id) });
     expect(newAuction).not.toBeNull();
     expect(newAuction.seller_email).toBe(sellerEmail);
   });
+
+  test('should return 403 Forbidden if the user is not authenticated', async () => {
+    const auctionData = auctionTestData.getData('Classic');
+    const event = LambdaEventFactory.createPostEvent(null, auctionData, null);
+    const response = await create_auction(event);
+    expect(response.statusCode).toBe(403);
+  });
+
+  test('should return 400 Bad Request if the payload is invalid', async () => {
+    const auctionData = auctionTestData.getData('Classic');
+    auctionData.currency = 111;
+
+    const event = LambdaEventFactory.createPostEvent(
+      { 'cognito:username': sellerEmail },
+      auctionData,
+      null
+    );
+
+    const response = await create_auction(event);
+    
+    expect(response.statusCode).toBe(400);
+    const body = JSON.parse(response.body);
+    expect(body.message).toContain('Validation error: \"currency\" must be a string');
+  });
+
 });

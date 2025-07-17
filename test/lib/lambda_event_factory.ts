@@ -19,7 +19,6 @@ export class LambdaEventFactory {
     };
   }
 
-
   /**
    * Creates a mock API Gateway event for a POST request.
    */
