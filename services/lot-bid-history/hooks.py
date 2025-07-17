@@ -65,3 +65,11 @@ def set_authorization(transaction):
         transaction['request']['uri'] = urllib.parse.unquote(
             transaction['request']['uri'])
         logging.info(transaction['request'])
+
+
+@before_each
+def prepare_delete_bid_test(transaction):
+    if '/admin/bid/' in transaction['request']['uri'] and transaction['request']['method'] == 'DELETE':
+        # Set up a valid bid ID for testing
+        transaction['request']['uri'] = transaction['request']['uri'].replace('{bid_id}', '682acbe62ddaf4fca7223db9')
+        transaction['skip'] = False
