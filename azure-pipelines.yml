@@ -280,15 +280,11 @@ stages:
             npm install --cache .npm
           condition: ne(variables.CACHE_RESTORED, 'true')
         - script: |
-            cd tests
+            cd test
             docker compose up -d
           displayName: Docker Launch
         - script: |
-            cd tests
-            cat .env
-          displayName: Export DB Name and Port
-        - script: |
-            chmod +x ./tdd-testing.sh
+            chmod +x ./tdd-test.sh
             ./tdd-test.sh  
           displayName: Run TDD Tests
         - task: PublishTestResults@2
