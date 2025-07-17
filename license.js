@@ -3,8 +3,8 @@
 const fs = require('fs')
 
 // Read package.json and licenses.json
-const packageData = JSON.parse(fs.readFileSync('package.json'))
-const licensesData = JSON.parse(fs.readFileSync('licenses.json'))
+const packageData = JSON.parse(fs.readFileSync('devops/dependency/node/package.json'))
+const licensesData = JSON.parse(fs.readFileSync('node-licenses.json'))
 
 // Extract dependencies and devDependencies from package.json
 const dependencies = Object.keys(packageData.dependencies || {})
@@ -50,7 +50,7 @@ function checkLicenses() {
         console.error(nonOpenSourcePackages.join('\n'))
         process.exit(1) // Exit with a non-zero status to fail the build
     } else {
-        console.log('packages found are opensource!')
+        console.log('Node packages found are opensource!')
     }
 }
 

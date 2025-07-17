@@ -106,7 +106,10 @@ def view(event, context):
             "toggle_powered_by_indy": 1,
             "hide_auction_lots": 1,
             "show_bidder_location_in_bidder_history": 1,
-            "publish_auction_results": 1
+            "publish_auction_results": 1,
+            "location": 1,
+            "start_time_zone": 1,
+            "end_time_zone": 1,
         }
         result = collection.find_one({"_id":ObjectId(auction_id), "seller_email": email_address}, projection)
         if result is None:
