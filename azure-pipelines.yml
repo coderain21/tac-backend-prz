@@ -271,6 +271,8 @@ stages:
         - script: |
             cp test/.env .env
             ls -la
+            sed -i '/^STAGE=/d' .env
+            echo "STAGE=test" >> .env
             cat .env
           displayName: Copy Environment Variables
         - script: |
