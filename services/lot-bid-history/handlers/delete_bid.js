@@ -1,13 +1,13 @@
 /**
  * This module handles deletion of bids from the system
  */
-const { createRedisClient } = require('../../lib/redis_helper');
-const mongodbHelper = require('../../lib/mongodb_helper');
+const { createRedisClient } = require('../lib/redis_helper');
+const mongodbHelper = require('../lib/mongodb_helper');
 
 // Import Mongoose models from entities folder
-const BidInformation = require('../../../entities/BidInformation');
-const Bid = require('../../../entities/Bid'); // For unique bids
-const Lot = require('../../../entities/Lot');
+const BidInformation = require('../entities/BidInformation');
+const Bid = require('../entities/Bid'); // For unique bids
+const Lot = require('../entities/Lot');
 
 // CORS headers
 const headers = {
@@ -49,7 +49,7 @@ async function deleteBid(event, context) {
         const buyerId = bidInfo.buyer_id;
         
         // Get the lot information
-        const lot = await Lot.findById(lotId);
+        const lot = await mongodbHelper.getBuyer(lotId, Lot)
         
         if (!lot) {
             return {
