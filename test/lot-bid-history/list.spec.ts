@@ -40,11 +40,11 @@ test.describe('Lot Bid History API', () => {
 
   test.beforeAll(async () => {
     if (!process.env.MONGO_CLIENT) {
-      throw new Error('TDD_MONGO_CLIENT environment variable is not set. Please check test/.env');
+      throw new Error('MONGO_CLIENT environment variable is not set. Please check test/.env');
     }
     client = new MongoClient(process.env.MONGO_CLIENT);
     await client.connect();
-    db = client.db(process.env.TDD_DATABASE!);
+    db = client.db(process.env.DATABASE!);
   });
 
   test.afterAll(async () => {
