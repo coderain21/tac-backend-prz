@@ -20,11 +20,15 @@ if [ "$1" == "-s" ]; then
   SERVICE_NAME=$2
   echo "Running Playwright tests for service: $SERVICE_NAME"
   
-  # Run Playwright, passing the path to the service's test directory.
-  npx playwright test "test/$SERVICE_NAME"
+  # Set environment variable for the service and use npm test
+  export SERVICE_NAME=$SERVICE_NAME
+  export TEST_PATH="test/$SERVICE_NAME"
+  
+  # Use npm test which likely has coverage configured
+  npm test -- "test/$SERVICE_NAME"
   
 else
-  # If no '-s' flag is provided, run all tests.
+  # If no '-s' flag is provided, run all tests using npm test
   echo "Running all Playwright tests..."
-  npx playwright test
+  npm test
 fi

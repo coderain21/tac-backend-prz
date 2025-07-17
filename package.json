@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "nyc --reporter=html --reporter=text --reporter=cobertura playwright test",
     "eslint": "eslint ./services/"
   },
   "repository": {
@@ -46,6 +46,7 @@
     "mongodb": "^5.7.0",
     "mongoose": "^7.4.2",
     "mongoose-paginate-v2": "^1.7.1",
+    "nyc": "^17.1.0",
     "otp-generator": "^4.0.1",
     "password-validator": "^5.3.0",
     "path": "^0.12.7",
