@@ -261,6 +261,13 @@ stages:
           inputs:
             artifact: Environment
             targetPath: '$(System.DefaultWorkingDirectory)/tests'
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npmV2 | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
         - script: |
             cp tests/.env .env
             ls -la
@@ -269,6 +276,13 @@ stages:
             python3 -m venv venv
             source venv/bin/activate
           displayName: Virtual Environment Setup
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - script: |
+            cd tests
+            docker compose up -d
+          displayName: Docker Launch
         - script: |
             cd tests
             cat .env
