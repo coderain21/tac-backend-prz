@@ -260,7 +260,7 @@ stages:
           name: environment
           inputs:
             artifact: Environment
-            targetPath: '$(System.DefaultWorkingDirectory)/tests'
+            targetPath: '$(System.DefaultWorkingDirectory)/test'
         - task: Cache@2
           inputs:
             key: 'npmV2 | "$(Agent.OS)" | package.json'
@@ -269,7 +269,7 @@ stages:
             path: "$(System.DefaultWorkingDirectory)/node_modules"
             cacheHitVar: CACHE_RESTORED
         - script: |
-            cp tests/.env .env
+            cp test/.env .env
             ls -la
           displayName: Copy Environment Variables
         - script: |
