@@ -51,6 +51,6 @@ services:
     path: services/redis-delete
     config: ${env:config}
   in-person-auction:
-    path: services/in-person-auctions
+    path: services/in-person-auction
     config: ${env:config}
 
