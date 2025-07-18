@@ -64,7 +64,8 @@ const formatDate = (timestamp, timeZone) => {
         minute: '2-digit',
         timeZoneName: 'short',
         hour12: false, // Force 24-hour format
-        timeZone: timeZoneMap[timeZone],
+        timeZone: timeZoneMap[timeZone] ? timeZoneMap[timeZone] : timeZone,
+
     }
 
     // Format the date using toLocaleString
