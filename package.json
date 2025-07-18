@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "nyc --report-dir=coverage  --reporter=html --reporter=text --reporter=cobertura playwright test",
+    "test": "nyc --all --report-dir=coverage --include=services/**/*.js --reporter=html --reporter=text --reporter=cobertura playwright test",
     "eslint": "eslint ./services/"
   },
   "repository": {
