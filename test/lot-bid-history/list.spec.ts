@@ -25,13 +25,16 @@ import { LambdaEventFactory } from '../lib/lambda_event_factory';
 import { lotTestData, bidTestData } from '../lib/test_data_manager';
 
 // --- Test Setup ---
-loadEnvironmentVariables();
+loadEnvironmentVariables('services/lot-bid-history');
 
 // // Set required environment variables for the test
 // process.env.STAGE = "test";
 // process.env.BID_COLLECTION_NAME = "test-unique-bids";
 
 const { handler } = require('../../services/lot-bid-history/handlers/list.js');
+
+
+// process.env.MONGO_CLIENT = 'mongodb://testAdmin:testPassword@localhost:27017';
 
 // --- Test Suite ---
 test.describe('Lot Bid History API', () => {
@@ -54,8 +57,8 @@ test.describe('Lot Bid History API', () => {
   // --- Test Cases ---
 
   test('should return 200 OK and a list of bids for a valid lot ID', async () => {
-    const lots = db.collection(process.env.LOT_COLLECTION_NAME!);
-    const bidInformation = db.collection(process.env.BID_INFORMATION_COLLECTION_NAME!);
+    const lots = db.collection(`${process.env.STAGE}-lots`);
+    const bidInformation = db.collection(`${process.env.STAGE}-bid-informations`);
     const uniqueBids = db.collection(`${process.env.STAGE}-unique-bids`);
 
     // Clear all collections
