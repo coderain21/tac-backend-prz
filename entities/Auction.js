@@ -174,6 +174,19 @@ const AuctionSchema = new Schema({
         type: Schema.Types.Mixed,
         default: {},
     },
+    accept_absentee_bids: {
+        type: Boolean,
+        default: false,
+    },
+    accept_telephone_bids: {
+        type: Boolean,
+        default: false,
+    },
+    auction_type: {
+        type: String,
+        trim: true,
+        default: '',
+    },
 })
 
 AuctionSchema.plugin(mongoosePaginate)
