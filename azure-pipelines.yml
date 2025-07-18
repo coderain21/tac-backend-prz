@@ -289,7 +289,7 @@ stages:
           displayName: Docker Launch
         - script: |
             chmod +x ./tdd-test.sh
-            cat ./test/.env            
+            cat .env            
             ./tdd-test.sh  
           displayName: Run TDD Tests
         - task: PublishTestResults@2
