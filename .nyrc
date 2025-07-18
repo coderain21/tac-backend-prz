@@ -1,0 +1,14 @@
+{
+  "all": true,
+  "include": ["services/**/*.js"],
+  "exclude": [
+    "services/bdd-api/**",
+    "services/load-test/**",
+    "services/redis-delete/**",
+    "services/cognito-auth/**"
+   
+  ],
+  "reporter": ["text", "html", "cobertura"],
+  "report-dir": "./coverage",
+  "extension": [".js"]
+}
