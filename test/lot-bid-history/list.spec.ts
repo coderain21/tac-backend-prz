@@ -25,7 +25,7 @@ import { LambdaEventFactory } from '../lib/lambda_event_factory';
 import { lotTestData, bidTestData } from '../lib/test_data_manager';
 
 // --- Test Setup ---
-loadEnvironmentVariables('../../services/lot-bid-history');
+loadEnvironmentVariables('/services/lot-bid-history');
 
 // // Set required environment variables for the test
 // process.env.STAGE = "test";
