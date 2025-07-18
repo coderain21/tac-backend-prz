@@ -273,6 +273,8 @@ stages:
             sed -i '/^STAGE=/d' .env
             echo "STAGE=test" >> .env
             cat .env
+            cd ../
+            cp test/.env .env
           displayName: Copy Environment Variables
         - script: |
             python3 -m venv venv
