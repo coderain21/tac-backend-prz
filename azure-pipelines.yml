@@ -29,125 +29,125 @@ variables:
 
 stages:
 
-# - stage: CodeQuality
-#   jobs:
-#     - job: "lint"
-#       displayName: "Code Quality"
-#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-#       pool:
-#           vmImage: "ubuntu-22.04"
-#       steps:
-#         - task: Cache@2
-#           inputs:
-#             key: 'npmV2 | "$(Agent.OS)" | package.json'
-#             restoreKeys: |
-#               npm | "$(Agent.OS)"
-#             path: "$(System.DefaultWorkingDirectory)/node_modules"
-#             cacheHitVar: CACHE_RESTORED
-#           displayName: Cache npm
-#         # - script: npm config set registry https://registry.npmmirror.com
-#         - script: |
-#             npm install
-#           condition: ne(variables.CACHE_RESTORED, 'true')
-#           displayName: 'Dependencies'
-#         - script: |
-#             npm run eslint
-#             if [ $? -ne 0 ]; then
-#               echo "lint failed"
-#               exit 1
-#             fi
-#           displayName: 'Eslint'
-#         - script: |
-#             pip3 install pylint==3.1.1
-#             pylint services/**/**/*.py
-#             if [ $? -ne 0 ]; then
-#               echo "lint failed"
-#               exit 1
-#             fi
-#             #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
-#             # sh terraform-linter.sh
-#           displayName: 'Pylint'
-#           env:
-#             OPENAI_TOKEN: $(OPENAI_TOKEN)
-#     - job: "secret"
-#       displayName: "Secret Checking"
-#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-#       pool:
-#           vmImage: "ubuntu-22.04"
-#       steps:
-#         - script: |
-#             pip3 install detect-secrets
-#             detect-secrets scan 
-#             if [ $? -ne 0 ]; then
-#               echo "Secret Checking failed"
-#               exit 1
-#             fi
-#           displayName: 'Lint'
-#     - job: "licence_complaiance"
-#       displayName: "License Compliance"
-#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-#       pool:
-#           vmImage: "ubuntu-22.04"
-#       steps:
-#         - task: DownloadSecureFile@1
-#           name: Certificate
-#           displayName: 'Download certificate'
-#           inputs:
-#             secureFile: 'certificate.crt'
-#         - task: DownloadSecureFile@1
-#           name: Privatekey
-#           displayName: 'Download private key'
-#           inputs:
-#             secureFile: 'private.key'
-#         - bash: |              
-#             wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
-#             chmod +x aws_signing_helper
-#           displayName: Install AWS Signer
-#         - bash: |
-#             aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile "indyauction-main"
-#             echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
-#           displayName: Obtain AWS Credentials
-#         # - script: npm config set registry https://registry.npmmirror.com
-#         - script: |
-#             npm install -g license-checker 
-#             license-checker --json --start devops/dependency/node > node-licenses.json
-#             node license.js    
-#             python license.py                   
-#             if [ $? -ne 0 ]; then
-#               echo "License Compliance failed"
-#               exit 1
-#             fi
-#           displayName: 'License Compliance'
-#         - script: |
-#             node generate-node-licenses.js
-#             pip3 install pip-licenses PyGithub requests
-#             python -m venv venv
-#             source venv/bin/activate
-#             pip3 install -r devops/dependency/python/requirements.txt || true
-#             pip3 install -r devops/dependency/python/requirements2.txt || true
-#             python generate-python-licenses.py
-#             aws s3 cp node-licenses.json s3://$DOCS_BUCKET_NAME/licences/node/licenses.json --profile "indyauction-main"
-#             aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licences/python/licenses.json --profile "indyauction-main"
-#             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
-#           displayName: 'License Compliance Report'
+- stage: CodeQuality
+  jobs:
+    - job: "lint"
+      displayName: "Code Quality"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-22.04"
+      steps:
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npm | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+          displayName: Cache npm
+        # - script: npm config set registry https://registry.npmmirror.com
+        - script: |
+            npm install
+          condition: ne(variables.CACHE_RESTORED, 'true')
+          displayName: 'Dependencies'
+        - script: |
+            npm run eslint
+            if [ $? -ne 0 ]; then
+              echo "lint failed"
+              exit 1
+            fi
+          displayName: 'Eslint'
+        - script: |
+            pip3 install pylint==3.1.1
+            pylint services/**/**/*.py
+            if [ $? -ne 0 ]; then
+              echo "lint failed"
+              exit 1
+            fi
+            #curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            # sh terraform-linter.sh
+          displayName: 'Pylint'
+          env:
+            OPENAI_TOKEN: $(OPENAI_TOKEN)
+    - job: "secret"
+      displayName: "Secret Checking"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-22.04"
+      steps:
+        - script: |
+            pip3 install detect-secrets
+            detect-secrets scan 
+            if [ $? -ne 0 ]; then
+              echo "Secret Checking failed"
+              exit 1
+            fi
+          displayName: 'Lint'
+    - job: "licence_complaiance"
+      displayName: "License Compliance"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-22.04"
+      steps:
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
+            chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile "indyauction-main"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+          displayName: Obtain AWS Credentials
+        # - script: npm config set registry https://registry.npmmirror.com
+        - script: |
+            npm install -g license-checker 
+            license-checker --json --start devops/dependency/node > node-licenses.json
+            node license.js    
+            python license.py                   
+            if [ $? -ne 0 ]; then
+              echo "License Compliance failed"
+              exit 1
+            fi
+          displayName: 'License Compliance'
+        - script: |
+            node generate-node-licenses.js
+            pip3 install pip-licenses PyGithub requests
+            python -m venv venv
+            source venv/bin/activate
+            pip3 install -r devops/dependency/python/requirements.txt || true
+            pip3 install -r devops/dependency/python/requirements2.txt || true
+            python generate-python-licenses.py
+            aws s3 cp node-licenses.json s3://$DOCS_BUCKET_NAME/licences/node/licenses.json --profile "indyauction-main"
+            aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licences/python/licenses.json --profile "indyauction-main"
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
+          displayName: 'License Compliance Report'
 
 
-#     - job: "sast"
-#       displayName: 'Static Application Security Testing (SAST)'
-#       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-#       pool:
-#           vmImage: "ubuntu-22.04"
-#       steps:
-#         - script: |
-#             pip3 install njsscan
-#             njsscan -w .
-#             pip3 install bandit
-#             bandit -r services/**/*.py
-#             if [ $? -ne 0 ]; then
-#               echo "SAST failed"
-#               exit 1
-#             fi
-#           displayName: 'Static Application Security Testing (SAST)'
+    - job: "sast"
+      displayName: 'Static Application Security Testing (SAST)'
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-22.04"
+      steps:
+        - script: |
+            pip3 install njsscan
+            njsscan -w .
+            pip3 install bandit
+            bandit -r services/**/*.py
+            if [ $? -ne 0 ]; then
+              echo "SAST failed"
+              exit 1
+            fi
+          displayName: 'Static Application Security Testing (SAST)'
 
 - stage: Build
   jobs:
@@ -182,73 +182,72 @@ stages:
   
 - stage: Test
   jobs:
-
-  #   - job: APITesting
-  #     displayName: "Unit Testing"
-  #     condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-  #     pool:
-  #       vmImage: "ubuntu-22.04"
-  #     steps:
-  #       - task: UsePythonVersion@0
-  #         inputs:
-  #           versionSpec: '3.11'
-  #       - task: Cache@2
-  #         inputs:
-  #           key: 'npmV2 | "$(Agent.OS)" | package.json'
-  #           restoreKeys: |
-  #             npm | "$(Agent.OS)"
-  #           path: "$(System.DefaultWorkingDirectory)/node_modules"
-  #           cacheHitVar: CACHE_RESTORED
-  #         displayName: Cache npm
-  #       # - script: npm config set registry https://registry.npmmirror.com
-  #       - script: |
-  #           npm install --cache .npm
-  #         condition: ne(variables.CACHE_RESTORED, 'true')
-  #       - task: DownloadPipelineArtifact@2
-  #         name: environment
-  #         inputs:
-  #           artifact: Environment
-  #           targetPath: '$(System.DefaultWorkingDirectory)'
-  #       - task: DownloadSecureFile@1
-  #         name: Certificate
-  #         displayName: 'Download certificate'
-  #         inputs:
-  #           secureFile: 'certificate.crt'
-  #       - task: DownloadSecureFile@1
-  #         name: Privatekey
-  #         displayName: 'Download private key'
-  #         inputs:
-  #           secureFile: 'private.key'
-  #       - bash: |              
-  #           wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
-  #           chmod +x aws_signing_helper
-  #         displayName: Install AWS Signer
-  #       - bash: |
-  #           aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
-  #           echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
-  #         displayName: Obtain AWS Credentials
-  #       - script: |
-  #           source .env
-  #           aws sts get-caller-identity --profile "$PROFILE_ENV"
-  #           pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
-  #           npm i -g dredd
-  #           ./api-testing.sh
-  #           if [ $? -ne 0 ]; then
-  #             echo "API testing failed"
-  #             exit 1
-  #           fi
-  #           ./doc.sh
-  #         displayName: Unit Testing
-  #       - bash: |
-  #           aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile "indyauction-main"
-  #           echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
-  #           echo "##vso[task.setvariable variable=AWS_PROFILE]indyauction-main"
-  #         displayName: Obtain AWS Credentials
-  #       - script: |
-  #           aws configure list --profile "indyauction-main"
-  #           aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation --profile "indyauction-main" 
-  #           aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
-  #         displayName:  Unit Testing Documentation
+    - job: APITesting
+      displayName: "Unit Testing"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+        vmImage: "ubuntu-22.04"
+      steps:
+        - task: UsePythonVersion@0
+          inputs:
+            versionSpec: '3.11'
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npm | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+          displayName: Cache npm
+        # - script: npm config set registry https://registry.npmmirror.com
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
+            chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+          displayName: Obtain AWS Credentials
+        - script: |
+            source .env
+            aws sts get-caller-identity --profile "$PROFILE_ENV"
+            pip3 install boto3 dredd_hooks python-dotenv requests pyjwt pyotp requests
+            npm i -g dredd
+            ./api-testing.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
+            ./doc.sh
+          displayName: Unit Testing
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN_MAIN --profile-arn $PROFILE_ARN_MAIN --role-arn $ROLE_ARN_MAIN" --profile "indyauction-main"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+            echo "##vso[task.setvariable variable=AWS_PROFILE]indyauction-main"
+          displayName: Obtain AWS Credentials
+        - script: |
+            aws configure list --profile "indyauction-main"
+            aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation --profile "indyauction-main" 
+            aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
+          displayName:  Unit Testing Documentation
 
     - job: TDD 
       displayName: "TDD Tests"
@@ -300,57 +299,57 @@ stages:
             testRunTitle: 'TDD Test Results' 
           displayName: 'Publish JUnit Test Results' 
     
-    # - job: "dast"
-    #   displayName: 'Dynamic Application Security Testing (DAST)'
-    #   # dependsOn: APITesting
-    #   condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
-    #   pool:
-    #       vmImage: "ubuntu-22.04"
-    #   steps:
-    #     - checkout: self
-    #       clean: true
-    #       fetchDepth: 0
-    #       persistCredentials: true
-    #     - task: DownloadPipelineArtifact@2
-    #       name: environment
-    #       inputs:
-    #         artifact: Environment
-    #         targetPath: '$(System.DefaultWorkingDirectory)'
-    #     - task: DownloadSecureFile@1
-    #       name: Certificate
-    #       displayName: 'Download certificate'
-    #       inputs:
-    #         secureFile: 'certificate.crt'
-    #     - task: DownloadSecureFile@1
-    #       name: Privatekey
-    #       displayName: 'Download private key'
-    #       inputs:
-    #         secureFile: 'private.key'
-    #     - bash: |              
-    #         wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
-    #         chmod +x aws_signing_helper
-    #       displayName: Install AWS Signer
-    #     - bash: |
-    #         aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
-    #         echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
-    #       displayName: Obtain AWS Credentials
-    #     - script: |
-    #           git config --global user.email $BITBUCKET_EMAIL
-    #           git config --global user.name $BITBUCKET_USER
-    #           git config --global advice.detachedHead false
-    #           docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
-    #           cd $(System.DefaultWorkingDirectory)
-    #           export $(grep -v '^#' .env | xargs)
-    #           source .env
-    #           # Print environment variables to verify they are set correctly
-    #           pip3 install boto3 gitpython python-dotenv botocore
-    #           mkdir test_results
-    #           python dast.py 
-    #           if [ $? -ne 0 ]; then
-    #             echo "API testing failed"
-    #             exit 1
-    #           fi
-    #       displayName: 'Dynamic Application Security Testing (DAST)'
+    - job: "dast"
+      displayName: 'Dynamic Application Security Testing (DAST)'
+      dependsOn: APITesting
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-22.04"
+      steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0
+          persistCredentials: true
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)'
+        - task: DownloadSecureFile@1
+          name: Certificate
+          displayName: 'Download certificate'
+          inputs:
+            secureFile: 'certificate.crt'
+        - task: DownloadSecureFile@1
+          name: Privatekey
+          displayName: 'Download private key'
+          inputs:
+            secureFile: 'private.key'
+        - bash: |              
+            wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
+            chmod +x aws_signing_helper
+          displayName: Install AWS Signer
+        - bash: |
+            aws configure set credential_process "$(pwd)/aws_signing_helper credential-process --certificate $(Certificate.secureFilePath) --private-key $(Privatekey.secureFilePath)  --trust-anchor-arn $TRUST_ANCHOR_ARN --profile-arn $PROFILE_ARN --role-arn $ROLE_ARN" --profile "$PROFILE_ENV"
+            echo "##vso[task.setvariable variable=AWS_SDK_LOAD_CONFIG]1"
+          displayName: Obtain AWS Credentials
+        - script: |
+              git config --global user.email $BITBUCKET_EMAIL
+              git config --global user.name $BITBUCKET_USER
+              git config --global advice.detachedHead false
+              docker run -u zap -p 8080:8080 -d softwaresecurityproject/zap-stable zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+              cd $(System.DefaultWorkingDirectory)
+              export $(grep -v '^#' .env | xargs)
+              source .env
+              # Print environment variables to verify they are set correctly
+              pip3 install boto3 gitpython python-dotenv botocore
+              mkdir test_results
+              python dast.py 
+              if [ $? -ne 0 ]; then
+                echo "API testing failed"
+                exit 1
+              fi
+          displayName: 'Dynamic Application Security Testing (DAST)'
 
 - stage: Deploy
   displayName: Deploy
