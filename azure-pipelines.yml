@@ -182,6 +182,7 @@ stages:
   
 - stage: Test
   jobs:
+
     - job: APITesting
       displayName: "Unit Testing"
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
@@ -298,6 +299,14 @@ stages:
             testResultsFiles: '$(System.DefaultWorkingDirectory)/results.xml' 
             testRunTitle: 'TDD Test Results' 
           displayName: 'Publish JUnit Test Results' 
+        - task: PublishCodeCoverageResults@2
+          condition: always()
+          displayName: 'Publish Code Coverage'
+          inputs:
+            codeCoverageTool: Cobertura
+            summaryFileLocation: 'coverage/cobertura-coverage.xml'
+            reportDirectory: 'coverage'
+            failIfCoverageEmpty: true
     
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
