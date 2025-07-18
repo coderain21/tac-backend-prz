@@ -248,10 +248,60 @@ stages:
             aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation --profile "indyauction-main" 
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
           displayName:  Unit Testing Documentation
-  
+
+    - job: TDD 
+      displayName: "TDD Tests"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'),contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+        vmImage: "ubuntu-22.04"
+      steps:
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)/test'
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npmV2 | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+        - script: |
+            cd test
+            sed -i '/^STAGE=/d' .env
+            echo "STAGE=test" >> .env
+            cat .env
+            cd ../
+            cp test/.env .env
+          displayName: Copy Environment Variables
+        - script: |
+            python3 -m venv venv
+            source venv/bin/activate
+          displayName: Virtual Environment Setup
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - script: |
+            cd test
+            docker compose up -d
+          displayName: Docker Launch
+        - script: |
+            chmod +x ./tdd-test.sh
+            cat .env            
+            ./tdd-test.sh  
+          displayName: Run TDD Tests
+        - task: PublishTestResults@2
+          condition: always() 
+          inputs:
+            testResultsFormat: 'JUnit'  
+            testResultsFiles: '$(System.DefaultWorkingDirectory)/results.xml' 
+            testRunTitle: 'TDD Test Results' 
+          displayName: 'Publish JUnit Test Results' 
+    
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
-      # dependsOn: APITesting
+      dependsOn: APITesting
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
