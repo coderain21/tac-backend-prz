@@ -389,7 +389,12 @@ module.exports.sqsTriggerFunction = async (event) => {
                             total_amount: orderAmount,
                             checkout_url: checkoutURL,
                         }
-
+                        
+                        // Check if seller has enabled automated auction completion emails
+                        if (sellerInformation[0].send_automated_auction_complete_email) {
+                            console.log(`Skipping email for auction ${event.auction_id} - seller ${event.seller_email} has disabled automated auction completion emails`)
+                            continue
+                        }
                         promiseList.push(sendTemplateEmails(user.email_address, template_data))
                     }
                 } else {
@@ -414,7 +419,11 @@ module.exports.sqsTriggerFunction = async (event) => {
                             total_amount: 0,
                             checkout_url: '',
                         }
-
+                        // Check if seller has enabled automated auction completion emails
+                        if (sellerInformation[0].send_automated_auction_complete_email) {
+                            console.log(`Skipping email for auction ${event.auction_id} - seller ${event.seller_email} has disabled automated auction completion emails`)
+                            continue
+                        }
                         promiseList.push(sendTemplateEmails(user.email_address, template_data))
                     }
                 }
