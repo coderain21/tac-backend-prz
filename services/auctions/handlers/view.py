@@ -130,7 +130,8 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps(body, cls=Encoder)
             }
-        end_time= result['end_date']
+        # end_time= result['end_date']
+        end_time = result.get('end_date', None)
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
         if end_time is not None:
