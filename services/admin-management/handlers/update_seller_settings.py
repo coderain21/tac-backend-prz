@@ -1,3 +1,4 @@
+# pylint: disable=trailing-whitespace
 """This module is used to update seller settings"""
 
 import datetime
@@ -52,7 +53,7 @@ def update_seller_settings(event, context):
         request_body = json.loads(event['body'])
         seller_id = request_body.get("seller_id", None)
         send_automated_auction_complete_email = request_body.get("send_automated_auction_complete_email")
-        
+
         print(f"Updating seller settings for seller_id: {seller_id}")
         print(f"send_automated_auction_complete_email: {send_automated_auction_complete_email}")
 
@@ -62,14 +63,14 @@ def update_seller_settings(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, Seller ID is not provided"})
             }
-            
+
         if send_automated_auction_complete_email is None:
             return {
                 "statusCode": 422,
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, send_automated_auction_complete_email is required"})
             }
-            
+
         # Validate that send_automated_auction_complete_email is a boolean
         if not isinstance(send_automated_auction_complete_email, bool):
             return {
@@ -77,7 +78,7 @@ def update_seller_settings(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, send_automated_auction_complete_email must be a boolean value"})
             }
-            
+
         # Searching seller existence by id
         seller_detail = seller_collection.find_one({"_id": ObjectId(seller_id)}, {
             "_id": 1
@@ -88,19 +89,19 @@ def update_seller_settings(event, context):
                 "headers": headers,
                 "body": json.dumps({"message":"Seller does not exist."}),
             }
-            
+
         # updating the seller settings
         query = {"_id": ObjectId(seller_id)}
         new_values = {
             "$set": {
-                "send_automated_auction_complete_email": send_automated_auction_complete_email, 
+                "send_automated_auction_complete_email": send_automated_auction_complete_email,
                 "updated_at": datetime.datetime.utcnow()
             }
         }
-        
+
         try:
             result = seller_collection.update_one(query, new_values)
-            
+
             if result.modified_count > 0:
                 return {
                     "statusCode": 200,
@@ -134,4 +135,4 @@ def update_seller_settings(event, context):
             "statusCode": 500,
             "headers": headers,
              "body": json.dumps({"message": "There was an error updating seller settings"})
-        } 
+        }
