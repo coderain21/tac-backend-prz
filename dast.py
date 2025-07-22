@@ -295,7 +295,8 @@ async def main():
                 'quicksight-dashboards': users_token,
                 'seller-bidder-management': users_token,
                 'site-banner': admin_token,
-                'subdomain': users_token
+                'subdomain': users_token,
+                'in-person-auction': users_token
             }
 
             # Get changed files from the latest commit
