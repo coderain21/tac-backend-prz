@@ -375,156 +375,154 @@
                   "schema": {
                     "type": "string"
                   },
-                  "example": "A0001"
+                  "example": "A29098"
                 }
               ],
           "requestBody": {
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "description": {
-                          "type": "string"
-                        },
-                        "faq": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "question": {
-                                "type": "string"
-                              },
-                              "answer": {
-                                "type": "string"
-                              }
-                            }
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "faq": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "question": {
+                            "type": "string"
+                          },
+                          "answer": {
+                            "type": "string"
                           }
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "terms_and_condition": {
-                          "type": "string",
-                          "description": "Read-only once auction is published.",
-                          "readOnly": true
-                        },
-                        "currency": {
-                          "type": "string",
-                          "description": "Read-only once auction is published.",
-                          "readOnly": true
-                        },
-                        "registration_type": {
-                          "type": "string",
-                          "description": "Read-only once auction is published.",
-                          "readOnly": true
-                        },
-                        "buyer_fees": {
-                          "type": "number",
-                          "description": "Read-only once auction is published.",
-                          "readOnly": true
-                        },
-                        "start_date": {
-                          "type": "string",
-                          "format": "date-time",
-                          "description": "Allowed in both draft and published. Must not be in the past."
-                        },
-                        "menu_links": {
-                          "type": "array",
-                          "items": {
-                            "type": "object",
-                            "properties": {
-                              "title": {
-                                "type": "string"
-                              },
-                              "link_url": {
-                                "type": "string"
-                              },
-                              "dropdown": {
-                                "type": "array",
-                                "items": {
-                                  "type": "object",
-                                  "properties": {
-                                    "title": {
-                                      "type": "string"
-                                    },
-                                    "link_url": {
-                                      "type": "string"
-                                    }
-                                  }
+                        }
+                      }
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "terms_and_condition": {
+                      "type": "string",
+                      "description": "Read-only once auction is published.",
+                    },
+                    "currency": {
+                      "type": "string",
+                      "description": "Read-only once auction is published."
+                    },
+                    "registration_type": {
+                      "type": "string",
+                      "description": "Read-only once auction is published.",
+                    },
+                    "add_buyer_fees":{
+                      "type": "string"
+                    },
+                    "fees": {
+                      "type": "number",
+                      "description": "Read-only once auction is published.",
+                    },
+                    "percentage": {
+                      "type": "string"
+                    },
+                    "start_date": {
+                      "type": number,
+                      "description": "Allowed in both draft and published. Must not be in the past."
+                    },
+                    "menu_links": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "link_url": {
+                            "type": "string"
+                          },
+                          "dropdown": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "link_url": {
+                                  "type": "string"
                                 }
                               }
                             }
                           }
-                        },
-                        "location": {
-                          "type": "object",
-                          "properties": {
-                            "address": {
-                              "type": "string"
-                            },
-                            "latitude": {
-                              "type": "number"
-                            },
-                            "longitude": {
-                              "type": "number"
-                            }
-                          }
-                        },
-                        "logo_image": {
+                        }
+                      }
+                    },
+                    "location": {
+                      "type": "object",
+                      "properties": {
+                        "address": {
                           "type": "string"
                         },
-                        "logo_redirection_url": {
-                          "type": "string"
-                        },
-                        "auction_image": {
-                          "type": "string"
-                        },
-                        "add_buyer_fees": {
+                        "latitude": {
                           "type": "number"
                         },
-                        "time_zone": {
-                          "type": "string"
-                        },
-                        "toggle_powered_by_indy": {
-                          "type": "boolean"
-                        },
-                        "hide_auction_lots": {
-                          "type": "boolean"
-                        },
-                        "make_your_auction_private": {
-                          "type": "boolean"
-                        },
-                        "accept_absentee_bid": {
-                          "type": "boolean"
-                        },
-                        "accept_telephone_bid": {
-                          "type": "boolean"
-                        },
-                        "font": {
-                        "type": "object"
-
-                        },
-                        "button": {
-                          "type": "object"
-                        },
-                        "header": {
-                          "type": "object"
-                        },
-                        "content_area": {
-                          "type": "object"
-                        },
-                        "footer": {
-                          "type": "object"
-                        },
-                        "paddle": {
-                          "type": "object"
-                        },
+                        "longitude": {
+                          "type": "number"
+                        }
                       }
-                    }
+                    },
+                    "logo_image": {
+                      "type": "string"
+                    },
+                    "logo_redirection_url": {
+                      "type": "string"
+                    },
+                    "auction_image": {
+                      "type": "string"
+                    },
+                    "time_zone": {
+                      "type": "string"
+                    },
+                    "toggle_powered_by_indy": {
+                      "type": "boolean"
+                    },
+                    "hide_auction_lots": {
+                      "type": "boolean"
+                    },
+                    "make_your_auction_private": {
+                      "type": "boolean"
+                    },
+                    "accept_absentee_bid": {
+                      "type": "boolean"
+                    },
+                    "accept_telephone_bid": {
+                      "type": "boolean"
+                    },
+                    "font": {
+                    "type": "object"
+
+                    },
+                    "button": {
+                      "type": "object"
+                    },
+                    "header": {
+                      "type": "object"
+                    },
+                    "content_area": {
+                      "type": "object"
+                    },
+                    "footer": {
+                      "type": "object"
+                    },
+                    "paddle": {
+                      "type": "object"
+                    },
                   }
                 }
-              },
+              }
+            }
+          },
            "responses": {
                 "204": {
                   "description": "Update Successful",

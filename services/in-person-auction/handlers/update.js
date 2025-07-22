@@ -8,7 +8,6 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 const Joi = require('joi')
-const { request } = require('express')
 const mongoConnection = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
 const helpers = require('../lib/helper')
