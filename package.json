@@ -46,6 +46,7 @@
     "mongodb": "^5.7.0",
     "mongoose": "^7.4.2",
     "mongoose-paginate-v2": "^1.7.1",
+    "nodejs": "file:devops/dependency/node",
     "nyc": "^17.1.0",
     "otp-generator": "^4.0.1",
     "password-validator": "^5.3.0",

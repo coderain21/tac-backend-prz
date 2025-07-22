@@ -153,9 +153,9 @@ stages:
           vmImage: "ubuntu-latest"
       steps:
         - script: |
-            npm i devops/dependencies/node/
+            npm i devops/dependency/node
             npm install -g retire
-            retire --path devops/dependencies/node/node_modules --outputformat json --severity high
+            retire --path devops/dependency/node/node_modules --outputformat json --severity high
             if [ $? -eq 0 ]; then
               echo "Dependency scanning passed!"
             else
