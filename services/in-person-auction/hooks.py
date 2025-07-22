@@ -39,24 +39,11 @@ def set_authorization(transaction):
     token = str(os.environ.get('USER'))
     if transaction['request']['uri'].startswith('/admin'):
         token = str(os.environ.get('ADMIN'))
-  
 
     if transaction['expected']['statusCode'] != '401':
         transaction['request']['headers']['Authorization'] = f'Bearer {token}'
 
-    if (
-        transaction['request']['method'] == 'PATCH' and
-        '/A0008' in transaction['request']['uri']
-    ):
+    if (transaction['request']['method'] == 'GET' and '/view' in transaction['request']['uri']):
         print('Skipping the test...')
         transaction['skip'] = True
         return
-
-    if (
-        transaction['expected']['statusCode'] == '200' or
-        transaction['expected']['statusCode'] == '204'
-    ):
-        logging.info(transaction)
-        transaction['request']['uri'] = urllib.parse.unquote(
-            transaction['request']['uri'])
-        logging.info(transaction['request'])
