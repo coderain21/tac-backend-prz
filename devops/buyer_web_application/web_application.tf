@@ -69,7 +69,7 @@ resource "aws_amplify_app" "customer_web_application" {
       phases:
         preBuild:
           commands:
-            - npm i --f
+            - npm i --legacy-peer-deps
         build:
           commands:
             - npm run build

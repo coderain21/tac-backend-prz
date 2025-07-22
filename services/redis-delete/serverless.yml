@@ -62,6 +62,7 @@ package:
 
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -83,6 +84,11 @@ custom:
         provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
 
 resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - qa
   Resources:
     RedisDeleteAlertsTopic:
       Type: AWS::SNS::Topic
