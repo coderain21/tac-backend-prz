@@ -130,8 +130,6 @@ stages:
             aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licences/python/licenses.json --profile "indyauction-main"
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
           displayName: 'License Compliance Report'
-
-
     - job: "sast"
       displayName: 'Static Application Security Testing (SAST)'
       condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
@@ -148,7 +146,24 @@ stages:
               exit 1
             fi
           displayName: 'Static Application Security Testing (SAST)'
-
+    - job: "DependencyScanning"
+      displayName: "Dependency Scanning"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - script: |
+            npm i devops/dependency/node
+            npm install -g retire
+            retire --path devops/dependency/node/node_modules --outputformat json --severity high
+            if [ $? -eq 0 ]; then
+              echo "Dependency scanning passed!"
+            else
+              echo "Dependency scanning failed (exit code: $?)"
+              echo "##vso[task.complete result=Failed;]Make step fail"
+              exit 1
+            fi
+          displayName: 'Dependency Scanning'
 - stage: Build
   jobs:
     - job: "Download_Environment"
