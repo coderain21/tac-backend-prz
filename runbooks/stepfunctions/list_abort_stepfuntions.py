@@ -4,8 +4,7 @@ from datetime import datetime
 
 # === MongoDB Setup ===
 client = MongoClient(
-    "mongodb://indyauctionAdmin:gEAoiDhO6BePKHX5@localhost:27017/pre-production"
-    "?authMechanism=SCRAM-SHA-1&authSource=pre-production&retryWrites=false&directConnection=true"
+    "mongodb://localhost:27017"
 )
 db = client["pre-production"]
 collection = db["pre-production-step-function-arns"]
@@ -18,7 +17,7 @@ pipeline = [
     {
         "$match": {
             "seller_email": "namratha.shettigar+stripe@7edge.com",
-            "auction_id": "A0277"
+            "auction_id": "A0283"
         }
     },
     {
@@ -42,8 +41,8 @@ for lot_id in duplicate_lot_ids:
     docs = list(collection.find({
         "lot_id": lot_id,
         "seller_email": "namratha.shettigar+stripe@7edge.com",
-        "auction_id": "A0277"
-    }).sort("created_at", 1))
+        "auction_id": "A0283"
+    }).sort("created_at", -1))
 
     running_arns = []
 

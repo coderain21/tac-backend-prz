@@ -4,8 +4,7 @@ from botocore.exceptions import ClientError
 
 # === MongoDB Setup ===
 client = MongoClient(
-    "mongodb://indyauctionAdmin:gEAoiDhO6BePKHX5@localhost:27017/pre-production"
-    "?authMechanism=SCRAM-SHA-1&authSource=pre-production&retryWrites=false&directConnection=true"
+    "mongodb://localhost:27017"
 )
 db = client["pre-production"]
 collection = db["pre-production-step-function-arns"]

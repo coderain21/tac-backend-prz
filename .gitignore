@@ -13,6 +13,7 @@ venv
 *licenses.json
 services/**/package-lock.json
 services/**/node_modules
+arns_prod_list.txt
 services/**/.env
 resources/**/.env
 resources/**/.serverless/**
