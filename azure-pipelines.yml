@@ -308,7 +308,7 @@ stages:
           displayName: 'Download private key'
           inputs:
             secureFile: 'private.key'
-         - bash: |              
+        - bash: |              
             wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper
             chmod +x aws_signing_helper
           displayName: Install AWS Signer
