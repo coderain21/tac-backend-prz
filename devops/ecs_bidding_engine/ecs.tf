@@ -441,3 +441,10 @@ resource "aws_ssm_parameter" "ecr_repo_tag" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "alb_arn" {
+  name  = "ALB_ARN"
+  type  = "String"
+  value = aws_lb.load-balancer.arn
+  provider = aws.deployment-eu
+  overwrite = true
+}

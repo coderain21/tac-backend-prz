@@ -33,7 +33,7 @@ resource "aws_s3_bucket" "bucket" {
   }
   provider = aws.deployment-eu
 }
-resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_enable" {
+resource "aws_s3_bucket_ownership_controls" "s3_bucket_acl_disable" {
   bucket = aws_s3_bucket.bucket.id
   rule {
     object_ownership = "BucketOwnerEnforced"
@@ -86,7 +86,10 @@ resource "aws_cloudfront_origin_access_control" "cdn" {
   provider = aws.deployment-eu
 }
 
-
+data "aws_ssm_parameter" "waf_web_acl" {
+  name ="WEB_ACL_CLOUDFRONT_ARN"
+  provider = aws.deployment-eu
+}
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = aws_s3_bucket.bucket.bucket_regional_domain_name
@@ -143,6 +146,10 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     minimum_protocol_version = "TLSv1.2_2021"  
     cloudfront_default_certificate = false     
   }
+  web_acl_id = var.STAGE == "prod" ? data.aws_ssm_parameter.waf_web_acl.value : null
+
+
+
 }
 
 data "aws_route53_zone" "domain_zone" {

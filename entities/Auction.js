@@ -162,6 +162,31 @@ const AuctionSchema = new Schema({
     fees: {
         type: String, trim: true, default: '',
     },
+    location: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+    start_time_zone: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+    end_time_zone: {
+        type: Schema.Types.Mixed,
+        default: {},
+    },
+    accept_absentee_bids: {
+        type: Boolean,
+        default: false,
+    },
+    accept_telephone_bids: {
+        type: Boolean,
+        default: false,
+    },
+    auction_type: {
+        type: String,
+        trim: true,
+        default: '',
+    },
     unpublish_session_started_at: {
         type: Number,
     },

@@ -1,0 +1,14 @@
+{
+  "highBid": {
+    "name": "DYNAMIC_NAME",
+    "bid_amount": "DYNAMIC_BID_AMOUNT",
+    "paddle_number": "DYNAMIC_PADDLE_NUMBER",
+    "lot_id": "SET_BY_TEST"
+  },
+  "lowBid": {
+    "name": "DYNAMIC_NAME",
+    "bid_amount": "DYNAMIC_BID_AMOUNT",
+    "paddle_number": "DYNAMIC_PADDLE_NUMBER",
+    "lot_id": "SET_BY_TEST"
+  }
+}
