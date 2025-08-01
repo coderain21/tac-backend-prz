@@ -808,6 +808,34 @@ functions:
             authorizer:
                 arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
 
+  update-seller-settings:
+    handler: handlers/update_seller_settings.update_seller_settings
+    runtime: python3.9
+    layers:
+      - ${ssm:COMMON_LIB_ARN_PYTHON}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: "*"
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /update-seller-settings
+          method: patch
+          authorizer:
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
   manage-seller-deactivation:
     handler: handlers/manage-seller-deactivation.handler
     vpc:
