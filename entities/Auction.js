@@ -187,6 +187,12 @@ const AuctionSchema = new Schema({
         trim: true,
         default: '',
     },
+    unpublish_session_started_at: {
+        type: Number,
+    },
+    publish_session_started_at: {
+        type: Number,
+    },
 })
 
 AuctionSchema.plugin(mongoosePaginate)
