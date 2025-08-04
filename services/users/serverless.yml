@@ -555,20 +555,26 @@ resources:
         - ${self:custom.isProd}
         - prod
   Resources:
+    # WebAclAssociationApi: Only enabled for production stage to provide WAF protection for API Gateway
+    # Uses CloudFormation condition 'IsProd' to create resource only for prod stage
+    # SSM parameter has default value to prevent resolution errors in non-prod environments
     WebAclAssociationApi:
       Condition: IsProd
       Type: AWS::WAFv2::WebACLAssociation
       Properties:
         ResourceArn:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
+    # WebAclAssociationCognito: Only enabled for production stage to provide WAF protection for Cognito User Pool
+    # Uses CloudFormation condition 'IsProd' to create resource only for prod stage
+    # SSM parameter has default value to prevent resolution errors in non-prod environments
     WebAclAssociationCognito:
       Condition: IsProd
       Type: AWS::WAFv2::WebACLAssociation
       Properties:
         ResourceArn:
           Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:SELLER_COGNITO_USERPOOL_ID}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
 
     
     EmailOtp:

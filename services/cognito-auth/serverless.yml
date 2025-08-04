@@ -795,13 +795,16 @@ resources:
         HtmlPart: ${file(./templates/delete_buyer.html)}
         Subject: Indy.auction - Your Account Deactivation Notification
         TemplateName: ${self:provider.stage}-admin-delete-buyer-template
+    # WebAclAssociationCognitoBuyer: Only enabled for production stage to provide WAF protection
+    # Uses CloudFormation condition 'IsProd' to create resource only for prod stage
+    # SSM parameter has default value to prevent resolution errors in non-prod environments
     WebAclAssociationCognitoBuyer:
       Condition: IsProd
       Type: AWS::WAFv2::WebACLAssociation
       Properties:
         ResourceArn:
           Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:BUYER_COGNITO_USERPOOL_ID}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
 
 
 
