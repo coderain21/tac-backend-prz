@@ -2,6 +2,8 @@
   "Classic": {
     "template_name": "Classic",
     "menu_links": [],
+    "auction_id": "A-CLASSIC",
+    "seller_email":"test@example.com",
     "logo_image": "",
     "logo_redirection_url": "",
     "title": "DYNAMIC_AUCTION_TITLE",
@@ -54,7 +56,8 @@
     },
     "accept_absentee_bid": false,
     "accept_telephone_bid": false,
-    "auction_type": "live"
+    "auction_type": "live",
+    "status": "Published"
     
   }
 }

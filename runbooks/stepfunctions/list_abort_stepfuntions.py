@@ -6,8 +6,8 @@ from datetime import datetime
 client = MongoClient(
     "mongodb://localhost:27017"
 )
-db = client["pre-production"]
-collection = db["pre-production-step-function-arns"]
+db = client["prod"]
+collection = db["prod-step-function-arns"]
 
 # === Step Functions Client ===
 sfn = boto3.client("stepfunctions", region_name="eu-west-2")
@@ -16,8 +16,8 @@ sfn = boto3.client("stepfunctions", region_name="eu-west-2")
 pipeline = [
     {
         "$match": {
-            "seller_email": "namratha.shettigar+stripe@7edge.com",
-            "auction_id": "A0283"
+            "seller_email": "bid@aspenartmuseum.org",
+            "auction_id": "A0001"
         }
     },
     {
@@ -40,8 +40,8 @@ for lot_id in duplicate_lot_ids:
     # 🔹 Get all documents for the lot_id, newest first
     docs = list(collection.find({
         "lot_id": lot_id,
-        "seller_email": "namratha.shettigar+stripe@7edge.com",
-        "auction_id": "A0283"
+        "seller_email": "bid@aspenartmuseum.org",
+        "auction_id": "A0001"
     }).sort("created_at", -1))
 
     running_arns = []
@@ -69,13 +69,13 @@ for lot_id in duplicate_lot_ids:
         for arn, created_at_str in running_arns[1:]:  # Skip the first (latest)
 
             print(f"🟡 DUPLICATE RUNNING ARN for lot_id {lot_id} | created_at: {created_at_str} | ARN: {arn}")
-            print("🛑 Aborting DUPLICATE RUNNING ARN:")
-            try:
-                sfn.stop_execution(
-                    executionArn=arn,
-                    error="DuplicateExecution",
-                    cause=f"Aborted because a newer execution exists for lot_id {lot_id}"
-                )
-                print("✅ Aborted successfully")
-            except Exception as e:
-                print(f"❌ Failed to abort ARN {arn}: {e}")
+            # print("🛑 Aborting DUPLICATE RUNNING ARN:")
+            # try:
+            #     sfn.stop_execution(
+            #         executionArn=arn,
+            #         error="DuplicateExecution",
+            #         cause=f"Aborted because a newer execution exists for lot_id {lot_id}"
+            #     )
+            #     print("✅ Aborted successfully")
+            # except Exception as e:
+            #     print(f"❌ Failed to abort ARN {arn}: {e}")
