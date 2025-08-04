@@ -13,6 +13,7 @@ venv
 *licenses.json
 services/**/package-lock.json
 services/**/node_modules
+arns_prod_list.txt
 services/**/.env
 resources/**/.env
 resources/**/.serverless/**
@@ -100,3 +101,8 @@ certificate.crt
 private.key
 .vscode
 .jira
+results.xml
+.nyc_output
+coverage/
+arns_data_prod_after.txt
+arns_data_prod.txt

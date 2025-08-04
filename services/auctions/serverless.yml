@@ -145,51 +145,102 @@ package:
     - ./lib/**
 
 
+# stepFunctions:
+#   stateMachines:
+#     lot-published:
+#       name: ${opt:stage}-lot-published
+#       definition:
+#         Comment: "Step function will trigger when lot published"
+#         StartAt: wait-for-auction-start
+#         States:
+#           wait-for-auction-start:
+#             Type: Wait
+#             TimestampPath: "$.start_date"
+#             Next:  process-cache-lots
+#           process-cache-lots:
+#             Type: Task
+#             Resource:
+#               Fn::GetAtt: ["save-to-cache", Arn]
+#             Next: check-lot-ends
+#           check-lot-ends:
+#               Type: Wait
+#               TimestampPath: "$.end_date"
+#               Next:  process-cart
+#           process-cart:
+#               Type: Task
+#               Resource:
+#                 Fn::GetAtt: ["process-cart", Arn]
+#               End: true
+
+#     # auction-ended:
+#     #  name: ${opt:stage}-auction-ended
+#     #  definition:
+#     #     Comment: "Step function will trigger when auction ended"
+#     #     StartAt: check-auction-ends
+#     #     States:
+#     #       check-auction-ends:
+#     #             Type: Wait
+#     #             TimestampPath: "$.end_date"
+#     #             Next: process-next-steps
+#     #       process-next-steps:
+#     #         Type: Task
+#     #         Resource:
+#     #           Fn::GetAtt: ["send-email_auction", Arn]
+#     #         End: true
+        
 stepFunctions:
   stateMachines:
     lot-published:
       name: ${opt:stage}-lot-published
       definition:
-        Comment: "Step function will trigger when lot published"
+        Comment: "Step function will trigger when lot published with sequential processing"
         StartAt: wait-for-auction-start
         States:
           wait-for-auction-start:
             Type: Wait
             TimestampPath: "$.start_date"
-            Next:  process-cache-lots
+            Next: process-cache-lots
           process-cache-lots:
             Type: Task
             Resource:
-              Fn::GetAtt: ["save-to-cache", Arn]
+              Fn::GetAtt: ["save-to-cache", "Arn"]
+            ResultPath: "$.cache_output" # Store output for clarity
             Next: check-lot-ends
           check-lot-ends:
-              Type: Wait
-              TimestampPath: "$.end_date"
-              Next:  process-cart
-          process-cart:
-              Type: Task
-              Resource:
-                Fn::GetAtt: ["process-cart", Arn]
-              End: true
+            Type: Wait
+            TimestampPath: "$.cache_output.end_date"
+            Next: wait-for-sequential-processing
+          wait-for-sequential-processing:
+            Type: Wait
+            SecondsPath: "$.cache_output.delay_seconds" # Use delay_seconds from save-to-cache
+            Next: process-cart-with-retry
+          process-cart-with-retry:
+            Type: Task
+            Resource:
+              Fn::GetAtt: ["process-cart", "Arn"]
+            # InputPath: "$.cache_output.original_input" # Use original_input from save-to-cache
+            Retry:
+              - ErrorEquals: ["Lambda.ServiceException", "Lambda.AWSLambdaException", "Lambda.SdkClientException"]
+                IntervalSeconds: 2
+                MaxAttempts: 3
+                BackoffRate: 2.0
+              - ErrorEquals: ["States.TaskFailed"]
+                IntervalSeconds: 5
+                MaxAttempts: 2
+                BackoffRate: 2.0
+            Catch:
+              - ErrorEquals: ["States.ALL"]
+                ResultPath: "$.error"
+                Next: cart-processing-complete
+            Next: cart-processing-complete
+          cart-processing-complete:
+            Type: Succeed
 
-    # auction-ended:
-    #  name: ${opt:stage}-auction-ended
-    #  definition:
-    #     Comment: "Step function will trigger when auction ended"
-    #     StartAt: check-auction-ends
-    #     States:
-    #       check-auction-ends:
-    #             Type: Wait
-    #             TimestampPath: "$.end_date"
-    #             Next: process-next-steps
-    #       process-next-steps:
-    #         Type: Task
-    #         Resource:
-    #           Fn::GetAtt: ["send-email_auction", Arn]
-    #         End: true
-        
+
+
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -671,6 +722,11 @@ functions:
  
 
 resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
   Resources:
     LotStateMachineSSMParameter:
       Type: 'AWS::SSM::Parameter'
@@ -749,6 +805,14 @@ resources:
         HtmlPart: ${file(./templates/send-auction-completion-email.html)}
         Subject: "Indy.auction - {{subject}}"
         TemplateName: ${self:provider.stage}-send-auction-completion-email
+
+    WebAclAssociation:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
 
 plugins:
   - serverless-offline

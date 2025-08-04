@@ -69,7 +69,7 @@ resource "aws_amplify_app" "customer_web_application" {
       phases:
         preBuild:
           commands:
-            - npm i --f
+            - npm i 
         build:
           commands:
             - npm run build

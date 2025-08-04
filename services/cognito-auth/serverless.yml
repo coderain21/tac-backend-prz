@@ -109,6 +109,7 @@ package:
     - ./lib/**
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -208,7 +209,12 @@ functions:
   
 
 resources:
-   Resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
+  Resources:
     Buyers:
       Type: "AWS::Cognito::UserPool"
       Properties:
@@ -479,11 +485,6 @@ resources:
           IdToken: minutes
           RefreshToken: days
 
-
-    
-        
-
-    
     CognitoIdentityPool:
       Type: AWS::Cognito::IdentityPool
       Properties:
@@ -571,7 +572,6 @@ resources:
               - Buyers
               - Arn
     
-
     BuyersCognitoIdentityPoolNameStore:
         Type: AWS::SSM::Parameter
         Properties:
@@ -673,8 +673,6 @@ resources:
             ServerSideTokenCheck: false
         # Define more configuration properties as needed
     
-        
-   
     AdminCognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
@@ -797,6 +795,14 @@ resources:
         HtmlPart: ${file(./templates/delete_buyer.html)}
         Subject: Indy.auction - Your Account Deactivation Notification
         TemplateName: ${self:provider.stage}-admin-delete-buyer-template
+    WebAclAssociationCognitoBuyer:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:cognito-idp:${AWS::Region}:${AWS::AccountId}:userpool/${ssm:BUYER_COGNITO_USERPOOL_ID}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+
 
 
 
