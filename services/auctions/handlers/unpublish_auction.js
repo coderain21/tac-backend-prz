@@ -85,9 +85,9 @@ module.exports.handler = async (event) => {
         }
         if (request_body.type === 'UNPUBLISH' && getAuctionDetails[0].status === 'Published') {
             // check if auction is published within 2 minutes
-            if (getAuctionDetails.publish_session_started_at) {
+            if (getAuctionDetails[0].publish_session_started_at) {
                 const now = Math.floor(Date.now() / 1000)
-                const publishTime = getAuctionDetails.publish_session_started_at
+                const publishTime = getAuctionDetails[0].publish_session_started_at
                 if (now - publishTime < 120) { // 120 seconds = 2 minutes
                     return {
                         statusCode: 400,
@@ -105,7 +105,7 @@ module.exports.handler = async (event) => {
                     status: newStatus,
                     unpublish_session_started_at: Math.floor(Date.now() / 1000),
                 }
-                await mongoConnection.update(Auction, getAuctionDetails._id.toString(), updatePayload)
+                await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
             } catch (error) {
                 console.log('Error updating auction status:', error)
                 return {
