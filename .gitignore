@@ -13,6 +13,7 @@ venv
 *licenses.json
 services/**/package-lock.json
 services/**/node_modules
+arns_prod_list.txt
 services/**/.env
 resources/**/.env
 resources/**/.serverless/**
@@ -103,3 +104,5 @@ private.key
 results.xml
 .nyc_output
 coverage/
+arns_data_prod_after.txt
+arns_data_prod.txt

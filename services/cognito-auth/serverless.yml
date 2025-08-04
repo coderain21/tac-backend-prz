@@ -213,7 +213,7 @@ resources:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - qa
+        - prod
   Resources:
     Buyers:
       Type: "AWS::Cognito::UserPool"
