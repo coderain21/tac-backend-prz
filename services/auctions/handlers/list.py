@@ -109,6 +109,8 @@ def list_auction(event, context):
             "currency": 1,
             # "description": 1,
             "time_zone": 1,
+            "auction_type":1,
+            "location":1,
             # "extension_type": 1,
             # "extension_time": 1,
             # "extension_time_between_lots": 1,

@@ -29,11 +29,13 @@ const { create_auction } = require('../../services/in-person-auction/handlers/cr
 
 test.describe('In Person Auction Create handler tests', () => {
   let db: Db;
+  let client: MongoClient;
   const sellerEmail = process.env.API_USERNAME!;
 
   test.beforeAll(async () => {
-    await connectToDatabase();
-    db = getDb();
+      client = new MongoClient(process.env.MONGO_CLIENT!);
+      await client.connect();
+      db = client.db(process.env.DATABASE);
   });
 
   test.afterAll(async () => {
