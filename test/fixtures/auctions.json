@@ -1,0 +1,60 @@
+{
+  "Classic": {
+    "template_name": "Classic",
+    "menu_links": [],
+    "logo_image": "",
+    "logo_redirection_url": "",
+    "title": "DYNAMIC_AUCTION_TITLE",
+    "auction_image": "",
+    "description": "DYNAMIC_AUCTION_DESCRIPTION",
+    "currency": "USD",
+    "start_date": "DYNAMIC_AUCTION_START_DATE",
+    "registration_type": "Email only",
+    "add_buyer_fees": "No additional fees",
+    "percentage": "",
+    "location": {
+        "address": "",
+        "latitude": "",
+        "longitude": ""
+    },
+    "fees": "",
+    "faq": [],
+    "time_zone": "",
+    "terms_and_condition": " ",
+    "publish_auction_results": false,
+    "show_bidder_location_in_bidder_history": false,
+    "show_bidding_history": false,
+    "toggle_powered_by_indy": false,
+    "make_your_auction_private": false,
+    "hide_auction_lots": false,
+    "passcode": "",
+    "font": {
+        "hearder_font": "",
+        "body_font": ""
+    },
+    "buttons": {
+        "background_color": "",
+        "text_color": ""
+    },
+    "header": {
+        "background_color": "",
+        "text_color": ""
+    },
+    "content_area": {
+        "background_color": "",
+        "text_color": ""
+    },
+    "footer": {
+        "background_color": "",
+        "text_color": ""
+    },
+    "paddle": {
+        "background_color": "",
+        "text_color": ""
+    },
+    "accept_absentee_bid": false,
+    "accept_telephone_bid": false,
+    "auction_type": "live"
+    
+  }
+}

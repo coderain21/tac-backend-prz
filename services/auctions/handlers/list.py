@@ -298,64 +298,62 @@ def export_as_csv(auctions):
             print(333)
 
             # Format the created_at field as dd-mm-year
-            try:
-                for auction in auctions:
-                    time_zone = ""
-                    timezone_str = ""
-                    if auction["start_date"] is not None:
-                        start_date_epoch = auction["start_date"]/1000
+            for auction in auctions:
+                try:
+                    start_date_epoch = auction.get("start_date", None)
+                    end_date_epoch = auction.get("end_date", None)
+
+                    time_zone_raw = auction.get("time_zone", "").strip()
+                    if '-' in time_zone_raw:
+                        time_zone_code = time_zone_raw.split('-')[0].strip()
                     else:
-                        start_date_epoch=""
-                    if auction["end_date"] is not None:
-                        end_date_epoch = auction["end_date"]/1000
-                    else:
-                        end_date_epoch= ""
-                    if 'time_zone' in auction:
-                        time_zone = auction["time_zone"]
-                    if time_zone != "" and time_zone is not None:
-                        time_zone_str = time_zone[:3]
-                        timezone_str = time_zones[time_zone_str]
-                    if start_date_epoch != "":
-                        start_date = datetime.utcfromtimestamp(start_date_epoch)
-                        timezone = pytz.timezone(time_zones.get(timezone_str) if timezone_str in time_zones else time_zone)
+                        time_zone_code = time_zone_raw
+
+                    timezone_str = time_zones.get(time_zone_code, 'UTC')
+                    timezone = pytz.timezone(timezone_str)
+
+                    # Handle start date
+                    if start_date_epoch:
+                        start_date = datetime.utcfromtimestamp(start_date_epoch / 1000)
                         start_date = timezone.localize(start_date)
-                    if end_date_epoch != "":
-                        end_date = datetime.utcfromtimestamp(end_date_epoch)
-                        timezone = pytz.timezone(time_zones.get(timezone_str) if timezone_str in time_zones else time_zone)
+                    else:
+                        start_date = None
+
+                    # Handle end date
+                    if end_date_epoch:
+                        end_date = datetime.utcfromtimestamp(end_date_epoch / 1000)
                         end_date = timezone.localize(end_date)
-                    modified_auction = {}
-                    modified_auction["Auction ID"] = auction["auction_id"]
-                    modified_auction["Auction Name"] = auction["title"]
-                    modified_auction["Auction Description"] = re.sub(re.compile(r'<.*?>'), '', auction["description"])
-                    modified_auction["Timezone"] = auction["time_zone"]
-                    if start_date_epoch != "":
-                        modified_auction["Auction Start Date"] = start_date.date() #if auction["start_date"] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%d %B %Y")
-                        modified_auction["Auction Start Time"] =  start_date.time()#if auction['start_date'] is None or datetime.utcfromtimestamp(auction["start_date"]).year == 1970 else datetime.utcfromtimestamp(auction["start_date"]).strftime("%H:%M")
                     else:
-                        modified_auction["Auction Start Date"]= None
-                        modified_auction["Auction Start Time"]= None
-                    if end_date_epoch != "":
-                        modified_auction["Auction End Date"] = end_date.date() #if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%d %B %Y")
-                        modified_auction["Auction End Time"] = end_date.time()#if auction['end_date'] is None or datetime.utcfromtimestamp(auction["end_date"]).year == 1970 else datetime.utcfromtimestamp(auction["end_date"]).strftime("%H:%M")
-                    else:
-                        modified_auction["Auction End Date"]= None
-                        modified_auction["Auction End Time"]= None
-                    modified_auction["Registration Type"] = auction["registration_type"]
-                    modified_auction["Currency"] = auction["currency"]
-                    modified_auction["Extension Type"] = auction["extension_type"]
-                    if isinstance(auction["extension_time"], (str, list)):
-                        extension_time_len = len(auction["extension_time"])
-                    else:
-                        extension_time_len = 0
-                    modified_auction["Extension mins"] = "" if extension_time_len == 0 else str(auction["extension_time"]) + " minutes"
-                    # modified_auction["Extension mins"] = "" if len(auction["extension_time"]) == 0 else auction["extension_time"]+" minutes"
-                    modified_auction["Number of Lots"] = auction.get(
-                        "total_lots", 0)
-                    modified_auction["Status"] = auction["status"]
+                        end_date = None
+
+                    # Build CSV row
+                    modified_auction = {
+                        "Auction ID": auction.get("auction_id"),
+                        "Auction Name": auction.get("title"),
+                        "Auction Description": re.sub(re.compile(r'<.*?>'), '', auction.get("description", "")),
+                        "Timezone": time_zone_raw,
+                        "Auction Start Date": start_date.date() if start_date else None,
+                        "Auction Start Time": start_date.time() if start_date else None,
+                        "Auction End Date": end_date.date() if end_date else None,
+                        "Auction End Time": end_date.time() if end_date else None,
+                        "Registration Type": auction.get("registration_type"),
+                        "Currency": auction.get("currency"),
+                        "Extension Type": auction.get("extension_type"),
+                        "Extension mins": (
+                            str(auction["extension_time"]) + " minutes"
+                            if isinstance(auction.get("extension_time"), (int, float, str)) and auction.get("extension_time")
+                            else ""
+                        ),
+                        "Number of Lots": auction.get("total_lots", 0),
+                        "Status": auction.get("status")
+                    }
+
                     writer.writerow(modified_auction)
-            except Exception as err:
-                print(err)
-                return None
+
+                except Exception as err:
+                    print(f"Error processing auction {auction.get('auction_id')}: {err}")
+                    continue  # Skip to next auction
+
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
 

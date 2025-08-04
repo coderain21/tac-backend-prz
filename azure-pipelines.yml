@@ -5,15 +5,19 @@ trigger:
       - pre-prod
       - master
       - bidding-engine
+      - qa-tac
 pr:
   branches:
     include:
       - qa
+      - qa-tac
 variables:
   - group: general
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
     - group: master
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa') }}:
+    - group: qa
+  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/qa-tac') }}:
     - group: qa
   - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/pre-prod') }}:
     - group: pre-production
@@ -67,7 +71,7 @@ stages:
             OPENAI_TOKEN: $(OPENAI_TOKEN)
     - job: "secret"
       displayName: "Secret Checking"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -81,7 +85,7 @@ stages:
           displayName: 'Lint'
     - job: "licence_complaiance"
       displayName: "License Compliance"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -126,11 +130,9 @@ stages:
             aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licences/python/licenses.json --profile "indyauction-main"
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
           displayName: 'License Compliance Report'
-
-
     - job: "sast"
       displayName: 'Static Application Security Testing (SAST)'
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -144,7 +146,24 @@ stages:
               exit 1
             fi
           displayName: 'Static Application Security Testing (SAST)'
-
+    - job: "DependencyScanning"
+      displayName: "Dependency Scanning"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+          vmImage: "ubuntu-latest"
+      steps:
+        - script: |
+            npm i devops/dependency/node
+            npm install -g retire
+            retire --path devops/dependency/node/node_modules --outputformat json --severity high
+            if [ $? -eq 0 ]; then
+              echo "Dependency scanning passed!"
+            else
+              echo "Dependency scanning failed (exit code: $?)"
+              echo "##vso[task.complete result=Failed;]Make step fail"
+              exit 1
+            fi
+          displayName: 'Dependency Scanning'
 - stage: Build
   jobs:
     - job: "Download_Environment"
@@ -178,9 +197,10 @@ stages:
   
 - stage: Test
   jobs:
+
     - job: APITesting
       displayName: "Unit Testing"
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
         vmImage: "ubuntu-22.04"
       steps:
@@ -244,11 +264,69 @@ stages:
             aws s3 sync swaggerdocs s3://${DOCS_BUCKET_NAME}/swagger_api_documentation --profile "indyauction-main" 
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
           displayName:  Unit Testing Documentation
-  
+
+    - job: TDD 
+      displayName: "TDD Tests"
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'),contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      pool:
+        vmImage: "ubuntu-22.04"
+      steps:
+        - task: DownloadPipelineArtifact@2
+          name: environment
+          inputs:
+            artifact: Environment
+            targetPath: '$(System.DefaultWorkingDirectory)/test'
+        - task: Cache@2
+          inputs:
+            key: 'npmV2 | "$(Agent.OS)" | package.json'
+            restoreKeys: |
+              npmV2 | "$(Agent.OS)"
+            path: "$(System.DefaultWorkingDirectory)/node_modules"
+            cacheHitVar: CACHE_RESTORED
+        - script: |
+            cd test
+            sed -i '/^STAGE=/d' .env
+            echo "STAGE=test" >> .env
+            cat .env
+            cd ../
+            cp test/.env .env
+          displayName: Copy Environment Variables
+        - script: |
+            python3 -m venv venv
+            source venv/bin/activate
+          displayName: Virtual Environment Setup
+        - script: |
+            npm install --cache .npm
+          condition: ne(variables.CACHE_RESTORED, 'true')
+        - script: |
+            cd test
+            docker compose up -d
+          displayName: Docker Launch
+        - script: |
+            chmod +x ./tdd-test.sh
+            cat .env            
+            ./tdd-test.sh  
+          displayName: Run TDD Tests
+        - task: PublishTestResults@2
+          condition: always() 
+          inputs:
+            testResultsFormat: 'JUnit'  
+            testResultsFiles: '$(System.DefaultWorkingDirectory)/results.xml' 
+            testRunTitle: 'TDD Test Results' 
+          displayName: 'Publish JUnit Test Results' 
+        - task: PublishCodeCoverageResults@2
+          condition: always()
+          displayName: 'Publish Code Coverage'
+          inputs:
+            codeCoverageTool: Cobertura
+            summaryFileLocation: 'coverage/cobertura-coverage.xml'
+            reportDirectory: 'coverage'
+            failIfCoverageEmpty: true
+    
     - job: "dast"
       displayName: 'Dynamic Application Security Testing (DAST)'
-      # dependsOn: APITesting
-      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
+      dependsOn: APITesting
+      condition: and(or(contains(variables['System.PullRequest.SourceBranch'], 'feature'), contains(variables['System.PullRequest.SourceBranch'], 'ci'), contains(variables['System.PullRequest.SourceBranch'], 'bugfix'), contains(variables['System.PullRequest.TargetBranch'], 'qa'),contains(variables['System.PullRequest.TargetBranch'], 'qa-tac'), contains(variables['System.PullRequest.SourceBranch'], 'hotfix')), succeeded())
       pool:
           vmImage: "ubuntu-22.04"
       steps:
@@ -305,6 +383,10 @@ stages:
           parameters:
             envName: 'production'
     - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'testing'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa-tac') }}:
         - template: devops/deploy.yml
           parameters:
             envName: 'testing'

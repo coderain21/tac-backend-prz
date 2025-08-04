@@ -110,6 +110,7 @@ def view(event, context):
             "location": 1,
             "start_time_zone": 1,
             "end_time_zone": 1,
+            "auction_type": 1,
         }
         result = collection.find_one({"_id":ObjectId(auction_id), "seller_email": email_address}, projection)
         if result is None:
@@ -130,7 +131,8 @@ def view(event, context):
                 "headers": headers,
                 "body": json.dumps(body, cls=Encoder)
             }
-        end_time= result['end_date']
+        # end_time= result['end_date']
+        end_time = result.get('end_date', None)
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
         if end_time is not None:
