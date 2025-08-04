@@ -65,3 +65,4 @@ def set_authorization(transaction):
         transaction['request']['uri'] = urllib.parse.unquote(
             transaction['request']['uri'])
         logging.info(transaction['request'])
+
