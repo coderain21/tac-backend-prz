@@ -277,7 +277,10 @@ def export_as_csv(sales, email_address):
                 currency = sale.get("currency", "")
                 if currency in currencySymbolMapping:
                     currency = currencySymbolMapping.get(currency, "")
-                date = format_date(int(sale['created_at']))
+                if sale.get('created_at'):
+                    date = format_date(int(sale['created_at']))
+                else:
+                    date = None
                 # Format the date as a string with only the date
                 formatted_date = date
                 # shipping_address = sale['shipping_address']
@@ -288,7 +291,7 @@ def export_as_csv(sales, email_address):
                 modified_sales["Date"] = formatted_date
                 modified_sales["Result"] = currency + str(sale["amount"])
                 modified_sales["Payment status"] = sale["payment_status"]
-                modified_sales["Payment type"]= sale["payment"]
+                modified_sales["Payment type"]= sale.get("payment", "")
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
