@@ -184,6 +184,7 @@ resource "aws_cloudfront_origin_access_control" "cdn" {
   provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "waf_web_acl" {
+  count = var.STAGE == "prod" ? 1 : 0
   name ="WEB_ACL_CLOUDFRONT_ARN"
   provider = aws.deployment-eu
 }

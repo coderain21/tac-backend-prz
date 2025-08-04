@@ -542,3 +542,10 @@ resource "aws_wafv2_web_acl_association" "web_acl_association" {
   resource_arn = aws_lb.load-balancer.arn
   provider = aws.deployment-eu
 }
+resource "aws_ssm_parameter" "alb_arn" {
+  name  = "ALB_ARN"
+  type  = "String"
+  value = aws_lb.load-balancer.arn
+  provider = aws.deployment-eu
+  overwrite = true
+}
