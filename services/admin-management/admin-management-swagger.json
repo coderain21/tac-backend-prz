@@ -3196,6 +3196,9 @@
                     },
                     "is_deleted": {
                       "type": "boolean"
+                    },
+                    "send_automated_auction_complete_email": {
+                      "type": "boolean"
                     }
                   }
                 },
@@ -3236,7 +3239,8 @@
               "auctions_count": "1",
               "plan_type": "Pro",
               "full_name": "William ",
-              "is_deleted": false
+              "is_deleted": false,
+              "send_automated_auction_complete_email": true
                 }
               }
             }
@@ -3286,6 +3290,121 @@
                 }
               }
             }
+        }
+      }
+    },
+    "/update-seller-settings": {
+      "patch": {
+        "tags": [
+          "Admin Seller Management"
+        ],
+        "summary": "Update seller settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "seller_id": {
+                    "type": "string",
+                    "description": "The ID of the seller to update settings for"
+                  },
+                  "send_automated_auction_complete_email": {
+                    "type": "boolean",
+                    "description": "Whether to send automated auction completion emails"
+                  }
+                },
+                "required": [
+                  "seller_id",
+                  "send_automated_auction_complete_email"
+                ]
+              },
+              "example": {
+                "seller_id": "654f664042b81a4af17a0fd8",
+                "send_automated_auction_complete_email": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    },
+                    "seller_id": {
+                      "type": "string"
+                    },
+                    "send_automated_auction_complete_email": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Seller settings updated successfully",
+                  "seller_id": "654f664042b81a4af17a0fd8",
+                  "send_automated_auction_complete_email": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable Entity",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Invalid request, Seller ID is not provided"
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "Invalid request, send_automated_auction_complete_email is required"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Invalid request, send_automated_auction_complete_email must be a boolean value"
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                      "message": "Seller does not exist."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
