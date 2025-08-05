@@ -427,7 +427,7 @@
                       "type": "string"
                     },
                     "start_date": {
-                      "type": number,
+                      "type": "number",
                       "description": "Allowed in both draft and published. Must not be in the past."
                     },
                     "menu_links": {
@@ -568,7 +568,109 @@
               ]
             }
 
+      },
+
+     "/lots": {
+      "post": {
+        "tags": ["Lots"],
+        "summary": "Lots create",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Lots"
+              },
+              "example": {
+                "auction_id": "A2084",
+                "seller_email": "sthuthi+testing@7edge.com",
+                "title1": "Title1",
+                "title2": "title2",
+                "description": "<p>description</p>",
+                "reserve": 1000,
+                "low_estimate": 1000,
+                "high_estimate": 20000,
+                "shipping_details": "details",
+                "current_bid": 0,
+                "tags": ["test"],
+                "images": [
+                  {
+                    "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                    "feature": true
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Lot created successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example2": {
+                    "value": {
+                      "message": "Please fill all the required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       }
+    }
   },
   "components": {
     "schemas": {
@@ -720,6 +822,67 @@
           },
           "status": {
             "type": "string"
+          }
+        }
+      },
+      "Lots": {
+        "type": "object",
+        "properties": {
+          "auction_id": {
+            "type": "string"
+          },
+          "seller_email": {
+            "type": "string"
+          },
+          "lot_number": {
+            "type": "integer"
+          },
+          "lot_title": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "feature": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "title1": {
+            "type": "string"
+          },
+          "title2": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "reserve": {
+            "type": "integer"
+          },
+          "low_estimate": {
+            "type": "integer"
+          },
+          "high_estimate": {
+            "type": "integer"
+          },
+          "shipping_details": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       },

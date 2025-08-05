@@ -82,6 +82,9 @@ const LotSchema = new Schema({
     winning_user: {
         type: String, trim: true,
     },
+    reserve: {
+        type: Number, trim: true,
+    },
 })
 
 LotSchema.plugin(mongoosePaginate)
