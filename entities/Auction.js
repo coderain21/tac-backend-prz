@@ -193,6 +193,10 @@ const AuctionSchema = new Schema({
     publish_session_started_at: {
         type: Number,
     },
+    total_lots: {
+        type: Number,
+        default: 0,
+    },
 })
 
 AuctionSchema.plugin(mongoosePaginate)

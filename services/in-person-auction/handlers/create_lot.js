@@ -11,6 +11,7 @@ const Joi = require('joi')
 const { request } = require('express')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
+const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
 const Counter = require('../entities/Counter')
 const helpers = require('../lib/helper')
@@ -41,6 +42,14 @@ module.exports.create_lot = async (event) => {
         }
 
         const request_body = JSON.parse(event.body)
+        console.log(request_body)
+        if (!request_body) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Invalid request body' }),
+            }
+        }
 
         const email = event.requestContext.authorizer.claims['cognito:username']
         request_body.seller_email = email
@@ -53,8 +62,8 @@ module.exports.create_lot = async (event) => {
             }
         }
         const auctionId = request_body.auction_id
-        const auction = await mongoConnection.view(Auction, { seller_email: email, auction_id: auctionId })
-        if (!auction) {
+        const auctionRecord = await mongoConnection.view(Auction, { seller_email: email, auction_id: auctionId })
+        if (!auctionRecord) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
@@ -62,7 +71,7 @@ module.exports.create_lot = async (event) => {
             }
         }
         const requiredFields = [
-            'image',
+            'images',
             'title1',
             'description',
             'reserve',
@@ -73,19 +82,43 @@ module.exports.create_lot = async (event) => {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
-                body: 'Please fill all the required fields',
+                body: JSON.stringify({ message: 'Please fill all the required fields' }),
             }
         }
 
         // setting the lot number
-        const existingLotCount = await Counter.findOneAndUpdate({ seller_email: email, record_type: 'Lots', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+        const existingLotCount = await Counter.findOneAndUpdate({
+            seller_email: email, auction_id: auctionId, record_type: 'Lots', status: 'Active',
+        }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+        // console.log('existingLotCount', existingLotCount)
         const lotNumber = existingLotCount ? existingLotCount.starting_sequence : 1
         request_body.lot_number = lotNumber
 
         // setting seller email
         request_body.seller_email = email
         try {
+            // console.log('request_body', request_body)
             const lot = await mongoConnection.save(request_body, Lot)
+            const auctionUpdateData = {}
+            if (auctionRecord[0] && typeof auctionRecord[0].total_lots === 'number') {
+                auctionUpdateData.$inc = { total_lots: 1 }
+            } else {
+                auctionUpdateData.$set = { total_lots: 1 }
+            }
+            if (auctionRecord[0].template_name === 'Single Lot') {
+                auctionUpdateData.$set = { auction_image: request_body.images[0] }
+            }
+            const result = await mongoConnection.UpdateAuction(Auction, { seller_email: email, auction_id: auctionId }, auctionUpdateData)
+            // console.log('result', result)
+
+            // console.log('lot', lot)
+            if (lot) {
+                return {
+                    statusCode: 200,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Lot created successfully' }),
+                }
+            }
         } catch (err) {
             console.log('DB error', err)
             return {

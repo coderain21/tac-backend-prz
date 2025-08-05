@@ -142,7 +142,8 @@ functions:
 
 
   create-lot:
-    handler: handlers/create_lot.create
+    handler: handlers/create_lot.create_lot
+    timeout: 30
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
