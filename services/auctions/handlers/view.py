@@ -111,8 +111,8 @@ def view(event, context):
             "start_time_zone": 1,
             "end_time_zone": 1,
             "auction_type": 1,
-            "accept_absentee_bids": 1,
-            "accept_telephone_bids": 1,
+            "accept_absentee_bid": 1,
+            "accept_telephone_bid": 1,
         }
         result = collection.find_one({"_id":ObjectId(auction_id), "seller_email": email_address}, projection)
         if result is None:

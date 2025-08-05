@@ -174,11 +174,11 @@ const AuctionSchema = new Schema({
         type: Schema.Types.Mixed,
         default: {},
     },
-    accept_absentee_bids: {
+    accept_absentee_bid: {
         type: Boolean,
         default: false,
     },
-    accept_telephone_bids: {
+    accept_telephone_bid: {
         type: Boolean,
         default: false,
     },
