@@ -141,6 +141,23 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
+  create-lot:
+    handler: handlers/create_lot.create
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: post
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
 
  
 
