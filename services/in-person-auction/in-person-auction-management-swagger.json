@@ -609,7 +609,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -865,7 +865,7 @@
           "schema": {
             "type": "string"
           },
-          "example": "A0012"
+          "example": "A29579"
         },
         {
           "name": "sort_by",
@@ -945,22 +945,40 @@
                 }
               },
               "example": {
-                "data": [
-                  {
-                    "_id": "689202daf74eb7d38bb053f1",
-                    "lot_number": 1,
-                    "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
-                    "title1":"ring",
-                    "title2":"ghj",
-                    "reserve":1999,
-                    "number_of_absentee_bids": 0,
-                    "number_of_telephone_bids": 0
-                }
-                ],
-                "total_records_found": 1,
-                "current_page": 1,
-                "total_pages": 1
-              }
+                      "data": [
+                        {
+                          "_id": "689202daf74eb7d38bb053f1",
+                          "title1": "Title1",
+                          "title2": "title2",
+                          "images": [
+                            {
+                              "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                              "feature": true
+                            }
+                          ],
+                          "lot_number": 1,
+                          "reserve": 1000
+                        },
+                        {
+                          "_id": "689306fc30ec3fb2d697cf67",
+                          "title1": "Title1",
+                          "title2": "title2",
+                          "images": [
+                            {
+                              "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                              "feature": true
+                            }
+                          ],
+                          "lot_number": 2,
+                          "reserve": 1000,
+                          "number_of_absentee_bids": 0,
+                          "number_of_telephone_bids": 0
+                        }
+                      ],
+                      "total_records_found": 2,
+                      "total_pages": 1,
+                      "current_page": 1
+                    }
             }
           }
         },

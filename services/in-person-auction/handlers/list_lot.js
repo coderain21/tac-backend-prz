@@ -99,7 +99,7 @@ module.exports.list_lot = async (event) => {
             .limit(perPage)
             .skip((page - 1) * perPage)
         const response = {
-            lots,
+            data: lots,
             total_records_found: await Lot.countDocuments(query),
             total_pages: Math.ceil(await Lot.countDocuments(query) / perPage),
             current_page: parseInt(page, 10),

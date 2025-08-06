@@ -155,6 +155,8 @@ functions:
           cors: true
           path: /list-lots
           method: get
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   create-lot:
     handler: handlers/create_lot.create_lot
