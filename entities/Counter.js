@@ -9,7 +9,7 @@ const CounterSchema = new Schema({
     _id: { type: String, required: true },
     sequence_id: { type: String },
     auction_id: {
-        type: Schema.Types.ObjectId, trim: true,
+        type: String, trim: true,
     },
     seller_email: { type: String, default: '' },
     record_type: { type: String, default: '' },
