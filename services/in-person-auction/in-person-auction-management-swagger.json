@@ -947,20 +947,20 @@
               "example": {
                 "data": [
                   {
+                    "_id": "689202daf74eb7d38bb053f1",
                     "lot_number": 1,
                     "images":[{"url": "abcdefghijklmnopqrstuvwxyz.com","feature": true }],
                     "title1":"ring",
                     "title2":"ghj",
                     "reserve":1999,
                     "number_of_absentee_bids": 0,
-                    "number_of_telephone_bids": 0,
+                    "number_of_telephone_bids": 0
                 }
                 ],
                 "total_records_found": 1,
                 "current_page": 1,
                 "total_pages": 1
               }
-              
             }
           }
         },

@@ -8,10 +8,8 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 const mongoConnection = require('../lib/mongodb_helper')
-const Users = require('../entities/Users')
 const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
-const uniqueBidders = require('../entities/UniqueBidders')
 const Counter = require('../entities/Counter')
 const helpers = require('../lib/helper')
 
@@ -41,17 +39,29 @@ module.exports.list_lot = async (event) => {
         }
 
         const { queryStringParameters } = event
-        const { auctionId } = queryStringParameters
-        const { sortBy = 'lot_number' } = queryStringParameters
-        const { sortOrder = 'asc' } = queryStringParameters
-        const { searchKeyword } = queryStringParameters
-        const { page } = queryStringParameters
-        const { perPage } = queryStringParameters
+        const auctionId = queryStringParameters?.auction_id
+        const sortBy = queryStringParameters?.sort_by || 'lot_number'
+        const sortOrder = queryStringParameters?.sort_order || 'ascending'
+        const searchKeyword = queryStringParameters?.search_keyword
+        const page = queryStringParameters?.page
+        const perPage = queryStringParameters?.per_page
 
+        const sellerEmail = event.requestContext.authorizer.claims['cognito:username']
+
+        const query = { auction_id: auctionId, seller_email: sellerEmail }
+
+        const auctionData = await Auction.findOne(query)
+        if (!auctionData || auctionData.length === 0) {
+            return {
+                statusCode: 404,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction not found' }),
+            }
+        }
 
         const sortCriteria = {}
         if (['reserve', 'lot_number', 'title1', 'absentee_bids', 'telephone_bids'].includes(sortBy)) {
-            sortCriteria[sortBy] = sortOrder === 'asc' ? 1 : -1
+            sortCriteria[sortBy] = sortOrder === 'ascending' ? 1 : -1
         }
 
         const searchCriteria = {}
@@ -62,14 +72,27 @@ module.exports.list_lot = async (event) => {
             ]
         }
 
-        const query = { auction_id: auctionId, seller_email: sellerEmail }
+        const projection = {
+            _id: 1,
+            lot_number: 1,
+            title1: 1,
+            title2: 1,
+            reserve: 1,
+            start_time: 1,
+            images: 1,
+            number_of_absentee_bids: 1,
+            number_of_telephone_bids: 1,
+        }
 
-        const lots = await Lot.find(query)
+        const lots = await Lot.find(query).select(projection)
             .sort(sortCriteria)
             .limit(perPage)
             .skip((page - 1) * perPage)
         const response = {
             lots,
+            total_records_found: await Lot.countDocuments(query),
+            total_pages: Math.ceil(await Lot.countDocuments(query) / perPage),
+            current_page: parseInt(page, 10),
         }
 
         return {
@@ -78,7 +101,7 @@ module.exports.list_lot = async (event) => {
             body: JSON.stringify(response),
         }
     } catch (error) {
-        console.log(error)
+        console.log('Error', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

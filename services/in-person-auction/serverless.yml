@@ -140,6 +140,21 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
+  list-lots:
+    handler: handlers/list_lot.list_lot
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /list-lots
+          method: get
 
   create-lot:
     handler: handlers/create_lot.create_lot
