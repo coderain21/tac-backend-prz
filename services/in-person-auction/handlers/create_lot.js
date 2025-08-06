@@ -7,8 +7,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
-const Joi = require('joi')
-const { request } = require('express')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const Auction = require('../entities/Auction')
@@ -63,9 +61,9 @@ module.exports.create_lot = async (event) => {
         }
         const auctionId = request_body.auction_id
         const auctionRecord = await mongoConnection.view(Auction, { seller_email: email, auction_id: auctionId })
-        if (!auctionRecord) {
+        if (!auctionRecord || auctionRecord.length === 0) {
             return {
-                statusCode: 400,
+                statusCode: 404,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
@@ -105,6 +103,7 @@ module.exports.create_lot = async (event) => {
             } else {
                 auctionUpdateData.$set = { total_lots: 1 }
             }
+            console.log('auctiondata', auctionRecord)
             if (auctionRecord[0].template_name === 'Single Lot') {
                 auctionUpdateData.$set = { auction_image: request_body.images[0] }
             }
@@ -114,7 +113,7 @@ module.exports.create_lot = async (event) => {
             // console.log('lot', lot)
             if (lot) {
                 return {
-                    statusCode: 200,
+                    statusCode: 201,
                     headers: await helpers.getHeaders(),
                     body: JSON.stringify({ message: 'Lot created successfully' }),
                 }
