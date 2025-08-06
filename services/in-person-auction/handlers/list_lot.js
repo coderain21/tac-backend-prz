@@ -39,12 +39,22 @@ module.exports.list_lot = async (event) => {
         }
 
         const { queryStringParameters } = event
+        console.log('queryStringParameters', queryStringParameters)
         const auctionId = queryStringParameters?.auction_id
         const sortBy = queryStringParameters?.sort_by || 'lot_number'
         const sortOrder = queryStringParameters?.sort_order || 'ascending'
         const searchKeyword = queryStringParameters?.search_keyword
-        const page = queryStringParameters?.page
-        const perPage = queryStringParameters?.per_page
+        const page = queryStringParameters?.page || 1
+        const perPage = queryStringParameters?.per_page || 10
+
+
+        if (!auctionId) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Please provide auction ID' }),
+            }
+        }
 
         const sellerEmail = event.requestContext.authorizer.claims['cognito:username']
 
