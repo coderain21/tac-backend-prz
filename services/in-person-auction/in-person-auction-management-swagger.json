@@ -610,6 +610,7 @@
         },
         "responses": {
           "201": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -1013,7 +1014,7 @@
         }
       ]
       }
-      }
+    }
   },
   "components": {
     "schemas": {
