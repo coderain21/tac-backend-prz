@@ -78,16 +78,16 @@
         ]
       }
     },
-    "/view":{
+    "/view": {
       "get": {
         "tags": [
           "Auction"
         ],
         "servers": [
-            {
-              "url": "https://apis.dev.indyauction.net/v1/auctions"
-            }
-          ],
+          {
+            "url": "https://apis.dev.indyauction.net/v1/auctions"
+          }
+        ],
         "summary": "View auction details",
         "description": "View auction in detail",
         "parameters": [
@@ -228,67 +228,67 @@
                   }
                 },
                 "example": {
-                        "data": {
-                            "auction_id": "A29084",
-                            "seller_email": "sthuthi+testing@7edge.com",
-                            "seller_name": "sandhyashri",
-                            "template_name": "Classic",
-                            "menu_links": [],
-                            "logo_image": "",
-                            "logo_redirection_url": "",
-                            "title": "Draft auction",
-                            "auction_image": "",
-                            "description": "",
-                            "currency": "USD",
-                            "start_date": null,
-                            "registration_type": "Email only",
-                            "add_buyer_fees": "No additional fees",
-                            "faq": [],
-                            "time_zone": "",
-                            "terms_and_condition": "",
-                            "toggle_powered_by_indy": false,
-                            "make_your_auction_private": false,
-                            "passcode": "",
-                            "font": {
-                              "hearder_font": "",
-                              "body_font": ""
-                            },
-                            "buttons": {
-                              "background_color": "",
-                              "text_color": ""
-                            },
-                            "header": {
-                              "background_color": "",
-                              "text_color": ""
-                            },
-                            "content_area": {
-                              "background_color": "",
-                              "text_color": ""
-                            },
-                            "footer": {
-                              "background_color": "",
-                              "text_color": ""
-                            },
-                            "paddle": {
-                              "background_color": "",
-                              "text_color": ""
-                            },
-                            "status": "Draft",
-                            "percentage": "",
-                            "fees": "",
-                            "location": {
-                              "address": "",
-                              "latitude": "",
-                              "longitude": ""
-                            },
-                            "accept_absentee_bids": false,
-                            "accept_telephone_bids": false,
-                            "auction_type": "live",
-                            "created_at":  "2025-07-17T06:59:02.560Z",
-                            "updated_at":  "2025-07-17T06:59:02.560Z",
-                            "__v": 0
-                          }
-                      }
+                  "data": {
+                    "auction_id": "A29084",
+                    "seller_email": "sthuthi+testing@7edge.com",
+                    "seller_name": "sandhyashri",
+                    "template_name": "Classic",
+                    "menu_links": [],
+                    "logo_image": "",
+                    "logo_redirection_url": "",
+                    "title": "Draft auction",
+                    "auction_image": "",
+                    "description": "",
+                    "currency": "USD",
+                    "start_date": null,
+                    "registration_type": "Email only",
+                    "add_buyer_fees": "No additional fees",
+                    "faq": [],
+                    "time_zone": "",
+                    "terms_and_condition": "",
+                    "toggle_powered_by_indy": false,
+                    "make_your_auction_private": false,
+                    "passcode": "",
+                    "font": {
+                      "hearder_font": "",
+                      "body_font": ""
+                    },
+                    "buttons": {
+                      "background_color": "",
+                      "text_color": ""
+                    },
+                    "header": {
+                      "background_color": "",
+                      "text_color": ""
+                    },
+                    "content_area": {
+                      "background_color": "",
+                      "text_color": ""
+                    },
+                    "footer": {
+                      "background_color": "",
+                      "text_color": ""
+                    },
+                    "paddle": {
+                      "background_color": "",
+                      "text_color": ""
+                    },
+                    "status": "Draft",
+                    "percentage": "",
+                    "fees": "",
+                    "location": {
+                      "address": "",
+                      "latitude": "",
+                      "longitude": ""
+                    },
+                    "accept_absentee_bids": false,
+                    "accept_telephone_bids": false,
+                    "auction_type": "live",
+                    "created_at":  "2025-07-17T06:59:02.560Z",
+                    "updated_at":  "2025-07-17T06:59:02.560Z",
+                    "__v": 0
+                  }
+                }
               }
             }
           },
@@ -300,7 +300,6 @@
                   "example1": {
                     "value": {
                       "message": "Please provide auction_id"
-                      
                     }
                   }    
                 }
@@ -314,8 +313,7 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "You do not have access to perform this API action"
-                      
+                      "message": "You do not have access to perform this API action"
                     }
                   }    
                 }
@@ -329,8 +327,7 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "message": "Auction with associated auction_id doesn't exists"
-                      
+                      "message": "Auction with associated auction_id doesn't exists"
                     }
                   }    
                 }
@@ -362,215 +359,211 @@
       }
     },
     "/{auction_id}": {
-
-        "patch": {
-          "tags": ["Auction"],
-          "summary": "Auction update",
-          "description": "Allows editing auction details. Certain fields are restricted once the auction is published.",
-          "parameters": [
-                {
-                  "name": "auction_id",
-                  "in": "path",
-                  "required": true,
-                  "schema": {
+      "patch": {
+        "tags": ["Auction"],
+        "summary": "Auction update",
+        "description": "Allows editing auction details. Certain fields are restricted once the auction is published.",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A29098"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
                     "type": "string"
                   },
-                  "example": "A29098"
-                }
-              ],
-          "requestBody": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "description": {
-                      "type": "string"
-                    },
-                    "faq": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "question": {
-                            "type": "string"
-                          },
-                          "answer": {
-                            "type": "string"
-                          }
+                  "faq": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "question": {
+                          "type": "string"
+                        },
+                        "answer": {
+                          "type": "string"
                         }
                       }
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "terms_and_condition": {
-                      "type": "string",
-                      "description": "Read-only once auction is published.",
-                    },
-                    "currency": {
-                      "type": "string",
-                      "description": "Read-only once auction is published."
-                    },
-                    "registration_type": {
-                      "type": "string",
-                      "description": "Read-only once auction is published.",
-                    },
-                    "add_buyer_fees":{
-                      "type": "string"
-                    },
-                    "fees": {
-                      "type": "number",
-                      "description": "Read-only once auction is published.",
-                    },
-                    "percentage": {
-                      "type": "string"
-                    },
-                    "start_date": {
-                      "type": "number",
-                      "description": "Allowed in both draft and published. Must not be in the past."
-                    },
-                    "menu_links": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "title": {
-                            "type": "string"
-                          },
-                          "link_url": {
-                            "type": "string"
-                          },
-                          "dropdown": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "title": {
-                                  "type": "string"
-                                },
-                                "link_url": {
-                                  "type": "string"
-                                }
+                    }
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "terms_and_condition": {
+                    "type": "string",
+                    "description": "Read-only once auction is published."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Read-only once auction is published."
+                  },
+                  "registration_type": {
+                    "type": "string",
+                    "description": "Read-only once auction is published."
+                  },
+                  "add_buyer_fees": {
+                    "type": "string"
+                  },
+                  "fees": {
+                    "type": "number",
+                    "description": "Read-only once auction is published."
+                  },
+                  "percentage": {
+                    "type": "string"
+                  },
+                  "start_date": {
+                    "type": "number",
+                    "description": "Allowed in both draft and published. Must not be in the past."
+                  },
+                  "menu_links": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "link_url": {
+                          "type": "string"
+                        },
+                        "dropdown": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "title": {
+                                "type": "string"
+                              },
+                              "link_url": {
+                                "type": "string"
                               }
                             }
                           }
                         }
                       }
-                    },
-                    "location": {
-                      "type": "object",
-                      "properties": {
-                        "address": {
-                          "type": "string"
-                        },
-                        "latitude": {
-                          "type": "number"
-                        },
-                        "longitude": {
-                          "type": "number"
-                        }
+                    }
+                  },
+                  "location": {
+                    "type": "object",
+                    "properties": {
+                      "address": {
+                        "type": "string"
+                      },
+                      "latitude": {
+                        "type": "number"
+                      },
+                      "longitude": {
+                        "type": "number"
                       }
-                    },
-                    "logo_image": {
-                      "type": "string"
-                    },
-                    "logo_redirection_url": {
-                      "type": "string"
-                    },
-                    "auction_image": {
-                      "type": "string"
-                    },
-                    "time_zone": {
-                      "type": "string"
-                    },
-                    "toggle_powered_by_indy": {
-                      "type": "boolean"
-                    },
-                    "hide_auction_lots": {
-                      "type": "boolean"
-                    },
-                    "make_your_auction_private": {
-                      "type": "boolean"
-                    },
-                    "accept_absentee_bid": {
-                      "type": "boolean"
-                    },
-                    "accept_telephone_bid": {
-                      "type": "boolean"
-                    },
-                    "font": {
+                    }
+                  },
+                  "logo_image": {
+                    "type": "string"
+                  },
+                  "logo_redirection_url": {
+                    "type": "string"
+                  },
+                  "auction_image": {
+                    "type": "string"
+                  },
+                  "time_zone": {
+                    "type": "string"
+                  },
+                  "toggle_powered_by_indy": {
+                    "type": "boolean"
+                  },
+                  "hide_auction_lots": {
+                    "type": "boolean"
+                  },
+                  "make_your_auction_private": {
+                    "type": "boolean"
+                  },
+                  "accept_absentee_bid": {
+                    "type": "boolean"
+                  },
+                  "accept_telephone_bid": {
+                    "type": "boolean"
+                  },
+                  "font": {
                     "type": "object"
-
-                    },
-                    "button": {
-                      "type": "object"
-                    },
-                    "header": {
-                      "type": "object"
-                    },
-                    "content_area": {
-                      "type": "object"
-                    },
-                    "footer": {
-                      "type": "object"
-                    },
-                    "paddle": {
-                      "type": "object"
-                    },
+                  },
+                  "button": {
+                    "type": "object"
+                  },
+                  "header": {
+                    "type": "object"
+                  },
+                  "content_area": {
+                    "type": "object"
+                  },
+                  "footer": {
+                    "type": "object"
+                  },
+                  "paddle": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update Successful"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_date": {
+                    "value": {
+                      "message": "Auction date and time cannot be in the past"
+                    }
+                  },
+                  "generic": {
+                    "value": {
+                      "message": "Something went wrong. Please try again!"
+                    }
                   }
                 }
               }
             }
           },
-           "responses": {
-                "204": {
-                  "description": "Update Successful",
-                },
-                "400": {
-                  "description": "Bad Request",
-                  "content": {
-                    "application/json": {
-                      "examples": {
-                        "invalid_date": {
-                          "value": {
-                            "message": "Auction date and time cannot be in the past"
-                          }
-                        },
-                        "generic": {
-                          "value": {
-                            "message": "Something went wrong. Please try again!"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "500": {
-                  "description": "Internal server error",
-                  "content": {
-                    "application/json": {
-                      "examples": {
-                        "example1": {
-                          "value": {
-                            "message": "Internal server error"
-                          }
-                        }
-                      }
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
                     }
                   }
                 }
-              },
-            "security": [
-                {
-                  "BearerAuth": []
-                }
-              ]
+              }
             }
-
-      },
-
-     "/lots": {
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/lots": {
       "post": {
         "tags": ["Lots"],
         "summary": "Lots create",
@@ -609,7 +602,6 @@
           }
         },
         "responses": {
-          "201": {
           "201": {
             "description": "Success",
             "content": {
@@ -683,45 +675,45 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "auction_id":{
+                  "auction_id": {
                     "type": "string"
                   },
-                  "lot_number":{
+                  "lot_number": {
                     "type": "integer"
                   },
-                  "title1":{
+                  "title1": {
                     "type": "string"
                   },
-                  "title2":{
+                  "title2": {
                     "type": "string"
                   },
-                  "description":{
+                  "description": {
                     "type": "string"
                   },
-                  "reserve":{
+                  "reserve": {
                     "type": "integer"
                   },
-                  "low_estimate":{
+                  "low_estimate": {
                     "type": "integer"
                   },
-                  "high_estimate":{
+                  "high_estimate": {
                     "type": "integer"
                   },
-                  "shipping_details":{
+                  "shipping_details": {
                     "type": "string"
                   },
-                  "tags":{
-                    "type":"array",
-                    "items":{
+                  "tags": {
+                    "type": "array",
+                    "items": {
                       "type": "object",
                       "properties": {
-                        "tags_name":{
+                        "tags_name": {
                           "type": "string"
                         }
                       }
                     }
                   },
-                  "images":{
+                  "images": {
                     "type": "array",
                     "items": {
                       "type": "object",
@@ -735,21 +727,20 @@
                       }
                     }
                   }
-
                 }
               },
               "example": {              
-                "auction_id":"A0012",
+                "auction_id": "A0012",
                 "lot_number": 1,
-                "images":[{"url": "abcdef","feature": false }],
-                "title1":"ring",
-                "title2":"ghj",
-                "description":"",
-                "reserve":22344,
-                "low_estimate":33332,
-                "high_estimate":123144,
-                "shipping_details":"Bandra",
-                "tags":"necklace"
+                "images": [{"url": "abcdef", "feature": false}],
+                "title1": "ring",
+                "title2": "ghj",
+                "description": "uuiu",
+                "reserve": 22344,
+                "low_estimate": 33332,
+                "high_estimate": 123144,
+                "shipping_details": "Bandra",
+                "tags": "necklace"
               }
             }
           }
@@ -758,6 +749,22 @@
           "204": {
             "description": "Update successful"
           },
+          "400": {
+            "description": "Missing parameters in request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Please fill the required fields"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "403": {
             "description": "forbidden",
             "content": {
@@ -765,45 +772,29 @@
                 "examples": {
                   "example1": {
                     "value": {
-                        "example": "You do not have access to perform this API action"
-                      }
+                      "example": "You do not have access to perform this API action"
                     }
                   }    
                 }
               }
-            },
-            "400": {
-              "description": "Missing parameters in request body",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string",
-                        "example": "Please fill the required fields"
-                      }
+            }
+          },
+          "404": {
+            "description": "lot not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot not found"
                     }
                   }
                 }
               }
-            },
-            "404": {
-              "description": "lot not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "message": {
-                        "type": "string",
-                        "example": "Lot not found"
-                      }
-                    }
-                  }
-                }
-              }
-            },
+            }
+          },
           "500": {
             "description": "Internal Server Error",
             "content": {
@@ -821,7 +812,7 @@
             }
           }
         },
-        "security":[
+        "security": [
           {
             "BearerAuth": []
           }
@@ -830,189 +821,187 @@
     },
     "/list-lots": {
       "get": {
-      "tags": [
-        "Lots"
-      ],
-      "summary": "Listing lots",
-      "description": "Listing lots",
-      "parameters": [
-        {
-          "name": "auction_id",
-          "in": "query",
-          "description": "to determine the which auction lots to be displayed ",
-          "schema": {
-            "type": "string"
+        "tags": [
+          "Lots"
+        ],
+        "summary": "Listing lots",
+        "description": "Listing lots",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A29579"
           },
-          "example": "A29579"
-        },
-        {
-          "name": "sort_by",
-          "in": "query",
-          "description": "Sort by key",
-          "schema": {
-            "type": "string"
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "title1"
           },
-          "example": "title1"
-        },
-        {
-          "name": "sort_order",
-          "in": "query",
-          "description": "ascending or descending",
-          "schema": {
-            "type": "string"
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "descending"
           },
-          "example": "descending"
-        },
-        {
-          "name": "page",
-          "in": "query",
-          "description": "Page number",
-          "schema": {
-            "type": "integer"
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "type": "integer"
+            },
+            "example": 1
           },
-          "example": 1
-        },
-        {
-          "name": "per_page",
-          "in": "query",
-          "description": "per page documents documents",
-          "schema": {
-            "type": "string"
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "per page documents documents",
+            "schema": {
+              "type": "string"
+            },
+            "example": "2"
           },
-          "example": "2"
-        },
-        {
-          "name": "search_keyword",
-          "in": "query",
-          "description": "ascending or descending",
-          "schema": {
-            "type": "string"
-          },
-          "example": "eum"
-        }
-
-      ],
-      "responses": {
-        "200": {
-          "description": "Successfully retrieved lots",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": { 
-                  "data": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "schema": {
-                          "$ref": "#/components/schemas/Lots"
+          {
+            "name": "search_keyword",
+            "in": "query",
+            "description": "ascending or descending",
+            "schema": {
+              "type": "string"
+            },
+            "example": "eum"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { 
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "schema": {
+                            "$ref": "#/components/schemas/Lots"
+                          }
+                        }
                       }
-                      }
+                    },
+                    "total_records_found": {
+                      "type": "integer"
+                    },
+                    "current_page": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
                     }
-                  },
-                  "total_records_found": {
-                    "type": "integer"
-                  },
-                  "current_page": {
-                    "type": "integer"
-                  },
-                  "total_pages": {
-                    "type": "integer"
                   }
-                }
-              },
-              "example": {
-                      "data": [
+                },
+                "example": {
+                  "data": [
+                    {
+                      "_id": "689202daf74eb7d38bb053f1",
+                      "title1": "Title1",
+                      "title2": "title2",
+                      "images": [
                         {
-                          "_id": "689202daf74eb7d38bb053f1",
-                          "title1": "Title1",
-                          "title2": "title2",
-                          "images": [
-                            {
-                              "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
-                              "feature": true
-                            }
-                          ],
-                          "lot_number": 1,
-                          "reserve": 1000
-                        },
-                        {
-                          "_id": "689306fc30ec3fb2d697cf67",
-                          "title1": "Title1",
-                          "title2": "title2",
-                          "images": [
-                            {
-                              "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
-                              "feature": true
-                            }
-                          ],
-                          "lot_number": 2,
-                          "reserve": 1000,
-                          "number_of_absentee_bids": 0,
-                          "number_of_telephone_bids": 0
+                          "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                          "feature": true
                         }
                       ],
-                      "total_records_found": 2,
-                      "total_pages": 1,
-                      "current_page": 1
+                      "lot_number": 1,
+                      "reserve": 1000
+                    },
+                    {
+                      "_id": "689306fc30ec3fb2d697cf67",
+                      "title1": "Title1",
+                      "title2": "title2",
+                      "images": [
+                        {
+                          "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                          "feature": true
+                        }
+                      ],
+                      "lot_number": 2,
+                      "reserve": 1000,
+                      "number_of_absentee_bids": 0,
+                      "number_of_telephone_bids": 0
                     }
+                  ],
+                  "total_records_found": 2,
+                  "total_pages": 1,
+                  "current_page": 1
+                }
+              }
             }
-          }
-        },
-        "403": {
-          "description": "forbidden",
-          "content": {
-            "application/json": {
-              "examples": {
-                "example1": {
-                  "value": {
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
                       "example": "You do not have access to perform this API action"
-                    
-                  }
-                }    
+                    }
+                  }    
+                }
               }
             }
-          }
-        },
-        "404": {
-          "description": "Not Found",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "example": "Auction not found"
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Auction not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
                   }
                 }
               }
             }
           }
         },
-        "500": {
-          "description": "Internal Server Error",
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "message": {
-                    "type": "string",
-                    "example": "Internal server error"
-                  }
-                }
-              }
-            }
+        "security": [
+          {
+            "BearerAuth": []
           }
-        }
-      },
-      "security":[
-        {
-          "BearerAuth": []
-        }
-      ]
+        ]
       }
     }
   },
@@ -1249,3 +1238,4 @@
     }
   }
 }
+
