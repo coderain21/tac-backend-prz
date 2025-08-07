@@ -39,4 +39,23 @@ export class LambdaEventFactory {
       headers: headers, // Added headers to the event
     };
   }
+
+
+  public static createPatchEvent(
+    claims: object | null,
+    body: object | null,
+    pathParameters: object | null = null,
+    headers: object | null = null // Added headers parameter
+  ) {
+    return {
+      requestContext: {
+        authorizer: {
+          claims: claims,
+        },
+      },
+      body: JSON.stringify(body),
+      pathParameters: pathParameters,
+      headers: headers, // Added headers to the event
+    };
+  }
 }
