@@ -113,6 +113,12 @@ module.exports.update_lot = async (event) => {
                 body: JSON.stringify({ message: 'Something went wrong. Please try again!' }),
             }
         }
+        console.log('lot', lot)
+        return {
+            statusCode: 400,
+            headers: await helpers.getHeaders(),
+            body: JSON.stringify({ message: 'Something went wrong. Please try again!' }),
+        }
     } catch (error) {
         console.log('err', error)
         return {
