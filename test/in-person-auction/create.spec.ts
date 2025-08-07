@@ -70,6 +70,9 @@ test.describe('In Person Auction Create handler tests', () => {
     const body = JSON.parse(response.body);
     expect(body).toHaveProperty('_id');
 
+    // Add a delay to allow the database operation to complete
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
     const newAuction = await db.collection(`${process.env.STAGE}-auctions`).findOne({ _id: new ObjectId(body._id) });
     expect(newAuction).not.toBeNull();
     expect(newAuction?.seller_email).toBe(sellerEmail);

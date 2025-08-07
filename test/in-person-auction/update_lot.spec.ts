@@ -11,7 +11,7 @@ import { connectToDatabase, closeDatabaseConnection, getDb } from '../lib/db_hel
 const originalResolveFilename = (Module as any)._resolveFilename;
 (Module as any)._resolveFilename = function (request: string, parent: any, ...args: any[]) {
   const rootDir = path.resolve(__dirname, '../../');
-  if (parent && parent.filename.includes('services/in-person-auction/handlers/list_lot.js')) {
+  if (parent && parent.filename.includes('services/in-person-auction/handlers/update_lot.js')) {
     if (request.startsWith('../lib/')) {
       request = path.join(rootDir, 'lib', request.replace('../lib/', ''));
     } else if (request.startsWith('../entities/')) {
@@ -25,9 +25,9 @@ const originalResolveFilename = (Module as any)._resolveFilename;
 loadEnvironmentVariables('services/in-person-auction/');
 
 // Importing using require due to handler export style
-const { list_lot } = require('../../services/in-person-auction/handlers/list_lot.js');
+const { update_lot } = require('../../services/in-person-auction/handlers/update_lot.js');
 
-test.describe('In Person Auction list lot handler tests', () => {
+test.describe('In Person Auction Update Lot handler tests', () => {
   let db: Db;
   let client: MongoClient;
   const sellerEmail = process.env.API_USERNAME!;
@@ -46,10 +46,8 @@ test.describe('In Person Auction list lot handler tests', () => {
 
   test.beforeEach(async () => {
     const users = db.collection(`${process.env.STAGE}-users`);
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
     const lots = db.collection(`${process.env.STAGE}-lots`);
     await users.deleteMany({});
-    await auctions.deleteMany({});
     await lots.deleteMany({});
 
     await users.insertOne({
@@ -59,38 +57,33 @@ test.describe('In Person Auction list lot handler tests', () => {
       seller_id: 'S-API'
     });
 
-    const auctionData = auctionTestData.getData('Classic');
-    const result = await auctions.insertOne({
-      ...auctionData,
-      seller_email: sellerEmail,
-    });
-
     const lotData = lotTestData.getData('Classic');
     lotData.auction_id = 'A-CLASSIC';
-    lotData.seller_email = sellerEmail;
-    const result2 = await lots.insertOne(lotData);
-    // console.log('result2',result2)
+    const result = await lots.insertOne({
+      ...lotData,
+      seller_email: sellerEmail,
+    });
+    // auctionId = result.insertedId;
   });
 
 
-  test('should return 200 OK and a list of lots', async () => {
+  test('should update an existing in person lot with a valid user', async () => {
     const lotData = lotTestData.getData('Classic');
     lotData.auction_id = 'A-CLASSIC';
 
-    const event = LambdaEventFactory.createGetEvent(
+
+    lotData.seller_email = sellerEmail;
+    lotData.lot_number = 1;
+
+    const event = LambdaEventFactory.createPatchEvent(
       { 'cognito:username': sellerEmail },
-      null,
-      { auction_id: 'A-CLASSIC', page: '1', limit: '10' },
+      lotData,
+      null
     );
 
-    const response = await list_lot(event);
-    // console.log('response',response);
-    expect(response.statusCode).toBe(200);
-
-    const body = JSON.parse(response.body);
-    // console.log('body',body)
-    
-    expect(body.lots.length).toBeGreaterThan(0);
+    const response = await update_lot(event);
+    console.log('response',response);
+    expect(response.statusCode).toBe(204);
   });
 
 
@@ -98,37 +91,25 @@ test.describe('In Person Auction list lot handler tests', () => {
     const lotData = lotTestData.getData('Classic');
     const event = LambdaEventFactory.createPostEvent(null, lotData, null);
 
-    const response = await list_lot(event);
+    const response = await update_lot(event);
     expect(response.statusCode).toBe(403);
   });
 
-  test('should return 400 Bad Request if the auction_id is not provided', async () => {
+  test('should return 400 Bad Request if the payload is invalid', async () => {
     const lotData = lotTestData.getData('Classic');
+    lotData.auction_id = 'A-CLASSIC';
+    lotData.reserve = null; // Invalid data (should be string)
 
-    const event = LambdaEventFactory.createGetEvent(
+    const event = LambdaEventFactory.createPostEvent(
       { 'cognito:username': sellerEmail },
-      null,
-       { page: '1', limit: '10' },
+      lotData,
+      null
     );
 
-    const response = await list_lot(event);
+    const response = await update_lot(event);
     expect(response.statusCode).toBe(400);
 
     const body = JSON.parse(response.body);
-    expect(body.message).toContain('Please provide auction ID');
+    expect(body.message).toContain('Please fill the required fields');
   });
-
-  test('should return 404 Not Found if the auction does not exist', async () => {
-    const event = LambdaEventFactory.createGetEvent(
-      { 'cognito:username': sellerEmail },
-      null,
-      { auction_id: 'NON-EXISTENT-AUCTION-ID', page: '1', limit: '10' },
-    );
-
-    const response = await list_lot(event);
-    expect(response.statusCode).toBe(404);
-
-    const body = JSON.parse(response.body);
-    expect(body.message).toContain('Auction not found');
-  })
 });
