@@ -609,7 +609,7 @@
           }
         },
         "responses": {
-          "200": {
+          "201": {
             "description": "Success",
             "content": {
               "application/json": {
@@ -670,7 +670,194 @@
           }
         }
       }
-    }
+    },
+    "/list-lots": {
+      "get": {
+      "tags": [
+        "Lots"
+      ],
+      "summary": "Listing lots",
+      "description": "Listing lots",
+      "parameters": [
+        {
+          "name": "auction_id",
+          "in": "query",
+          "description": "to determine the which auction lots to be displayed ",
+          "schema": {
+            "type": "string"
+          },
+          "example": "A29579"
+        },
+        {
+          "name": "sort_by",
+          "in": "query",
+          "description": "Sort by key",
+          "schema": {
+            "type": "string"
+          },
+          "example": "title1"
+        },
+        {
+          "name": "sort_order",
+          "in": "query",
+          "description": "ascending or descending",
+          "schema": {
+            "type": "string"
+          },
+          "example": "descending"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "description": "Page number",
+          "schema": {
+            "type": "integer"
+          },
+          "example": 1
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "description": "per page documents documents",
+          "schema": {
+            "type": "string"
+          },
+          "example": "2"
+        },
+        {
+          "name": "search_keyword",
+          "in": "query",
+          "description": "ascending or descending",
+          "schema": {
+            "type": "string"
+          },
+          "example": "eum"
+        }
+
+      ],
+      "responses": {
+        "200": {
+          "description": "Successfully retrieved lots",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { 
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Lots"
+                      }
+                      }
+                    }
+                  },
+                  "total_records_found": {
+                    "type": "integer"
+                  },
+                  "current_page": {
+                    "type": "integer"
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                      "data": [
+                        {
+                          "_id": "689202daf74eb7d38bb053f1",
+                          "title1": "Title1",
+                          "title2": "title2",
+                          "images": [
+                            {
+                              "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                              "feature": true
+                            }
+                          ],
+                          "lot_number": 1,
+                          "reserve": 1000
+                        },
+                        {
+                          "_id": "689306fc30ec3fb2d697cf67",
+                          "title1": "Title1",
+                          "title2": "title2",
+                          "images": [
+                            {
+                              "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+                              "feature": true
+                            }
+                          ],
+                          "lot_number": 2,
+                          "reserve": 1000,
+                          "number_of_absentee_bids": 0,
+                          "number_of_telephone_bids": 0
+                        }
+                      ],
+                      "total_records_found": 2,
+                      "total_pages": 1,
+                      "current_page": 1
+                    }
+            }
+          }
+        },
+        "403": {
+          "description": "forbidden",
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "value": {
+                      "example": "You do not have access to perform this API action"
+                    
+                  }
+                }    
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Not Found",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Auction not found"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal Server Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string",
+                    "example": "Internal server error"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "security":[
+        {
+          "BearerAuth": []
+        }
+      ]
+      }
+      }
   },
   "components": {
     "schemas": {
