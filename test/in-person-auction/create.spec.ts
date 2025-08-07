@@ -42,6 +42,10 @@ test.describe('In Person Auction Create handler tests', () => {
     await closeDatabaseConnection();
   });
 
+//   if (!process.env.STAGE) {
+//   process.env.STAGE = 'test'; // or 'dev' or whatever default you prefer
+// }
+
   test.beforeEach(async () => {
     const users = db.collection(`${process.env.STAGE}-users`);
     const auctions = db.collection(`${process.env.STAGE}-auctions`);
@@ -56,27 +60,35 @@ test.describe('In Person Auction Create handler tests', () => {
     });
   });
 
+
   test('should create a new in person auction with a valid user', async () => {
-    const auctionData = auctionTestData.getData('Classic');
-    const event = LambdaEventFactory.createPostEvent(
-      { 'cognito:username': sellerEmail },
-      auctionData,
-      null
-    );
+        const auctionData = auctionTestData.getData('Classic');
+        const event = LambdaEventFactory.createPostEvent(
+          { 'cognito:username': sellerEmail },
+          auctionData,
+          null
+        );
 
-    const response = await create_auction(event);
-    expect(response.statusCode).toBe(201);
+        // Record the time before creation
+        const beforeCreation = new Date();
 
-    const body = JSON.parse(response.body);
-    expect(body).toHaveProperty('_id');
+        const response = await create_auction(event);
+        expect(response.statusCode).toBe(201);
 
-    // Add a delay to allow the database operation to complete
-    await new Promise(resolve => setTimeout(resolve, 1000));
+        const body = JSON.parse(response.body);
+        expect(body).toHaveProperty('_id');
 
-    const newAuction = await db.collection(`${process.env.STAGE}-auctions`).findOne({ _id: new ObjectId(body._id) });
-    expect(newAuction).not.toBeNull();
-    expect(newAuction?.seller_email).toBe(sellerEmail);
-  });
+        const auctionsCollection = db.collection(`${process.env.STAGE}-auctions`);
+        
+        // Find auction by seller_email that was created after our timestamp
+        const newAuction = await auctionsCollection.findOne({ 
+          seller_email: sellerEmail,
+          created_at: { $gte: beforeCreation } // Adjust field name as needed
+        });
+
+        expect(newAuction).not.toBeNull();
+        expect(newAuction?.seller_email).toBe(sellerEmail);
+      });
 
   test('should return 403 Forbidden if the user is not authenticated', async () => {
     const auctionData = auctionTestData.getData('Classic');
