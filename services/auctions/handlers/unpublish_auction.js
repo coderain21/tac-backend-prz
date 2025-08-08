@@ -130,12 +130,18 @@ module.exports.handler = async (event) => {
             }
 
             const stepFunctionEnd = []
-            const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            const getAllArns = await mongoConnection.getArns({ seller_email, auction_id }, StepFunctionArn)
             for (const item of getAllArns) {
                 const executionArn = item.arn
                 stepFunctionEnd.push(stopExecutions(executionArn))
             }
             await Promise.all(stepFunctionEnd)
+            const status = 'ABORTED'
+            const updateArn = await mongoConnection.updateArnStatus({ seller_email, auction_id }, status, StepFunctionArn)
+
+            console.log('updateArnStatus', updateArn)
+
+            await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
             return {
                 statusCode: 204,
                 headers: helpers.getHeaders(),
@@ -147,12 +153,21 @@ module.exports.handler = async (event) => {
         if (request_body.type === 'CANCEL' && getAuctionDetails[0].status === 'Accepting bids') {
             await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status: 'Cancelled' })
             const stepFunctionEnd = []
-            const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            // const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            // new function to get only which is running
+            const getAllArns = await mongoConnection.getArns({ seller_email, auction_id }, StepFunctionArn)
             for (const item of getAllArns) {
                 const executionArn = item.arn
                 stepFunctionEnd.push(stopExecutions(executionArn))
             }
             await Promise.all(stepFunctionEnd)
+
+            const status = 'ABORTED'
+            const updateArn = await mongoConnection.updateArnStatus({ seller_email, auction_id }, status, StepFunctionArn)
+
+            console.log('updateArnStatus', updateArn)
+
+            await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
 
             const payload = { auction: { _id: getAuctionDetails[0]._id } }
             const headersList = {
