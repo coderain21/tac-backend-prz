@@ -83,17 +83,29 @@ module.exports.handler = async (event) => {
                 }),
             }
         }
+
+        // setting the throttle time based on total number of lots
+        const totalLots = getAuctionDetails[0].total_lots
+        let throttle = 2
+        if (totalLots < 100) {
+            throttle = 1
+        } else if (totalLots >= 100 && totalLots < 200) {
+            throttle = 2
+        } else {
+            throttle = 3
+        }
+
         if (request_body.type === 'UNPUBLISH' && getAuctionDetails[0].status === 'Published') {
             // check if auction is published within 2 minutes
             if (getAuctionDetails[0].publish_session_started_at) {
                 const now = Math.floor(Date.now() / 1000)
                 const publishTime = getAuctionDetails[0].publish_session_started_at
-                if (now - publishTime < 120) { // 120 seconds = 2 minutes
+                if (now - publishTime < (throttle * 60)) { // 120 seconds = 2 minutes
                     return {
                         statusCode: 400,
                         headers: helpers.getHeaders(),
                         body: JSON.stringify({
-                            message: 'Cannot unpublish auction within 2 minutes of publishing.',
+                            message: `Cannot unpublish auction within ${throttle} minutes of publishing.`,
                         }),
                     }
                 }

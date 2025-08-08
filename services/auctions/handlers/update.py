@@ -196,6 +196,16 @@ def update_auction(event, context):
 
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
 
+        total_lots = collection_lot.count_documents({"seller_email": seller_email,
+                                                     "auction_id": auction_id})
+
+        if total_lots < 100:
+            throttle = 1
+        elif total_lots < 200 and total_lots >= 100:
+            throttle = 2
+        else:
+            throttle = 3
+
         if published_status == 'true':
             if state['status'] == 'Published' or state['status']== 'Accepting bids':
                 return {
@@ -206,14 +216,13 @@ def update_auction(event, context):
 
             if 'unpublish_session_started_at' in state and state['unpublish_session_started_at'] is not None:
                 unpublish_time = datetime.fromtimestamp(state['unpublish_session_started_at'])
-                if datetime.utcnow() - unpublish_time < timedelta(minutes=2):
+                if datetime.utcnow() - unpublish_time < timedelta(minutes=throttle):
                     return {
                         "statusCode": 400,
                         "headers": headers,
-                        "body": json.dumps({"message": "Cannot publish auction within 2 minutes of unpublishing."})
+                        "body": json.dumps({"message": f"Cannot publish auction within {throttle} minutes of unpublishing."})
                     }
-        total_lots = collection_lot.count_documents({"seller_email": seller_email,
-                                                     "auction_id": auction_id})
+        
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                 "auction_id": auction_id}))
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
