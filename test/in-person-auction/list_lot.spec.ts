@@ -43,6 +43,9 @@ test.describe('In Person Auction list lot handler tests', () => {
   });
 
     let auctionId: ObjectId;
+  // if (!process.env.STAGE) {
+  //     process.env.STAGE = 'test'; // or 'dev' or whatever default you prefer
+  //   }
 
   test.beforeEach(async () => {
     const users = db.collection(`${process.env.STAGE}-users`);
@@ -64,7 +67,6 @@ test.describe('In Person Auction list lot handler tests', () => {
       ...auctionData,
       seller_email: sellerEmail,
     });
-    auctionId = result.insertedId;
 
     const lotData = lotTestData.getData('Classic');
     lotData.auction_id = 'A-CLASSIC';
@@ -75,9 +77,6 @@ test.describe('In Person Auction list lot handler tests', () => {
 
 
   test('should return 200 OK and a list of lots', async () => {
-    const lotData = lotTestData.getData('Classic');
-    lotData.auction_id = 'A-CLASSIC';
-
     const event = LambdaEventFactory.createGetEvent(
       { 'cognito:username': sellerEmail },
       null,
@@ -85,14 +84,47 @@ test.describe('In Person Auction list lot handler tests', () => {
     );
 
     const response = await list_lot(event);
-    // console.log('response',response);
+    console.log('Full response:', JSON.stringify(response, null, 2)); // Debug log
     expect(response.statusCode).toBe(200);
 
     const body = JSON.parse(response.body);
-    // console.log('body',body)
+    console.log('Response body:', JSON.stringify(body, null, 2)); // Debug log
     
-    expect(body.lots.length).toBeGreaterThan(0);
+    // Check what properties exist in the response
+    console.log('Body keys:', Object.keys(body)); // Debug log
+    
+    // The response structure is: { current_page, data, total_pages, total_records_found }
+    // Verify the pagination structure
+    expect(body).toHaveProperty('data');
+    expect(body).toHaveProperty('current_page');
+    expect(body).toHaveProperty('total_pages');
+    expect(body).toHaveProperty('total_records_found');
+    
+    // Verify the lots data exists in the 'data' property
+    expect(Array.isArray(body.data)).toBe(true);
+    expect(body.data.length).toBeGreaterThan(0);
+    
+    // Verify pagination properties
+    expect(body.current_page).toBe(1);
+    expect(body.total_pages).toBeGreaterThanOrEqual(1);
+    
+    // Additional verification that the lot contains expected data
+    const firstLot = body.data[0];
+    expect(firstLot).toHaveProperty('_id');
+    expect(firstLot).toHaveProperty('lot_number');
+    expect(firstLot).toHaveProperty('title1');
+    expect(firstLot).toHaveProperty('title2');
+    expect(firstLot).toHaveProperty('reserve');
+    expect(firstLot).toHaveProperty('images');
+    
+    // Verify images structure
+    expect(Array.isArray(firstLot.images)).toBe(true);
+    if (firstLot.images.length > 0) {
+      expect(firstLot.images[0]).toHaveProperty('featured');
+      expect(firstLot.images[0]).toHaveProperty('url');
+    }
   });
+
 
 
   test('should return 403 Forbidden if the user is not authenticated', async () => {

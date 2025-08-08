@@ -4,6 +4,7 @@
     "title2": "title2",
     "description": "<p>description</p>",
     "reserve": 1000,
+    "lot_number": 1,
     "low_estimate": 1000,
     "high_estimate": 20000,
     "shipping_details": "details",
