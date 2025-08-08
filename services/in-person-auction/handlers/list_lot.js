@@ -94,7 +94,9 @@ module.exports.list_lot = async (event) => {
             number_of_telephone_bids: 1,
         }
 
-        const lots = await Lot.find(query).select(projection)
+        const finalQuery = { ...query, ...searchCriteria }
+
+        const lots = await Lot.find(finalQuery).select(projection)
             .sort(sortCriteria)
             .limit(perPage)
             .skip((page - 1) * perPage)
