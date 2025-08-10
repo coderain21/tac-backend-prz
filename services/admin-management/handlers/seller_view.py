@@ -94,7 +94,8 @@ def seller_view(event, context):
             "country": 1,
             "country_code":1,
             "about":1,
-            "send_automated_auction_complete_email": 1
+            "send_automated_auction_complete_email": 1,
+            "checkout_enabled": 1
         }
         seller_details = seller_collection.find_one({"_id": seller_id})#, projections)
         if seller_details is None:
