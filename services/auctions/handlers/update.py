@@ -222,7 +222,7 @@ def update_auction(event, context):
                         "headers": headers,
                         "body": json.dumps({"message": f"Cannot publish auction within {throttle} minutes of unpublishing."})
                     }
-        
+
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                 "auction_id": auction_id}))
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
