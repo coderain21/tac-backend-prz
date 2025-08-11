@@ -16,7 +16,7 @@ export function loadEnvironmentVariables(servicePath?: string) {
     : path.resolve(projectRoot, 'test/.env');
 
   if (!fs.existsSync(envFilePath)) {
-    console.warn(`No .env file found at ${envFilePath}`);
+    // console.warn(`No .env file found at ${envFilePath}`);
     return;
   }
 

@@ -28,12 +28,37 @@ const commonSchema = new mongoose.Schema({
     },
 })
 
-/* This code defines a Mongoose schema for an AdminUser model. The schema specifies the fields and
-their data types for an AdminUser document, including first_name, password, last_name,
-mobile_number, email_address, roles, is_active, user_type, created_at, updated_at, last_login_at,
-and is_first_time_login. The schema also includes some options such as trim, default values, and
-required fields. The schema is then used to create a Mongoose model named AdminUser, which can be
-used to interact with the corresponding MongoDB collection. */
+const eventDisplaySchema = new mongoose.Schema({
+    enable_leaderboard: {
+        type: Boolean,
+        default: false,
+    },
+    enable_carousel: {
+        type: Boolean,
+        default: false,
+    },
+    background_color: {
+        type: String,
+        default: '',
+        trim: true,
+    },
+    background_image: {
+        type: String,
+        default: '',
+        trim: true,
+    },
+    left_logo_image: {
+        type: String,
+        default: '',
+        trim: true,
+    },
+    right_logo_image: {
+        type: String,
+        default: '',
+        trim: true,
+    },
+})
+
 const AuctionSchema = new Schema({
     auction_id: {
         type: String, trim: true,
@@ -89,7 +114,6 @@ const AuctionSchema = new Schema({
     },
     extension_time_between_lots: {
         type: String, trim: true,
-
     },
     registration_type: {
         type: String, trim: true,
@@ -132,23 +156,18 @@ const AuctionSchema = new Schema({
     },
     buttons: {
         type: commonSchema,
-
     },
     header: {
         type: commonSchema,
-
     },
     content_area: {
         type: commonSchema,
-
     },
     footer: {
         type: commonSchema,
-
     },
     paddle: {
         type: commonSchema,
-
     },
     note: {
         type: String, trim: true,
@@ -174,11 +193,11 @@ const AuctionSchema = new Schema({
         type: Schema.Types.Mixed,
         default: {},
     },
-    accept_absentee_bids: {
+    accept_absentee_bid: {
         type: Boolean,
         default: false,
     },
-    accept_telephone_bids: {
+    accept_telephone_bid: {
         type: Boolean,
         default: false,
     },
@@ -186,6 +205,20 @@ const AuctionSchema = new Schema({
         type: String,
         trim: true,
         default: '',
+    },
+    unpublish_session_started_at: {
+        type: Number,
+    },
+    publish_session_started_at: {
+        type: Number,
+    },
+    total_lots: {
+        type: Number,
+        default: 0,
+    },
+    event_display: {
+        type: eventDisplaySchema,
+        default: {},
     },
 })
 
