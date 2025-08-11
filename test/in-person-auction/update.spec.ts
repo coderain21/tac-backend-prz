@@ -72,7 +72,7 @@ test.describe('In Person Auction Update handler tests', () => {
     const event = LambdaEventFactory.createPatchEvent(
       { 'cognito:username': sellerEmail }, // claims
       updateData, // body
-      { auction_id: auctionId } // pathParameters - this was missing!
+      { auction_id: auctionId } // pathParameters 
     );
 
     const response = await update_auction(event);

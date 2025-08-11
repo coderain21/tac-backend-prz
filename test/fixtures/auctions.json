@@ -54,8 +54,8 @@
         "background_color": "",
         "text_color": ""
     },
-    "accept_absentee_bid": false,
-    "accept_telephone_bid": false,
+    "accept_absentee_bid": true,
+    "accept_telephone_bid": true,
     "auction_type": "live",
     "status": "Published"
     

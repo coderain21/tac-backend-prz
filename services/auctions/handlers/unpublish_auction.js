@@ -83,17 +83,29 @@ module.exports.handler = async (event) => {
                 }),
             }
         }
+
+        // setting the throttle time based on total number of lots
+        const totalLots = getAuctionDetails[0].total_lots
+        let throttle = 2
+        if (totalLots < 100) {
+            throttle = 1
+        } else if (totalLots >= 100 && totalLots < 200) {
+            throttle = 2
+        } else {
+            throttle = 3
+        }
+
         if (request_body.type === 'UNPUBLISH' && getAuctionDetails[0].status === 'Published') {
             // check if auction is published within 2 minutes
             if (getAuctionDetails[0].publish_session_started_at) {
                 const now = Math.floor(Date.now() / 1000)
                 const publishTime = getAuctionDetails[0].publish_session_started_at
-                if (now - publishTime < 120) { // 120 seconds = 2 minutes
+                if (now - publishTime < (throttle * 60)) { // 120 seconds = 2 minutes
                     return {
                         statusCode: 400,
                         headers: helpers.getHeaders(),
                         body: JSON.stringify({
-                            message: 'Cannot unpublish auction within 2 minutes of publishing.',
+                            message: `Cannot unpublish auction within ${throttle} minutes of publishing.`,
                         }),
                     }
                 }
@@ -118,12 +130,18 @@ module.exports.handler = async (event) => {
             }
 
             const stepFunctionEnd = []
-            const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            const getAllArns = await mongoConnection.getArns({ seller_email, auction_id }, StepFunctionArn)
             for (const item of getAllArns) {
                 const executionArn = item.arn
                 stepFunctionEnd.push(stopExecutions(executionArn))
             }
             await Promise.all(stepFunctionEnd)
+            const status = 'ABORTED'
+            const updateArn = await mongoConnection.updateArnStatus({ seller_email, auction_id }, status, StepFunctionArn)
+
+            console.log('updateArnStatus', updateArn)
+
+            // await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
             return {
                 statusCode: 204,
                 headers: helpers.getHeaders(),
@@ -135,12 +153,21 @@ module.exports.handler = async (event) => {
         if (request_body.type === 'CANCEL' && getAuctionDetails[0].status === 'Accepting bids') {
             await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), { status: 'Cancelled' })
             const stepFunctionEnd = []
-            const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            // const getAllArns = await mongoConnection.getAllExecutionArn({ seller_email, auction_id }, StepFunctionArn)
+            // new function to get only which is running
+            const getAllArns = await mongoConnection.getArns({ seller_email, auction_id }, StepFunctionArn)
             for (const item of getAllArns) {
                 const executionArn = item.arn
                 stepFunctionEnd.push(stopExecutions(executionArn))
             }
             await Promise.all(stepFunctionEnd)
+
+            const status = 'ABORTED'
+            const updateArn = await mongoConnection.updateArnStatus({ seller_email, auction_id }, status, StepFunctionArn)
+
+            console.log('updateArnStatus', updateArn)
+
+            await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
 
             const payload = { auction: { _id: getAuctionDetails[0]._id } }
             const headersList = {
