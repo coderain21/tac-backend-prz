@@ -201,7 +201,7 @@ def update_auction(event, context):
 
         if total_lots < 100:
             throttle = 1
-        elif total_lots < 200 and total_lots >= 100:
+        elif 100 <= total_lots < 200:
             throttle = 2
         else:
             throttle = 3
