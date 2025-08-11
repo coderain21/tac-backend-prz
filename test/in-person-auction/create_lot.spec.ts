@@ -4,14 +4,14 @@ import { test, expect } from '@playwright/test';
 import { Db, MongoClient, ObjectId } from 'mongodb';
 import { loadEnvironmentVariables } from '../lib/env_loader';
 import { LambdaEventFactory } from '../lib/lambda_event_factory';
-import { auctionTestData } from '../lib/test_data_manager';
+import { auctionTestData,lotTestData } from '../lib/test_data_manager';
 import { connectToDatabase, closeDatabaseConnection, getDb } from '../lib/db_helper';
 
 // --- MONKEY-PATCH TO FIX BROKEN REQUIRE PATHS ---
 const originalResolveFilename = (Module as any)._resolveFilename;
 (Module as any)._resolveFilename = function (request: string, parent: any, ...args: any[]) {
   const rootDir = path.resolve(__dirname, '../../');
-  if (parent && parent.filename.includes('services/in-person-auction/handlers/create.js')) {
+  if (parent && parent.filename.includes('services/in-person-auction/handlers/create_lot.js')) {
     if (request.startsWith('../lib/')) {
       request = path.join(rootDir, 'lib', request.replace('../lib/', ''));
     } else if (request.startsWith('../entities/')) {
@@ -25,26 +25,32 @@ const originalResolveFilename = (Module as any)._resolveFilename;
 loadEnvironmentVariables('services/in-person-auction/');
 
 // Importing using require due to handler export style
-const { create_auction } = require('../../services/in-person-auction/handlers/create.js');
+const { create_lot } = require('../../services/in-person-auction/handlers/create_lot.js');
 
 test.describe('In Person Auction Create handler tests', () => {
   let db: Db;
+  let client: MongoClient;
   const sellerEmail = process.env.API_USERNAME!;
 
   test.beforeAll(async () => {
-    await connectToDatabase();
-    db = getDb();
+      client = new MongoClient(process.env.MONGO_CLIENT!);
+      await client.connect();
+      db = client.db(process.env.DATABASE);
   });
 
   test.afterAll(async () => {
     await closeDatabaseConnection();
   });
 
+    let auctionId: ObjectId;
+
   test.beforeEach(async () => {
     const users = db.collection(`${process.env.STAGE}-users`);
     const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const lots = db.collection(`${process.env.STAGE}-lots`);
     await users.deleteMany({});
     await auctions.deleteMany({});
+    await lots.deleteMany({});
 
     await users.insertOne({
       email_address: sellerEmail,
@@ -52,49 +58,60 @@ test.describe('In Person Auction Create handler tests', () => {
       last_name: 'User',
       seller_id: 'S-API'
     });
+
+    const auctionData = auctionTestData.getData('Classic');
+    const result = await auctions.insertOne({
+      ...auctionData,
+      seller_email: sellerEmail,
+    });
+    auctionId = result.insertedId;
+    console.log('auctionId', auctionId);
+    console.log('auctionData', auctionData);
   });
 
-  test('should create a new in person auction with a valid user', async () => {
-    const auctionData = auctionTestData.getData('Classic');
+
+  test('should create a new in person lot with a valid user', async () => {
+    const lotData = lotTestData.getData('Classic');
+    lotData.auction_id = 'A-CLASSIC';
+
     const event = LambdaEventFactory.createPostEvent(
       { 'cognito:username': sellerEmail },
-      auctionData,
+      lotData,
       null
     );
 
-    const response = await create_auction(event);
+    const response = await create_lot(event);
+    console.log('response',response);
     expect(response.statusCode).toBe(201);
 
     const body = JSON.parse(response.body);
-    expect(body).toHaveProperty('_id');
-
-    const newAuction = await db.collection(`${process.env.STAGE}-auctions`).findOne({ _id: new ObjectId(body._id) });
-    expect(newAuction).not.toBeNull();
-    expect(newAuction?.seller_email).toBe(sellerEmail);
+    expect(body.message).toBe('Lot created successfully');
   });
 
-  test('should return 403 Forbidden if the user is not authenticated', async () => {
-    const auctionData = auctionTestData.getData('Classic');
-    const event = LambdaEventFactory.createPostEvent(null, auctionData, null);
 
-    const response = await create_auction(event);
+  test('should return 403 Forbidden if the user is not authenticated', async () => {
+    const lotData = lotTestData.getData('Classic');
+    const event = LambdaEventFactory.createPostEvent(null, lotData, null);
+
+    const response = await create_lot(event);
     expect(response.statusCode).toBe(403);
   });
 
-  // test('should return 400 Bad Request if the payload is invalid', async () => {
-  //   const auctionData = auctionTestData.getData('Classic');
-  //   auctionData.currency = 111; // Invalid data (should be string)
+  test('should return 400 Bad Request if the payload is invalid', async () => {
+    const lotData = lotTestData.getData('Classic');
+    lotData.auction_id = 'A-CLASSIC';
+    lotData.reserve = null; // Invalid data (should be string)
 
-  //   const event = LambdaEventFactory.createPostEvent(
-  //     { 'cognito:username': sellerEmail },
-  //     auctionData,
-  //     null
-  //   );
+    const event = LambdaEventFactory.createPostEvent(
+      { 'cognito:username': sellerEmail },
+      lotData,
+      null
+    );
 
-  //   const response = await create_auction(event);
-  //   expect(response.statusCode).toBe(400);
+    const response = await create_lot(event);
+    expect(response.statusCode).toBe(400);
 
-  //   const body = JSON.parse(response.body);
-  //   expect(body.message).toContain('Validation error');
-  // });
+    const body = JSON.parse(response.body);
+    expect(body.message).toContain('Please fill all the required fields');
+  });
 });

@@ -27,6 +27,9 @@ const ARNSchema = new Schema({
     seller_email: {
         type: String, trim: true,
     },
+    status: {
+        type: String, trim: true,
+    },
 })
 
 ARNSchema.plugin(mongoosePaginate)
