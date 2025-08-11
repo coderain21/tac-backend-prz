@@ -7,7 +7,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
-const Joi = require('joi')
 const mongoConnection = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
 const helpers = require('../lib/helper')
@@ -77,7 +76,7 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
-        if (auctionDetails.status === 'InProgress' || auctionDetails.status === 'Completed') {
+        if (auctionDetails.status !== 'Draft') {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
