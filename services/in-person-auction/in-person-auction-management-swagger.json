@@ -1025,6 +1025,10 @@
                   }
                 },
                 "required": ["auction_id", "seller_email"]
+              },
+              "example": {
+                "auction_id": "A29098",
+                "seller_email": "bTbZs@example.com"
               }
             }
           }
