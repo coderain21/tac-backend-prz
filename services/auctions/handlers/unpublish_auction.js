@@ -141,7 +141,7 @@ module.exports.handler = async (event) => {
 
             console.log('updateArnStatus', updateArn)
 
-            await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
+            // await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
             return {
                 statusCode: 204,
                 headers: helpers.getHeaders(),
