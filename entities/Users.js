@@ -57,6 +57,7 @@ const UserSchema = new Schema({
     marketing_opt_in: { type: String, default: '', trim: true },
     marketing_opt_in_updated_at: { type: Date },
     send_automated_auction_complete_email: { type: Boolean, default: true },
+    checkout_enabled: { type: Boolean, default: true },
 })
 
 UserSchema.plugin(mongoosePaginate)
