@@ -1,3 +1,4 @@
+/* eslint-disable no-await-in-loop */
 /* eslint-disable no-multiple-empty-lines */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-lone-blocks */
@@ -9,10 +10,44 @@
 /* eslint-disable import/no-unresolved */
 const mongoConnection = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
+const Users = require('../entities/Users')
+const Lot = require('../entities/Lot')
 const helpers = require('../lib/helper')
 
 
 let connection = null
+
+async function hasImagesForAuctionAndSeller(auctionId, sellerEmail) {
+    try {
+        const pipeline = [
+            {
+                $match: {
+                    auction_id: auctionId,
+                    seller_email: sellerEmail,
+                },
+            },
+            {
+                $redact: {
+                    $cond: {
+                        if: { $eq: [{ $size: '$images' }, 0] },
+                        then: '$$PRUNE',
+                        else: '$$KEEP',
+                    },
+                },
+            },
+            { $limit: 1 },
+        ]
+
+        const result = await Lot.aggregate(pipeline).toArray()
+        return result.length > 0 // true if at least one lot has images
+    } catch (err) {
+        console.error('Error in hasImagesForAuctionAndSeller:', err)
+        throw err
+    } finally {
+        await client.close()
+    }
+}
+
 
 module.exports.publish_auction = async (event) => {
     // --- Authorization Check ---
@@ -64,6 +99,32 @@ module.exports.publish_auction = async (event) => {
         }
 
         const { auction_id } = request_body
+        const sellerDetails = await mongoConnection.view(User, { email_address: email })
+        if (!sellerDetails) {
+            return {
+                statusCode: 404,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Seller not found' }),
+            }
+        }
+        if (sellerDetails.status !== 'Active') {
+            return {
+                statusCode: 403,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
+            }
+        }
+        if (
+            (sellerDetails.stripe_status === undefined || sellerDetails.stripe_status === 'disconnected')
+                && (sellerDetails.paypal_status === undefined || sellerDetails.paypal_status === 'disconnected')
+        ) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Stripe or PayPal account is not linked.' }),
+            }
+        }
+
         // console.log('email', email)
         const query = { auction_id, seller_email: email }
         // console.log('query', query)
@@ -83,6 +144,34 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction not in draft state' }),
             }
         }
+        required_fields = ['auction_image', 'title', 'description', 'currency',
+            'time_zone', 'registration_type']
+        // eslint-disable-next-line no-restricted-syntax
+        for (const field of required_fields) {
+            if (!auctionDetails[field]) {
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'required and cannot be empty.' }),
+                }
+            }
+        }
+        if (auctionDetails.make_your_auction_private === true && auctionDetails.passcode === '') {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'required and cannot be empty.' }),
+            }
+        }
+        const hasImages = await hasImagesForAuctionAndSeller(auction_id, email)
+        if (!hasImages) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'No images found for this auction' }),
+            }
+        }
+
 
         try {
             // console.log('request_body', request_body)
