@@ -328,6 +328,9 @@
                           },
                           "buyer_id": {
                             "type": "string"
+                          },
+                          "checkout_enabled": {
+                            "type": "boolean"
                           }
                         }
                       }
