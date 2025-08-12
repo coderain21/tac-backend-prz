@@ -10,7 +10,7 @@
 /* eslint-disable import/no-unresolved */
 const mongoConnection = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
-const Users = require('../entities/Users')
+const User = require('../entities/Users')
 const Lot = require('../entities/Lot')
 const helpers = require('../lib/helper')
 
@@ -38,13 +38,11 @@ async function hasImagesForAuctionAndSeller(auctionId, sellerEmail) {
             { $limit: 1 },
         ]
 
-        const result = await Lot.aggregate(pipeline).toArray()
+        const result = await Lot.aggregate(pipeline)
         return result.length > 0 // true if at least one lot has images
     } catch (err) {
         console.error('Error in hasImagesForAuctionAndSeller:', err)
         throw err
-    } finally {
-        await client.close()
     }
 }
 
@@ -100,6 +98,8 @@ module.exports.publish_auction = async (event) => {
 
         const { auction_id } = request_body
         const sellerDetails = await mongoConnection.view(User, { email_address: email })
+        console.log('sellerDetails', sellerDetails[0])
+        console.log('sellerDetails', sellerDetails[0].stripe_status, sellerDetails[0].paypal_status)
         if (!sellerDetails) {
             return {
                 statusCode: 404,
@@ -107,16 +107,18 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Seller not found' }),
             }
         }
-        if (sellerDetails.status !== 'Active') {
+        if (sellerDetails[0].status !== 'Active') {
+            console.log('sellerDetails.status', sellerDetails.status)
             return {
                 statusCode: 403,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
             }
         }
+        console.log('sellerDetails', sellerDetails[0].stripe_status, sellerDetails[0].paypal_status)
         if (
-            (sellerDetails.stripe_status === undefined || sellerDetails.stripe_status === 'disconnected')
-                && (sellerDetails.paypal_status === undefined || sellerDetails.paypal_status === 'disconnected')
+            (sellerDetails[0].stripe_status === undefined || sellerDetails[0].stripe_status === 'disconnected')
+                && (sellerDetails[0].paypal_status === undefined || sellerDetails[0].paypal_status === 'disconnected')
         ) {
             return {
                 statusCode: 400,
