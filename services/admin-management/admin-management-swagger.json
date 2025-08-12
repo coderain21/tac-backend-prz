@@ -1929,6 +1929,613 @@
         ]
       }
     },
+    "/accountings": {
+      "get": {
+        "tags": [
+          "Admin Accounting Management"
+        ],
+        "summary": "Order Accounting listing",
+        "description": "Accounting purchases listing",
+        "parameters": [
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "sorting by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "created_at"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "description": "sorting by descending or ascending order",
+            "schema": {
+              "type": "string"
+            },
+            "example": "descending"
+          },
+          {
+            "name": "page_number",
+            "in": "query",
+            "description": "page number",
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "page size",
+            "schema": {
+              "type": "string"
+            },
+            "example": "3"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "search query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Auction"
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "Filter by date range, this is the start date",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1701082800000
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "Filter by date range, this is the end date",
+            "schema": {
+              "type": "number"
+            },
+            "example": 1701088200000
+          },
+          {
+            "name": "payment_type",
+            "in": "query",
+            "description": "Filter by payment_type",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Stripe"
+          },
+          {
+            "name": "payment_status",
+            "in": "query",
+            "description": "Filter by payment_status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "Unpaid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved buyer detail",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "data": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "payment_status": {
+                          "type": "string"
+                        },
+                        "amount": {
+                          "type": "string"
+                        },
+                        "payment": {
+                          "type": "string"
+                        },
+                        "currency": {
+                          "type": "string"
+                        },
+                        "order_number": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "integer"
+                        },
+                        "auction_title": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
+                  "total_pages": {
+                    "type": "integer"
+                  },
+                  "total_records": {
+                    "type": "integer"
+                  },
+                  "current_page": {
+                    "type": "integer"
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "_id": "65b9f39a626a58087a621ba3",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD002",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39b626a58087a621baa",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD003",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39c626a58087a621bb1",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD004",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39d626a58087a621bb8",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD005",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f39d626a58087a621bbf",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD006",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16566dca6bef0d48b868",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD007",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16586dca6bef0d48b876",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD009",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16576dca6bef0d48b86f",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD008",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65ba16596dca6bef0d48b87d",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD010",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    },
+                    {
+                      "_id": "65b9f391626a58087a621b9c",
+                      "payment_status": "Unpaid",
+                      "amount": 100,
+                      "payment": "Stripe",
+                      "currency": "GBP",
+                      "order_number": "OD001",
+                      "created_at": 123456789,
+                      "auction_title": "Retro Relics Auctions",
+                      "name": ""
+                    }
+                  ],
+                  "total_pages": 21,
+                  "total_records": 201,
+                  "current_page": 1
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/unpublish-auction": {
+      "patch": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "unpublish auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "Update auction information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0008"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "seller_email":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "seller_email": "sthuthi+test@7edge.com",
+                "type": "CANCEL"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction status not in accepting bid state to update."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "API does not exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction doesn't exists."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while updating the auction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/publish-auction/{auction_id}": {
+      "patch": {
+        "tags": [
+          "Auction"
+        ],
+        "summary": "Updating auction details",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "description": "Update auction information",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          },
+          {
+            "name": "published",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          },
+          {
+            "name": "seller_email",
+            "in": "query",
+            "description": "Filter by status",
+            "schema": {
+              "type": "string"
+            },
+            "example": "false"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "description": "Join our auction event!"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "required and cannot be empty."
+                    }
+                  },
+                  "example2": {
+                    "value": {
+                      "message": "required fields are missing or empty"
+                    }
+                  },
+                  "example3": {
+                    "value": {
+                      "message": "Some lots are missing lot images"
+                    }
+                  },
+                  "example4": {
+                    "value": {
+                      "message": "Please complete the Individual or Business verification before publishing the auction."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction doesn't exists."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "There was an error while updating the auction"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/admin-subdomain": {
       "get": {
         "tags": [
@@ -2184,7 +2791,7 @@
                 "description":"",
                 "starting_price":22344,
                 "low_estimate":33332,
-                "high_estimate": 123144,
+                "high_estimate":123144,
                 "shipping_details":"Bandra",
                 "tags":"necklace"
               }
@@ -3007,7 +3614,7 @@
           "type":"integer"
         },
         "Top_bidder":{
-          "type": "string"
+          "type":"string"
         },
         "images":{
           "type": "array",
