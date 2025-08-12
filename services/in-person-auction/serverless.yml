@@ -194,6 +194,24 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
+
+  publish-auction:
+    handler: handlers/publish_auction.publish_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /publish
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
  
 
 resources:
