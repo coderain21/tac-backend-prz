@@ -1003,6 +1003,99 @@
           }
         ]
       }
+    },
+    "/publish": {
+      "patch": {
+        "tags": ["Auction"],
+        "summary": "In person auction publish",
+        "description": "Allows editing auction details. Certain fields are restricted once the auction is published.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id": {
+                    "type": "string"
+                  },
+                  "seller_email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": ["auction_id", "seller_email"]
+              },
+              "example": {
+                "auction_id": "A29098",
+                "seller_email": "bTbZs@example.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update Successful"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_data": {
+                    "value": {
+                      "message": "Auction Id and seller email are required"
+                    }
+                  },
+                  "generic": {
+                    "value": {
+                      "message": "Something went wrong. Please try again!"
+                    }
+                  },
+                  "example1": {
+                    "value": {
+                      "message": "Auction not in draft state"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {
