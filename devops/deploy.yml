@@ -15,6 +15,9 @@ jobs:
           deploy:
             steps:
               - checkout: self
+                clean: true
+                fetchDepth: 0
+                persistCredentials: true
               - task: Cache@2
                 inputs:
                   key: 'npmV2 | "$(Agent.OS)" | package.json'
@@ -56,4 +59,13 @@ jobs:
                     echo "API testing failed"
                     exit 1
                   fi
+                  if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
+                    git checkout qa-tac
+                    if ! git pull origin qa --ff-only; then
+                        echo "Merge conflicts detected between qa and qa-tac branches"
+                        exit 1
+                    fi
+                    git push
+                  fi
+                 
                 displayName: 'Deployment'
