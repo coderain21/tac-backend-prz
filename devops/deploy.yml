@@ -68,7 +68,7 @@ jobs:
                 displayName: 'Deployment'
 
     - job: SyncBranches
-      # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/releases'))
+      condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/releases'))
       displayName: Sync QA Branches
       pool:
         vmImage: "ubuntu-22.04"
