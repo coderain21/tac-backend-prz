@@ -61,6 +61,7 @@ jobs:
                   fi
                   if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
                     git checkout qa-tac
+                    git pull
                     if ! git pull origin qa --ff-only; then
                         echo "Merge conflicts detected between qa and qa-tac branches"
                         exit 1
