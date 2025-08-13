@@ -78,11 +78,15 @@ jobs:
           fetchDepth: 0 
           persistCredentials: true
         - script: |
-            git checkout qa-tac
-            git pull
-            if ! git merge origin/qa --no-ff; then
-                echo "Merge conflicts detected between qa and qa-tac branches"
-                exit 1
+            if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
+              git checkout qa-tac
+              git pull
+              git config pull.rebase false 
+              git config --global user.email "pipeline@7edge.com"
+              git config --global user.name "Pipeline"
+              if ! git pull origin qa; then
+                  echo "Merge conflicts detected between qa and qa-tac branches"
+              fi
+              git push
             fi
-            git push
           displayName: 'Sync qa to qa-tac branch'                 
