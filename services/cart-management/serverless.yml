@@ -104,6 +104,7 @@ package:
     - ./lib/**
 
 custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -153,7 +154,12 @@ functions:
               - Access-Control-Allow-Headers
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}     #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
 resources:
-   Resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
+  Resources:
     GatewayResponseDefault4XX:
        Type: 'AWS::ApiGateway::GatewayResponse'
        Properties:
@@ -163,6 +169,16 @@ resources:
          ResponseType: DEFAULT_4XX
          RestApiId:
            Ref: 'ApiGatewayRestApi'
+    # WebAclAssociation: Only enabled for production stage to provide WAF protection
+    # Uses CloudFormation condition 'IsProd' to create resource only for prod stage
+    # SSM parameter has default value to prevent resolution errors in non-prod environments
+    WebAclAssociation:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
     
     # BuyerEmailOtp:
     #   Type: AWS::Pinpoint::EmailTemplate
