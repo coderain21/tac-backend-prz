@@ -120,8 +120,7 @@ functions:
           cors: true
           path: /list-lots
           method: get
-          authorizer:
-              arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
 
 resources:
   Conditions:
