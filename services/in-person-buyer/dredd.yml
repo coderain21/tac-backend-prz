@@ -10,7 +10,7 @@ custom: {}
 names: false
 only: []
 reporter: ['html']
-output: ['../../test-results/in-person-auctions-apis.html']
+output: ['../../test-results/in-person-buyer-apis.html']
 header:
   - "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
 sorted: false
@@ -30,5 +30,5 @@ hooks-worker-term-retry: 500
 hooks-worker-handler-host: 127.0.0.1
 hooks-worker-handler-port: 61321
 config: ./dredd.yml 
-blueprint: in-person-auction-management-swagger.json
+blueprint: in-person-buyer-management-swagger.json
 endpoint: 'https://apis.dev.indyauction.net/v1/in-person-buyer'

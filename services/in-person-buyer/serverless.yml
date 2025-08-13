@@ -105,43 +105,8 @@ custom:
 
 functions: 
 
-  create:
-    handler: handlers/create.create_auction
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /
-          method: post
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-  
-  update: 
-    handler: handlers/update.update_auction
-    timeout: 30
-    vpc:
-      securityGroupIds: 
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /{auction_id}
-          method: patch
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
   list-lots:
-    handler: handlers/list_lot.list_lot
+    handler: handlers/list_lot.list_lots
     timeout: 30
     vpc:
       securityGroupIds:
@@ -156,63 +121,7 @@ functions:
           path: /list-lots
           method: get
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
-  create-lot:
-    handler: handlers/create_lot.create_lot
-    timeout: 30
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /lots
-          method: post
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
-  update-lot:
-    handler: handlers/update_lot.update_lot
-    timeout: 30
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /lots
-          method: patch
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-
-
-  publish-auction:
-    handler: handlers/publish_auction.publish_auction
-    timeout: 30
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - http:
-          cors: true
-          path: /publish
-          method: patch
-          authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
- 
+              arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
 resources:
   Conditions:

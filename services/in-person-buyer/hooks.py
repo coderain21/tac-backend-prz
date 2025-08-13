@@ -1,4 +1,4 @@
-'''This is hooks file for in person auction service'''
+'''This is hooks file for in person buyer service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
