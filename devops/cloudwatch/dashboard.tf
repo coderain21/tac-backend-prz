@@ -623,7 +623,38 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_count" {
   provider             = aws.deployment-eu
 }
 
+resource "aws_cloudwatch_log_metric_filter" "throttling_exception_filter" {
+  name           = "ThrottlingExceptionFilter"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-unpublish_auction" # Change this
 
+  pattern = "\"ThrottlingException\""
+
+  metric_transformation {
+    name      = "ThrottlingExceptionCount"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+  provider  = aws.deployment-eu
+
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
+  alarm_name          = "ThrottlingExceptionAlarm-Unpublish-Auction"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].namespace
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alarm when ThrottlingException appears in logs"
+  treat_missing_data  = "notBreaching"
+
+  # Optional: SNS topic for notifications
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn] # Define this if needed
+  provider  = aws.deployment-eu
+}
 
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_3" {
   provider = aws.deployment-eu
