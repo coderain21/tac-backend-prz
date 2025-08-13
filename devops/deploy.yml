@@ -59,14 +59,30 @@ jobs:
                     echo "API testing failed"
                     exit 1
                   fi
-                  if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
-                    git checkout qa-tac
-                    git pull
-                    if ! git pull origin qa --ff-only; then
-                        echo "Merge conflicts detected between qa and qa-tac branches"
-                        exit 1
-                    fi
-                    git push
+                  - script: |
+                  bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
+                  if [ $? -ne 0 ]; then
+                    echo "API testing failed"
+                    exit 1
                   fi
-                 
                 displayName: 'Deployment'
+
+    - job: SyncBranches
+      # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/releases'))
+      displayName: Sync QA Branches
+      pool:
+        vmImage: "ubuntu-22.04"
+      steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0 
+          persistCredentials: true
+        - script: |
+            git checkout qa-tac
+            git pull
+            if ! git merge origin/qa --no-ff; then
+                echo "Merge conflicts detected between qa and qa-tac branches"
+                exit 1
+            fi
+            git push
+          displayName: 'Sync qa to qa-tac branch'                 
