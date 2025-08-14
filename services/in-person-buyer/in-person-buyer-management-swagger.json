@@ -1,0 +1,475 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "In Person Buyer Management APIs",
+    "description": "In Person Buyer APIs",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://apis.dev.indyauction.net/v1/in-person-buyer"
+    }
+  ],
+  "tags": [
+    {
+      "name": "In Person Buyer Management",
+      "description": "APIs to manage the buyer"
+    }
+  ],
+  "paths": {
+    "/list-lots": {
+      "get": {
+        "tags": ["In person Lot Management"],
+        "summary": "view in person lots",
+        "description": "view in person lots",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "description": "to determine the which auction lots to be displayed ",
+            "schema": {
+              "type": "string"
+            },
+            "example": "651e448f536806fbf8037c3c"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "description": "Sort by key",
+            "schema": {
+              "type": "string"
+            },
+            "example": "highest_price"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "page number",
+            "schema": {
+              "type": "string"
+            },
+            "example": "1"
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "number of records per page",
+            "schema": {
+              "type": "string"
+            },
+            "example": "10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved lots",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "schema": {
+                            "$ref": "#/components/schemas/Lots"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                    "data": [
+                      {
+                        "_id": "6893384acfd302f9d592ad52",
+                        "title1": "Lot 1",
+                        "title2": "",
+                        "description": "<p>Lot description</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/cc86221d-99a1-f51b-3905-1c9481d61b82/panting2.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 1,
+                        "reserve": 200,
+                        "created_at": "2025-08-06T11:11:06.284Z",
+                        "updated_at": "2025-08-06T11:11:06.284Z",
+                        "__v": 0,
+                        "starting_price": null,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "68945d661a7565a5daf091b3",
+                        "title1": "test",
+                        "title2": "",
+                        "description": "<p>description</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [
+                          "tage"
+                        ],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/7281db9b-733e-b110-7c64-8cb30a4b7981/sea.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 2,
+                        "reserve": 1000,
+                        "created_at": "2025-08-07T08:01:42.941Z",
+                        "updated_at": "2025-08-07T08:01:42.941Z",
+                        "__v": 0,
+                        "starting_price": null,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "689493542a003bb2c7be482d",
+                        "title1": "lot 3",
+                        "title2": "",
+                        "description": "<p>Lot description description</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/658f5e04-e931-ec61-2bec-bd03570ee97e/ai-6.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 3,
+                        "reserve": 1900,
+                        "created_at": "2025-08-07T11:51:48.314Z",
+                        "updated_at": "2025-08-07T11:51:48.314Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895ae9ad1e972c7488b4ea4",
+                        "title1": "Lot 4",
+                        "title2": "",
+                        "description": "<p>dsbg kjfddgf</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/875b9cc4-8a23-673e-508a-56ea12511ae8/painting.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 4,
+                        "reserve": 100,
+                        "created_at": "2025-08-08T08:00:26.250Z",
+                        "updated_at": "2025-08-08T08:00:26.250Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895aeaad1e972c7488b4eaa",
+                        "title1": "Lot 5",
+                        "title2": "",
+                        "description": "<p>djdf sdfsg</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/b7abc5b6-86af-345d-1c88-31e26dbbac1b/abstract2.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 5,
+                        "reserve": 120,
+                        "created_at": "2025-08-08T08:00:42.092Z",
+                        "updated_at": "2025-08-08T08:00:42.092Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895aec2d1e972c7488b4eb0",
+                        "title1": "Lots",
+                        "title2": "",
+                        "description": "<p>ijfdjgsg slkawue</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/4e7ddd20-fac8-0ad8-c57f-56135cbae0b1/janis-ringli-eVkfS3r1vdc-unsplash.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 6,
+                        "reserve": 200,
+                        "created_at": "2025-08-08T08:01:06.273Z",
+                        "updated_at": "2025-08-08T08:01:06.273Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895aedcd1e972c7488b4eb6",
+                        "title1": "Cat",
+                        "title2": "",
+                        "description": "<p>dfkjdg dkhgd</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/922207d3-8d4a-55af-7d5f-b20c24ac0abb/cat.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 7,
+                        "reserve": 233,
+                        "created_at": "2025-08-08T08:01:32.531Z",
+                        "updated_at": "2025-08-08T08:01:32.531Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895aef5d1e972c7488b4ebc",
+                        "title1": "Lot 6 ig",
+                        "title2": "",
+                        "description": "<p>kjdhfg kjdfhgd</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/46e39881-279e-933c-ac82-09c9fd5d44b8/janis-ringli-eVkfS3r1vdc-unsplash.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 8,
+                        "reserve": 2440,
+                        "created_at": "2025-08-08T08:01:57.134Z",
+                        "updated_at": "2025-08-08T08:01:57.134Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895af0bd1e972c7488b4ec2",
+                        "title1": "Lot 9 for sure",
+                        "title2": "",
+                        "description": "<p>dsfhg dg</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/42a0df58-968e-963e-6814-f29fa4f76813/abstract2.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 9,
+                        "reserve": 300,
+                        "created_at": "2025-08-08T08:02:19.753Z",
+                        "updated_at": "2025-08-08T08:02:19.753Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      },
+                      {
+                        "_id": "6895af24d1e972c7488b4ec8",
+                        "title1": "Lot 10",
+                        "title2": "",
+                        "description": "<p>ytuu ye</p>",
+                        "low_estimate": 0,
+                        "high_estimate": 0,
+                        "shipping_details": "",
+                        "tags": [],
+                        "auction_id": "A2088",
+                        "seller_email": "sthuthi+test3@7edge.com",
+                        "current_bid": 0,
+                        "images": [
+                          {
+                            "url": "DomainName/Auctions/lots/images/2f186aa9-8e42-334e-cb41-94ad70774db3/sbsract2.webp",
+                            "featured": true
+                          }
+                        ],
+                        "lot_number": 10,
+                        "reserve": 778,
+                        "created_at": "2025-08-08T08:02:44.608Z",
+                        "updated_at": "2025-08-08T08:02:44.608Z",
+                        "__v": 0,
+                        "is_wishlisted": false
+                      }
+                    ],
+                    "page": 1,
+                    "total_pages": 2,
+                    "total_records": 11
+                  }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "Please provide auction_id"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "example": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Lots": {
+        "type": "object",
+        "properties": {
+          "auction_id": {
+            "type": "string"
+          },
+          "seller_email": {
+            "type": "string"
+          },
+          "lot_number": {
+            "type": "integer"
+          },
+          "lot_title": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "feature": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "title1": {
+            "type": "string"
+          },
+          "title2": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "low_estimate": {
+            "type": "integer"
+          },
+          "high_estimate": {
+            "type": "integer"
+          },
+          "shipping_details": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Bearer Token"
+      }
+    }
+  }
+}
+

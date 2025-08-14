@@ -2,6 +2,7 @@
   "Classic": {
     "title1": "Title1",
     "title2": "title2",
+    "auction_id": "A0001",
     "description": "<p>description</p>",
     "reserve": 1000,
     "lot_number": 1,
