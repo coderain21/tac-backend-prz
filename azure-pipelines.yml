@@ -398,33 +398,33 @@ stages:
 #               fi
 #           displayName: 'Dynamic Application Security Testing (DAST)'
 
-# - stage: Deploy
-#   displayName: Deploy
-#   jobs:
-#     - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
-#         - template: devops/deploy.yml
-#           parameters:
-#             envName: 'production'
-#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
-#         - template: devops/deploy.yml
-#           parameters:
-#             envName: 'testing'
-#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa-tac') }}:
-#         - template: devops/deploy.yml
-#           parameters:
-#             envName: 'testing'
-#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
-#         - template: devops/deploy.yml
-#           parameters:
-#             envName: 'staging' 
-#     - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
-#         - template: devops/deploy-bidding.yml
-#           parameters:
-#             envName: 'testing'
-#     - ${{ else }}:
-#         - template: devops/deploy.yml
-#           parameters:
-#             envName: 'development'
+- stage: Deploy
+  displayName: Deploy
+  jobs:
+    - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'production'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'testing'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'qa-tac') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'testing'
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'pre-prod') }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'staging' 
+    - ${{ elseif eq(variables['Build.SourceBranchName'], 'bidding-engine') }}:
+        - template: devops/deploy-bidding.yml
+          parameters:
+            envName: 'testing'
+    - ${{ else }}:
+        - template: devops/deploy.yml
+          parameters:
+            envName: 'development'
   
 - stage: Versioning
   displayName: 'Versioning'
