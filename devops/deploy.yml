@@ -81,5 +81,6 @@ jobs:
                   if ! git pull origin qa; then
                       echo "Merge conflicts detected between qa and qa-tac branches"
                       exit 1
+                  fi
             fi
           displayName: 'Sync qa to qa-tac branch'                 
