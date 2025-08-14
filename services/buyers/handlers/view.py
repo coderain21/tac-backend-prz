@@ -146,8 +146,8 @@ def view(event, context):
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
 
-        start_time=result['start_date']
-        end_time= result['end_date']
+        # start_time=result['start_date']
+        # end_time= result['end_date']
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
             return {
