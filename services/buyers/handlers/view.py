@@ -177,6 +177,7 @@ def view(event, context):
         # client.close()
         if result["make_your_auction_private"] is True and passcode is None:
             data = {}
+            data["auction_type"] = result.get("auction_type")
             data["menu_links"] = result.get("menu_links")
             data["logo_image"] = result.get("logo_image")
             data["header"] = result.get("header")
@@ -197,6 +198,7 @@ def view(event, context):
         elif result["make_your_auction_private"] is True and passcode is not None:
             if result["passcode"] != str(passcode):
                 data = {}
+                data["auction_type"] = result.get("auction_type")
                 data["menu_links"] = result.get("menu_links")
                 data["logo_image"] = result.get("logo_image")
                 data["footer"] = {
