@@ -62,6 +62,7 @@ jobs:
                 displayName: 'Deployment'
 
     - job: SyncBranches
+      dependsOn: Deployment
       condition: and(succeeded(), eq(variables['build.SourceBranch'], 'refs/heads/qa'))
       displayName: Sync QA Branches
       pool:
