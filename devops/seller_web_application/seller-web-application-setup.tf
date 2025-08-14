@@ -92,6 +92,7 @@ resource "aws_cloudfront_origin_access_control" "cdn" {
   provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "waf_web_acl" {
+  count = var.STAGE == "prod" ? 1 : 0
   name ="WEB_ACL_CLOUDFRONT_ARN"
   provider = aws.deployment-eu
 }
@@ -152,8 +153,7 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     minimum_protocol_version = "TLSv1.2_2021"  
     cloudfront_default_certificate = false    
   }
-  web_acl_id = var.STAGE == "prod" ? data.aws_ssm_parameter.waf_web_acl.value : null
-
+  web_acl_id = var.STAGE == "prod" ? data.aws_ssm_parameter.waf_web_acl[0].value : null
 }
 
 resource "aws_s3_bucket_policy" "allow_access_from_another_account" {

@@ -3,57 +3,84 @@ parameters:
     type: string
 
 jobs:
-    - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'qa-tac'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
-      displayName: Deployment
-      environment: ${{ parameters.envName }}
+    # - deployment: Deployment
+    #   condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'qa-tac'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
+    #   displayName: Deployment
+    #   environment: ${{ parameters.envName }}
+    #   pool:
+    #     vmImage: "ubuntu-22.04"
+    #   strategy:
+    #     # Default deployment strategy, more coming...
+    #     runOnce:
+    #       deploy:
+    #         steps:
+    #           - checkout: self
+    #             clean: true
+    #             fetchDepth: 0
+    #             persistCredentials: true
+    #           - task: Cache@2
+    #             inputs:
+    #               key: 'npmV2 | "$(Agent.OS)" | package.json'
+    #               restoreKeys: |
+    #                 npmV2 | "$(Agent.OS)"
+    #               path: "$(System.DefaultWorkingDirectory)/node_modules"
+    #               cacheHitVar: CACHE_RESTORED
+    #             displayName: Cache npm
+    #           - task: UseNode@1
+    #             inputs:
+    #               version: '18.x'
+    #             displayName: 'Use Node.js 18'
+    #           - task: DownloadPipelineArtifact@2
+    #             name: environment
+    #             inputs:
+    #               artifact: environment
+    #               targetPath: '$(System.DefaultWorkingDirectory)'
+    #           #- script: npm config set registry https://registry.npmmirror.com
+    #           - script: |
+    #               npm install --cache .npm
+    #             condition: ne(variables.CACHE_RESTORED, 'true')
+    #           - bash: |                 
+    #              wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; 
+    #              chmod +x aws_signing_helper
+    #             displayName: Install AWS Signer
+    #           - task: DownloadSecureFile@1
+    #             name: Certificate
+    #             displayName: 'Download certificate'
+    #             inputs:
+    #               secureFile: 'certificate.crt'
+    #           - task: DownloadSecureFile@1
+    #             name: Privatekey
+    #             displayName: 'Download private key'
+    #             inputs:
+    #               secureFile: 'private.key'
+    #           - script: |
+    #               # bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
+    #               # if [ $? -ne 0 ]; then
+    #               #   echo "API testing failed"
+    #               #   exit 1
+    #               # fi
+    #             displayName: 'Deployment'
+
+    - job: SyncBranches
+      condition: and(succeeded(), eq(variables['build.SourceBranch'], 'refs/heads/qa'))
+      displayName: Sync QA Branches
       pool:
         vmImage: "ubuntu-22.04"
-      strategy:
-        # Default deployment strategy, more coming...
-        runOnce:
-          deploy:
-            steps:
-              - checkout: self
-              - task: Cache@2
-                inputs:
-                  key: 'npmV2 | "$(Agent.OS)" | package.json'
-                  restoreKeys: |
-                    npmV2 | "$(Agent.OS)"
-                  path: "$(System.DefaultWorkingDirectory)/node_modules"
-                  cacheHitVar: CACHE_RESTORED
-                displayName: Cache npm
-              - task: UseNode@1
-                inputs:
-                  version: '18.x'
-                displayName: 'Use Node.js 18'
-              - task: DownloadPipelineArtifact@2
-                name: environment
-                inputs:
-                  artifact: environment
-                  targetPath: '$(System.DefaultWorkingDirectory)'
-              #- script: npm config set registry https://registry.npmmirror.com
-              - script: |
-                  npm install --cache .npm
-                condition: ne(variables.CACHE_RESTORED, 'true')
-              - bash: |                 
-                 wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; 
-                 chmod +x aws_signing_helper
-                displayName: Install AWS Signer
-              - task: DownloadSecureFile@1
-                name: Certificate
-                displayName: 'Download certificate'
-                inputs:
-                  secureFile: 'certificate.crt'
-              - task: DownloadSecureFile@1
-                name: Privatekey
-                displayName: 'Download private key'
-                inputs:
-                  secureFile: 'private.key'
-              - script: |
-                  bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
-                  if [ $? -ne 0 ]; then
-                    echo "API testing failed"
-                    exit 1
+      steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0 
+          persistCredentials: true
+        - script: |
+            if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
+                  git checkout qa-tac
+                  git pull
+                  git config pull.rebase false 
+                  git config --global user.email "namratha.shettigar@7edge.com"
+                  git config --global user.name "Pipeline"
+                  if ! git pull origin qa; then
+                      echo "Merge conflicts detected between qa and qa-tac branches"
+                      exit 1
                   fi
-                displayName: 'Deployment'
+            fi
+          displayName: 'Sync qa to qa-tac branch'                 
