@@ -113,7 +113,8 @@ def view(event, context):
             "seller_email": 1,
             "start_time_zone": 1,
             "end_time_zone": 1,
-            "location":1
+            "location":1,
+            "auction_type": 1,
         }
         time_zones = {
             'GMT': 'GMT',
