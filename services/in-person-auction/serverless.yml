@@ -212,6 +212,24 @@ functions:
           method: patch
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  unpublish-auction:
+    handler: handlers/unpublish_auction.unpublish_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /unpublish
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
  
 
 resources:
