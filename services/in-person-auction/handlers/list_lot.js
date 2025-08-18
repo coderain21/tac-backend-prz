@@ -184,6 +184,7 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
         let csvContent = `${csvHeaders.join(',')}\n`
 
         // Process each lot
+        // eslint-disable-next-line no-restricted-syntax
         for (const lot of lots) {
             try {
                 const startTime = lot.start_time
@@ -364,11 +365,6 @@ module.exports.list_lot = async (event) => {
             total_records_found: totalCount,
             total_pages: Math.ceil(totalCount / perPage),
             current_page: page,
-            auction: {
-                auction_id: auctionData.auction_id,
-                title: auctionData.title,
-                status: auctionData.status,
-            },
         }
 
         // Handle CSV export
