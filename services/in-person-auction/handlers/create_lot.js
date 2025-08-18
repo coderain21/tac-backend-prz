@@ -105,7 +105,7 @@ module.exports.create_lot = async (event) => {
             }
             console.log('auctiondata', auctionRecord)
             if (auctionRecord[0].template_name === 'Single Lot') {
-                auctionUpdateData.$set = { auction_image: request_body.images[0] }
+                auctionUpdateData.$set = { auction_image: [request_body.images[0]] }
             }
             const result = await mongoConnection.UpdateAuction(Auction, { seller_email: email, auction_id: auctionId }, auctionUpdateData)
             // console.log('result', result)
