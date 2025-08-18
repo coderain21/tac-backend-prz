@@ -1,0 +1,8 @@
+{
+  "baseUser": {
+    "email_address": "test-seller@example.com",
+    "first_name": "Test",
+    "last_name": "User",
+    "seller_id": "S-123"
+  }
+}
