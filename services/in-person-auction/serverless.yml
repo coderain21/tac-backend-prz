@@ -44,6 +44,7 @@ provider:
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
     SOCKET_URL: ${ssm:SOCKET_URL}
     S3_BUCKET_URL:  ${ssm:CDN_URL}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
 
 
     
