@@ -210,7 +210,7 @@ def export_as_csv(sales):
                 shipping_address = sale.get('shipping_address', {})
                 if shipping_address:
                     full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
-                else: 
+                else:
                     full_name = ""
                 modified_sales["ORDER ID"] = sale["order_number"]
                 modified_sales["Customer Name"] = sale['name']
