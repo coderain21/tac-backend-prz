@@ -13,7 +13,7 @@ and is_first_time_login. The schema also includes some options such as trim, def
 required fields. The schema is then used to create a Mongoose model named AdminUser, which can be
 used to interact with the corresponding MongoDB collection. */
 
-const UniqueBidSchema = new Schema({
+const LiveBidSchema = new Schema({
     auction_id: {
         type: String, trim: true,
     },
@@ -48,6 +48,6 @@ const UniqueBidSchema = new Schema({
 
 })
 
-UniqueBidSchema.plugin(mongoosePaginate)
-const uniqueBidManagement = mongoose.model(`${stage}-unique-bids`, UniqueBidSchema, `${stage}-unique-bids`)
+LiveBidSchema.plugin(mongoosePaginate)
+const uniqueBidManagement = mongoose.model(`${stage}-live-bids`, UniqueBidSchema, `${stage}-live-bids`)
 module.exports = uniqueBidManagement

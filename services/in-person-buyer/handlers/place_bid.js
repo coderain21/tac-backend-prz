@@ -19,5 +19,111 @@ const Buyer = require('../entities/Buyers')
 
 module.exports.place_bid = async (event) => {
     console.log('event', event)
-    
+    // --- Authorization Check ---
+    try {
+        const { claims } = event.requestContext.authorizer
+        if (!claims || !claims['cognito:username']) {
+            throw new Error('Unauthorized')
+        }
+        // You can add group checks here if needed
+    } catch (error) {
+        return {
+            statusCode: 403,
+            headers: await helpers.getHeaders(),
+            body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
+        }
+    }
+    // --- End Authorization Check ---
+
+    try {
+        if (connection === null || !connection.readyState) {
+            connection = await mongoConnection.connect()
+        }
+
+        const request_body = JSON.parse(event.body)
+        console.log(request_body)
+        if (!request_body) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Invalid request body' }),
+            }
+        }
+
+        const lotId = request_body.lot_id
+        const buyerId = request_body.buyer_id
+        const bidAmount = request_body.bid_amount
+        const paddleNumber = request_body.paddle_number
+        const auctionId = request_body.auction_id
+        const bidType = request_body.bid_type
+
+        const lot = await mongoConnection.view(Lot, { lot_id: lotId })
+        if (!lot) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Lot not found' }),
+            }
+        }
+        const auction = await mongoConnection.view(Auction, { auction_id: auctionId })
+        if (!auction) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction not found' }),
+            }
+        }
+        if (auction.status !== 'In Progress') {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction is not in progress' }),
+            }
+        }
+        const buyer = await mongoConnection.view(Buyer, { buyer_id: buyerId })
+        if (!buyer) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Buyer not found' }),
+            }
+        }
+
+        const newBid = {
+            lot_id: lotId,
+            buyer_id: buyerId,
+            bid_amount: bidAmount,
+            paddle_number: paddleNumber,
+            auction_id: auctionId,
+            bid_type: bidType,
+            name: buyer.name,
+            email_address: buyer.email_address,
+            mobile_number: buyer.mobile_number,
+            created_at: new Date(),
+            updated_at: new Date(),
+            timestamp: Math.floor(Date.now() / 1000),
+        }
+        try {
+            await mongoConnection.save(newBid)
+            return {
+                statusCode: 200,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Bid placed successfully' }),
+            }
+        } catch (error) {
+            console.error(error)
+            return {
+                statusCode: 500,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Server error' }),
+            }
+        }
+    } catch (error) {
+        console.error(error)
+        return {
+            statusCode: 500,
+            headers: await helpers.getHeaders(),
+            body: JSON.stringify({ message: 'Server error' }),
+        }
+    }
 }
