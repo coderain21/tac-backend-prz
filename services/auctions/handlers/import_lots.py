@@ -134,7 +134,7 @@ def import_lots(event, context):
                 'Product Shipping Location',
                 # 'Tags'
             ]
-            price_field = "Reserve"
+            price_field = "Reserve Price"
             has_end_date = False
         else:
             expected_headers = [
