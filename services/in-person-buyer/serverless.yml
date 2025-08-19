@@ -135,7 +135,7 @@ resources:
       Properties:
         ResourceArn:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
 
 plugins:
   - serverless-offline
