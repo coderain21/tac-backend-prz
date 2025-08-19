@@ -115,6 +115,8 @@ def view(event, context):
             "end_time_zone": 1,
             "location":1,
             "auction_type": 1,
+            "accept_absentee_bid": 1,
+            "accept_telephone_bid": 1,
         }
         time_zones = {
             'GMT': 'GMT',
