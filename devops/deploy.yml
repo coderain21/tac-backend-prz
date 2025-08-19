@@ -54,7 +54,7 @@ jobs:
                 inputs:
                   secureFile: 'private.key'
               - script: |
-                  if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
+                  if [ "$(Build.SourceBranch)" == "refs/heads/qa" ]; then 
                     # Checkout and update qa-tac branch
                     git checkout qa-tac
                     git pull
