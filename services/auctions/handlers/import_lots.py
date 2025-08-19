@@ -261,6 +261,10 @@ def import_lots(event, context):
                 dict1["high_estimate"] = high_estimate
                 dict1["shipping_details"] = row['Product Shipping Location']
                 dict1["tags"] = row['Tags'].split(',') if row.get('Tags') else []
+                if email_address == "namratha.shettigar+stripe@7edge.com" or email_address == "sthuthi+test3@7edge.com" and os.environ.get("STAGE") in {"dev","pre-production", "qa"}:
+                    static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
+                    static_image_data = {"url": static_image_url, "featured": True}
+                    dict1['images']=[static_image_data]
 
                 # Price mapping
                 if auction_record.get('auction_type') == 'live':
