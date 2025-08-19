@@ -159,7 +159,7 @@ async function exportLotsAsCSV(auctionData, lots) {
  */
 async function exportLotsAsCSVDirect(auctionData, lots) {
     try {
-        const fileName = process.env.CSV_FILE || `lots_export_${Date.now()}.csv`
+        const fileName = process.env.CSV_FILE || `${auctionData.auction_id}_lots.csv`
         const s3Key = `exports/lots/${fileName}`
         const s3Bucket = process.env.S3_BUCKET
 
