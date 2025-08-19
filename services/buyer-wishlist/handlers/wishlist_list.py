@@ -7,6 +7,7 @@ import json
 import os
 from pymongo import MongoClient
 from bson import ObjectId
+from datetime import datetime
 
 headers = {
     'Content-Type': 'application/json',
@@ -21,6 +22,9 @@ class MongoEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ObjectId):
             return str(o)
+        if isinstance(o, datetime):
+            # Convert to ISO string in UTC (consistent across clients)
+            return o.astimezone().isoformat()
         return super().default(o)
 
 
@@ -92,6 +96,7 @@ def wishlist_list(event, context):
                 "lot_details": 1,
                 "auction_name": "$auction_details.title",
                 "auction_id": "$auction_details.auction_id",
+                "auction_type": "$auction_details.auction_type",
                 "currency": "$auction_details.currency",
                 "time_zone": "$auction_details.time_zone",
                 "auction_uid": "$auction_details._id",
