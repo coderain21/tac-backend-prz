@@ -53,4 +53,7 @@ services:
   in-person-auction:
     path: services/in-person-auction
     config: ${env:config}
+  in-person-buyer:
+    path: services/in-person-buyer
+    config: ${env:config}
 
