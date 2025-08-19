@@ -97,6 +97,8 @@ def wishlist_list(event, context):
                 "auction_name": "$auction_details.title",
                 "auction_id": "$auction_details.auction_id",
                 "auction_type": "$auction_details.auction_type",
+                "auction_start_date": "$auction_details.start_date",
+                "auction_end_date": "$auction_details.end_date",
                 "currency": "$auction_details.currency",
                 "time_zone": "$auction_details.time_zone",
                 "auction_uid": "$auction_details._id",
@@ -111,6 +113,8 @@ def wishlist_list(event, context):
 
         # Execute the aggregation pipeline
         wishlist_with_lot_details = list(wishlist_collection.aggregate(pipeline))
+
+        print('wishlist', wishlist_with_lot_details)
 
         # if not wishlist_with_lot_details:
         #     return {
