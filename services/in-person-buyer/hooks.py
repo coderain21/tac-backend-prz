@@ -1,4 +1,4 @@
-'''This is hooks file for in person auction service'''
+'''This is hooks file for in person buyer service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
@@ -48,13 +48,7 @@ def set_authorization(transaction):
         transaction['skip'] = True
         return
 
-    #skipping publish and unpublish for now
     if (transaction['request']['method'] == 'PATCH' and '/publish' in transaction['request']['uri']):
-        print('Skipping the test...')
-        transaction['skip'] = True
-        return
-    
-    if (transaction['request']['method'] == 'PATCH' and '/unpublish' in transaction['request']['uri']):
         print('Skipping the test...')
         transaction['skip'] = True
         return

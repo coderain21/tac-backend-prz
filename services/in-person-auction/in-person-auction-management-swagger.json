@@ -1003,6 +1003,229 @@
           }
         ]
       }
+    },
+    "/publish": {
+      "patch": {
+        "tags": ["Auction"],
+        "summary": "In person auction publish",
+        "description": "Allows editing auction details. Certain fields are restricted once the auction is published.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id": {
+                    "type": "string"
+                  },
+                  "seller_email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": ["auction_id", "seller_email"]
+              },
+              "example": {
+                "auction_id": "A29098",
+                "seller_email": "bTbZs@example.com"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update Successful"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "invalid_data": {
+                    "value": {
+                      "message": "Auction Id and seller email are required"
+                    }
+                  },
+                  "generic": {
+                    "value": {
+                      "message": "Something went wrong. Please try again!"
+                    }
+                  },
+                  "example1": {
+                    "value": {
+                      "message": "Auction not in draft state"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/unpublish": {
+      "patch":{
+        "tags": ["In person Auction"],
+        "summary": "unpublish in person auction",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id":{
+                    "type": "string"
+                  },
+                  "seller_email":{
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "auction_id":"A0012",
+                "seller_email":"sthuthi+testing@7edge.com" 
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Update successful"
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Missing required parameters"
+                      
+                    }
+                  }
+                
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "You do not have access to perform this API action"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "Auction doesn't exists."
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example1": {
+                    "value": {
+                        "message": "There was an error while updating the auction"
+                      
+                    }
+                  }    
+                }
+              }
+            }
+          }
+        },
+        "security":[
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
     }
   },
   "components": {

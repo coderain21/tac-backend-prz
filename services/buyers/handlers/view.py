@@ -113,7 +113,10 @@ def view(event, context):
             "seller_email": 1,
             "start_time_zone": 1,
             "end_time_zone": 1,
-            "location":1
+            "location":1,
+            "auction_type": 1,
+            "accept_absentee_bid": 1,
+            "accept_telephone_bid": 1,
         }
         time_zones = {
             'GMT': 'GMT',
@@ -146,8 +149,8 @@ def view(event, context):
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
 
-        start_time=result['start_date']
-        end_time= result['end_date']
+        # start_time=result['start_date']
+        # end_time= result['end_date']
         time_zone_str = result.get("time_zone")
         if not time_zone_str:
             return {
@@ -176,6 +179,7 @@ def view(event, context):
         # client.close()
         if result["make_your_auction_private"] is True and passcode is None:
             data = {}
+            data["auction_type"] = result.get("auction_type")
             data["menu_links"] = result.get("menu_links")
             data["logo_image"] = result.get("logo_image")
             data["header"] = result.get("header")
@@ -196,6 +200,7 @@ def view(event, context):
         elif result["make_your_auction_private"] is True and passcode is not None:
             if result["passcode"] != str(passcode):
                 data = {}
+                data["auction_type"] = result.get("auction_type")
                 data["menu_links"] = result.get("menu_links")
                 data["logo_image"] = result.get("logo_image")
                 data["footer"] = {
