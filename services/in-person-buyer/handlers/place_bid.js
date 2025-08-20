@@ -8,20 +8,19 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 const { ObjectId } = require('mongodb')
+const { mongo } = require('mongoose')
 const mongoConnection = require('../lib/mongodb_helper')
 const helpers = require('../lib/helper')
 const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
 const Buyer = require('../entities/Buyers')
 const liveBid = require('../entities/LiveBid')
-const { mongo } = require('mongoose')
 
 
 let connection = null
 
 
 module.exports.place_bid = async (event) => {
-    console.log('event', event)
     // --- Authorization Check ---
     try {
         const { claims } = event.requestContext.authorizer
@@ -44,7 +43,6 @@ module.exports.place_bid = async (event) => {
         }
 
         const request_body = JSON.parse(event.body)
-        console.log(request_body)
         if (!request_body) {
             return {
                 statusCode: 400,
@@ -62,17 +60,17 @@ module.exports.place_bid = async (event) => {
         const sellerEmail = request_body.seller_email
 
         const lot = await mongoConnection.view(Lot, { lot_id: lotId })
-        if (!lot) {
+        if (lot.length === 0) {
             return {
-                statusCode: 400,
+                statusCode: 404,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Lot not found' }),
             }
         }
         const auction = await mongoConnection.view(Auction, { auction_id: auctionId, seller_email: sellerEmail })
-        if (!auction) {
+        if (auction.length === 0) {
             return {
-                statusCode: 400,
+                statusCode: 404,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
@@ -94,15 +92,15 @@ module.exports.place_bid = async (event) => {
             }
         }
         const buyer = await mongoConnection.view(Buyer, { buyer_id: buyerId })
-        if (!buyer) {
+        if (buyer.length === 0) {
             return {
-                statusCode: 400,
+                statusCode: 404,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Buyer not found' }),
             }
         }
         const registered = await mongoConnection.view(Buyer, { buyer_id: buyerId, auction_id: auctionId, seller_email: sellerEmail })
-        if (!registered) {
+        if (registered.length === 0) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
@@ -126,7 +124,7 @@ module.exports.place_bid = async (event) => {
             timestamp: Math.floor(Date.now()),
         }
         const placedBid = await mongoConnection.view(liveBid, { lot_id: lotId, buyer_id: buyerId })
-        if (placedBid) {
+        if (placedBid && placedBid.length > 0) {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
@@ -148,7 +146,7 @@ module.exports.place_bid = async (event) => {
                 body: JSON.stringify({ message: 'Bid placed successfully' }),
             }
         } catch (error) {
-            console.error(error)
+            console.log('Error', error)
             return {
                 statusCode: 500,
                 headers: await helpers.getHeaders(),
@@ -156,7 +154,7 @@ module.exports.place_bid = async (event) => {
             }
         }
     } catch (error) {
-        console.error(error)
+        console.log('Error', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

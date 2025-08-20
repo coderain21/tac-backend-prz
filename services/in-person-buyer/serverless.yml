@@ -136,6 +136,8 @@ functions:
           cors: true
           path: /place-bid
           method: post
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
 
 resources:
