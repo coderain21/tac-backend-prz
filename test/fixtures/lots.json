@@ -1,0 +1,41 @@
+{
+  "Classic": {
+    "title1": "Title1",
+    "title2": "title2",
+    "description": "<p>description</p>",
+    "reserve": 1000,
+    "lot_number": 1,
+    "low_estimate": 1000,
+    "high_estimate": 20000,
+    "shipping_details": "details",
+    "current_bid": 0,
+    "tags": [
+        "test"
+    ],
+    "images": [
+        {
+            "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+            "featured": true
+        }
+    ]
+  },
+  "baseLot": {
+    "title1": "Title1",
+    "title2": "title2",
+    "description": "<p>description</p>",
+    "reserve": 1000,
+    "low_estimate": 1000,
+    "high_estimate": 20000,
+    "shipping_details": "details",
+    "current_bid": 0,
+    "tags": [
+        "test"
+    ],
+    "images": [
+        {
+            "url": "DomainName/Auctions/lots/images/9e332f42-e245-05cd-0ec1-74e3b65b136a/sea.webp",
+            "featured": true
+        }
+    ]
+  }
+}

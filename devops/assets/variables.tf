@@ -217,3 +217,8 @@ variable "EXTERNAL_ADMIN_USERNAME" {
   description = "Description of the variable"
 }
 
+
+variable "GOOGLE_TIMEZONE_API_KEY" {
+  type        = string
+  description = "API key for timezone API"
+}

@@ -212,14 +212,17 @@ def export_as_csv(sales):
                 # Format the date as a string with only the date
                 formatted_date = date.strftime('%d %b %Y')
                 # Format the date as a string with only the date
-                shipping_address = sale['shipping_address']
-                full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
+                shipping_address = sale.get('shipping_address')
+                if shipping_address:
+                    full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
+                else:
+                    full_name = ""
                 modified_sales["Order no."] = sale["order_number"]
                 modified_sales["Customer name"] = sale['name']
                 modified_sales["Date"] = formatted_date
                 # modified_sales['Result'] = sale['amount']
-                modified_sales["Payment status"] = sale["payment_status"]
-                modified_sales["Payment type"]= sale["payment"]
+                modified_sales["Payment status"] = sale.get("payment_status", "")
+                modified_sales["Payment type"]= sale.get("payment", "")
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)

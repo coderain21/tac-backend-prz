@@ -30,3 +30,5 @@ for param_name in "${parameter_names[@]}"; do
    
     # echo "Added $param_name to .env file with value: $param_value"
 done
+printenv | awk -F= '$1 ~ /^(MONGO_CLIENT|MONGO_USERNAME|MONGO_PASSWORD|DATABASE|STAGE)$/' >> .env
+
