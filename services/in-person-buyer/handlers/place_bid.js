@@ -14,6 +14,7 @@ const helpers = require('../lib/helper')
 const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
 const Buyer = require('../entities/Buyers')
+const RegisteredUser = require('../entities/RegisteredUser')
 const liveBid = require('../entities/LiveBid')
 
 
@@ -21,6 +22,7 @@ let connection = null
 
 
 module.exports.place_bid = async (event) => {
+    console.log('event', event)
     // --- Authorization Check ---
     try {
         const { claims } = event.requestContext.authorizer
@@ -59,7 +61,8 @@ module.exports.place_bid = async (event) => {
         const bidType = request_body.bid_type
         const sellerEmail = request_body.seller_email
 
-        const lot = await mongoConnection.view(Lot, { lot_id: lotId })
+        const lot = await mongoConnection.view(Lot, { _id: new ObjectId(lotId) })
+        console.log('lot', lot)
         if (lot.length === 0) {
             return {
                 statusCode: 404,
@@ -68,6 +71,7 @@ module.exports.place_bid = async (event) => {
             }
         }
         const auction = await mongoConnection.view(Auction, { auction_id: auctionId, seller_email: sellerEmail })
+        console.log('auction', auction)
         if (auction.length === 0) {
             return {
                 statusCode: 404,
@@ -91,7 +95,9 @@ module.exports.place_bid = async (event) => {
                 body: JSON.stringify({ message: 'Cannot place bid on an auction that is not published' }),
             }
         }
-        const buyer = await mongoConnection.view(Buyer, { buyer_id: buyerId })
+        console.log('buyer', buyerId)
+        const buyer = await mongoConnection.view(Buyer, { _id: new ObjectId(buyerId) })
+        console.log('buyer', buyer)
         if (buyer.length === 0) {
             return {
                 statusCode: 404,
@@ -99,7 +105,9 @@ module.exports.place_bid = async (event) => {
                 body: JSON.stringify({ message: 'Buyer not found' }),
             }
         }
-        const registered = await mongoConnection.view(Buyer, { buyer_id: buyerId, auction_id: auctionId, seller_email: sellerEmail })
+        console.log('data', sellerEmail, buyer[0].email_address, auction[0]._id)
+        const registered = await mongoConnection.view(RegisteredUser, { email_address: buyer[0].email_address, auction_id: new ObjectId(auction[0]._id), seller_email: sellerEmail })
+        console.log('registered', registered)
         if (registered.length === 0) {
             return {
                 statusCode: 400,
