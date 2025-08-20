@@ -15,6 +15,9 @@ jobs:
           deploy:
             steps:
               - checkout: self
+                clean: true
+                fetchDepth: 0
+                persistCredentials: true
               - task: Cache@2
                 inputs:
                   key: 'npmV2 | "$(Agent.OS)" | package.json'
@@ -57,3 +60,29 @@ jobs:
                     exit 1
                   fi
                 displayName: 'Deployment'
+
+    - job: SyncBranches
+      dependsOn: Deployment
+      condition: and(succeeded(), eq(variables['build.SourceBranch'], 'refs/heads/qa'))
+      displayName: Sync QA Branches
+      pool:
+        vmImage: "ubuntu-22.04"
+      steps:
+        - checkout: self
+          clean: true
+          fetchDepth: 0 
+          persistCredentials: true
+        - script: |
+            if [ "$TF_VAR_BITBUCKET_BRANCH" == "qa" ]; then 
+                  git checkout qa-tac
+                  git pull
+                  git config pull.rebase false 
+                  git config --global user.email "namratha.shettigar@7edge.com"
+                  git config --global user.name "Pipeline"
+                  if ! git pull origin qa; then
+                      echo "Merge conflicts detected between qa and qa-tac branches"
+                      exit 1
+                  fi
+                  git push
+            fi
+          displayName: 'Sync qa to qa-tac branch'                 

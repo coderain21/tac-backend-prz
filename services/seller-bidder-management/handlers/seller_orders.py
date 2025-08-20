@@ -277,17 +277,14 @@ def export_as_csv(sales, email_address):
                 currency = sale.get("currency", "")
                 if currency in currencySymbolMapping:
                     currency = currencySymbolMapping.get(currency, "")
-                if sale.get('created_at'):
-                    date = format_date(int(sale['created_at']))
-                else:
-                    date = None
+                date = format_date(int(sale.get("created_at", 0)))
                 # Format the date as a string with only the date
                 formatted_date = date
                 # shipping_address = sale['shipping_address']
-                full_name = sale['name']
+                full_name = sale.get('name', '')
                 modified_sales["Order number"] = sale["order_number"]
                 modified_sales["Customer name"] = full_name
-                modified_sales["Auction name"] = sale['auction_title']
+                modified_sales["Auction name"] = sale.get("auction_title", "")
                 modified_sales["Date"] = formatted_date
                 modified_sales["Result"] = currency + str(sale["amount"])
                 modified_sales["Payment status"] = sale["payment_status"]
