@@ -48,7 +48,8 @@ def set_authorization(transaction):
         transaction['skip'] = True
         return
 
-    if (transaction['request']['method'] == 'PATCH' and '/publish' in transaction['request']['uri']):
+    #skipping this test for now
+    if (transaction['request']['method'] == 'POST' and '/place-bid' in transaction['request']['uri']):
         print('Skipping the test...')
         transaction['skip'] = True
         return

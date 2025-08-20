@@ -391,6 +391,135 @@
           }
         }
       }
+    },
+        "/place-bid": {
+      "post": {
+        "summary": "Place a bid on a lot",
+        "description": "Allows an authenticated buyer to place a bid on a specific lot within an auction.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "lot_id",
+                  "buyer_id",
+                  "bid_amount",
+                  "paddle_number",
+                  "auction_id",
+                  "bid_type",
+                  "seller_email"
+                ],
+                "properties": {
+                  "lot_id": {
+                    "type": "string",
+                    "example": "LOT12345"
+                  },
+                  "buyer_id": {
+                    "type": "string",
+                    "example": "BUYER98765"
+                  },
+                  "bid_amount": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 5000
+                  },
+                  "paddle_number": {
+                    "type": "string",
+                    "example": "1"
+                  },
+                  "auction_id": {
+                    "type": "string",
+                    "example": "A0001"
+                  },
+                  "bid_type": {
+                    "type": "string",
+                    "enum": ["absentee", "telephone"],
+                    "example": "absentee"
+                  },
+                  "seller_email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "seller@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Bid placed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Bid placed successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or business rule violation (e.g., lot not found, buyer not registered, auction not published, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized request (invalid/missing Cognito claims)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
