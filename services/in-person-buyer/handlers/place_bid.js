@@ -14,6 +14,7 @@ const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
 const Buyer = require('../entities/Buyers')
 const liveBid = require('../entities/LiveBid')
+const { mongo } = require('mongoose')
 
 
 let connection = null
@@ -76,6 +77,14 @@ module.exports.place_bid = async (event) => {
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
+        if (auction[0].start_date < Math.floor(Date.now()) && auction[0].status !== 'In Progress') {
+            await mongoConnection.update(Auction, { auction_id: auctionId }, { status: 'In Progress' })
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Cannot place bid on an auction that has already started' }),
+            }
+        }
         // console.log('auction', auction)
         if (auction[0].status !== 'Published') {
             return {
@@ -114,12 +123,27 @@ module.exports.place_bid = async (event) => {
             // mobile_number: buyer.mobile_number,
             created_at: new Date(),
             updated_at: new Date(),
-            timestamp: Math.floor(Date.now() / 1000),
+            timestamp: Math.floor(Date.now()),
+        }
+        const placedBid = await mongoConnection.view(liveBid, { lot_id: lotId, buyer_id: buyerId })
+        if (placedBid) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Bid already placed' }),
+            }
         }
         try {
-            await mongoConnection.save(newBid, liveBid)
+            const bidPlaces = await mongoConnection.save(newBid, liveBid)
+            if (!bidPlaces) {
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Bid not placed' }),
+                }
+            }
             return {
-                statusCode: 200,
+                statusCode: 201,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Bid placed successfully' }),
             }
@@ -128,7 +152,7 @@ module.exports.place_bid = async (event) => {
             return {
                 statusCode: 500,
                 headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Server error' }),
+                body: JSON.stringify({ message: 'Internal Server error' }),
             }
         }
     } catch (error) {
@@ -136,7 +160,7 @@ module.exports.place_bid = async (event) => {
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),
-            body: JSON.stringify({ message: 'Server error' }),
+            body: JSON.stringify({ message: 'Internal Server error' }),
         }
     }
 }
