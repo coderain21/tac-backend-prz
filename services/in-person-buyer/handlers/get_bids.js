@@ -26,6 +26,10 @@ module.exports.get_bids = async (event) => {
         const buyerId = data.buyer_id
         const lotId = data.lot_id // optional
 
+        console.log('auctionId', auctionId)
+        console.log('buyerId', buyerId)
+        console.log('lotId', lotId)
+
         if (!auctionId) {
             return {
                 statusCode: 400,

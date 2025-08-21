@@ -537,7 +537,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "68789f366b759c17f795ce47"
           },
           {
             "name": "buyer_id",
@@ -545,17 +546,18 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "65574138881df885d754cf60"
           },
           {
             "name": "lot_id",
             "in": "query",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "string"
-            }
+            },
+            "example": "6891f5de4fba11423e9290f8"
           }
-
         ],
         "responses": {
           "200": {
@@ -568,23 +570,26 @@
                     "bids": {
                       "type": "array",
                       "items": {
-                         "buyer_id": {
-                           "type": "string"
-                         },
-                         "bid_amount": {
-                           "type": "number",
-                         },
-                         "lot_id": {
-                           "type": "string"
-                         },
-                         "bid_type": {
-                          "type": "string"
-                         }
+                        "type": "object",
+                        "properties": {
+                          "buyer_id": {
+                            "type": "string"
+                          },
+                          "bid_amount": {
+                            "type": "number"
+                          },
+                          "lot_id": {
+                            "type": "string"
+                          },
+                          "bid_type": {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }
                 },
-                "example":{
+                "example": {
                   "bids": [
                     {
                       "buyer_id": "67c83dc1833d0eb25e9dc12a",
@@ -597,34 +602,38 @@
               }
             }
           },
-          "404": {
-            "description": "Invalid request or business rule violation (e.g., lot not found, buyer not registered, auction not published, etc.)",
+          "400": {
+            "description": "Invalid request (e.g., missing buyer_id, invalid auction_id, etc.)",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string",
-                      "example": "Auction not found"
+                      "type": "string"
                     }
                   }
+                },
+                "example": {
+                  "message": "Please provide buyer_id"
                 }
               }
             }
           },
-          "400":{
-            "description": "Invalid request or business rule violation (e.g., lot not found, buyer not registered, auction not published, etc.)",
+          "404": {
+            "description": "Resource not found (e.g., auction not found, lot not found, buyer not registered, etc.)",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string",
-                      "example": "Please provide buyer_id"
+                      "type": "string"
                     }
                   }
+                },
+                "example": {
+                  "message": "Auction not found"
                 }
               }
             }
@@ -637,10 +646,12 @@
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string",
-                      "example": "Internal Server error"
+                      "type": "string"
                     }
                   }
+                },
+                "example": {
+                  "message": "Internal Server error"
                 }
               }
             }
@@ -648,6 +659,7 @@
         }
       }
     }
+
   },
   "components": {
     "schemas": {
