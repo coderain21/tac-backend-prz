@@ -3364,8 +3364,7 @@
                 "example": {
                   "message": "Seller settings updated successfully",
                   "seller_id": "654f664042b81a4af17a0fd8",
-                  "send_automated_auction_complete_email": true,
-                  "checkout_enabled": true
+                  "send_automated_auction_complete_email": true
                 }
               }
             }
