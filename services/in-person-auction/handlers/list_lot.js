@@ -45,111 +45,6 @@ function escapeCSVField(text) {
     return `"${cleanTextForCSV(text)}"`
 }
 
-/**
- * Exports lots data to CSV and uploads to S3
- * @param {Object} auctionData - Auction information
- * @param {Array} lots - Array of lot objects
- * @returns {string|null} Signed S3 URL or null if error
- */
-async function exportLotsAsCSV(auctionData, lots) {
-    let tempFilePath = null
-
-    try {
-        const fileName = process.env.CSV_FILE || `lots_export_${Date.now()}.csv`
-        tempFilePath = path.join('/tmp', fileName) // Use /tmp directory for Lambda
-        const s3Key = `exports/lots/${fileName}`
-        const s3Bucket = process.env.S3_BUCKET
-
-        if (!s3Bucket) {
-            throw new Error('S3_BUCKET environment variable is not set')
-        }
-
-        console.log('Exporting to temp file:', tempFilePath)
-        console.log('S3 Bucket:', s3Bucket)
-
-        // CSV Headers
-        const csvHeaders = [
-            'Lot Number',
-            'Title 1',
-            'Title 2',
-            'Reserve',
-            'Start Time',
-            'Number of Images',
-            'Absentee Bids',
-            'Telephone Bids',
-        ]
-
-        let csvContent = `${csvHeaders.join(',')}\n`
-
-        // Process each lot
-        // eslint-disable-next-line no-restricted-syntax
-        for (const lot of lots) {
-            try {
-                const startTime = lot.start_time
-                    ? new Date(lot.start_time).toISOString()
-                    : ''
-
-                const csvRow = [
-                    lot.lot_number || '',
-                    escapeCSVField(lot.title1),
-                    escapeCSVField(lot.title2),
-                    lot.reserve || '',
-                    startTime,
-                    Array.isArray(lot.images) ? lot.images.length : 0,
-                    lot.number_of_absentee_bids || 0,
-                    lot.number_of_telephone_bids || 0,
-                ]
-
-                csvContent += `${csvRow.join(',')}\n`
-            } catch (err) {
-                console.error(`Error processing lot ${lot.lot_number}:`, err)
-                continue
-            }
-        }
-
-        // Write CSV file to /tmp directory
-        fs.writeFileSync(tempFilePath, csvContent, 'utf8')
-
-        // Upload to S3
-        const s3Client = new AWS.S3({ region: process.env.AWS_REGION || 'eu-west-2' })
-
-        const uploadResult = await s3Client.upload({
-            Bucket: s3Bucket,
-            Key: s3Key,
-            Body: fs.createReadStream(tempFilePath),
-            ContentType: 'text/csv',
-            ServerSideEncryption: 'AES256',
-            Metadata: {
-                'auction-id': auctionData.auction_id || '',
-                'generated-at': new Date().toISOString(),
-            },
-        }).promise()
-
-        console.log('Upload successful:', uploadResult.Location)
-
-        // Generate signed URL
-        const signedUrl = s3Client.getSignedUrl('getObject', {
-            Bucket: s3Bucket,
-            Key: s3Key,
-            Expires: 3600, // URL expiration time in seconds
-        })
-
-        return signedUrl
-    } catch (err) {
-        console.error('Export error:', err)
-        return null
-    } finally {
-        // Clean up temp file
-        if (tempFilePath && fs.existsSync(tempFilePath)) {
-            try {
-                fs.unlinkSync(tempFilePath)
-                console.log('Temp file cleaned up:', tempFilePath)
-            } catch (cleanupErr) {
-                console.error('Error cleaning up temp file:', cleanupErr)
-            }
-        }
-    }
-}
 
 /**
  * Alternative approach: Export directly to S3 without temporary file
@@ -175,7 +70,6 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             'Title 1',
             'Title 2',
             'Reserve',
-            'Start Time',
             'Number of Images',
             'Absentee Bids',
             'Telephone Bids',
@@ -187,16 +81,11 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
         // eslint-disable-next-line no-restricted-syntax
         for (const lot of lots) {
             try {
-                const startTime = lot.start_time
-                    ? new Date(lot.start_time).toISOString()
-                    : ''
-
                 const csvRow = [
                     lot.lot_number || '',
                     escapeCSVField(lot.title1),
                     escapeCSVField(lot.title2),
                     lot.reserve || '',
-                    startTime,
                     Array.isArray(lot.images) ? lot.images.length : 0,
                     lot.number_of_absentee_bids || 0,
                     lot.number_of_telephone_bids || 0,
@@ -333,52 +222,43 @@ module.exports.list_lot = async (event) => {
             ],
         } : {}
 
-        // Define projection for lot fields
-        const projection = {
-            _id: 1,
-            lot_number: 1,
-            title1: 1,
-            title2: 1,
-            reserve: 1,
-            start_time: 1,
-            images: 1,
-            number_of_absentee_bids: 1,
-            number_of_telephone_bids: 1,
-        }
-
         // Final query combining auction, search criteria
         const finalQuery = { ...auctionQuery, ...searchCriteria }
 
-        // Execute queries
-        const [lots, totalCount] = await Promise.all([
-            Lot.find(finalQuery)
-                .select(projection)
-                .sort(sortCriteria)
-                .limit(perPage)
-                .skip((page - 1) * perPage),
-            Lot.countDocuments(finalQuery),
-        ])
+        let lots = []
+        let totalCount = 0
+        const response = {}
 
-        // Build response
-        const response = {
-            data: lots,
-            total_records_found: totalCount,
-            total_pages: Math.ceil(totalCount / perPage),
-            current_page: page,
-        }
-
-        // Handle CSV export
         if (exportAsCsv) {
-            // Use direct upload method (recommended) or temp file method
-            const signedUrl = await exportLotsAsCSVDirect(auctionData, lots)
-            // Alternative: const signedUrl = await exportLotsAsCSV(auctionData, lots)
+            // fetch ALL lots for CSV export
+            lots = await Lot.find(finalQuery).sort(sortCriteria).lean()
+            totalCount = lots.length
 
+            const signedUrl = await exportLotsAsCSVDirect(auctionData, lots)
             if (signedUrl) {
                 response.csv_url = signedUrl
             } else {
                 response.csv_error = 'Failed to generate CSV export'
             }
+        } else {
+            // fetch paginated lots + total count in parallel
+            const [lotDocs, count] = await Promise.all([
+                Lot.find(finalQuery)
+                    .sort(sortCriteria)
+                    .limit(perPage)
+                    .skip((page - 1) * perPage)
+                    .lean(),
+                Lot.countDocuments(finalQuery),
+            ])
+            lots = lotDocs
+            totalCount = count
         }
+
+        // Build response
+        response.data = lots
+        response.total_records_found = totalCount
+        response.total_pages = Math.ceil(totalCount / perPage)
+        response.current_page = page
 
         return {
             statusCode: 200,
@@ -397,7 +277,6 @@ module.exports.list_lot = async (event) => {
             }
         }
 
-        // Handle other errors
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),
@@ -405,7 +284,7 @@ module.exports.list_lot = async (event) => {
                 message: 'Internal server error',
                 error: process.env.NODE_ENV === 'development' ? error.message : undefined,
             }),
-
         }
     }
 }
+
