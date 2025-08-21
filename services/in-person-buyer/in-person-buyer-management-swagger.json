@@ -392,7 +392,7 @@
         }
       }
     },
-        "/place-bid": {
+    "/place-bid": {
       "post": {
         "summary": "Place a bid on a lot",
         "description": "Allows an authenticated buyer to place a bid on a specific lot within an auction.",
@@ -496,6 +496,133 @@
                     "message": {
                       "type": "string",
                       "example": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get-bids/{auction_id}": {
+      "get": {
+        "summary": "List Bids",
+        "description": "Fetch a list of bids placed by buyer.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lot_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bids": {
+                      "type": "array",
+                      "items": {
+                         "buyer_id": {
+                           "type": "string"
+                         },
+                         "bid_amount": {
+                           "type": "number",
+                         },
+                         "lot_id": {
+                           "type": "string"
+                         },
+                         "bid_type": {
+                          "type": "string"
+                         }
+                      }
+                    }
+                  }
+                },
+                "example":{
+                  "bids": [
+                    {
+                      "buyer_id": "67c83dc1833d0eb25e9dc12a",
+                      "bid_amount": 3000,
+                      "lot_id": "68a48b6849b2fece3366323e",
+                      "bid_type": "absentee"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Invalid request or business rule violation (e.g., lot not found, buyer not registered, auction not published, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Auction not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400":{
+            "description": "Invalid request or business rule violation (e.g., lot not found, buyer not registered, auction not published, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Please provide buyer_id"
                     }
                   }
                 }
