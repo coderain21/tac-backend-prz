@@ -352,7 +352,7 @@ module.exports.list_lot = async (event) => {
         // Execute queries
         const [lots, totalCount] = await Promise.all([
             Lot.find(finalQuery)
-                .select(projection)
+                // .select(projection)
                 .sort(sortCriteria)
                 .limit(perPage)
                 .skip((page - 1) * perPage),
