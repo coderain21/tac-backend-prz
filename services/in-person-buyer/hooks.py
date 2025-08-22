@@ -36,7 +36,7 @@ def skip_404_test_results(transaction):
 
 @before_each
 def set_authorization(transaction):
-    token = str(os.environ.get('USER'))
+    token = str(os.environ.get('BUYERS'))
     if transaction['request']['uri'].startswith('/admin'):
         token = str(os.environ.get('ADMIN'))
 
