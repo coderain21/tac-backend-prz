@@ -76,8 +76,8 @@ module.exports.place_bid = async (event) => {
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
-        if (auction[0].start_date < Math.floor(Date.now()) && auction[0].status !== 'In Progress') {
-            await mongoConnection.update(Auction, { _id: auction[0]._id }, { status: 'In Progress' })
+        if (auction[0].start_date < Math.floor(Date.now()) && auction[0].status === 'In Progress') {
+            // await mongoConnection.update(Auction, { _id: auction[0]._id }, { status: 'In Progress' })
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),

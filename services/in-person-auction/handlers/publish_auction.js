@@ -177,8 +177,15 @@ module.exports.publish_auction = async (event) => {
 
         try {
             // console.log('request_body', request_body)
-            const updatePayload = {
-                status: 'Published',
+            let updatePayload
+            if (auctionDetails.start_date < Math.floor(Date.now())) {
+                updatePayload = {
+                    status: 'In Progress',
+                }
+            } else {
+                updatePayload = {
+                    status: 'Published',
+                }
             }
             const updatedAuction = await Auction.updateOne({ auction_id, seller_email: email }, { $set: updatePayload })
             // console.log('updatedAuction', updatedAuction)
