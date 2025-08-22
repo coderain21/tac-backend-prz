@@ -1226,6 +1226,98 @@
           }
         ]
       }
+    },
+    "/auction-complete": {
+      "patch": {
+        "summary": "Mark an auction as completed",
+        "description": "Updates the status of an auction to **Completed** if eligible.",
+        "tags": ["Auction Management"],
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["auction_id", "status"],
+                "properties": {
+                  "auction_id": {
+                    "type": "string",
+                    "description": "Unique ID of the auction",
+                    "example": "AUC12345"
+                  },
+                  "status": {
+                    "type": "string",
+                    "description": "Current status of the auction (must not be Draft or Completed)",
+                    "example": "InProgress"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Auction marked as completed successfully (no response body)"
+          },
+          "400": {
+            "description": "Invalid request or auction already Draft/Completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Auction ID and Status are required"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized (user not allowed)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "You do not have access to perform this API action"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Auction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Auction not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal Server Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
