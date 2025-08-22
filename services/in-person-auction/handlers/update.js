@@ -67,7 +67,7 @@ module.exports.update_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
-        if (auctionDetails.status === 'InProgress' || auctionDetails.status === 'Completed') {
+        if (auctionDetails.status === 'In Progress' || auctionDetails.status === 'Completed') {
             return {
                 statusCode: 400,
                 headers: await helpers.getHeaders(),
