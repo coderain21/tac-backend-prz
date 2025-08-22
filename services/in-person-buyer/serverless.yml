@@ -121,13 +121,31 @@ functions:
           path: /list-lots
           method: get
 
+  place-bid:
+    handler: handlers/place_bid.place_bid
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /place-bid
+          method: post
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
 
 resources:
   Conditions:
     IsProd:
       Fn::Equals:
         - ${self:custom.isProd}
-        - qa
+        - prod
   Resources:
     WebAclAssociation:
       Condition: IsProd
@@ -135,7 +153,7 @@ resources:
       Properties:
         ResourceArn:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
-        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
 
 plugins:
   - serverless-offline
