@@ -231,6 +231,24 @@ functions:
           method: patch
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  mark-auction-complete:
+    handler: handlers/mark_complete.mark_complete
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /auction-complete
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
  
 
 resources:
