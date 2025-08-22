@@ -70,7 +70,6 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             'Title 1',
             'Title 2',
             'Reserve',
-            'Number of Images',
             'Absentee Bids',
             'Telephone Bids',
         ]
@@ -86,7 +85,6 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
                     escapeCSVField(lot.title1),
                     escapeCSVField(lot.title2),
                     lot.reserve || '',
-                    Array.isArray(lot.images) ? lot.images.length : 0,
                     lot.number_of_absentee_bids || 0,
                     lot.number_of_telephone_bids || 0,
                 ]
