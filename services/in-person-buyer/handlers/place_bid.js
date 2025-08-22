@@ -59,6 +59,21 @@ module.exports.place_bid = async (event) => {
         const auctionId = request_body.auction_id
         const bidType = request_body.bid_type
         const sellerEmail = request_body.seller_email
+        const countryCode = request_body.country_code
+        const phoneNumber = request_body.phone_number
+
+        console.log('request_body', request_body)
+
+
+        if (bidType === 'telephone') {
+            if (!countryCode || !phoneNumber) {
+                return {
+                    statusCode: 400,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({ message: 'Please provide country code and phone number' }),
+                }
+            }
+        }
 
         const lot = await mongoConnection.view(Lot, { _id: new ObjectId(lotId) })
         if (lot.length === 0) {
@@ -109,20 +124,40 @@ module.exports.place_bid = async (event) => {
             }
         }
 
-        const newBid = {
-            lot_id: lotId,
-            buyer_id: buyerId,
-            bid_amount: bidAmount,
-            paddle_number: paddleNumber,
-            auction_id: auctionId,
-            bid_type: bidType,
-            name: buyer.name,
-            email_address: buyer.email_address,
-            seller_email: sellerEmail,
-            // mobile_number: buyer.mobile_number,
-            created_at: new Date(),
-            updated_at: new Date(),
-            timestamp: Math.floor(Date.now()),
+        let newBid
+
+        if (bidType === 'telephone') {
+            newBid = {
+                lot_id: lotId,
+                buyer_id: buyerId,
+                bid_amount: bidAmount,
+                paddle_number: paddleNumber,
+                auction_id: auctionId,
+                bid_type: bidType,
+                name: buyer.name,
+                email_address: buyer.email_address,
+                seller_email: sellerEmail,
+                country_code: countryCode,
+                phone_number: phoneNumber,
+                created_at: new Date(),
+                updated_at: new Date(),
+                timestamp: Math.floor(Date.now()),
+            }
+        } else {
+            newBid = {
+                lot_id: lotId,
+                buyer_id: buyerId,
+                bid_amount: bidAmount,
+                paddle_number: paddleNumber,
+                auction_id: auctionId,
+                bid_type: bidType,
+                name: buyer.name,
+                email_address: buyer.email_address,
+                seller_email: sellerEmail,
+                created_at: new Date(),
+                updated_at: new Date(),
+                timestamp: Math.floor(Date.now()),
+            }
         }
         const placedBid = await mongoConnection.view(liveBid, { lot_id: lotId, buyer_id: buyerId })
         if (placedBid && placedBid.length > 0) {
