@@ -662,7 +662,7 @@ resource "aws_cloudwatch_log_metric_filter" "ecs_type_error_filter" {
   name           = "ECS-TypeError-Filter"
   log_group_name = "/ecs/task"  # ECS log group name
 
-  pattern = "TypeError: Cannot read properties of undefined (reading 'url')"
+  pattern = "TypeError Cannot read properties of undefined reading url"
 
   metric_transformation {
     name      = "ECSTypeErrorCount"
