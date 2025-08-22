@@ -392,7 +392,7 @@
         }
       }
     },
-        "/place-bid": {
+    "/place-bid": {
       "post": {
         "summary": "Place a bid on a lot",
         "description": "Allows an authenticated buyer to place a bid on a specific lot within an auction.",
@@ -520,7 +520,146 @@
           }
         }
       }
+    },
+    "/get-bids/{auction_id}": {
+      "get": {
+        "summary": "List Bids",
+        "description": "Fetch a list of bids placed by buyer.",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "68789f366b759c17f795ce47"
+          },
+          {
+            "name": "buyer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "65574138881df885d754cf60"
+          },
+          {
+            "name": "lot_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "6891f5de4fba11423e9290f8"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bids": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "buyer_id": {
+                            "type": "string"
+                          },
+                          "bid_amount": {
+                            "type": "number"
+                          },
+                          "lot_id": {
+                            "type": "string"
+                          },
+                          "bid_type": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "bids": [
+                    {
+                      "buyer_id": "67c83dc1833d0eb25e9dc12a",
+                      "bid_amount": 3000,
+                      "lot_id": "68a48b6849b2fece3366323e",
+                      "bid_type": "absentee"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (e.g., missing buyer_id, invalid auction_id, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Please provide buyer_id"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (e.g., auction not found, lot not found, buyer not registered, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Auction not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "Internal Server error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
+
   },
   "components": {
     "schemas": {
