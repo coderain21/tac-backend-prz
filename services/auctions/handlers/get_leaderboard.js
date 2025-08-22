@@ -80,6 +80,8 @@ module.exports.get_leaderboard = async (event) => {
             auction_id: 1,
             seller_email: 1,
             event_display: 1,
+            currency: 1,
+            status: 1,
         }
 
         const auctionData = await mongoConnection.getAuctionprojection(
