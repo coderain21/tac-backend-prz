@@ -146,6 +146,13 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction not in draft state' }),
             }
         }
+        if (auctionDetails.start_date < Math.floor(Date.now())) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction cannot be published with the start date in the past' }),
+            }
+        }
         required_fields = ['auction_image', 'title', 'description', 'currency',
             'time_zone', 'registration_type']
         // eslint-disable-next-line no-restricted-syntax
@@ -177,15 +184,8 @@ module.exports.publish_auction = async (event) => {
 
         try {
             // console.log('request_body', request_body)
-            let updatePayload
-            if (auctionDetails.start_date < Math.floor(Date.now())) {
-                updatePayload = {
-                    status: 'In Progress',
-                }
-            } else {
-                updatePayload = {
-                    status: 'Published',
-                }
+            const updatePayload = {
+                status: 'Published',
             }
             const updatedAuction = await Auction.updateOne({ auction_id, seller_email: email }, { $set: updatePayload })
             // console.log('updatedAuction', updatedAuction)
