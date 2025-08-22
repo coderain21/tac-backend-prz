@@ -86,7 +86,7 @@ module.exports.create_lot = async (event) => {
 
         // setting the lot number
         const existingLotCount = await Counter.findOneAndUpdate({
-            seller_email: email, auction_id: auctionId, record_type: 'Lots', status: 'Active',
+            seller_email: email, auction_id: auctionId, record_type: 'Lots',
         }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
         // console.log('existingLotCount', existingLotCount)
         const lotNumber = existingLotCount ? existingLotCount.starting_sequence : 1
