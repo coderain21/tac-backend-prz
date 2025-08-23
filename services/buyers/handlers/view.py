@@ -154,7 +154,7 @@ def view(event, context):
         current_time = datetime.timestamp(datetime.now())
         current_time=current_time*1000
         start_date = result.get('start_date', None)
-        if start_date < current_time and result['status'] == 'Published' and result['auction_type'] == 'live':
+        if start_date < current_time and result['status'] == 'Published' and result.get('auction_type') == 'live':
             collection.update_one({"_id": ObjectId(auction_id)}, {
                 "$set": {"status": "In Progress"}
             })

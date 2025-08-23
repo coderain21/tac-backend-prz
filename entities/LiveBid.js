@@ -34,6 +34,8 @@ const LiveBidSchema = new Schema({
         type: Number,
     },
     email_address: { type: String },
+    country_code: { type: String },
+    phone_number: { type: String },
     name: { type: String },
     bid_type: { type: String },
     created_at: { type: Date, default: Date.now },
