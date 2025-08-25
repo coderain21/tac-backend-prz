@@ -155,9 +155,9 @@ def view(event, context):
         start_date = result.get('start_date')
 
         if (
-            start_date is not None 
-            and start_date < current_time 
-            and result.get('status') == 'Published' 
+            start_date is not None
+            and start_date < current_time
+            and result.get('status') == 'Published'
             and result.get('auction_type') == 'live'
         ):
             collection.update_one(
