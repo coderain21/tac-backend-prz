@@ -153,11 +153,18 @@ def view(event, context):
 
 
         # Update the status in the database for the live auction
-        start_date = result.get('start_date', None)
-        if start_date < current_time and result['status'] == 'Published' and result['auction_type'] == 'live':
-            collection.update_one({"_id": ObjectId(auction_id)}, {
-                "$set": {"status": "In Progress"}
-            })
+        start_date = result.get('start_date')
+
+        if (
+            start_date is not None
+            and start_date < current_time
+            and result.get('status') == 'Published'
+            and result.get('auction_type') == 'live'
+        ):
+            collection.update_one(
+                {"_id": ObjectId(auction_id)},
+                {"$set": {"status": "In Progress"}}
+            )
 
         result = collection.find_one({"_id": ObjectId(auction_id)}, projection)
         if result is None:
