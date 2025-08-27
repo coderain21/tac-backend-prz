@@ -5,6 +5,7 @@ import os
 from pymongo import MongoClient
 from bson import ObjectId
 from lib.common_helper import Encoder
+from datetime import datetime
 # import pytz
 from lib.get import fetch_seller_data_from_subdomain
 
@@ -142,12 +143,21 @@ def view(event, context):
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
-        if result["status"] not in ["Published", "Accepting bids", "Completed"]:
+        if result["status"] not in ["Published", "In Progress", "Accepting bids", "Completed"]:
             return {
                 "headers": headers,
                 "statusCode": 404,
                 "body": json.dumps({"message": "Auction is not published yet."})
             }
+
+        # Update the status in the database for the live auction
+        current_time = datetime.timestamp(datetime.now())
+        current_time=current_time*1000
+        start_date = result.get('start_date', None)
+        if start_date < current_time and result['status'] == 'Published' and result.get('auction_type') == 'live':
+            collection.update_one({"_id": ObjectId(auction_id)}, {
+                "$set": {"status": "In Progress"}
+            })
 
         # start_time=result['start_date']
         # end_time= result['end_date']
@@ -233,8 +243,16 @@ def view(event, context):
         del result["passcode"]
         if domain_data is not None:
             result["sub_domain"] = domain_data["subdomain"]
+        # Add checkout_enabled flag
+        checkout_enabled = None
+        seller_email = result.get("seller_email")
+        if seller_email:
+            seller_collection = db[os.environ["SELLERS_TABLE"]]
+            seller = seller_collection.find_one({"email_address": seller_email}, {"checkout_enabled": 1})
+            checkout_enabled = seller.get("checkout_enabled") if seller else None
         body = {
             "data": result,
+            "checkout_enabled": checkout_enabled
         }
         return {
             "statusCode": 200,
