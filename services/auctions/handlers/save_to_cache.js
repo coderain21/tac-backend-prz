@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable import/extensions */
 /* eslint-disable consistent-return */
 /* eslint-disable no-unused-vars */
@@ -38,6 +39,11 @@ module.exports.handler = async (event, context, callback) => {
             await client.hset('lot', redisKey, redisPayload)
         }
         data.end_date = endDateISO
+
+        // Calculate delay_seconds = (lot_number - 1) * 10
+        const lot_number = data.lot_number || 1 // Default to 1 if lot_number is missing
+        const delay_seconds = (lot_number - 1) * 10
+        data.delay_seconds = delay_seconds
         return { ...data }
     } catch (e) {
         return e

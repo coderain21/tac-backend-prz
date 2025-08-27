@@ -1,4 +1,3 @@
-
 """
 The `import_lots` function imports lots from a CSV file into a MongoDB database, with additional
 validation and checks.
@@ -61,14 +60,15 @@ def import_lots(event, context):
     Note: This function assumes that necessary libraries and environment variables are properly configured.
     """
     try:
+        # Step 1: Authorization
         try:
             email_address = event['requestContext']['authorizer']['claims']['email']
             if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
                 return {
-                "statusCode": 403,
-                "headers": headers,
-                "body": json.dumps({"message": "You do not have access to perform this API action"})
-            }
+                    "statusCode": 403,
+                    "headers": headers,
+                    "body": json.dumps({"message": "You do not have access to perform this API action"})
+                }
         except:
             return {
                 "statusCode": 403,
@@ -76,6 +76,7 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
 
+        # Step 2: Validate input
         data = json.loads(event['body'])
         auction_id = data.get("auction_id")
         csv_url = data.get("csv_url")
@@ -89,71 +90,89 @@ def import_lots(event, context):
                         {"message": f"Please provide {','.join(fields_not_found)}"})
                     }
 
+        # Step 3: User Plan Validation
         collection = os.environ['SELLERS_TABLE']
-        user_info = get_by_email(
-            email_address, collection)
+        user_info = get_by_email(email_address, collection)
         plan_type = user_info.get("plan_type")
         free_user = user_info.get("free_user")
-        if plan_type == "Free" or free_user == True:
+        if plan_type == "Free" or free_user is True:
             return {
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({"message": "Upgrade the plan to Import lots"})
             }
 
-
-
-        # Expected column headers as set
-        expected_headers = [
-            'Lot Title 1',
-            'Title 2(Optional)',
-            'Description',
-            'Starting Price',
-            'Low Estimate',
-            'High Estimate',
-            'Product Shipping Location',
-            # 'Tags'
-        ]
-        # Initialize the MongoDB client
+        # Step 4: MongoDB Init
         client = MongoClient(
-                      os.environ['MONGO_CLIENT'],
-                      maxIdleTimeMS=60000  # Set maxIdleTimeMS to 60 seconds (60000 milliseconds)
-                        )
+            os.environ['MONGO_CLIENT'],
+            maxIdleTimeMS=60000
+        )
         db = client[os.environ['DATABASE']]
 
         collection = db[os.environ["LOT_COLLECTION_NAME"]]
         counter_collection = db[os.environ["COUNTER_LOT"]]
         auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        auction_record = auction_collection.find_one(
+            {"auction_id": auction_id, "seller_email": email_address}, {"_id": 0})
 
+        if not auction_record:
+            return {
+                "statusCode": 404,
+                'headers': headers,
+                "body": json.dumps({"message": "Auction doesn't exists."})
+            }
+
+        # Step 5: Expected Headers
+        if auction_record.get('auction_type') == 'live':
+            expected_headers = [
+                'Lot Title 1',
+                'Title 2(Optional)',
+                'Description',
+                'Reserve Price',
+                'Low Estimate',
+                'High Estimate',
+                'Product Shipping Location',
+                # 'Tags'
+            ]
+            price_field = "Reserve Price"
+            has_end_date = False
+        else:
+            expected_headers = [
+                'Lot Title 1',
+                'Title 2(Optional)',
+                'Description',
+                'Starting Price',
+                'Low Estimate',
+                'High Estimate',
+                'Product Shipping Location',
+                # 'Tags'
+            ]
+            price_field = "Starting Price"
+            has_end_date = True
+
+        # Step 6: Parse CSV
         response = requests.get(csv_url)
         response.raise_for_status()
-        # Decode the content as UTF-8 and create a StringIO buffer
         csv_data = response.content.decode('utf-8')
         csv_buffer = StringIO(csv_data)
-        # Parse the CSV data
         csv_reader = csv.DictReader(csv_buffer)
+
         if [header for header in csv_reader.fieldnames if header != 'Tags'] != expected_headers:
             return {
                 "statusCode": 400,
                 "headers": headers,
                 "body": json.dumps({"message": "CSV headers do not match the expected headers."})
             }
+
         documents = []
         existing_lots_count = collection.count_documents(
-            {"seller_email": email_address, "auction_id": data["auction_id"]})
-        auction_record = auction_collection.find_one(
-            {"auction_id": auction_id, "seller_email": email_address}, {"_id": 0})
-        if auction_record is None:
-            return {
-                "statusCode": 404,
-                'headers': headers,
-                "body": json.dumps({"message": "Auction doesn't exists."})
-            }
-        start_date=auction_record['start_date']
-        end_date= auction_record['end_date']
-        if email_address == "namratha.shettigar+stripe@7edge.com" and os.environ.get("STAGE") in {"pre-production", "qa"}:
-            static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
-            static_image_data = [{"url": static_image_url, "featured": True}]
+            {"seller_email": email_address, "auction_id": data["auction_id"]}
+        )
+
+        start_date = auction_record['start_date']
+        end_date = auction_record.get('end_date')
+
+        # Predefined fields
         additional_fields = {
             "auction_id": auction_id,
             "seller_email": email_address,
@@ -161,11 +180,14 @@ def import_lots(event, context):
             "current_bid": 0,
             "images": [],
         }
-        # Get the next lot number for the seller
-        counter_record = counter_collection.find_one({"auction_id": auction_id,
-                                                      "seller_email": email_address,
-                                                      'record_type': 'Lots'}
-                                                     )
+
+        # Step 7: Counter for lot numbers
+        counter_record = counter_collection.find_one({
+            "auction_id": auction_id,
+            "seller_email": email_address,
+            'record_type': 'Lots'
+        })
+
         if counter_record is None:
             last_lot_number = 0
             counter_record = {
@@ -174,43 +196,55 @@ def import_lots(event, context):
                 "record_type": "Lots",
                 "starting_sequence": last_lot_number
             }
-            result = counter_collection.insert_one(counter_record)
-        extension_time_str = auction_record.get('extension_time_between_lots', '')
-        if extension_time_str != '':
-            extension_time = int(extension_time_str[:1])
-        else:
-            extension_time=2
+            counter_collection.insert_one(counter_record)
+
         last_lot_number = counter_record["starting_sequence"]
+
+        extension_time_str = auction_record.get('extension_time_between_lots', '')
+        extension_time = int(extension_time_str[:1]) if extension_time_str else 2
+
+        # Step 8: Process rows
         try:
             count_import = 1
             for row in csv_reader:
                 dict1 = {}
-                tags = row.get('Tags', '')
                 last_lot_number += 1
                 dict1["lot_number"] = last_lot_number
-                if end_date is not None:
-                    if auction_record['extension_type'] in ["Cascade","Individual Lots"]:
+
+                # Dates (only for non-live auctions)
+                if has_end_date and end_date is not None:
+                    if auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                         dict1['start_date'] = start_date
                         if dict1['lot_number'] == 1:
                             dict1['end_date'] = end_date
                         else:
                             dict1['end_date'] = end_date + count_import * extension_time * 60 * 1000
                             count_import += 1
-                    elif auction_record['extension_type']== "All Lots":
+                    elif auction_record['extension_type'] == "All Lots":
                         dict1['start_date'] = start_date
                         dict1['end_date'] = end_date
                 else:
                     dict1['start_date'] = start_date
-                    dict1['end_date'] = end_date
+                    dict1['end_date'] = None
 
-                if row['Lot Title 1'] == "" or row['Description'] == "" or row['Starting Price'] == "": # or row['Tags'] == "":
+                # Mandatory field check
+                if row['Lot Title 1'] == "" or row['Description'] == "" or row[price_field] == "":
                     return {
                         "statusCode": 400,
                         'headers': headers,
-                        "body": json.dumps({"message": "Missing mandatory fields."})
+                        "body": json.dumps({"message": f"Missing mandatory fields ({price_field})."})
                     }
-                starting_price = int(row.get('Starting Price'))
-                low_estimate = 0 if row.get('Low Estimate')=='' else int(row.get('Low Estimate',0))
+
+                try:
+                    price_value = int(row.get(price_field))
+                except ValueError:
+                    return {
+                        "statusCode": 400,
+                        'headers': headers,
+                        "body": json.dumps({"message": f"Invalid {price_field} value."})
+                    }
+
+                low_estimate = 0 if row.get('Low Estimate') == '' else int(row.get('Low Estimate', 0))
                 high_estimate = 0 if row.get('High Estimate') == '' else int(row.get('High Estimate', 0))
 
                 if low_estimate > high_estimate:
@@ -219,25 +253,28 @@ def import_lots(event, context):
                         'headers': headers,
                         "body": json.dumps({"message": "Low Estimate cannot be greater than High Estimate."})
                     }
-                dict1["tags"] = tags if tags else []
+
                 dict1["title1"] = row['Lot Title 1']
                 dict1["title2"] = row['Title 2(Optional)']
                 dict1["description"] = row['Description']
-                dict1["starting_price"] = starting_price
                 dict1["low_estimate"] = low_estimate
                 dict1["high_estimate"] = high_estimate
-                # dict1['images'] = static_image_data
                 dict1["shipping_details"] = row['Product Shipping Location']
-                if 'Tags' in row:
-                    dict1["tags"] = row['Tags'].split(',') if row['Tags'] else []
-                else:
-                    dict1["tags"] = []
-                dict1.update(additional_fields)
-                if email_address == "namratha.shettigar+stripe@7edge.com" and os.environ.get("STAGE") in {"pre-production", "qa"}:
+                dict1["tags"] = row['Tags'].split(',') if row.get('Tags') else []
+                if email_address == "namratha.shettigar+stripe@7edge.com" or email_address == "sthuthi+test3@7edge.com" and os.environ.get("STAGE") in {"dev","pre-production", "qa"}:
                     static_image_url = "DomainName/Auctions/images/0005049f-5fb8-b526-89f8-3cb89cfe86ec/sea.jpg"
                     static_image_data = {"url": static_image_url, "featured": True}
                     dict1['images']=[static_image_data]
+
+                # Price mapping
+                if auction_record.get('auction_type') == 'live':
+                    dict1["reserve"] = price_value
+                else:
+                    dict1["starting_price"] = price_value
+
+                dict1.update(additional_fields)
                 documents.append(dict1)
+
         except Exception as err:
             print(err)
             return {
@@ -245,13 +282,16 @@ def import_lots(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "Invalid data detected in CSV."})
             }
-        if plan_type == "Starter" and (existing_lots_count+len(documents)) > 500:
+
+        # Step 9: Plan restriction
+        if plan_type == "Starter" and (existing_lots_count + len(documents)) > 500:
             return {
                 "statusCode": 400,
                 'headers': headers,
                 "body": json.dumps({"message": "Upgrade the plan to import more lots"})
             }
-        # Insert the documents in bulk
+
+        # Step 10: Insert documents
         try:
             result = collection.insert_many(documents)
         except BulkWriteError as bwe:
@@ -263,21 +303,20 @@ def import_lots(event, context):
                 "body": json.dumps({"message": "Bulk write error occurred", "details": error_messages})
             }
 
-        update_data = {
-            "starting_sequence": last_lot_number
-        }
+        # Step 11: Update counter
+        update_data = {"starting_sequence": last_lot_number}
+        counter_collection.update_one(
+            {"auction_id": auction_id, "seller_email": email_address, "record_type": "Lots"},
+            {"$set": update_data}
+        )
 
-        counter_collection.update_one({"auction_id": auction_id,
-                                       "seller_email": email_address,
-                                       "record_type": "Lots"}, {
-            "$set": update_data})
+        # Step 12: Update auction record
         if result.inserted_ids:
             auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": email_address})
             if auction_record and "total_lots" in auction_record and auction_record["total_lots"] >= 0:
-                # Increment the existing "total_lots" count
-                if  auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                if has_end_date and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                     totalLots = len(result.inserted_ids)
-                    additional_time_ms = auction_record['end_date'] + (totalLots -1 ) * extension_time * 60 * 1000
+                    additional_time_ms = auction_record['end_date'] + (totalLots - 1) * extension_time * 60 * 1000
                     auction_end_date = additional_time_ms
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
@@ -287,31 +326,23 @@ def import_lots(event, context):
                         }
                     )
                 else:
-                    #if the auction is of the type all lots and total lots needs to be updated
                     total_lots = len(result.inserted_ids) + auction_record["total_lots"]
-                    print('inserted ids', total_lots)
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
                         {"$set": {"total_lots": total_lots}},
                         upsert=True
                     )
-
-
-
             else:
-                # Calculate the total lots count (if not already calculated) and update the auction record
                 total_lots_count = collection.count_documents({"seller_email": email_address, "auction_id": auction_id})
-                if  auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
-                    additional_time_ms = auction_record['end_date']  + (total_lots_count -1 ) * extension_time * 60 * 1000
+                if has_end_date and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
+                    additional_time_ms = auction_record['end_date'] + (total_lots_count - 1) * extension_time * 60 * 1000
                     auction_end_date = additional_time_ms
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
                         {"$set": {"total_lots": total_lots_count, "end_date": auction_end_date}},
-                        upsert = True
+                        upsert=True
                     )
                 else:
-                    #if the auction is of the type all lots and total lots needs to be updated
-                    # print('inserted ids', total_lots)
                     auction_collection.update_one(
                         {"auction_id": auction_id, "seller_email": email_address},
                         {"$set": {"total_lots": total_lots_count}},
@@ -330,6 +361,7 @@ def import_lots(event, context):
                 'headers': headers,
                 "body": json.dumps({"message": "No lots were imported."})
             }
+
     except Exception as e:
         print(e)
         return {

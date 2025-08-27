@@ -9,7 +9,7 @@ from bson import ObjectId
 from lib.get import get_by_email
 from lib.helper_python import get_Lot
 from lib.common_helper import Encoder
-from datetime import datetime
+from datetime import datetime, timedelta
 
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
@@ -178,6 +178,11 @@ def update_auction(event, context):
         auction_start_date = request_body.get('start_date', None)
         auction_end_date = request_body.get('end_date', None)
 
+        #INDY-412  dynamic timezone
+        start_time_zone = request_body.get('start_time_zone', None)
+        end_time_zone = request_body.get('end_time_zone', None)
+        location = request_body.get('location', None)
+
         # INDY - 41
         first_lot_end_date = request_body.get('first_lot_end_date', None)
         auction_extension_type = request_body.get('extension_type', None)
@@ -191,6 +196,16 @@ def update_auction(event, context):
 
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
 
+        total_lots = collection_lot.count_documents({"seller_email": seller_email,
+                                                     "auction_id": auction_id})
+
+        if total_lots < 100:
+            throttle = 1
+        elif 100 <= total_lots < 200:
+            throttle = 2
+        else:
+            throttle = 3
+
         if published_status == 'true':
             if state['status'] == 'Published' or state['status']== 'Accepting bids':
                 return {
@@ -198,8 +213,16 @@ def update_auction(event, context):
                     "headers": headers,
                     "body": json.dumps({"message": "Auction is already published or is Accepting bids"})
                 }
-        total_lots = collection_lot.count_documents({"seller_email": seller_email,
-                                                     "auction_id": auction_id})
+
+            if 'unpublish_session_started_at' in state and state['unpublish_session_started_at'] is not None:
+                unpublish_time = datetime.fromtimestamp(state['unpublish_session_started_at'])
+                if datetime.utcnow() - unpublish_time < timedelta(minutes=throttle):
+                    return {
+                        "statusCode": 400,
+                        "headers": headers,
+                        "body": json.dumps({"message": f"Cannot publish auction within {throttle} minutes of unpublishing."})
+                    }
+
         listLots = list(collection_lot.find({"seller_email": seller_email,
                                                 "auction_id": auction_id}))
         listLots = sorted(listLots, key=lambda x:x['lot_number'])
@@ -335,7 +358,7 @@ def update_auction(event, context):
                     print('cc', cc)
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
-                    {"$set": {"status": "Published"}}
+                    {"$set": {"status": "Published", "publish_session_started_at": int(datetime.utcnow().timestamp())}},
                 )
 
                 return {
@@ -604,6 +627,12 @@ def update_auction(event, context):
             # Add this block to include first_lot_end_date if end_date is updated
             if auction_end_date is not None and first_lot_end_date is not None:
                 update_data['first_lot_end_date'] = first_lot_end_date
+            if end_time_zone is not None:
+                update_data['end_time_zone'] = end_time_zone
+            if start_time_zone is not None:
+                update_data['start_time_zone'] = start_time_zone
+            if location is not None:
+                update_data['location'] = location
 
             collection.update_one(
                 {"seller_email": seller_email, "auction_id": auction_id},

@@ -25,6 +25,7 @@ const Users = require('../entities/Users')
 const Buyers = require('../entities/Buyers')
 const SubDomain = require('../entities/SubDomain')
 const Lot = require('../entities/Lot')
+const Cart = require('../entities/Cart')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
 let connection = null
@@ -120,10 +121,32 @@ function generateOrderCode(number) {
 }
 
 /**
+ * Adds winning lots to cart for a specific buyer
+ * @param {object} lotInformation The lot information from Redis
+ * @param {object} auctionData The auction data
+ * @param {object} buyerData The buyer data
+ * @returns {Promise<void>}
+ */
+async function addWinningLotToCart(lotInformation, auctionData, buyerData) {
+    try {
+        if (buyerData && Object.keys(buyerData).length > 0) {
+            console.log('Adding winning lot to cart for buyer:', buyerData.email_address)
+            lotInformation.email_address = buyerData.email_address || null
+            lotInformation.name = buyerData.first_name || null
+            await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+        }
+    } catch (err) {
+        console.error('Error adding lot to cart:', err)
+        throw err
+    }
+}
+
+/**
  * Handle the AWS SQS trigger event for the auction completion job
  *
- * This function retrieves the bidders from MongoDB, retrieves the lots from Redis, and sends an email to each buyer
- * using the AWS Pinpoint service. The function updates the auction status to 'Completed' in MongoDB after all emails have been sent.
+ * This function retrieves the bidders from MongoDB, retrieves the lots from Redis,
+ * adds winning lots to cart, and sends an email to each buyer using the AWS Pinpoint service.
+ * The function updates the auction status to 'Completed' in MongoDB after all emails have been sent.
  *
  * @param {object} event - The event object from the AWS SQS trigger
  * @returns {Promise<void>}
@@ -176,6 +199,29 @@ module.exports.sqsTriggerFunction = async (event) => {
 
         const getAllLots = await getLot('lot', client, event)
         const get_lot = getAllLots.map((item) => JSON.parse(item))
+
+        // Process winning lots and add them to cart BEFORE sending emails
+        console.log('Processing winning lots and adding to cart...')
+        for (const lot of get_lot) {
+            const rediskey = `lot:${lot._id}`
+            const getLotInfo = await lotDetails(rediskey, client)
+            const singleLot = []
+            for (let i = 0; i < getLotInfo.length; i++) {
+                singleLot.push(JSON.parse(getLotInfo[i]))
+            }
+
+            const lotInformation = singleLot[0]
+
+            // Only add to cart if there's a winning user
+            if (lotInformation && lotInformation.winning_user) {
+                console.log(`Processing winning lot ${lot.lot_number} for user ${lotInformation.winning_user}`)
+                const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+
+                if (getBuyerData && Object.keys(getBuyerData).length > 0) {
+                    await addWinningLotToCart(lotInformation, auctionData, getBuyerData)
+                }
+            }
+        }
 
         if (getBidders.length > 0) {
             // Initialize empty array to store promiseList

@@ -1,0 +1,259 @@
+service: in-person-auction
+frameworkVersion: '3'
+useDotenv: true
+deprecationNotificationMode: error
+disabledDeprecations:
+  - UNSUPPORTED_CLI_OPTIONS
+  - CLI_OPTIONS_SCHEMA_V3
+  - CONFIG_VALIDATION_MODE_DEFAULT_V3
+  - 
+provider:
+  name: aws
+  endpointType: REGIONAL
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: eu-west-2
+  versionFunctions: false
+  vpc:
+    securityGroupIds:
+      - ${ssm:SECURITY_GROUP_ID}
+    subnetIds:
+      - ${ssm:SUBNET_ID}
+
+  layers: ${ssm:COMMON_LIB_ARN}
+  environment:
+    TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
+    COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
+    COGNITO_SELLER_CLIENT_ID: ${ssm:SELLER_COGNITO_CLIENT_ID}
+    REGION: ${env:REGION}
+    STAGE: ${opt:stage, self:provider.stage}
+    DATABASE: ${ssm:DATABASE}
+    MONGODB_NAME: ${opt:stage, self:provider.stage}
+    MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-users
+    MONGO_CLIENT: ${self:custom.mongodbConnectionString}
+    AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
+    COGNITO_USER_POOL: ${ssm:SELLER_COGNITO_USERPOOL_NAME}
+    SELLERS_TABLE: ${opt:stage, self:provider.stage}-users
+    ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
+    LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
+    COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
+    CDN_LINK: ${ssm:CDN_URL}
+    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
+    REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
+    REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
+    AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
+    SOCKET_URL: ${ssm:SOCKET_URL}
+    S3_BUCKET_URL:  ${ssm:CDN_URL}
+    S3_BUCKET: ${ssm:BUCKET_NAME}
+
+
+    
+    
+  http:
+    cors: true
+     
+
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:*
+            - ses:*
+            - s3:*
+            - sqs:*
+            - states:*
+            - sts:*
+            - lambda:*
+            - mobiletargeting:*
+            - xray:PutTraceSegments
+            - xray:PutTelemetryRecords
+          Resource: "*"
+ 
+package:
+  patterns:
+    - '!./node_modules/**'
+    - ./handlers/**
+    - ./data/**
+    - ./entities/**
+    - ./utils/**
+    - ./lib/**
+
+
+custom:
+  isProd: ${self:provider.stage} # Will be resolved at deploy time
+  mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
+  packageExternal:
+    external:
+      - '../../lib'
+      - '../../entities'
+      
+  customDomain:
+    rest:
+      domainName: ${ssm:DOMAIN_NAME}
+      stage: ${opt:stage, self:provider.stage}
+      basePath: v1/${self:service}
+      certificateName: ${ssm:DOMAIN_CERTIFICATE}
+      createRoute53Record: true
+      securityPolicy: tls_1_2
+      endpointType: REGIONAL
+
+  serverlessIfElse:
+    - If: '${param:offline, "false"} == true'
+      Set:
+        provider.environment.MONGO_CLIENT: ${env:MONGODB_CONNECTION_STRING}
+
+functions: 
+
+  create:
+    handler: handlers/create.create_auction
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /
+          method: post
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  update: 
+    handler: handlers/update.update_auction
+    timeout: 30
+    vpc:
+      securityGroupIds: 
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /{auction_id}
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  list-lots:
+    handler: handlers/list_lot.list_lot
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /list-lots
+          method: get
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  create-lot:
+    handler: handlers/create_lot.create_lot
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: post
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  update-lot:
+    handler: handlers/update_lot.update_lot
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+
+  publish-auction:
+    handler: handlers/publish_auction.publish_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /publish
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  unpublish-auction:
+    handler: handlers/unpublish_auction.unpublish_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /unpublish
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+ 
+
+resources:
+  Conditions:
+    IsProd:
+      Fn::Equals:
+        - ${self:custom.isProd}
+        - prod
+  Resources:
+    # WebAclAssociation: Only enabled for production stage to provide WAF protection
+    # Uses CloudFormation condition 'IsProd' to create resource only for prod stage
+    # SSM parameter has default value to prevent resolution errors in non-prod environments
+    WebAclAssociation:
+      Condition: IsProd
+      Type: AWS::WAFv2::WebACLAssociation
+      Properties:
+        ResourceArn:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
+        WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
+
+plugins:
+  - serverless-offline
+  - serverless-package-external
+  - serverless-domain-manager
+  - serverless-plugin-ifelse
+  - serverless-step-functions

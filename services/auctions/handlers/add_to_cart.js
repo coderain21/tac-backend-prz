@@ -11,8 +11,6 @@ const mongodbHelper = require('../lib/mongodb_helper')
 const { sqsTriggerFunction } = require('./sqs_trigger_function')
 const BidInformation = require('../entities/BidInformation')
 const redisHelper = require('../lib/redis_helper')
-const Buyers = require('../entities/Buyers')
-const Cart = require('../entities/Cart')
 const Lot = require('../entities/Lot')
 const Auction = require('../entities/Auction')
 
@@ -36,13 +34,11 @@ async function getLot(rediskey, client) {
 }
 
 /**
- * Retrieves lot details from Redis based on the provided lot ID.
- * Retrieves auction details from Redis based on the provided lot ID.
- * updates Redis, and returns the lot details.
+ * Retrieves lot details from Redis and triggers SQS only when conditions are met.
+ * No longer adds items to cart - this is handled in the SQS trigger function.
  *
  * @param {string} lot_id - The ID of the lot to retrieve.
  * @param {object} client - The Redis client for database interaction.
- *  @param {object} buyer information - to save the lot to cart.
  * @returns {object} The lot details retrieved from Redis or MongoDB.
  */
 module.exports.handler = async (event) => {
@@ -83,27 +79,12 @@ module.exports.handler = async (event) => {
         let shouldTriggerSQS = false
 
         if (auctionData.status !== 'Cancelled') {
-            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && lotInformation.winning_user) {
-                const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
-                console.log('getBuyerData', getBuyerData)
-                if (getBuyerData && Object.keys(getBuyerData).length > 0) {
-                    console.log('here inside the condition')
-                    lotInformation.email_address = getBuyerData.email_address === undefined ? null : getBuyerData.email_address
-                    lotInformation.name = getBuyerData.first_name === undefined ? null : getBuyerData.first_name
-                    await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
-                }
+            // Only process lots that have ended
+            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0) {
+                // Update latest bid record regardless of winner
                 await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
 
-                // Check conditions for triggering SQS
-                if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
-                    shouldTriggerSQS = true
-                } else if (getLots.length <= 0 && (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots')) {
-                    shouldTriggerSQS = true
-                }
-            }
-
-            // Handle lots without winning users
-            if (lotInformation.end_date < currentTimestamp && get_lot.length > 0 && (!lotInformation.winning_user || lotInformation.winning_user == null)) {
+                // Check conditions for triggering SQS (with or without winner)
                 if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {
                     shouldTriggerSQS = true
                 } else if (getLots.length <= 0 && (auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots')) {

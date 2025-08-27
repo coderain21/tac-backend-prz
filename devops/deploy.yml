@@ -4,7 +4,7 @@ parameters:
 
 jobs:
     - deployment: Deployment
-      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
+      condition: and(or(contains(variables['build.SourceBranch'], 'qa'), contains(variables['build.SourceBranch'], 'qa-tac'), contains(variables['build.SourceBranch'], 'master'), contains(variables['build.SourceBranch'], 'pre-prod')), succeeded())
       displayName: Deployment
       environment: ${{ parameters.envName }}
       pool:
@@ -15,6 +15,9 @@ jobs:
           deploy:
             steps:
               - checkout: self
+                clean: true
+                fetchDepth: 0
+                persistCredentials: true
               - task: Cache@2
                 inputs:
                   key: 'npmV2 | "$(Agent.OS)" | package.json'
@@ -51,9 +54,28 @@ jobs:
                 inputs:
                   secureFile: 'private.key'
               - script: |
-                  bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
-                  if [ $? -ne 0 ]; then
-                    echo "API testing failed"
-                    exit 1
+                  if [ "$(Build.SourceBranch)" == "refs/heads/qa" ]; then 
+                    # Checkout and update qa-tac branch
+                    git checkout qa-tac
+                    git pull
+                    # Configure git settings
+                    git config pull.rebase false 
+                    git config --global user.email "namratha.shettigar@7edge.com"
+                    git config --global user.name "Pipeline"
+                    # Try to merge qa branch changes
+                    if ! git pull origin qa; then
+                        echo "Merge conflicts detected between qa and qa-tac branches"
+                        exit 1
+                    fi
+                    git push
+                  else 
+                    # Run terraform deployment script
+                    bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
+                    if [ $? -ne 0 ]; then
+                      echo "API testing failed"
+                      exit 1
+                    fi
                   fi
                 displayName: 'Deployment'
+
+    
