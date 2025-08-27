@@ -328,6 +328,9 @@
                           },
                           "buyer_id": {
                             "type": "string"
+                          },
+                          "checkout_enabled": {
+                            "type": "boolean"
                           }
                         }
                       }
@@ -3199,6 +3202,9 @@
                     },
                     "send_automated_auction_complete_email": {
                       "type": "boolean"
+                    },
+                    "checkout_enabled": {
+                      "type": "boolean"
                     }
                   }
                 },
@@ -3240,7 +3246,8 @@
               "plan_type": "Pro",
               "full_name": "William ",
               "is_deleted": false,
-              "send_automated_auction_complete_email": true
+              "send_automated_auction_complete_email": true,
+              "checkout_enabled": true
                 }
               }
             }
@@ -3312,16 +3319,22 @@
                   "send_automated_auction_complete_email": {
                     "type": "boolean",
                     "description": "Whether to send automated auction completion emails"
+                  },
+                  "checkout_enabled": {
+                    "type": "boolean",
+                    "description": "Whether checkout is enabled for the seller"
                   }
                 },
                 "required": [
                   "seller_id",
-                  "send_automated_auction_complete_email"
+                  "send_automated_auction_complete_email",
+                  "checkout_enabled"
                 ]
               },
               "example": {
                 "seller_id": "654f664042b81a4af17a0fd8",
-                "send_automated_auction_complete_email": true
+                "send_automated_auction_complete_email": true,
+                "checkout_enabled": true
               }
             }
           }
@@ -3341,6 +3354,9 @@
                       "type": "string"
                     },
                     "send_automated_auction_complete_email": {
+                      "type": "boolean"
+                    },
+                    "checkout_enabled": {
                       "type": "boolean"
                     }
                   }
@@ -3382,6 +3398,16 @@
                     }
                   },
                   "example4": {
+                    "value": {
+                      "message": "Invalid request, checkout_enabled is required"
+                    }
+                  },
+                  "example5": {
+                    "value": {
+                      "message": "Invalid request, checkout_enabled must be a boolean value"
+                    }
+                  },
+                  "example6": {
                     "value": {
                       "message": "Seller does not exist."
                     }

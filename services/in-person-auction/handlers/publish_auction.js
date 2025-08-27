@@ -146,6 +146,13 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction not in draft state' }),
             }
         }
+        if (auctionDetails.start_date < Math.floor(Date.now())) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction cannot be published with the start date in the past' }),
+            }
+        }
         required_fields = ['auction_image', 'title', 'description', 'currency',
             'time_zone', 'registration_type']
         // eslint-disable-next-line no-restricted-syntax
