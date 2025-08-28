@@ -175,6 +175,26 @@ def list_orders(event, context):
             "body": json.dumps({"message": "There was an error "})
         }
 
+
+currencySymbolMapping = {
+    "GBP": '£',
+    "USD": '$',
+    "EUR": '€',
+    "HKD": 'HK$',
+    "JPY": '¥',
+    "CHF": 'Fr',
+    "SGD": 'S$',
+    "AUD": 'A$',
+    "CAD": 'C$',
+    "INR": '₹',
+}
+
+
+
+
+
+
+
 def export_as_csv(sales):
     """
     Exports a list of auctions as a CSV file and uploads it to an S3 bucket.
@@ -195,7 +215,7 @@ def export_as_csv(sales):
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date","Payment Type", "Payment Status"])
+            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date", "Total", "Payment Type", "Payment Status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
@@ -207,14 +227,23 @@ def export_as_csv(sales):
                 date = datetime.fromtimestamp(timestamp)
                 # Format the date as a string with only the date
                 formatted_date = date.strftime('%d %b %Y')
-                shipping_address = sale['shipping_address']
-                full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
+                shipping_address = sale.get('shipping_address', {})
+                if shipping_address:
+                    full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
+                else:
+                    full_name = ""
+                currency = sale.get("currency", "USD")
+                symbol = currencySymbolMapping.get(currency, "")
+                amount_value = sale.get("amount", 0) or 0
+                amount = f"{symbol}{amount_value:,.2f}"
+
                 modified_sales["ORDER ID"] = sale["order_number"]
                 modified_sales["Customer Name"] = sale['name']
-                modified_sales["Auction Name"] = sale['auction_title']
+                modified_sales["Auction Name"] = sale.get('auction_title', "")
                 modified_sales["Order Date"] = formatted_date
-                modified_sales["Payment Status"] = sale["payment_status"]
-                modified_sales["Payment Type"]= sale["payment"]
+                modified_sales['Total'] = amount
+                modified_sales["Payment Status"] = sale.get("payment_status","")
+                modified_sales["Payment Type"]= sale.get("payment", "")
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)

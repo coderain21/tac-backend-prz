@@ -53,9 +53,11 @@ def update_seller_settings(event, context):
         request_body = json.loads(event['body'])
         seller_id = request_body.get("seller_id", None)
         send_automated_auction_complete_email = request_body.get("send_automated_auction_complete_email")
+        checkout_enabled = request_body.get("checkout_enabled")
 
         print(f"Updating seller settings for seller_id: {seller_id}")
         print(f"send_automated_auction_complete_email: {send_automated_auction_complete_email}")
+        print(f"checkout_enabled: {checkout_enabled}")
 
         if seller_id is None or seller_id == "" or seller_id == " ":
             return {
@@ -71,12 +73,27 @@ def update_seller_settings(event, context):
                 "body": json.dumps({"message": "Invalid request, send_automated_auction_complete_email is required"})
             }
 
+        if checkout_enabled is None:
+            return {
+                "statusCode": 422,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid request, checkout_enabled is required"})
+            }
+
         # Validate that send_automated_auction_complete_email is a boolean
         if not isinstance(send_automated_auction_complete_email, bool):
             return {
                 "statusCode": 422,
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid request, send_automated_auction_complete_email must be a boolean value"})
+            }
+
+        # Validate that checkout_enabled is a boolean
+        if not isinstance(checkout_enabled, bool):
+            return {
+                "statusCode": 422,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid request, checkout_enabled must be a boolean value"})
             }
 
         # Searching seller existence by id
@@ -95,6 +112,7 @@ def update_seller_settings(event, context):
         new_values = {
             "$set": {
                 "send_automated_auction_complete_email": send_automated_auction_complete_email,
+                "checkout_enabled": checkout_enabled,
                 "updated_at": datetime.datetime.utcnow()
             }
         }
@@ -109,7 +127,8 @@ def update_seller_settings(event, context):
                     "body": json.dumps({
                         "message": "Seller settings updated successfully",
                         "seller_id": seller_id,
-                        "send_automated_auction_complete_email": send_automated_auction_complete_email
+                        "send_automated_auction_complete_email": send_automated_auction_complete_email,
+                        "checkout_enabled": checkout_enabled
                     })
                 }
             else:
@@ -119,7 +138,8 @@ def update_seller_settings(event, context):
                     "body": json.dumps({
                         "message": "Seller settings updated successfully (no changes made)",
                         "seller_id": seller_id,
-                        "send_automated_auction_complete_email": send_automated_auction_complete_email
+                        "send_automated_auction_complete_email": send_automated_auction_complete_email,
+                        "checkout_enabled": checkout_enabled
                     })
                 }
         except Exception as update_error:
