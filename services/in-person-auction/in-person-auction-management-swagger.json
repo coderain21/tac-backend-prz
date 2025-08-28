@@ -1227,58 +1227,129 @@
         ]
       }
     },
-    "/auction-complete": {
-      "patch": {
-        "summary": "Mark an auction as completed",
-        "description": "Updates the status of an auction to **Completed** if eligible.",
-        "tags": ["Auction Management"],
+    "/bids": {
+      "get": {
+        "tags": ["Bid Management"],
+        "summary": "List Bidders | Seller Lot List",
+        "description": "API to list all bidders for a specific auction",
         "security": [
           {
             "BearerAuth": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["auction_id", "status"],
-                "properties": {
-                  "auction_id": {
-                    "type": "string",
-                    "description": "Unique ID of the auction",
-                    "example": "AUC12345"
-                  },
-                  "status": {
-                    "type": "string",
-                    "description": "Current status of the auction (must not be Draft or Completed)",
-                    "example": "InProgress"
-                  }
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "query",
+            "required": true,
+            "description": "The ID of the auction",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A29098"
+          },
+          {
+            "name": "bid_type",
+            "in": "query",
+            "required": false,
+            "description": "Type of bid to filter",
+            "schema": {
+              "type": "string"
+            },
+            "example": "telephone"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "description": "Field to sort by",
+            "schema": {
+              "type": "string",
+              "enum": ["reserve", "lot_number", "paddle_number", "bid_amount", "name", "title1"],
+              "default": "lot_number"
+            }
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "description": "Sort order",
+            "schema": {
+              "type": "string",
+              "enum": ["ascending", "descending"],
+              "default": "ascending"
+            }
+          },
+          {
+            "name": "search_keyword",
+            "in": "query",
+            "required": false,
+            "description": "Keyword to search in lot titles",
+            "schema": {
+              "type": "string"
+            },
+            "example": "eum"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "description": "Number of records per page (max 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
+            }
+          },
+          {
+            "name": "export",
+            "in": "query",
+            "required": false,
+            "description": "Export data as CSV",
+            "schema": {
+              "type": "string",
+              "enum": ["true", "false", "1", "0"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved list of bids",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BidsListResponse"
                 }
               }
             }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "Auction marked as completed successfully (no response body)"
           },
           "400": {
-            "description": "Invalid request or auction already Draft/Completed",
+            "description": "Bad request - Missing auction ID",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 },
                 "example": {
-                  "message": "Auction ID and Status are required"
+                  "message": "Please provide auction ID"
                 }
               }
             }
           },
           "403": {
-            "description": "Unauthorized (user not allowed)",
+            "description": "Forbidden - Unauthorized access",
             "content": {
               "application/json": {
                 "schema": {
@@ -1304,14 +1375,14 @@
             }
           },
           "500": {
-            "description": "Internal Server Error",
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
                 },
                 "example": {
-                  "message": "Internal Server Error"
+                  "message": "There was an error while listing bids"
                 }
               }
             }

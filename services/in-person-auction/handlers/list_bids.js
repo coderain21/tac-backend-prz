@@ -73,6 +73,14 @@ module.exports.list_bids = async (event) => {
             // exportAsCsv,
         } = validateQueryParams(event.queryStringParameters)
 
+        if (bidType !== 'absentee' && bidType !== 'telephone') {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Please provide valid bid_type' }),
+            }
+        }
+
         // console.log('queryStringParameters', event.queryStringParameters)
         // console.log('auctionId', auctionId)
         // console.log('sortBy', sortBy)
