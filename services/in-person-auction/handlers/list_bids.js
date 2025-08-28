@@ -4,9 +4,9 @@
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-console */
 const helpers = require('../lib/helper')
-const liveBids = require('../entities/LiveBids')
+const liveBids = require('../entities/LiveBid')
 const Auction = require('../entities/Auction')
-const helper = require('../utilities/helper')
+// const helper = require('../utilities/helper')
 const mongodbHelper = require('../lib/mongodb_helper')
 
 let connection
@@ -15,7 +15,11 @@ function validateQueryParams(params) {
     const validSortFields = ['reserve', 'lot_number', 'paddle_number', 'bid_amount', 'name', 'title1']
     const validSortOrders = ['ascending', 'descending']
 
+    console.log('params', params)
+
     return {
+        auctionId: params?.auction_id,
+        bidType: params?.bid_type,
         sortBy: validSortFields.includes(params?.sort_by) ? params.sort_by : 'lot_number',
         sortOrder: validSortOrders.includes(params?.sort_order) ? params.sort_order : 'ascending',
         searchKeyword: params?.search_keyword?.trim(),
@@ -69,6 +73,15 @@ module.exports.list_bids = async (event) => {
             // exportAsCsv,
         } = validateQueryParams(event.queryStringParameters)
 
+        console.log('queryStringParameters', event.queryStringParameters)
+        console.log('auctionId', auctionId)
+        console.log('sortBy', sortBy)
+        console.log('sortOrder', sortOrder)
+        console.log('searchKeyword', searchKeyword)
+        console.log('page', page)
+        console.log('perPage', perPage)
+        // console.log('exportAsCsv', exportAsCsv)
+
         if (!auctionId) {
             return {
                 statusCode: 400,
@@ -109,7 +122,9 @@ module.exports.list_bids = async (event) => {
             bid_type: bidType,
         }
 
-        const [lotDocs, count] = await Promise.all([
+        console.log('finalQuery', finalQuery)
+
+        const [bidsDocs, count] = await Promise.all([
             liveBids.find(finalQuery)
                 .sort(sortCriteria)
                 .limit(perPage)
@@ -118,8 +133,9 @@ module.exports.list_bids = async (event) => {
             liveBids.countDocuments(finalQuery),
         ])
 
+
         const response = {}
-        const lots = lotDocs
+        const lots = bidsDocs
         const totalCount = count
         // Build response
         response.data = lots

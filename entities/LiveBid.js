@@ -27,6 +27,9 @@ const LiveBidSchema = new Schema({
         type: String,
         trim: true,
     },
+    lot_number: {
+        type: Number,
+    },
     timestamp: {
         type: Number,
     },

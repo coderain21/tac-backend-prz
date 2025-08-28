@@ -76,6 +76,7 @@ module.exports.place_bid = async (event) => {
         }
 
         const lot = await mongoConnection.view(Lot, { _id: new ObjectId(lotId) })
+        console.log('lot', lot)
         if (lot.length === 0) {
             return {
                 statusCode: 404,
@@ -108,6 +109,7 @@ module.exports.place_bid = async (event) => {
             }
         }
         const buyer = await mongoConnection.view(Buyer, { _id: new ObjectId(buyerId) })
+        console.log('buyer', buyer)
         if (buyer.length === 0) {
             return {
                 statusCode: 404,
@@ -125,17 +127,19 @@ module.exports.place_bid = async (event) => {
         }
 
         let newBid
+        console.log('buyer name', buyer[0].full_name)
 
         if (bidType === 'telephone') {
             newBid = {
                 lot_id: lotId,
+                lot_number: lot[0].lot_number,
                 buyer_id: buyerId,
                 bid_amount: bidAmount,
                 paddle_number: paddleNumber,
                 auction_id: auctionId,
                 bid_type: bidType,
-                name: buyer.name,
-                email_address: buyer.email_address,
+                name: buyer[0].full_name,
+                email_address: buyer[0].email_address,
                 seller_email: sellerEmail,
                 country_code: countryCode,
                 phone_number: phoneNumber,
@@ -146,13 +150,14 @@ module.exports.place_bid = async (event) => {
         } else {
             newBid = {
                 lot_id: lotId,
+                lot_number: lot[0].lot_number,
                 buyer_id: buyerId,
                 bid_amount: bidAmount,
                 paddle_number: paddleNumber,
                 auction_id: auctionId,
                 bid_type: bidType,
-                name: buyer.name,
-                email_address: buyer.email_address,
+                name: buyer[0].full_name,
+                email_address: buyer[0].email_address,
                 seller_email: sellerEmail,
                 created_at: new Date(),
                 updated_at: new Date(),

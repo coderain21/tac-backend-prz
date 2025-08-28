@@ -251,7 +251,7 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   
   list-bids:
-    handler: handlers/list_bids.handler
+    handler: handlers/list_bids.list_bids
     timeout: 30
     vpc:
       securityGroupIds:
