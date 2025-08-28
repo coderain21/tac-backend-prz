@@ -155,7 +155,6 @@ module.exports.list_bids = async (event) => {
             liveBids.countDocuments(finalQuery),
         ])
 
-
         const response = {}
         const lots = bidsDocs
         const totalCount = count
