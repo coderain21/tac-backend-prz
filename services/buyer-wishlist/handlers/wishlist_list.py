@@ -96,6 +96,7 @@ def wishlist_list(event, context):
                 "lot_details": 1,
                 "auction_name": "$auction_details.title",
                 "auction_id": "$auction_details.auction_id",
+                 # for in person auction
                 "auction_type": "$auction_details.auction_type",
                 "auction_start_date": "$auction_details.start_date",
                 "auction_end_date": "$auction_details.end_date",
