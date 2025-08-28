@@ -30,6 +30,15 @@ const LiveBidSchema = new Schema({
     lot_number: {
         type: Number,
     },
+    lot_title: {
+        type: String,
+    },
+    lot_image: {
+        type: String,
+    },
+    reserve: {
+        type: Number,
+    },
     timestamp: {
         type: Number,
     },

@@ -129,12 +129,25 @@ module.exports.place_bid = async (event) => {
         let newBid
         console.log('buyer name', buyer[0].full_name)
 
+
+        let lotImageUrl = null
+        if (Array.isArray(lot[0].images)) {
+            const featured = lot[0].images.find((img) => img.featured)
+            if (featured) {
+                lotImageUrl = featured.url
+            }
+        }
+
+
         if (bidType === 'telephone') {
             newBid = {
                 lot_id: lotId,
                 lot_number: lot[0].lot_number,
+                lot_title: lot[0].title1,
+                lot_image: lotImageUrl,
                 buyer_id: buyerId,
                 bid_amount: bidAmount,
+                reserve: lot[0].reserve,
                 paddle_number: paddleNumber,
                 auction_id: auctionId,
                 bid_type: bidType,
@@ -151,8 +164,11 @@ module.exports.place_bid = async (event) => {
             newBid = {
                 lot_id: lotId,
                 lot_number: lot[0].lot_number,
+                lot_title: lot[0].title1,
+                lot_image: lotImageUrl,
                 buyer_id: buyerId,
                 bid_amount: bidAmount,
+                reserve: lot[0].reserve,
                 paddle_number: paddleNumber,
                 auction_id: auctionId,
                 bid_type: bidType,

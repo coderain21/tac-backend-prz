@@ -15,7 +15,7 @@ function validateQueryParams(params) {
     const validSortFields = ['reserve', 'lot_number', 'paddle_number', 'bid_amount', 'name', 'title1']
     const validSortOrders = ['ascending', 'descending']
 
-    console.log('params', params)
+    // console.log('params', params)
 
     return {
         auctionId: params?.auction_id,
@@ -73,13 +73,13 @@ module.exports.list_bids = async (event) => {
             // exportAsCsv,
         } = validateQueryParams(event.queryStringParameters)
 
-        console.log('queryStringParameters', event.queryStringParameters)
-        console.log('auctionId', auctionId)
-        console.log('sortBy', sortBy)
-        console.log('sortOrder', sortOrder)
-        console.log('searchKeyword', searchKeyword)
-        console.log('page', page)
-        console.log('perPage', perPage)
+        // console.log('queryStringParameters', event.queryStringParameters)
+        // console.log('auctionId', auctionId)
+        // console.log('sortBy', sortBy)
+        // console.log('sortOrder', sortOrder)
+        // console.log('searchKeyword', searchKeyword)
+        // console.log('page', page)
+        // console.log('perPage', perPage)
         // console.log('exportAsCsv', exportAsCsv)
 
         if (!auctionId) {
@@ -110,8 +110,7 @@ module.exports.list_bids = async (event) => {
         // Build search criteria
         const searchCriteria = searchKeyword ? {
             $or: [
-                { title1: { $regex: searchKeyword, $options: 'i' } },
-                { title2: { $regex: searchKeyword, $options: 'i' } },
+                { lot_title: { $regex: searchKeyword, $options: 'i' } },
             ],
         } : {}
 
@@ -122,10 +121,25 @@ module.exports.list_bids = async (event) => {
             bid_type: bidType,
         }
 
-        console.log('finalQuery', finalQuery)
+        // console.log('finalQuery', finalQuery)
+
+        const projection = {
+            _id: 0,
+            lot_number: 1,
+            lot_image: 1,
+            paddle_number: 1,
+            phone_number: 1,
+            country_code: 1,
+            name: 1,
+            lot_title: 1,
+            reserve: 1,
+            bid_amount: 1,
+            created_at: 1,
+        }
 
         const [bidsDocs, count] = await Promise.all([
             liveBids.find(finalQuery)
+                .select(projection)
                 .sort(sortCriteria)
                 .limit(perPage)
                 .skip((page - 1) * perPage)
