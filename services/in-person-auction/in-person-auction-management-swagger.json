@@ -1393,6 +1393,75 @@
   },
   "components": {
     "schemas": {
+      "BidsListResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BidItem"
+            }
+          },
+          "total_records_found": {
+            "type": "integer",
+            "description": "Total number of records found"
+          },
+          "total_pages": {
+            "type": "integer",
+            "description": "Total number of pages"
+          },
+          "current_page": {
+            "type": "integer",
+            "description": "Current page number"
+          }
+        }
+      },
+      "BidItem": {
+        "type": "object",
+        "properties": {
+          "lot_number": {
+            "type": "integer",
+            "description": "Lot number"
+          },
+          "lot_image": {
+            "type": "string",
+            "description": "URL of the lot image"
+          },
+          "paddle_number": {
+            "type": "string",
+            "description": "Bidder's paddle number"
+          },
+          "phone_number": {
+            "type": "string",
+            "description": "Bidder's phone number"
+          },
+          "country_code": {
+            "type": "string",
+            "description": "Bidder's country code"
+          },
+          "name": {
+            "type": "string",
+            "description": "Bidder's name"
+          },
+          "lot_title": {
+            "type": "string",
+            "description": "Title of the lot"
+          },
+          "reserve": {
+            "type": "number",
+            "description": "Reserve price for the lot"
+          },
+          "bid_amount": {
+            "type": "number",
+            "description": "Bid amount"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp when the bid was created"
+          }
+        }
+      },
       "Auction": {
         "type": "object",
         "properties": {
