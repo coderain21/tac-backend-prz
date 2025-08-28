@@ -1,4 +1,4 @@
-'''This is hooks file for in person auction service'''
+'''This is hooks file for in person buyer service'''
 from dredd_hooks import before_each, after_each
 import os
 import logging
@@ -36,7 +36,7 @@ def skip_404_test_results(transaction):
 
 @before_each
 def set_authorization(transaction):
-    token = str(os.environ.get('USER'))
+    token = str(os.environ.get('BUYERS'))
     if transaction['request']['uri'].startswith('/admin'):
         token = str(os.environ.get('ADMIN'))
 
@@ -48,18 +48,8 @@ def set_authorization(transaction):
         transaction['skip'] = True
         return
 
-    #skipping publish and unpublish for now
-    if (transaction['request']['method'] == 'PATCH' and '/publish' in transaction['request']['uri']):
-        print('Skipping the test...')
-        transaction['skip'] = True
-        return
-    
-    if (transaction['request']['method'] == 'PATCH' and '/unpublish' in transaction['request']['uri']):
-        print('Skipping the test...')
-        transaction['skip'] = True
-        return
-    
-    if (transaction['request']['method'] == 'PATCH' and '/auction-complete' in transaction['request']['uri']):
+    #skipping this test for now
+    if (transaction['request']['method'] == 'POST' and '/place-bid' in transaction['request']['uri']):
         print('Skipping the test...')
         transaction['skip'] = True
         return

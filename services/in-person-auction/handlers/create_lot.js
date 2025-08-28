@@ -86,7 +86,7 @@ module.exports.create_lot = async (event) => {
 
         // setting the lot number
         const existingLotCount = await Counter.findOneAndUpdate({
-            seller_email: email, auction_id: auctionId, record_type: 'Lots', status: 'Active',
+            seller_email: email, auction_id: auctionId, record_type: 'Lots',
         }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
         // console.log('existingLotCount', existingLotCount)
         const lotNumber = existingLotCount ? existingLotCount.starting_sequence : 1
@@ -105,7 +105,7 @@ module.exports.create_lot = async (event) => {
             }
             console.log('auctiondata', auctionRecord)
             if (auctionRecord[0].template_name === 'Single Lot') {
-                auctionUpdateData.$set = { auction_image: request_body.images[0] }
+                auctionUpdateData.$set = { auction_image: [request_body.images[0]] }
             }
             const result = await mongoConnection.UpdateAuction(Auction, { seller_email: email, auction_id: auctionId }, auctionUpdateData)
             // console.log('result', result)

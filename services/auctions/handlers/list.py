@@ -94,7 +94,7 @@ def list_auction(event, context):
         # db = client[os.environ['DATABASE']]
         # collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
         allowed_status = {
-        "status": {"$in": ["Draft", "Published", "Completed","Accepting bids", "Cancelled"]}
+        "status": {"$in": ["Draft", "Published", "Completed","Accepting bids", "Cancelled", "In Progress"]}
         }
         projection = {
             "_id": 1,
@@ -111,6 +111,7 @@ def list_auction(event, context):
             "time_zone": 1,
             "auction_type":1,
             "location":1,
+            "total_lots": 1,
             # "extension_type": 1,
             # "extension_time": 1,
             # "extension_time_between_lots": 1,

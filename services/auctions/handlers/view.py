@@ -113,6 +113,8 @@ def view(event, context):
             "auction_type": 1,
             "accept_absentee_bid": 1,
             "accept_telephone_bid": 1,
+            "total_lots": 1,
+            "event_display": 1,
         }
         result = collection.find_one({"_id":ObjectId(auction_id), "seller_email": email_address}, projection)
         if result is None:
@@ -148,6 +150,22 @@ def view(event, context):
         # Update the status in the database
         collection.update_one({"_id": auction_id}, {
                               "$set": {"status": updated_status}})
+
+
+        # Update the status in the database for the live auction
+        start_date = result.get('start_date')
+
+        if (
+            start_date is not None
+            and start_date < current_time
+            and result.get('status') == 'Published'
+            and result.get('auction_type') == 'live'
+        ):
+            collection.update_one(
+                {"_id": ObjectId(auction_id)},
+                {"$set": {"status": "In Progress"}}
+            )
+
         result = collection.find_one({"_id": ObjectId(auction_id)}, projection)
         if result is None:
             return {

@@ -2205,6 +2205,7 @@
                   "total selling": 1
                 }
               }
+              }
             }
           },
           "403": {
@@ -2279,9 +2280,155 @@
             "BearerAuth": []
           }
         ]
+      },
+    "/leaderboard/{auction_id}": {
+      "get": {
+        "tags": [
+          "Auction Management"
+        ],
+        "summary": "Get auction leaderboard details",
+        "description": "Retrieve leaderboard display configuration for a given auction",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "description": "Auction ID to fetch leaderboard details",
+            "schema": {
+              "type": "string"
+            },
+            "example": "A0172"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved leaderboard details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string"
+                    },
+                    "auction_id": {
+                      "type": "string"
+                    },
+                    "seller_email": {
+                      "type": "string"
+                    },                         
+                    "event_display": {
+                      "type": "object",
+                      "properties": {
+                        "enable_leaderboard": {
+                          "type": "boolean"
+                        },
+                        "enable_carousel": {
+                          "type": "boolean"
+                        },
+                        "background_color": {
+                          "type": "string"
+                        },
+                        "background_image": {
+                          "type": "string"
+                        },
+                        "left_logo_image": {
+                          "type": "string"
+                        },
+                        "right_logo_image": {
+                          "type": "string"
+                        },
+                        "_id": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "_id": "68a5d1cd1943d2a04e2a0fd7",
+                  "auction_id": "A2109",
+                  "seller_email": "sthuthi+test3@7edge.com",
+                  "event_display": {
+                    "enable_leaderboard": false,
+                    "enable_carousel": true,
+                    "background_color": "#d0d0d0",
+                    "background_image": "",
+                    "left_logo_image": "DomainName/Auctions/images/958d2d24-5233-d26c-5902-c871037e6f2a/panting2.webp",
+                    "right_logo_image": "DomainName/Auctions/images/281a7604-4753-7895-220c-c59dd46a9ec5/sbsract2.webp",
+                    "_id": "68a5d1cd1943d2a04e2a0fde"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Invalid request"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Auction not found",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "Auction not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     }
-},
+    },
   "components": {
     "schemas": {
       "Auction": {
