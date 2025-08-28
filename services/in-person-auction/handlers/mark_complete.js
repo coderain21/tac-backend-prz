@@ -15,7 +15,7 @@ const helpers = require('../lib/helper')
 
 let connection = null
 
-module.exports.update_auction = async (event) => {
+module.exports.mark_complete = async (event) => {
     // --- Authorization Check ---
     try {
         const { claims } = event.requestContext.authorizer
@@ -26,7 +26,7 @@ module.exports.update_auction = async (event) => {
     } catch (error) {
         return {
             statusCode: 403,
-            headers: await helpers.getHeaders(),
+            headers: helpers.getHeaders(),
             body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
         }
     }
@@ -36,74 +36,59 @@ module.exports.update_auction = async (event) => {
         if (connection === null || !connection.readyState) {
             connection = await mongoConnection.connect()
         }
-        const auction_id = decodeURIComponent(event.pathParameters.auction_id)
-        if (!auction_id) {
-            return {
-                statusCode: 400,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Auction ID is required' }),
-            }
-        }
         const request_body = JSON.parse(event.body)
-
-        // safety checks
-        if (request_body.status || request_body.auction_type) {
+        if (!request_body) {
             return {
                 statusCode: 400,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Status and Auction Type cannot be updated' }),
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Invalid request body' }),
             }
         }
+        const { auction_id } = request_body
+        const { status } = request_body
+        if (!auction_id || !status) {
+            return {
+                statusCode: 400,
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction ID and Status are required' }),
+            }
+        }
+
         const email = event.requestContext.authorizer.claims['cognito:username']
         // console.log('email', email)
-        const query = { auction_id, seller_email: email }
-        // console.log('query', query)
+        // const query = { auction_id, seller_email: email }
+        // // console.log('query', query)
         const auctionDetails = await Auction.findOne({ auction_id, seller_email: email })
         // console.log('auctionDetails', auctionDetails)
         if (!auctionDetails) {
             return {
                 statusCode: 404,
-                headers: await helpers.getHeaders(),
+                headers: helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
-        if (auctionDetails.status === 'In Progress' || auctionDetails.status === 'Completed') {
+        if (auctionDetails.status === 'Draft' || auctionDetails.status === 'Completed') {
             return {
                 statusCode: 400,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Auction is in progress or completed' }),
-            }
-        }
-        // for published auction these fields cant be edited
-        const notUpdateAbleFields = ['currency', 'add_buyer_fees', 'fees', 'percentage', 'terms_and_conditions', 'registration_type']
-        // console.log('notUpdateAbleFields', notUpdateAbleFields)
-        console.log('auctionDetails.status', auctionDetails.status)
-        if (auctionDetails.status === 'Published') {
-            const requestedFields = Object.keys(request_body)
-            const invalidField = requestedFields.find((field) => notUpdateAbleFields.includes(field))
-
-            if (invalidField) {
-                return {
-                    statusCode: 400,
-                    headers: await helpers.getHeaders(),
-                    body: JSON.stringify({
-                        message: `Cannot update field '${invalidField}' for a published auction.`,
-                    }),
-                }
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Cannot complete a draft or completed auction' }),
             }
         }
         try {
             // console.log('request_body', request_body)
-            const updatedAuction = await Auction.updateOne({ auction_id, seller_email: email }, { $set: request_body })
+            const updatePayload = {
+                status: 'Completed',
+            }
+            const updatedAuction = await Auction.updateOne({ auction_id, seller_email: email }, { $set: updatePayload })
             // console.log('updatedAuction', updatedAuction)
             return {
                 statusCode: 204,
-                headers: await helpers.getHeaders(),
+                headers: helpers.getHeaders(),
             }
         } catch (error) {
             console.log('Error while updating to db', error)
             return {
-                headers: await helpers.getHeaders(),
+                headers: helpers.getHeaders(),
                 statusCode: 500,
                 body: JSON.stringify({
                     message: 'Internal Server Error',
@@ -113,7 +98,7 @@ module.exports.update_auction = async (event) => {
     } catch (error) {
         console.log('Internal Server Error', error)
         return {
-            headers: await helpers.getHeaders(),
+            headers: helpers.getHeaders(),
             statusCode: 500,
             body: JSON.stringify({
                 message: 'Internal Server Error',
