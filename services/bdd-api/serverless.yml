@@ -233,6 +233,17 @@ functions:
           method: get
 
 
+  in-person-create: 
+    handler: handlers/create_auctions.create
+    timeout: 30
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /in-person/create
+          method: post
+
 stepFunctions:
   stateMachines:
     lot-published:
