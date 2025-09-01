@@ -365,7 +365,6 @@ def update_auction(event, context):
                             'auction': auction_data_sqs, # Re-using the auction data you already prepared
                             'type': 'published'
                         }
-                        
                         lambda_client.invoke(
                             FunctionName=f"auctions-{os.environ['STAGE']}-batchLotsUpdate",
                             InvocationType='Event', # Asynchronous invocation
