@@ -34,7 +34,7 @@ module.exports.delete_bid = async (event) => {
             connection = await mongoConnection.connect()
         }
 
-        const { bid_id } = event.pathParameters
+        const { bid_id } = event.pathParameters || {}
 
         if (!bid_id) {
             return {
@@ -53,7 +53,6 @@ module.exports.delete_bid = async (event) => {
                 body: JSON.stringify({ message: 'Bid not found' }),
             }
         }
-
 
         try {
             const deleteBid = await LiveBid.findOneAndDelete({ _id: new ObjectId(bid_id) })
