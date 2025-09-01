@@ -11,14 +11,13 @@ const Joi = require('joi')
 const { StepFunctions, config } = require('aws-sdk')
 // eslint-disable-next-line import/no-extraneous-dependencies
 const axios = require('axios')
-
+const { Lambda } = require('aws-sdk')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
 const helpers = require('../lib/helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
-const { Lambda } = require('aws-sdk')
 
 config.update({ region: 'eu-west-2' })
 
