@@ -13,7 +13,9 @@ from datetime import datetime, timedelta
 
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
-sqs = boto3.client('sqs')
+# sqs = boto3.client('sqs')
+lambda_client = boto3.client('lambda')
+
 
 
 headers = {
@@ -351,14 +353,29 @@ def update_auction(event, context):
                             'MessageAttributes': message_attributes
                             })
                     # Send the batch of entries to the queue
-                    cc = sqs.send_message_batch(
-                        QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
-                        Entries=entries
-                    )
-                    print('cc', cc)
+                    # cc = sqs.send_message_batch(
+                    #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+                    #     Entries=entries
+                    # )
+                    # print('cc', cc)
+                    # Invoke the batchLotsUpdate Lambda for each batch
+                    for item in send_batches:
+                        payload = {
+                            'lots': item,
+                            'auction': auction_data_sqs, # Re-using the auction data you already prepared
+                            'type': 'published'
+                        }
+                        
+                        lambda_client.invoke(
+                            FunctionName=f"auctions-{os.environ['STAGE']}-batchLotsUpdate",
+                            InvocationType='Event', # Asynchronous invocation
+                            Payload=json.dumps(payload, cls=Encoder)
+                        )
+                    print(f"Successfully invoked batchLotsUpdate for {len(send_batches)} batches.")
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
                     {"$set": {"status": "Published", "publish_session_started_at": int(datetime.utcnow().timestamp())}},
+                    upsert=True
                 )
 
                 return {
@@ -582,11 +599,25 @@ def update_auction(event, context):
                                         'MessageAttributes': message_attributes
                                         })
                     # Send the batch of entries to the queue
-                    cc = sqs.send_message_batch(
-                        QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
-                        Entries=entries
-                    )
-                    print('cc', cc)
+                    # cc = sqs.send_message_batch(
+                    #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+                    #     Entries=entries
+                    # )
+                    # print('cc', cc)
+                    # Invoke the batchLotsUpdate Lambda for each batch
+                    for item in send_batches:
+                        payload = {
+                            'lots': item,
+                            'auction': auction_data_sqs, # Re-using the auction data
+                            'type': 'update'
+                        }
+
+                        lambda_client.invoke(
+                            FunctionName=f"auctions-{os.environ['STAGE']}-batchLotsUpdate",
+                            InvocationType='Event', # Asynchronous invocation
+                            Payload=json.dumps(payload, cls=Encoder)
+                        )
+                    print(f"Successfully invoked batchLotsUpdate for {len(send_batches)} batches for update.")
         if auction_extension_type or auction_extension_between_lots:
             if auction_extension_type is None:
                 auction_extension_type = auction_record['extension_type']
