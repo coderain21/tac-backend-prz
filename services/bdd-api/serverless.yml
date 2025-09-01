@@ -50,38 +50,38 @@ provider:
     AUCTION_MONGODB_COLLECTION_NAME: ${opt:stage, self:provider.stage}-auctions
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
 
-    STATE_MACHINE_LOT_ARN:  
-      Fn::Join:
-          - ":"
-          - - "arn"
-            - "aws"
-            - "states"
-            - !Ref "AWS::Region"
-            - !Ref "AWS::AccountId"
-            - "stateMachine:${opt:stage}-lot-published"
-    STATE_MACHINE_AUCTION_ARN: 
-       Fn::Join:
-          - ":"
-          - - "arn"
-            - "aws"
-            - "states"
-            - !Ref "AWS::Region"
-            - !Ref "AWS::AccountId"
-            - "stateMachine:${opt:stage}-auction-ended"
-    QUEUE_URL: 
-      Fn::Join:
-          - "/"
-          - - "https:/"
-            - "sqs.eu-west-2.amazonaws.com"
-            - !Ref "AWS::AccountId"
-            - "auto-completion-email-${opt:stage}.fifo"
-    LOT_UPDATE_QUEUE_URL: 
-      Fn::Join:
-          - "/"
-          - - "https:/"
-            - "sqs.eu-west-2.amazonaws.com"
-            - !Ref "AWS::AccountId"
-            - "${opt:stage}-bulk-lots-update"
+    # STATE_MACHINE_LOT_ARN:  
+    #   Fn::Join:
+    #       - ":"
+    #       - - "arn"
+    #         - "aws"
+    #         - "states"
+    #         - !Ref "AWS::Region"
+    #         - !Ref "AWS::AccountId"
+    #         - "stateMachine:${opt:stage}-lot-published"
+    # STATE_MACHINE_AUCTION_ARN: 
+    #    Fn::Join:
+    #       - ":"
+    #       - - "arn"
+    #         - "aws"
+    #         - "states"
+    #         - !Ref "AWS::Region"
+    #         - !Ref "AWS::AccountId"
+    #         - "stateMachine:${opt:stage}-auction-ended"
+    # QUEUE_URL: 
+    #   Fn::Join:
+    #       - "/"
+    #       - - "https:/"
+    #         - "sqs.eu-west-2.amazonaws.com"
+    #         - !Ref "AWS::AccountId"
+    #         - "auto-completion-email-${opt:stage}.fifo"
+    # LOT_UPDATE_QUEUE_URL: 
+    #   Fn::Join:
+    #       - "/"
+    #       - - "https:/"
+    #         - "sqs.eu-west-2.amazonaws.com"
+    #         - !Ref "AWS::AccountId"
+    #         - "${opt:stage}-bulk-lots-update"
 
   http:
     cors: true
@@ -243,33 +243,44 @@ functions:
           cors: true
           path: /in-person/create
           method: post
+  
+  in-person-publish:
+    handler: handlers/in_person_publish.publish_auction
+    timeout: 30
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /in-person/publish
+          method: patch
 
-stepFunctions:
-  stateMachines:
-    lot-published:
-      name: ${opt:stage}-lot-published
-      definition:
-        Comment: "Step function will trigger when lot published"
-        StartAt: wait-for-auction-start
-        States:
-          wait-for-auction-start:
-            Type: Wait
-            TimestampPath: "$.start_date"
-            Next:  process-cache-lots
-          process-cache-lots:
-            Type: Task
-            Resource:
-              Fn::GetAtt: ["save-to-cache", Arn]
-            Next: check-lot-ends
-          check-lot-ends:
-              Type: Wait
-              TimestampPath: "$.end_date"
-              Next:  process-cart
-          process-cart:
-              Type: Task
-              Resource:
-                Fn::GetAtt: ["process-cart", Arn]
-              End: true
+# stepFunctions:
+#   stateMachines:
+#     lot-published:
+#       name: ${opt:stage}-lot-published
+#       definition:
+#         Comment: "Step function will trigger when lot published"
+#         StartAt: wait-for-auction-start
+#         States:
+#           wait-for-auction-start:
+#             Type: Wait
+#             TimestampPath: "$.start_date"
+#             Next:  process-cache-lots
+#           process-cache-lots:
+#             Type: Task
+#             Resource:
+#               Fn::GetAtt: ["save-to-cache", Arn]
+#             Next: check-lot-ends
+#           check-lot-ends:
+#               Type: Wait
+#               TimestampPath: "$.end_date"
+#               Next:  process-cart
+#           process-cart:
+#               Type: Task
+#               Resource:
+#                 Fn::GetAtt: ["process-cart", Arn]
+#               End: true
 
 
 

@@ -30,18 +30,81 @@ module.exports.create_auction = async (event) => {
         request_body.seller_email = email
         const get_user = await mongoConnection.view(Users, { email_address: email })
         console.log('get_user', get_user)
-        const counter = await Counter.findOneAndUpdate({ seller_email: email, record_type: 'Auctions', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+
+        const counter = await Counter.findOneAndUpdate(
+            { seller_email: email, record_type: 'Auctions', status: 'Active' },
+            { $inc: { starting_sequence: 1 } },
+            { new: true, upsert: true },
+        ).exec()
+
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
         request_body.auction_id = sequenceNumber
         request_body.start_date = Date.now()
         request_body.seller_name = `${get_user[0].first_name} ${get_user[0].last_name}`
+
+        const auction_image = 'DomainName/BDD/ai-6.jpeg'
+        request_body.auction_image = auction_image
+        request_body.template_name = 'Classic'
+        request_body.title = 'Sample Auction Title'
+        request_body.currency = 'USD'
+        request_body.time_zone = 'IST - India Standard Time'
+        request_body.status = 'Draft'
+        request_body.auction_type = 'live'
+        request_body.logo_image = ''
+        request_body.logo_redirection_url = ''
+        request_body.description = 'test description'
+        request_body.registration_type = 'Email only'
+        request_body.add_buyer_fees = 'No additional fees'
+        request_body.faq = []
+        request_body.percentage = ''
+        request_body.fees = ''
+        request_body.terms_and_condition = ''
+        request_body.publish_auction_results = false
+        request_body.show_bidder_location_in_bidder_history = false
+        request_body.show_bidding_history = false
+        request_body.toggle_powered_by_indy = false
+        request_body.hide_auction_lots = false
+        request_body.make_your_auction_private = false
+        request_body.passcode = ''
+        request_body.font = {
+            header_font: '',
+            body_font: '',
+        }
+        request_body.buttons = {
+            background_color: '',
+            text_color: '',
+        }
+        request_body.header = {
+            background_color: '',
+            text_color: '',
+        }
+        request_body.content_area = {
+            background_color: '',
+            text_color: '',
+        }
+        request_body.footer = {
+            background_color: '',
+            text_color: '',
+        }
+        request_body.paddle = {
+            background_color: '',
+            text_color: '',
+        }
+        request_body.menu_links = []
+
         const auction = await mongoConnection.save(request_body, Auction)
 
         if (auction) {
             const update_value = {
                 auctions_count: helpers.leftPad(counter.starting_sequence, 1),
             }
-            await mongoConnection.updateUsingMongoDB(process.env.MONGO_CLIENT, process.env.MONGODB_NAME, process.env.SELLERS_TABLE, get_user[0]._id, update_value)
+            await mongoConnection.updateUsingMongoDB(
+                process.env.MONGO_CLIENT,
+                process.env.MONGODB_NAME,
+                process.env.SELLERS_TABLE,
+                get_user[0]._id,
+                update_value,
+            )
 
             // Create 3 lots with static data
             const createdLots = []
@@ -87,9 +150,11 @@ module.exports.create_auction = async (event) => {
             for (let i = 0; i < 3; i++) {
                 try {
                     // Get lot counter for this auction - same logic as your original create_lot
-                    const existingLotCount = await Counter.findOneAndUpdate({
-                        seller_email: email, auction_id: sequenceNumber, record_type: 'Lots',
-                    }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
+                    const existingLotCount = await Counter.findOneAndUpdate(
+                        { seller_email: email, auction_id: sequenceNumber, record_type: 'Lots' },
+                        { $inc: { starting_sequence: 1 } },
+                        { new: true, upsert: true },
+                    ).exec()
 
                     const lotNumber = existingLotCount ? existingLotCount.starting_sequence : 1
 
@@ -116,20 +181,20 @@ module.exports.create_auction = async (event) => {
                 }
             }
 
-            // Update auction with total lots - same logic as your original create_lot
+            // Update auction with total lots
             const auctionRecord = await mongoConnection.view(Auction, { seller_email: email, auction_id: sequenceNumber })
             const auctionUpdateData = {}
-            if (auctionRecord[0] && typeof auctionRecord[0].total_lots === 'number') {
-                auctionUpdateData.$set = { total_lots: createdLots.length }
-            } else {
-                auctionUpdateData.$set = { total_lots: createdLots.length }
-            }
+            auctionUpdateData.$set = { total_lots: createdLots.length }
 
             if (auctionRecord[0].template_name === 'Single Lot' && createdLots.length > 0) {
                 auctionUpdateData.$set.auction_image = [staticLotData[0].images[0]]
             }
 
-            await mongoConnection.UpdateAuction(Auction, { seller_email: email, auction_id: sequenceNumber }, auctionUpdateData)
+            await mongoConnection.UpdateAuction(
+                Auction,
+                { seller_email: email, auction_id: sequenceNumber },
+                auctionUpdateData,
+            )
 
             return {
                 statusCode: 201,
@@ -144,6 +209,7 @@ module.exports.create_auction = async (event) => {
                 }),
             }
         }
+
         return {
             statusCode: 400,
             headers: await helpers.getHeaders(),
