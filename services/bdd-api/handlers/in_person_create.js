@@ -26,14 +26,15 @@ module.exports.create_auction = async (event) => {
         }
 
         const request_body = JSON.parse(event.body)
-        const email = event.requestContext.authorizer.claims['cognito:username']
+        const email = 'sthuthi+stripe@7edge.com'
         request_body.seller_email = email
         const get_user = await mongoConnection.view(Users, { email_address: email })
+        console.log('get_user', get_user)
         const counter = await Counter.findOneAndUpdate({ seller_email: email, record_type: 'Auctions', status: 'Active' }, { $inc: { starting_sequence: 1 } }, { new: true, upsert: true }).exec()
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
         request_body.auction_id = sequenceNumber
+        request_body.start_date = Date.now()
         request_body.seller_name = `${get_user[0].first_name} ${get_user[0].last_name}`
-        request_body.first_lot_end_date = request_body.first_lot_end_date ? request_body.first_lot_end_date : request_body.end_date
         const auction = await mongoConnection.save(request_body, Auction)
 
         if (auction) {

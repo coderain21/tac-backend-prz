@@ -234,7 +234,7 @@ functions:
 
 
   in-person-create: 
-    handler: handlers/create_auctions.create
+    handler: handlers/in_person_create.create_auction
     timeout: 30
     layers:
       - ${ssm:COMMON_LIB_ARN}
