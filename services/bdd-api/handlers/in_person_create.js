@@ -9,7 +9,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
-const Joi = require('joi')
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const Auction = require('../entities/Auction')
