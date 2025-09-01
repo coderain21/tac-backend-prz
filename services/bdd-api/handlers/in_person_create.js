@@ -39,7 +39,7 @@ module.exports.create_auction = async (event) => {
 
         const sequenceNumber = `A${helpers.leftPad(counter.starting_sequence, 4)}`
         request_body.auction_id = sequenceNumber
-        request_body.start_date = Date.now()
+        request_body.start_date = Date.now() + (5 * 60 * 1000)
         request_body.seller_name = `${get_user[0].first_name} ${get_user[0].last_name}`
 
         const auction_image = 'DomainName/BDD/ai-6.jpeg'
