@@ -26,7 +26,7 @@ module.exports.create_auction = async (event) => {
         }
 
         const request_body = JSON.parse(event.body)
-        const email = 'sthuthi+stripe@7edge.com'
+        const email = request_body.seller_email
         request_body.seller_email = email
         const get_user = await mongoConnection.view(Users, { email_address: email })
         console.log('get_user', get_user)
