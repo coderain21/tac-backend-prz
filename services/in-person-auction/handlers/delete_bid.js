@@ -1,8 +1,3 @@
-/* eslint-disable no-multiple-empty-lines */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-lone-blocks */
-/* eslint-disable no-undef */
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
@@ -12,25 +7,19 @@ const helpers = require('../lib/helper')
 const mongoConnection = require('../lib/mongodb_helper')
 const LiveBid = require('../entities/LiveBid')
 
-
 let connection = null
 
 module.exports.delete_bid = async (event) => {
-    // --- Authorization Check ---
     try {
+        // --- Authorization Check ---
         const { claims } = event.requestContext.authorizer
         if (!claims || !claims['cognito:username']) {
-            throw new Error('Unauthorized')
+            return {
+                statusCode: 403,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
+            }
         }
-    } catch (error) {
-        return {
-            statusCode: 403,
-            headers: await helpers.getHeaders(),
-            body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
-        }
-    }
-
-    try {
         // --- Ensure MongoDB connection ---
         if (connection === null || !connection.readyState) {
             connection = await mongoConnection.connect()
@@ -47,9 +36,9 @@ module.exports.delete_bid = async (event) => {
             }
         }
 
-        const bid = await LiveBid.findOne({ _id: new ObjectId(bid_id) })
+        // --- Delete the bid based on bid id ---
+        const bid = await LiveBid.findOneAndDelete({ _id: new ObjectId(bid_id) })
 
-        // --- Check if the bid exists in the database ---
         if (!bid) {
             return {
                 statusCode: 404,
@@ -58,25 +47,10 @@ module.exports.delete_bid = async (event) => {
             }
         }
 
-        // --- Delete the bid based on bid id ---
-        try {
-            const deleteBid = await LiveBid.findOneAndDelete({ _id: new ObjectId(bid_id) })
-
-            // Return 204 No Content on successful deletion
-            return {
-                statusCode: 204,
-                headers: await helpers.getHeaders(),
-            }
-        } catch (error) {
-            // DB error while deleting bid
-            console.log('Error while updating to db', error)
-            return {
-                headers: await helpers.getHeaders(),
-                statusCode: 500,
-                body: JSON.stringify({
-                    message: 'Internal Server Error',
-                }),
-            }
+        // Return 204 No Content on successful deletion
+        return {
+            statusCode: 204,
+            headers: await helpers.getHeaders(),
         }
     } catch (error) {
         console.log('Internal Server Error', error)
