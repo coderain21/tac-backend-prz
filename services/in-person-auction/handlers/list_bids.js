@@ -293,7 +293,7 @@ module.exports.list_bids = async (event) => {
         // console.log('finalQuery', finalQuery)
 
         const projection = {
-            _id: 0,
+            _id: 1,
             lot_number: 1,
             lot_image: 1,
             paddle_number: 1,
