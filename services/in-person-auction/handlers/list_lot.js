@@ -1,23 +1,34 @@
-/* eslint-disable no-continue */
-/* eslint-disable no-multiple-empty-lines */
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-lone-blocks */
-/* eslint-disable no-undef */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
-/* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
-const AWS = require('aws-sdk')
-const fs = require('fs')
-const path = require('path')
-const mongoConnection = require('../lib/mongodb_helper')
-const Auction = require('../entities/Auction')
-const Lot = require('../entities/Lot')
-const Counter = require('../entities/Counter')
+/* eslint-disable no-console */
 const helpers = require('../lib/helper')
+const liveBids = require('../entities/LiveBid')
+const Auction = require('../entities/Auction')
+// const helper = require('../utilities/helper')
+const mongodbHelper = require('../lib/mongodb_helper')
+const AWS = require('aws-sdk')
 
-let connection = null
+let connection
+
+function validateQueryParams(params) {
+    const validSortFields = ['reserve', 'lot_number', 'paddle_number', 'bid_amount', 'name', 'title1']
+    const validSortOrders = ['ascending', 'descending']
+
+    // console.log('params', params)
+
+    return {
+        auctionId: params?.auction_id,
+        bidType: params?.bid_type,
+        sortBy: validSortFields.includes(params?.sort_by) ? params.sort_by : 'lot_number',
+        sortOrder: validSortOrders.includes(params?.sort_order) ? params.sort_order : 'ascending',
+        searchKeyword: params?.search_keyword?.trim(),
+        page: Math.max(1, parseInt(params?.page, 10) || 1),
+        perPage: Math.min(100, Math.max(1, parseInt(params?.per_page, 10) || 10)),
+        exportAsCsv: params?.export === 'True' || params?.export === '1',
+    }
+}
 
 /**
  * Cleans HTML tags and escapes CSV special characters
@@ -45,17 +56,17 @@ function escapeCSVField(text) {
     return `"${cleanTextForCSV(text)}"`
 }
 
-
 /**
- * Alternative approach: Export directly to S3 without temporary file
+ * Export bidders data to CSV and upload to S3
  * @param {Object} auctionData - Auction information
- * @param {Array} lots - Array of lot objects
+ * @param {Array} bids - Array of bid objects from the list_bids query
+ * @param {string} bidType - Type of bids ('absentee' or 'telephone')
  * @returns {string|null} Signed S3 URL or null if error
  */
-async function exportLotsAsCSVDirect(auctionData, lots) {
+async function exportBidsAsCSVDirect(auctionData, bids, bidType) {
     try {
-        const fileName = process.env.CSV_FILE || `${auctionData.auction_id}_lots.csv`
-        const s3Key = `exports/lots/${fileName}`
+        const fileName = process.env.CSV_FILE || `${auctionData.auction_id}_${bidType}_bids.csv`
+        const s3Key = `exports/bids/${fileName}`
         const s3Bucket = process.env.S3_BUCKET
 
         if (!s3Bucket) {
@@ -64,34 +75,41 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
 
         console.log('Direct S3 upload for file:', fileName)
 
-        // CSV Headers
+        // CSV Headers matching the bid data structure
         const csvHeaders = [
             'Lot Number',
-            'Title 1',
-            'Title 2',
+            'Lot Title',
+            'Paddle Number',
+            'Bidder Name',
+            'Phone Number',
+            'Country Code',
             'Reserve',
-            'Absentee Bids',
-            'Telephone Bids',
+            'Bid Amount',
+            'Created At',
         ]
 
         let csvContent = `${csvHeaders.join(',')}\n`
 
-        // Process each lot
+        // Process each bid
         // eslint-disable-next-line no-restricted-syntax
-        for (const lot of lots) {
+        for (const bid of bids) {
             try {
                 const csvRow = [
-                    lot.lot_number || '',
-                    escapeCSVField(lot.title1),
-                    escapeCSVField(lot.title2),
-                    lot.reserve || '',
-                    lot.number_of_absentee_bids || 0,
-                    lot.number_of_telephone_bids || 0,
+                    bid.lot_number || '',
+                    escapeCSVField(bid.lot_title),
+                    bid.paddle_number || '',
+                    escapeCSVField(bid.name),
+                    bid.phone_number || '',
+                    bid.country_code || '',
+                    bid.reserve || '',
+                    bid.bid_amount || '',
+                    bid.created_at || '',
                 ]
 
                 csvContent += `${csvRow.join(',')}\n`
             } catch (err) {
-                console.error(`Error processing lot ${lot.lot_number}:`, err)
+                console.error(`Error processing bid for lot ${bid.lot_number}:`, err)
+                // eslint-disable-next-line no-continue
                 continue
             }
         }
@@ -107,6 +125,7 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             ServerSideEncryption: 'AES256',
             Metadata: {
                 'auction-id': auctionData.auction_id || '',
+                'bid-type': bidType,
                 'generated-at': new Date().toISOString(),
             },
         }).promise()
@@ -128,57 +147,41 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
 }
 
 /**
- * Validates and sanitizes query parameters
- * @param {Object} params - Query string parameters
- * @returns {Object} Validated parameters
+ * List Bidders | Seller Lot List
+ * @description - API to list all bidders
+ * @route - GET /{lot_id}
+ * @access - (Private)
+ * @user - IndyAuction Seller
+ * @returns {Object} (200) - List of bidders
+ * @returns {Error} (500) - There was an error while listing bidders
  */
-function validateQueryParams(params) {
-    const validSortFields = ['reserve', 'lot_number', 'title1', 'number_of_absentee_bids', 'number_of_telephone_bids']
-    const validSortOrders = ['ascending', 'descending']
-
-    return {
-        auctionId: params?.auction_id,
-        sortBy: validSortFields.includes(params?.sort_by) ? params.sort_by : 'lot_number',
-        sortOrder: validSortOrders.includes(params?.sort_order) ? params.sort_order : 'ascending',
-        searchKeyword: params?.search_keyword?.trim(),
-        page: Math.max(1, parseInt(params?.page, 10) || 1),
-        perPage: Math.min(100, Math.max(1, parseInt(params?.per_page, 10) || 10)),
-        exportAsCsv: params?.export === 'true' || params?.export === '1',
-    }
-}
-
-/**
- * Checks user authorization
- * @param {Object} event - Lambda event object
- * @returns {string} User email from claims
- * @throws {Error} If unauthorized
- */
-function checkAuthorization(event) {
-    const { claims } = event.requestContext?.authorizer || {}
-
-    if (!claims || !claims['cognito:username']) {
-        throw new Error('Unauthorized')
-    }
-
-    return claims['cognito:username']
-}
-
-/**
- * Main Lambda handler for listing lots
- */
-module.exports.list_lot = async (event) => {
+module.exports.list_bids = async (event) => {
     try {
-        // Authorization check
-        const sellerEmail = checkAuthorization(event)
-
-        // Database connection
-        if (connection === null || !connection.readyState) {
-            connection = await mongoConnection.connect()
+        // --- Authorization Check ---
+        try {
+            const { claims } = event.requestContext.authorizer
+            if (!claims || !claims['cognito:username']) {
+                throw new Error('Unauthorized')
+            }
+            // You can add group checks here if needed
+        } catch (error) {
+            return {
+                statusCode: 403,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
+            }
         }
+        // --- End Authorization Check ---
 
-        // Validate query parameters
+        const email = event.requestContext.authorizer.claims['cognito:username']
+        const sellerEmail = email
+
+        /** Establish database connection */
+        connection = await mongodbHelper.connect()
+
         const {
             auctionId,
+            bidType,
             sortBy,
             sortOrder,
             searchKeyword,
@@ -186,6 +189,23 @@ module.exports.list_lot = async (event) => {
             perPage,
             exportAsCsv,
         } = validateQueryParams(event.queryStringParameters)
+
+        if (bidType !== 'absentee' && bidType !== 'telephone') {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Please provide valid bid_type' }),
+            }
+        }
+
+        // console.log('queryStringParameters', event.queryStringParameters)
+        // console.log('auctionId', auctionId)
+        // console.log('sortBy', sortBy)
+        // console.log('sortOrder', sortOrder)
+        // console.log('searchKeyword', searchKeyword)
+        // console.log('page', page)
+        // console.log('perPage', perPage)
+        // console.log('exportAsCsv', exportAsCsv)
 
         if (!auctionId) {
             return {
@@ -215,40 +235,63 @@ module.exports.list_lot = async (event) => {
         // Build search criteria
         const searchCriteria = searchKeyword ? {
             $or: [
-                { title1: { $regex: searchKeyword, $options: 'i' } },
-                { title2: { $regex: searchKeyword, $options: 'i' } },
+                { lot_title: { $regex: searchKeyword, $options: 'i' } },
             ],
         } : {}
 
-        // Final query combining auction, search criteria
-        const finalQuery = { ...auctionQuery, ...searchCriteria }
+        const finalQuery = {
+            ...searchCriteria,
+            auction_id: auctionId,
+            seller_email: sellerEmail,
+            bid_type: bidType,
+        }
+
+        // console.log('finalQuery', finalQuery)
+
+        const projection = {
+            _id: 0,
+            lot_number: 1,
+            lot_image: 1,
+            paddle_number: 1,
+            phone_number: 1,
+            country_code: 1,
+            name: 1,
+            lot_title: 1,
+            reserve: 1,
+            bid_amount: 1,
+            created_at: 1,
+        }
 
         let lots = []
         let totalCount = 0
         const response = {}
 
         if (exportAsCsv) {
-            // fetch ALL lots for CSV export
-            lots = await Lot.find(finalQuery).sort(sortCriteria).lean()
+            // fetch ALL bids for CSV export
+            lots = await liveBids.find(finalQuery)
+                .select(projection)
+                .sort(sortCriteria)
+                .lean()
             totalCount = lots.length
 
-            const signedUrl = await exportLotsAsCSVDirect(auctionData, lots)
+            const signedUrl = await exportBidsAsCSVDirect(auctionData, lots, bidType)
             if (signedUrl) {
                 response.csv_url = signedUrl
             } else {
                 response.csv_error = 'Failed to generate CSV export'
             }
         } else {
-            // fetch paginated lots + total count in parallel
-            const [lotDocs, count] = await Promise.all([
-                Lot.find(finalQuery)
+            // fetch paginated bids + total count in parallel
+            const [bidsDocs, count] = await Promise.all([
+                liveBids.find(finalQuery)
+                    .select(projection)
                     .sort(sortCriteria)
                     .limit(perPage)
                     .skip((page - 1) * perPage)
                     .lean(),
-                Lot.countDocuments(finalQuery),
+                liveBids.countDocuments(finalQuery),
             ])
-            lots = lotDocs
+            lots = bidsDocs
             totalCount = count
         }
 
@@ -258,31 +301,26 @@ module.exports.list_lot = async (event) => {
         response.total_pages = Math.ceil(totalCount / perPage)
         response.current_page = page
 
+        /** Return successful response with enterprise data and pagination info */
         return {
             statusCode: 200,
             headers: await helpers.getHeaders(),
             body: JSON.stringify(response),
         }
     } catch (error) {
-        console.error('Error in list_lot:', error)
-
-        // Handle authorization errors
-        if (error.message === 'Unauthorized') {
-            return {
-                statusCode: 403,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
-            }
-        }
-
+        /** Log and handle errors */
+        console.error(error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                message: 'Internal server error',
-                error: process.env.NODE_ENV === 'development' ? error.message : undefined,
+                message: 'There was an error while listing bids',
             }),
+        }
+    } finally {
+        // Disconnect from the MongoDB database
+        if (connection) {
+            await connection.disconnect()
         }
     }
 }
-

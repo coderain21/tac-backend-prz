@@ -3,6 +3,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-console */
+const AWS = require('aws-sdk')
 const helpers = require('../lib/helper')
 const liveBids = require('../entities/LiveBid')
 const Auction = require('../entities/Auction')
@@ -26,6 +27,113 @@ function validateQueryParams(params) {
         page: Math.max(1, parseInt(params?.page, 10) || 1),
         perPage: Math.min(100, Math.max(1, parseInt(params?.per_page, 10) || 10)),
         exportAsCsv: params?.export === 'true' || params?.export === '1',
+    }
+}
+
+/**
+ * Escape CSV field to handle commas, quotes, and newlines
+ * @param {string} field - Field value to escape
+ * @returns {string} Escaped field value
+ */
+function escapeCSVField(field) {
+    if (field == null) return ''
+
+    const stringField = String(field)
+
+    // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
+    if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
+        return `"${stringField.replace(/"/g, '""')}"`
+    }
+
+    return stringField
+}
+
+/**
+ * Export bidders data to CSV and upload to S3
+ * @param {Object} auctionData - Auction information
+ * @param {Array} bids - Array of bid objects from the list_bids query
+ * @param {string} bidType - Type of bids ('absentee' or 'telephone')
+ * @returns {string|null} Signed S3 URL or null if error
+ */
+async function exportBidsAsCSVDirect(auctionData, bids, bidType) {
+    try {
+        const fileName = process.env.CSV_FILE || `${auctionData.auction_id}_${bidType}_bids.csv`
+        const s3Key = `exports/bids/${fileName}`
+        const s3Bucket = process.env.S3_BUCKET
+
+        if (!s3Bucket) {
+            throw new Error('S3_BUCKET environment variable is not set')
+        }
+
+        console.log('Direct S3 upload for file:', fileName)
+
+        // CSV Headers matching the bid data structure
+        const csvHeaders = [
+            'Lot Number',
+            'Lot Title',
+            'Paddle Number',
+            'Bidder Name',
+            'Phone Number',
+            'Country Code',
+            'Reserve',
+            'Bid Amount',
+            'Created At',
+        ]
+
+        let csvContent = `${csvHeaders.join(',')}\n`
+
+        // Process each bid
+        // eslint-disable-next-line no-restricted-syntax
+        for (const bid of bids) {
+            try {
+                const csvRow = [
+                    bid.lot_number || '',
+                    escapeCSVField(bid.lot_title),
+                    bid.paddle_number || '',
+                    escapeCSVField(bid.name),
+                    bid.phone_number || '',
+                    bid.country_code || '',
+                    bid.reserve || '',
+                    bid.bid_amount || '',
+                    bid.created_at || '',
+                ]
+
+                csvContent += `${csvRow.join(',')}\n`
+            } catch (err) {
+                console.error(`Error processing bid for lot ${bid.lot_number}:`, err)
+                continue
+            }
+        }
+
+        // Upload directly to S3 using Buffer
+        const s3Client = new AWS.S3({ region: process.env.AWS_REGION || 'eu-west-2' })
+
+        const uploadResult = await s3Client.upload({
+            Bucket: s3Bucket,
+            Key: s3Key,
+            Body: Buffer.from(csvContent, 'utf8'),
+            ContentType: 'text/csv',
+            ServerSideEncryption: 'AES256',
+            Metadata: {
+                'auction-id': auctionData.auction_id || '',
+                'bid-type': bidType,
+                'generated-at': new Date().toISOString(),
+            },
+        }).promise()
+
+        console.log('Direct upload successful:', uploadResult.Location)
+
+        // Generate signed URL
+        const signedUrl = s3Client.getSignedUrl('getObject', {
+            Bucket: s3Bucket,
+            Key: s3Key,
+            Expires: 3600,
+        })
+
+        return signedUrl
+    } catch (err) {
+        console.error('Direct export error:', err)
+        return null
     }
 }
 
@@ -70,7 +178,7 @@ module.exports.list_bids = async (event) => {
             searchKeyword,
             page,
             perPage,
-            // exportAsCsv,
+            exportAsCsv,
         } = validateQueryParams(event.queryStringParameters)
 
         if (bidType !== 'absentee' && bidType !== 'telephone') {
@@ -143,6 +251,35 @@ module.exports.list_bids = async (event) => {
             reserve: 1,
             bid_amount: 1,
             created_at: 1,
+        }
+
+        // Handle CSV export
+        if (exportAsCsv) {
+            // Get all bids for export (not paginated)
+            const allBids = await liveBids.find(finalQuery)
+                .select(projection)
+                .sort(sortCriteria)
+                .lean()
+
+            const csvUrl = await exportBidsAsCSVDirect(auctionData, allBids, bidType)
+
+            if (csvUrl) {
+                return {
+                    statusCode: 200,
+                    headers: await helpers.getHeaders(),
+                    body: JSON.stringify({
+                        message: 'Export successful',
+                        download_url: csvUrl,
+                    }),
+                }
+            }
+            return {
+                statusCode: 500,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: 'Export failed',
+                }),
+            }
         }
 
         const [bidsDocs, count] = await Promise.all([
