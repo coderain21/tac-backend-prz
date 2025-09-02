@@ -26,26 +26,47 @@ function validateQueryParams(params) {
         searchKeyword: params?.search_keyword?.trim(),
         page: Math.max(1, parseInt(params?.page, 10) || 1),
         perPage: Math.min(100, Math.max(1, parseInt(params?.per_page, 10) || 10)),
-        exportAsCsv: params?.export === 'true' || params?.export === '1',
+        exportAsCsv: params?.export === 'true' || params?.export === 'True' || params?.export === '1', // Fixed case sensitivity
     }
 }
 
 /**
- * Escape CSV field to handle commas, quotes, and newlines
- * @param {string} field - Field value to escape
- * @returns {string} Escaped field value
+ * Cleans HTML tags and escapes CSV special characters
+ * @param {string} text - Text to clean
+ * @returns {string} Cleaned text
  */
-function escapeCSVField(field) {
-    if (field == null) return ''
+function cleanTextForCSV(text) {
+    if (!text) return ''
 
-    const stringField = String(field)
+    return text
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .replace(/,/g, ';') // Replace commas with semicolons
+        .replace(/"/g, '""') // Escape quotes
+        .replace(/\r?\n/g, ' ') // Replace line breaks with spaces
+        .trim()
+}
 
-    // If field contains comma, quote, or newline, wrap in quotes and escape internal quotes
-    if (stringField.includes(',') || stringField.includes('"') || stringField.includes('\n')) {
-        return `"${stringField.replace(/"/g, '""')}"`
-    }
+/**
+ * Escapes text for CSV format
+ * @param {string} text - Text to escape
+ * @returns {string} Escaped text wrapped in quotes
+ */
+function escapeCSVField(text) {
+    if (!text) return ''
+    return `"${cleanTextForCSV(text)}"`
+}
 
-    return stringField
+const currencySymbolMapping = {
+    GBP: '£',
+    USD: '$',
+    EUR: '€',
+    HKD: 'HK$',
+    JPY: '¥',
+    CHF: 'Fr',
+    SGD: 'S$',
+    AUD: 'A$',
+    CAD: 'C$',
+    INR: '₹',
 }
 
 /**
@@ -67,18 +88,32 @@ async function exportBidsAsCSVDirect(auctionData, bids, bidType) {
 
         console.log('Direct S3 upload for file:', fileName)
 
+        // Use the currency symbol mapping to get the correct symbol
+        const currencySymbol = currencySymbolMapping[auctionData.currency] || auctionData.currency || '$'
+
+        let csvHeaders = []
         // CSV Headers matching the bid data structure
-        const csvHeaders = [
-            'Lot Number',
-            'Lot Title',
-            'Paddle Number',
-            'Bidder Name',
-            'Phone Number',
-            'Country Code',
-            'Reserve',
-            'Bid Amount',
-            'Created At',
-        ]
+        if (bidType === 'absentee') {
+            csvHeaders = [
+                'Lot Number',
+                'Lot Title',
+                'Paddle Number',
+                'Bidder Name',
+                'Reserve',
+                'Bid Amount',
+            ]
+        } else {
+            csvHeaders = [
+                'Lot Number',
+                'Lot Title',
+                'Paddle Number',
+                'Bidder Name',
+                'Phone Number',
+                'Country Code',
+                'Reserve',
+                'Bid Amount',
+            ]
+        }
 
         let csvContent = `${csvHeaders.join(',')}\n`
 
@@ -86,21 +121,39 @@ async function exportBidsAsCSVDirect(auctionData, bids, bidType) {
         // eslint-disable-next-line no-restricted-syntax
         for (const bid of bids) {
             try {
-                const csvRow = [
-                    bid.lot_number || '',
-                    escapeCSVField(bid.lot_title),
-                    bid.paddle_number || '',
-                    escapeCSVField(bid.name),
-                    bid.phone_number || '',
-                    bid.country_code || '',
-                    bid.reserve || '',
-                    bid.bid_amount || '',
-                    bid.created_at || '',
-                ]
+                let csvRow = []
+
+                if (bidType === 'absentee') {
+                    // For absentee bids - no phone number fields
+                    csvRow = [
+                        bid.lot_number || '',
+                        escapeCSVField(bid.lot_title),
+                        bid.paddle_number || '',
+                        escapeCSVField(bid.name),
+                        bid.reserve ? `${currencySymbol}${bid.reserve}` : '',
+                        bid.bid_amount ? `${currencySymbol}${bid.bid_amount}` : '',
+                    ]
+                } else {
+                    // For telephone bids - include phone number fields
+                    // Country code already has + prefix from the data
+                    const countryCode = bid.country_code || ''
+
+                    csvRow = [
+                        bid.lot_number || '',
+                        escapeCSVField(bid.lot_title),
+                        bid.paddle_number || '',
+                        escapeCSVField(bid.name),
+                        bid.phone_number || '',
+                        countryCode,
+                        bid.reserve ? `${currencySymbol}${bid.reserve}` : '',
+                        bid.bid_amount ? `${currencySymbol}${bid.bid_amount}` : '',
+                    ]
+                }
 
                 csvContent += `${csvRow.join(',')}\n`
             } catch (err) {
                 console.error(`Error processing bid for lot ${bid.lot_number}:`, err)
+                // eslint-disable-next-line no-continue
                 continue
             }
         }
@@ -253,48 +306,39 @@ module.exports.list_bids = async (event) => {
             created_at: 1,
         }
 
-        // Handle CSV export
+        let lots = []
+        let totalCount = 0
+        const response = {}
+
         if (exportAsCsv) {
-            // Get all bids for export (not paginated)
-            const allBids = await liveBids.find(finalQuery)
+            // fetch ALL bids for CSV export
+            lots = await liveBids.find(finalQuery)
                 .select(projection)
                 .sort(sortCriteria)
                 .lean()
+            totalCount = lots.length
 
-            const csvUrl = await exportBidsAsCSVDirect(auctionData, allBids, bidType)
-
-            if (csvUrl) {
-                return {
-                    statusCode: 200,
-                    headers: await helpers.getHeaders(),
-                    body: JSON.stringify({
-                        message: 'Export successful',
-                        download_url: csvUrl,
-                    }),
-                }
+            const signedUrl = await exportBidsAsCSVDirect(auctionData, lots, bidType)
+            if (signedUrl) {
+                response.csv_url = signedUrl
+            } else {
+                response.csv_error = 'Failed to generate CSV export'
             }
-            return {
-                statusCode: 500,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'Export failed',
-                }),
-            }
+        } else {
+            // fetch paginated bids + total count in parallel
+            const [bidsDocs, count] = await Promise.all([
+                liveBids.find(finalQuery)
+                    .select(projection)
+                    .sort(sortCriteria)
+                    .limit(perPage)
+                    .skip((page - 1) * perPage)
+                    .lean(),
+                liveBids.countDocuments(finalQuery),
+            ])
+            lots = bidsDocs
+            totalCount = count
         }
 
-        const [bidsDocs, count] = await Promise.all([
-            liveBids.find(finalQuery)
-                .select(projection)
-                .sort(sortCriteria)
-                .limit(perPage)
-                .skip((page - 1) * perPage)
-                .lean(),
-            liveBids.countDocuments(finalQuery),
-        ])
-
-        const response = {}
-        const lots = bidsDocs
-        const totalCount = count
         // Build response
         response.data = lots
         response.total_records_found = totalCount
