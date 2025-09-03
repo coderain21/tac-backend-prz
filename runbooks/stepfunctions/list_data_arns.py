@@ -1,3 +1,8 @@
+# This script queries MongoDB to find step function executions for lots in auction A0001
+# It retrieves lot dates from the prod-lots collection and checks AWS Step Functions
+# for running executions, displaying the latest execution details and any duplicates
+# for each lot ID. The script helps identify and monitor running step functions.
+
 from pymongo import MongoClient
 import boto3
 from datetime import datetime
