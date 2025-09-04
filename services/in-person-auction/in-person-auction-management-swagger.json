@@ -1389,6 +1389,87 @@
           }
         }
       }
+    },
+    "/delete-bid/{bid_id}": {
+      "delete": {
+        "tags": ["Bid Management"],
+        "summary": "Delete Bid",
+        "description": "API to delete a specific bid by its ID",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the bid to delete",
+            "schema": {
+              "type": "string"
+            },
+            "example": "64d2f4a1b23d9c0012ab34ef"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Bid successfully deleted. No content is returned."
+          },
+          "400": {
+            "description": "Bad request - Missing bid ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Bid ID is required"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Unauthorized access",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "You do not have access to perform this API action"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Bid not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Bid not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal Server Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

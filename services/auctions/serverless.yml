@@ -518,88 +518,100 @@ functions:
   #   layers:
   #     - ${ssm:COMMON_LIB_ARN}
 
-  sqs-lot-update:
+  batchLotsUpdate:
     handler: handlers/batch_lots_update.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
+    timeout: 90
     layers:
       - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+    deadLetter:
+      targetArn:
+        Fn::GetAtt:
+          - BatchLotsUpdateDLQ
+          - Arn
 
-  sqs-lot-update_1:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
-  sqs-lot-update_2:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_1:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
-  sqs-lot-update_3:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_2:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
 
-  sqs-lot-update_4:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  sqs-lot-update_5:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_3:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+
+  # sqs-lot-update_4:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
+  # sqs-lot-update_5:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
   # sqs-lot-update_6:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}
@@ -781,6 +793,11 @@ resources:
         QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
 
+    # new dlq for lot update failures
+    BatchLotsUpdateDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${opt:stage, self:provider.stage}-batch-lots-update-dlq
         
     updateLotsQueue:
       Type: AWS::SQS::Queue
