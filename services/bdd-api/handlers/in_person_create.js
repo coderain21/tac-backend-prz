@@ -46,7 +46,7 @@ module.exports.create_auction = async (event) => {
         request_body.template_name = 'Classic'
         request_body.title = 'Sample Auction Title'
         request_body.currency = 'USD'
-        request_body.time_zone = 'IST - India Standard Time'
+        request_body.time_zone = 'Asia/Calcutta'
         request_body.status = 'Draft'
         request_body.auction_type = 'live'
         request_body.logo_image = ''
@@ -109,7 +109,7 @@ module.exports.create_auction = async (event) => {
             const createdLots = []
             const staticLotData = [
                 {
-                    images: ['DomainName/BDD/panting2.jpg'],
+                    images: [{ url: 'DomainName/BDD/panting2.jpg', featured: true }],
                     title1: 'Lot 1 - Vintage Ceramic Vase',
                     description: '<p>Beautiful hand-painted ceramic vase from the 19th century</p>',
                     reserve: 150,
@@ -121,7 +121,7 @@ module.exports.create_auction = async (event) => {
                     tags: [],
                 },
                 {
-                    images: ['DomainName/BDD/panting2.jpg'],
+                    images: [{ url: 'DomainName/BDD/panting2.jpg', featured: true }],
                     title1: 'Lot 2 - Antique Pocket Watch',
                     description: '<p>Swiss-made pocket watch from 1920s. Gold-plated case</p>',
                     reserve: 300,
@@ -133,7 +133,7 @@ module.exports.create_auction = async (event) => {
                     tags: [],
                 },
                 {
-                    images: ['DomainName/BDD/panting2.jpg'],
+                    images: [{ url: 'DomainName/BDD/panting2.jpg', featured: true }],
                     title1: 'Lot 3 - Oil Painting Landscape',
                     description: '<p>Original oil painting depicting countryside landscape</p>',
                     reserve: 250,
