@@ -336,22 +336,22 @@ def update_auction(event, context):
                     send_batches = user_batches[i:i+batch_size_queue]
 
                     # Prepare entries for each batch in send_batches
-                    entries = []
-                    for item in send_batches:
-                        print('published', item)
-                        message_body = 'published'
+                    # entries = []
+                    # for item in send_batches:
+                    #     print('published', item)
+                    #     message_body = 'published'
 
 
-                        message_attributes = {
-                            'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
-                            'auction': {'DataType': 'String', 'StringValue': auction_record_str},
-                            'type': {'DataType': 'String', 'StringValue': 'published'},
-                        }
-                        entries.append(
-                            {'Id': str(uuid.uuid4()),
-                             'MessageBody': message_body,
-                            'MessageAttributes': message_attributes
-                            })
+                    #     message_attributes = {
+                    #         'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
+                    #         'auction': {'DataType': 'String', 'StringValue': auction_record_str},
+                    #         'type': {'DataType': 'String', 'StringValue': 'published'},
+                    #     }
+                    #     entries.append(
+                    #         {'Id': str(uuid.uuid4()),
+                    #          'MessageBody': message_body,
+                    #         'MessageAttributes': message_attributes
+                    #         })
                     # Send the batch of entries to the queue
                     # cc = sqs.send_message_batch(
                     #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
@@ -572,7 +572,7 @@ def update_auction(event, context):
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 batch_size_lots = 50  # Batch size for lots
-                batch_size_queue = 3  # Number of batches to send at once
+                batch_size_queue = 4  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
                 user_batches = []
                 # Batch lots by 30
@@ -584,19 +584,19 @@ def update_auction(event, context):
                     # Get a sublist containing at most 3 batches
                     send_batches = user_batches[i:i+batch_size_queue]
                     # Prepare entries for each batch in send_batches
-                    entries = []
-                    for item in send_batches:
-                        message_body = 'update status'
-                        message_attributes = {
-                        'lots': {'DataType': 'String',  'StringValue': json.dumps(item)},
-                        'auction': {'DataType': 'String', 'StringValue': auction_record_str},
-                        'type': {'DataType': 'String', 'StringValue': 'update'},
-                        }
-                        entries.append({'Id': str(uuid.uuid4()),
-                                        'DelaySeconds': i,
-                                        'MessageBody': message_body,
-                                        'MessageAttributes': message_attributes
-                                        })
+                    # entries = []
+                    # for item in send_batches:
+                    #     message_body = 'update status'
+                    #     message_attributes = {
+                    #     'lots': {'DataType': 'String',  'StringValue': json.dumps(item)},
+                    #     'auction': {'DataType': 'String', 'StringValue': auction_record_str},
+                    #     'type': {'DataType': 'String', 'StringValue': 'update'},
+                    #     }
+                    #     entries.append({'Id': str(uuid.uuid4()),
+                    #                     'DelaySeconds': i,
+                    #                     'MessageBody': message_body,
+                    #                     'MessageAttributes': message_attributes
+                    #                     })
                     # Send the batch of entries to the queue
                     # cc = sqs.send_message_batch(
                     #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],

@@ -756,6 +756,16 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
+  cleanupStepFunctions:
+    handler: handlers/cleanup-handler.handler
+    timeout: 600  # 10 minutes
+    deadLetter:
+      targetArn:
+        Fn::GetAtt:
+          - CleanupStepFunctionsDLQ
+          - Arn
+
+
 resources:
   Conditions:
     IsProd:
@@ -798,6 +808,13 @@ resources:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-batch-lots-update-dlq
+
+    
+    # new dlq for cleanup step functions
+    CleanupStepFunctionsDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${opt:stage, self:provider.stage}-cleanup-step-functions-dlq
         
     updateLotsQueue:
       Type: AWS::SQS::Queue

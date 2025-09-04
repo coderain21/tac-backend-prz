@@ -97,7 +97,7 @@ module.exports.handler = async (event) => {
         }
         const getAuctionDetails = auctionDetails[0]
         // setting the throttle time based on total number of lots
-        const totalLots = getAuctionDetails[0].total_lots
+        const totalLots = getAuctionDetails.total_lots
         let throttle = 2
         if (totalLots < 100) {
             throttle = 1

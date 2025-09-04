@@ -304,7 +304,7 @@ module.exports.handler = async (event, context, callback) => {
             connection = await mongodbHelper.connect()
         }
         // const firstRecord = event.Records[0]
-        // Get the lots, auction details and type from the event message
+        // // Get the lots, auction details and type from the event message
         // const lotsString = firstRecord.messageAttributes.lots.stringValue
         // const auctionString = firstRecord.messageAttributes.auction.stringValue
         // const type = firstRecord.messageAttributes.type.stringValue
