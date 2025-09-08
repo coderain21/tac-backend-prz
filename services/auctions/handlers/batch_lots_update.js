@@ -19,7 +19,6 @@ const mongodbHelper = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
 const redisHelper = require('../lib/redis_helper')
 
-// const { startExecution, stopExecutions } = require('../lib/step_function_helper')
 let connection = null
 const Lot = require('../entities/Lot')
 
@@ -81,8 +80,6 @@ async function startExecutionAfterPublish(executionARN, lots) {
     }
 }
 
-
-
 /**
  * Start an execution of the state machine for the given execution ARN.
  *
@@ -93,50 +90,38 @@ async function startExecutionAfterPublish(executionARN, lots) {
  */
 async function startExecution(executionARN, lots) {
     try {
-        // Log that the state machine is being started
         console.log('execution starteddd')
-        // Create a new StepFunctions client
         const stepfunctions = new StepFunctions()
-        // Convert the start_date to an ISO string
         const newStartDate = new Date(lots.start_date).toISOString()
-        // Set the start_date on the lots object to the ISO string
         lots.start_date = newStartDate
-        // Set up the parameters for the startExecution call
+
         const params = {
             stateMachineArn: executionARN,
-            // Stringify the lots object and use it as the input to the state machine
             input: JSON.stringify(lots),
         }
 
         return new Promise((resolve, reject) => {
-            // Start the state machine execution
             stepfunctions.startExecution(params, async (error, data) => {
-                // If there is an error, reject the promise with that error
                 if (error) {
                     reject(error)
+                    return
                 }
-                // If there is data, update the MongoDB record with the execution ARN
                 if (data) {
                     // Get the execution ARN from MongoDB
                     const getArn = await mongodbHelper.getExecutionArn(lots, StepFunctionArn)
                     // Update the MongoDB record with the execution ARN
                     await mongodbHelper.updateArn(getArn, data, StepFunctionArn)
-                    // Resolve the promise with the data
                     resolve(data)
+                    return
                 }
-                // If there is no data, resolve the promise with an object with a status of false
                 resolve({ status: false })
             })
         })
     } catch (err) {
-        // Log the error to the console
         console.log('start err', err)
+        throw err
     }
 }
-
-
-
-
 
 /**
  * Stops an execution of the state machine for the given execution ARN.
@@ -145,55 +130,74 @@ async function startExecution(executionARN, lots) {
  * @returns {Promise} A promise that resolves with the data from the stopExecution call if successful,
  * or rejects with an error
  */
-
 async function stopExecutions(executionArn) {
     try {
-        // Log that the state machine execution is being stopped
-        console.log('INSIDE STOP: ')
-        // Create a new StepFunctions client
+        console.log('INSIDE STOP: ', executionArn)
         const stepFunctions = new StepFunctions()
-        // Set up the parameters for the stopExecution call
-        const params = {
-            executionArn,
-            // Set the cause of the stop to 'User initiated stop'
-            cause: 'User initiated stop',
+
+        // First check the execution status
+        const describeParams = { executionArn }
+        const description = await stepFunctions.describeExecution(describeParams).promise()
+
+        // Only stop if it's actually running
+        if (description.status === 'RUNNING') {
+            const params = {
+                executionArn,
+                cause: 'User initiated stop for update',
+            }
+
+            const result = await stepFunctions.stopExecution(params).promise()
+            return result
         }
-        return new Promise((resolve, reject) => {
-            // Stop the state machine execution
-            stepFunctions.stopExecution(params, async (error, data) => {
-                // If there is an error, reject the promise with that error
-                if (error) {
-                    reject(error)
-                }
-                // If there is data, resolve the promise with that data
-                if (data) {
-                    resolve(data)
-                }
-                // If there is no data, resolve the promise with an object with a status of false
-                resolve({ status: false })
-            })
-        })
+        console.log(`Execution ${executionArn} is already ${description.status}`)
+        return { status: 'already_stopped', currentStatus: description.status }
     } catch (err) {
-        // Log the error to the console
-        console.log('errr', err)
+        console.log('Stop execution error:', err)
+        throw err
     }
 }
 
+/**
+ * Stop execution with retry logic
+ */
+async function stopExecutionWithRetry(executionArn, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const result = await stopExecutions(executionArn)
+            if (result && result.status !== false) {
+                return result
+            }
+        } catch (error) {
+            console.error(`Stop attempt ${i + 1} failed:`, error)
+            if (i === maxRetries - 1) throw error
+        }
 
+        // Wait before retry
+        await new Promise((resolve) => setTimeout(resolve, 2000 * (i + 1)))
+    }
+    throw new Error(`Failed to stop execution after ${maxRetries} attempts`)
+}
 
+/**
+ * Start execution with retry logic
+ */
+async function startExecutionWithRetry(executionARN, lots, maxRetries = 3) {
+    for (let i = 0; i < maxRetries; i++) {
+        try {
+            const result = await startExecution(executionARN, lots)
+            if (result && result.status !== false) {
+                return result
+            }
+        } catch (error) {
+            console.error(`Start attempt ${i + 1} failed:`, error)
+            if (i === maxRetries - 1) throw error
+        }
 
-
-
-/*
-The function begins by setting the initial end time of the lot based on its end date.
-It checks if the Redis client is open and connects if it is not.
-It retrieves existing information about the lot from Redis using the lot's ID.
-The existing record is parsed, and a new set of information is created for updating, including extending the lot's end date and marking it as extended.
-The updated information is then stored back in the Redis database.
-Additional data about the lot and the auction extension is prepared.
-An extension alert is sent using a custom function (extensionAlert) with information about the extended lot.
-A socket event is emitted to join a bid room, and the function returns true on successful execution.
-*/
+        // Wait before retry
+        await new Promise((resolve) => setTimeout(resolve, 2000 * (i + 1)))
+    }
+    throw new Error(`Failed to start execution after ${maxRetries} attempts`)
+}
 
 async function updateRedisData(lotInformation, client) {
     try {
@@ -238,19 +242,11 @@ async function updateRedisData(lotInformation, client) {
     }
 }
 
-
-
-
-
-
 /**
  * Function to update the time of the lot in redis based on the
  * extension time.
  * @param {Object} auctionLots - Array of auction lots to update in redis
  * @param {Object} client - Redis client object
- * @param {Object} io - Socket.io object
- * @param {Object} socket - Socket.io socket object
- * @param {Object} auctionDetails - Auction details object
  * @param {Number} extend_time - Extension time
  */
 async function findAndUpdateTime(auctionLots, client, extend_time) {
@@ -272,12 +268,6 @@ async function findAndUpdateTime(auctionLots, client, extend_time) {
         return err
     }
 }
-
-
-
-
-
-
 
 /**
  * AWS Lambda function to handle the batch lots update event
@@ -303,13 +293,7 @@ module.exports.handler = async (event, context, callback) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
-        // const firstRecord = event.Records[0]
-        // // Get the lots, auction details and type from the event message
-        // const lotsString = firstRecord.messageAttributes.lots.stringValue
-        // const auctionString = firstRecord.messageAttributes.auction.stringValue
-        // const type = firstRecord.messageAttributes.type.stringValue
-        // const auctionLots = JSON.parse(lotsString)
-        // const auctionDetails = JSON.parse(auctionString)
+
         const { lots, auction, type } = event
 
         // The payload is already a JavaScript object, no need for JSON.parse
@@ -323,58 +307,86 @@ module.exports.handler = async (event, context, callback) => {
         // If the event type is 'update', update the time of the lots in Redis
         if (type === 'update') {
             const redisUpdate = []
-            // Find and update the time of the lots in Redis
             redisUpdate.push(findAndUpdateTime(auctionLots, client, extend_time))
 
-            // Get all the execution ARNs for the lots and stop the executions
-            const stopExecutionsPromise = []
-            const startExecutionsPromise = []
-            const mongodbPromise = []
-            for (const item of auctionLots) {
-                item.lot_end_time = item.end_date + extend_time
-                // If the lot end date is greater than the current date
-                if (item.end_date > currentTimeEpoch) {
-                    // Get the execution ARN from MongoDB
-                    const getAllArns = await mongodbHelper.singleGetAllExecutionArn(item, StepFunctionArn)
-                    const executionArn = getAllArns.arn
-                    const stoppingStepFunction = await stopExecutions(executionArn)
-                    const startingStepFunction = await startExecution(process.env.STATE_MACHINE_LOT_ARN, item)
-                    // // Stop the execution
-                    // stopExecutionsPromise.push(stopExecutions(executionArn))
-                    // // Start a new execution
-                    // startExecutionsPromise.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
-                    // Update the end date of the lot in MongoDB
-                    // mongodbPromise.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
-                }
-            }
-            // Run all the promises in parallel
-            await Promise.all(redisUpdate)
+            // Process all lots in parallel with proper error handling
+            const updatePromises = auctionLots.map(async (item) => {
+                try {
+                    item.lot_end_time = item.end_date + extend_time
 
-            // for (const item of auctionLots) {
-            //     item.lot_end_time = item.end_date + extend_time
-            //     // If the lot end date is greater than the current date
-            //     if (item.end_date > currentTimeEpoch) {
-            //         startExecutionsPromise.push(startExecution(process.env.STATE_MACHINE_LOT_ARN, item))
-            //         // Update the end date of the lot in MongoDB
-            //         // mongodbPromise.push(mongodbHelper.updateSignleLot({ lot_id: item._id, end_date: item.lot_end_time }, Lot))
-            //     }
-            // }
-            // // Run all the promises in parallel
-            // await Promise.all(startExecutionsPromise)
+                    // Only process lots that haven't ended
+                    if (item.end_date > currentTimeEpoch) {
+                        // Get execution ARN
+                        const getAllArns = await mongodbHelper.singleGetAllExecutionArn(item, StepFunctionArn)
+
+                        if (!getAllArns || !getAllArns.arn) {
+                            console.error(`No execution ARN found for lot ${item._id}`)
+                            return { success: false, lot_id: item._id, error: 'No ARN found' }
+                        }
+
+                        const executionArn = getAllArns.arn
+
+                        // Stop existing execution with retry
+                        console.log(`Stopping execution for lot ${item._id}: ${executionArn}`)
+                        const stopResult = await stopExecutionWithRetry(executionArn)
+
+                        if (!stopResult || stopResult.status === false) {
+                            console.error(`Failed to stop execution for lot ${item._id}`)
+                            return { success: false, lot_id: item._id, error: 'Stop failed' }
+                        }
+
+                        // Wait a moment before starting new execution
+                        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+                        // Start new execution with retry
+                        console.log(`Starting new execution for lot ${item._id}`)
+                        const startResult = await startExecutionWithRetry(process.env.STATE_MACHINE_LOT_ARN, item)
+
+                        if (!startResult || startResult.status === false) {
+                            console.error(`Failed to start execution for lot ${item._id}`)
+                            return { success: false, lot_id: item._id, error: 'Start failed' }
+                        }
+
+                        return { success: true, lot_id: item._id }
+                    }
+
+                    return { success: true, lot_id: item._id, skipped: 'Lot already ended' }
+                } catch (error) {
+                    console.error(`Error processing lot ${item._id}:`, error)
+                    return { success: false, lot_id: item._id, error: error.message }
+                }
+            })
+
+            // Wait for all operations to complete
+            const [redisResults, ...updateResults] = await Promise.all([
+                Promise.all(redisUpdate),
+                ...updatePromises,
+            ])
+
+            // Log results for debugging
+            const successful = updateResults.filter((r) => r.success)
+            const failed = updateResults.filter((r) => !r.success)
+
+            console.log(`Update completed: ${successful.length} successful, ${failed.length} failed`)
+            if (failed.length > 0) {
+                console.error('Failed lots:', failed)
+            }
         }
 
         // If the event type is 'published', start new executions for all the lots
         if (type === 'published') {
-            console.log('inside')
+            console.log('inside published')
             const startExecutions = []
             for (const item of auctionLots) {
                 startExecutions.push(startExecutionAfterPublish(process.env.STATE_MACHINE_LOT_ARN, item))
             }
-            await Promise.all(startExecutions)
+            const results = await Promise.all(startExecutions)
+            console.log(`Published: Started ${results.length} executions`)
         }
+
         return true
     } catch (error) {
-        console.error('Error:', error)
-        // Return an object with status false and error message
+        console.error('Handler Error:', error)
+        throw error
     }
 }
