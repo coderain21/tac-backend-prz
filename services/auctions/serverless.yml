@@ -464,7 +464,7 @@ functions:
 
   update_auction:
       handler: handlers/update.update_auction
-      runtime: python3.10
+      runtime: python3.9
       timeout: 120
       maximumRetryAttempts: 0
       memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
