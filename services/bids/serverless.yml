@@ -125,7 +125,7 @@ custom:
 functions: 
   list:
     handler: handlers/list.list_bidders
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -142,7 +142,7 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   view:
     handler: handlers/view.view_bidder
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -159,7 +159,7 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
   admin-view:
     handler: handlers/admin_view.view_bidder
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -177,7 +177,7 @@ functions:
 
   add-to-group:
     handler: handlers/update.update_user
-    runtime: python3.9
+    runtime: python3.10
     layers: 
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
