@@ -599,19 +599,19 @@ functions:
             Fn::GetAtt:
                     - updateLotsQueue
                     - Arn
-  sqs-lot-update_5:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_5:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
   # sqs-lot-update_6:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}

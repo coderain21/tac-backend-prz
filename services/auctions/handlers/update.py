@@ -572,7 +572,7 @@ def update_auction(event, context):
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 batch_size_lots = 50  # Batch size for lots
-                batch_size_queue = 4  # Number of batches to send at once
+                batch_size_queue = 3  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
                 user_batches = []
                 # Batch lots by 30
