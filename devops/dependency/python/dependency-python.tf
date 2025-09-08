@@ -8,7 +8,7 @@ provider "aws" {
 
 resource "null_resource" "python" {
   provisioner "local-exec" {
-    command = "pip install -r requirements.txt -t python_lib/python && rm -r python_lib/python/cffi* && rm -r python_lib/python/_cffi_* && cp -a extra/* python_lib/python"
+    command = "rm -rf python_lib/python && pip install --no-cache-dir --force-reinstall -r requirements.txt -t python_lib/python && rm -rf python_lib/python/cffi* && rm -rf python_lib/python/_cffi_* && rm -rf python_lib/python/*cffi* && cp -a extra/* python_lib/python"
   }
 }
 
@@ -36,7 +36,7 @@ resource "aws_ssm_parameter" "s3_bucket" {
 
 resource "null_resource" "python2" {
   provisioner "local-exec" {
-    command = "pip install -r requirements2.txt -t python_lib2/python"
+    command = "rm -rf python_lib2/python && pip install --no-cache-dir --force-reinstall -r requirements2.txt -t python_lib2/python"
     }
 }
 
