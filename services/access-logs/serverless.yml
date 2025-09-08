@@ -161,7 +161,7 @@ custom:
 functions:
   list:
     handler: handlers/list.list_all_logs
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
