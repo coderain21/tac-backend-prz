@@ -101,13 +101,16 @@ def accept_buyer(event, context):
             }
         first_name = buyer['first_name']
 
-        # Time zone handling
         common_time_zone = registration_type.get('time_zone', 'UTC')
-        time_zone = TIMEZONE_MAPPING.get(time_zone) if common_time_zone in TIMEZONE_MAPPING else common_time_zone  # Default to UTC if not mapped
+
+        # Use common_time_zone for lookup
+        time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')
+
         try:
             tz = pytz.timezone(time_zone)
         except pytz.UnknownTimeZoneError:
             tz = pytz.utc  # Default to UTC if timezone is unknown
+
 
         start_date_time_in_milliseconds = registration_type.get('start_date', datetime.utcnow().timestamp() * 1000)
         start_date_time_utc = datetime.utcfromtimestamp(start_date_time_in_milliseconds / 1000)

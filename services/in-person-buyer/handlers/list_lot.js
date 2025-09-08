@@ -112,7 +112,7 @@ async function getLots(auctionId, sellerEmail, buyerId, searchKeyword, sortParam
             { $match: baseQuery },
             {
                 $lookup: {
-                    from: process.env.BUYER_WISHLIST_TABLE_NAME,
+                    from: process.env.BUYER_WISHLIST_TABLE,
                     localField: '_id',
                     foreignField: 'lot_id',
                     as: 'wishlist',
