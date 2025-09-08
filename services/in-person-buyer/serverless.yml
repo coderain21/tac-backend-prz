@@ -121,6 +121,24 @@ functions:
           path: /list-lots
           method: get
 
+  place-bid:
+    handler: handlers/place_bid.place_bid
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /place-bid
+          method: post
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
 
 resources:
   Conditions:
