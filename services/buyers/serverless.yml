@@ -157,7 +157,7 @@ functions:
 
   view:
     handler: handlers/view.view
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -173,7 +173,7 @@ functions:
           
   create_userpools:
     handler: handlers/userpool.create
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -189,7 +189,7 @@ functions:
 
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verify
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -205,7 +205,7 @@ functions:
 
   otp-validation:
     handler: handlers/otp_validation.validate
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -221,7 +221,7 @@ functions:
 
   view_lots:
     handler: handlers/view_list_lots.view_list_lots
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -237,7 +237,7 @@ functions:
   
   search_lots:
     handler: handlers/search_lots.lot_search
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -254,7 +254,7 @@ functions:
               
   view_lot_details:
     handler: handlers/view_lots.lot_details
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -270,7 +270,7 @@ functions:
           
   credit_card:
     handler: handlers/credit_card.credit_card
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -286,7 +286,7 @@ functions:
 
   acceting_buyer:
       handler: handlers/accept_buyer.accept_buyer
-      runtime: python3.9
+      runtime: python3.10
       layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
@@ -304,7 +304,7 @@ functions:
   
   update_password:
     handler: handlers/update_password.update_password
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -334,7 +334,7 @@ functions:
 
   auction_register:
     handler: handlers/register_auction.register_auction
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -362,7 +362,7 @@ functions:
 
   view_profile:
     handler: handlers/view_profile.view_profile
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -390,7 +390,7 @@ functions:
   
   add_address:
     handler: handlers/add_address.add_address
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -418,7 +418,7 @@ functions:
       
   paddle_number:
     handler: handlers/get_paddle.paddle_number
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -447,7 +447,7 @@ functions:
 
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -463,7 +463,7 @@ functions:
 
   update-new-password:
     handler: handlers/reset.password_reset
-    runtime: python3.9
+    runtime: python3.10
     layers: 
       - ${ssm:COMMON_LIB_ARN_PYTHON}
       - ${ssm:COMMON_LIB_ARN_PYTHON_2}
@@ -538,7 +538,7 @@ functions:
   
   view-privacy-policy:
     handler: handlers/get_policy.get_policy
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
