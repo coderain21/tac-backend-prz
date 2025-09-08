@@ -231,7 +231,7 @@ functions:
   create-order:
     handler: handlers/create_order.create_paypal_order
     timeout: 30
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -250,7 +250,7 @@ functions:
   paypal-order-webhook:
     handler: handlers/order_webhook.create
     timeout: 30
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -280,7 +280,7 @@ functions:
   paypal-capture-order:
       handler: handlers/capture_order.capture_order
       timeout: 30
-      runtime: python3.9
+      runtime: python3.10
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:

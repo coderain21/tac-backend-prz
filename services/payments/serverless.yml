@@ -156,7 +156,7 @@ custom:
 functions: 
   create_intent:
     handler: handlers/create.create_intent
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -182,7 +182,7 @@ functions:
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}       #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
   stripe_payments_webhook:
     handler: handlers/stripe_webhook.update
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:

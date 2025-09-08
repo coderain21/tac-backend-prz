@@ -137,7 +137,7 @@ functions:
   bid-listing:
     handler: handlers/bid_list.list_bids
     timeout: 60
-    runtime: python3.9
+    runtime: python3.10
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
