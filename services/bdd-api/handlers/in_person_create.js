@@ -43,17 +43,10 @@ module.exports.create_auction = async (event) => {
 
         const auction_image = 'DomainName/BDD/ai-6.jpeg'
         request_body.auction_image = auction_image
-        request_body.template_name = 'Classic'
-        request_body.title = 'Sample Auction Title'
-        request_body.currency = 'USD'
-        request_body.time_zone = 'Asia/Calcutta'
         request_body.status = 'Draft'
         request_body.auction_type = 'live'
         request_body.logo_image = ''
         request_body.logo_redirection_url = ''
-        request_body.description = 'test description'
-        request_body.registration_type = 'Email only'
-        request_body.add_buyer_fees = 'No additional fees'
         request_body.faq = []
         request_body.percentage = ''
         request_body.fees = ''
