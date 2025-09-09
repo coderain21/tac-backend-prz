@@ -28,7 +28,109 @@ config.update({ region: 'eu-west-2' })
 const currentTimeEpoch = Date.now()
 
 /**
- * Stops an execution with comprehensive error handling and logging
+ * Bulk update ARN statuses to ABORTED after successful stops
+ */
+async function bulkUpdateArnStatuses(successfulStops) {
+    if (successfulStops.length === 0) return { modifiedCount: 0 }
+
+    console.log(`💾 [BULK] Updating ${successfulStops.length} ARN statuses to ABORTED...`)
+
+    try {
+        const bulkOps = successfulStops.map((stop) => ({
+            updateOne: {
+                filter: { arn: stop.executionArn },
+                update: {
+                    $set: {
+                        status: 'ABORTED',
+                        updated_at: new Date().toISOString(),
+                    },
+                },
+            },
+        }))
+
+        const result = await StepFunctionArn.bulkWrite(bulkOps, { ordered: false })
+        console.log(`✅ [BULK] Updated ${result.modifiedCount} ARN statuses to ABORTED`)
+        return result
+    } catch (error) {
+        console.error('❌ [BULK] Error updating ARN statuses:', error)
+        throw error
+    }
+}
+
+/**
+ * Bulk insert new ARN records after successful starts
+ */
+async function bulkInsertNewArnRecords(successfulStarts) {
+    if (successfulStarts.length === 0) return { insertedCount: 0 }
+
+    console.log(`💾 [BULK] Inserting ${successfulStarts.length} new ARN records...`)
+
+    try {
+        const bulkOps = successfulStarts.map((start) => ({
+            insertOne: {
+                document: {
+                    arn: start.executionArn,
+                    lot_id: start.lot_id.toString(),
+                    auction_id: start.auction_id,
+                    seller_email: start.seller_email,
+                    status: 'RUNNING',
+                    created_at: new Date().toISOString(),
+                },
+            },
+        }))
+
+        const result = await StepFunctionArn.bulkWrite(bulkOps, { ordered: false })
+        console.log(`✅ [BULK] Inserted ${result.insertedCount} new ARN records`)
+        return result
+    } catch (error) {
+        console.error('❌ [BULK] Error inserting ARN records:', error)
+        throw error
+    }
+}
+
+/**
+ * Handle ended lots - mark them as completed and clean up ARN records
+ */
+async function handleEndedLots(endedLots) {
+    if (endedLots.length === 0) return { lotsUpdated: 0, arnsUpdated: 0 }
+
+    console.log(`📋 [ENDED] Handling ${endedLots.length} ended lots`)
+
+    try {
+        // Bulk update ARN records for ended lots to COMPLETED
+        const arnUpdateOps = endedLots.map((lot) => ({
+            updateOne: {
+                filter: {
+                    lot_id: lot._id.toString(),
+                    auction_id: lot.auction_id,
+                    seller_email: lot.seller_email,
+                },
+                update: {
+                    $set: {
+                        status: 'COMPLETED',
+                        updated_at: new Date().toISOString(),
+                    },
+                },
+            },
+        }))
+
+        // Execute ARN bulk operations
+        const arnResult = await StepFunctionArn.bulkWrite(arnUpdateOps, { ordered: false })
+
+        console.log(`✅ [ENDED] Updated ${arnResult.modifiedCount} ARN records to COMPLETED`)
+
+        return {
+            lotsUpdated: endedLots.length,
+            arnsUpdated: arnResult.modifiedCount,
+        }
+    } catch (error) {
+        console.error('❌ [ENDED] Error handling ended lots:', error)
+        return { lotsUpdated: 0, arnsUpdated: 0, error: error.message }
+    }
+}
+
+/**
+ * Stops an execution without individual database updates
  */
 async function stopExecutionWithValidation(executionArn) {
     console.log(`🛑 [STOP] Processing: ${executionArn}`)
@@ -45,54 +147,22 @@ async function stopExecutionWithValidation(executionArn) {
         }
 
         const stepFunctions = new StepFunctions()
-
-        // Check execution status first
         const describeParams = { executionArn }
-        let description
 
         try {
-            description = await stepFunctions.describeExecution(describeParams).promise()
+            const description = await stepFunctions.describeExecution(describeParams).promise()
             console.log(`✅ [STOP] Current status: ${description.status}`)
-        } catch (describeError) {
-            console.error('❌ [STOP] Describe failed:', describeError)
-            return {
-                success: false,
-                executionArn,
-                error: `Describe failed: ${describeError.message}`,
-                errorCode: describeError.code,
-                stage: 'describe',
-            }
-        }
 
-        if (description.status === 'RUNNING') {
-            console.log('🛑 [STOP] Stopping RUNNING execution...')
-            const params = {
-                executionArn,
-                cause: 'User initiated stop for update',
-            }
+            if (description.status === 'RUNNING') {
+                const params = {
+                    executionArn,
+                    cause: 'User initiated stop for update',
+                }
 
-            try {
-                // Stop the execution
                 const result = await stepFunctions.stopExecution(params).promise()
                 console.log(`✅ [STOP] Successfully stopped: ${executionArn.substring(0, 50)}...`)
 
-                // ✅ UPDATE DATABASE STATUS TO ABORTED
-                try {
-                    await StepFunctionArn.updateOne(
-                        { arn: executionArn },
-                        {
-                            $set: {
-                                status: 'ABORTED',
-                                updated_at: new Date().toISOString(),
-                            },
-                        },
-                    )
-                    console.log('✅ [STOP] Database status updated to ABORTED')
-                } catch (dbError) {
-                    console.error('❌ [STOP] Failed to update database status:', dbError)
-                    // Don't fail the entire operation for DB update failure
-                }
-
+                // ✅ DON'T UPDATE DATABASE HERE - WILL BE DONE IN BULK
                 return {
                     success: true,
                     executionArn,
@@ -101,24 +171,24 @@ async function stopExecutionWithValidation(executionArn) {
                     wasRunning: true,
                     stage: 'stopped',
                 }
-            } catch (stopError) {
-                console.error('❌ [STOP] Stop failed:', stopError)
+            } if (['SUCCEEDED', 'FAILED', 'TIMED_OUT', 'ABORTED'].includes(description.status)) {
+                console.log(`✅ [STOP] Already completed: ${description.status}`)
                 return {
-                    success: false,
+                    success: true,
                     executionArn,
-                    error: `Stop failed: ${stopError.message}`,
-                    errorCode: stopError.code,
-                    stage: 'stop',
+                    status: description.status,
+                    alreadyStopped: true,
+                    stage: 'already_completed',
                 }
             }
-        } else if (['SUCCEEDED', 'FAILED', 'TIMED_OUT', 'ABORTED'].includes(description.status)) {
-            console.log(`✅ [STOP] Already completed: ${description.status}`)
+        } catch (describeError) {
+            console.error('❌ [STOP] Describe failed:', describeError)
             return {
-                success: true,
+                success: false,
                 executionArn,
-                status: description.status,
-                alreadyStopped: true,
-                stage: 'already_completed',
+                error: `Describe failed: ${describeError.message}`,
+                errorCode: describeError.code,
+                stage: 'describe',
             }
         }
     } catch (err) {
@@ -133,9 +203,8 @@ async function stopExecutionWithValidation(executionArn) {
     }
 }
 
-
 /**
- * Starts a new execution with comprehensive logging
+ * Starts a new execution without individual database updates
  */
 async function startExecutionForUpdate(executionARN, lots) {
     console.log(`🚀 [START] Starting execution for lot: ${lots._id}`)
@@ -164,25 +233,13 @@ async function startExecutionForUpdate(executionARN, lots) {
         const result = await stepfunctions.startExecution(params).promise()
         console.log(`✅ [START] Execution started: ${result.executionArn.substring(0, 50)}...`)
 
-        // Save ARN record
-        const requestPayload = {
-            arn: result.executionArn,
-            lot_id: lots._id.toString(),
-            auction_id: lots.auction_id,
-            seller_email: lots.seller_email,
-            status: 'RUNNING',
-            created_at: new Date().toISOString(),
-        }
-
-        console.log(`💾 [START] Saving ARN record to MongoDB for lot ${lots._id}...`)
-        const saveResult = await mongodbHelper.save(requestPayload, StepFunctionArn)
-        console.log(`✅ [START] ARN record saved for lot ${lots._id}`)
-
+        // ✅ DON'T SAVE TO DATABASE HERE - WILL BE DONE IN BULK
         return {
             success: true,
             lot_id: lots._id,
             executionArn: result.executionArn,
-            saveResult,
+            auction_id: lots.auction_id,
+            seller_email: lots.seller_email,
             stage: 'completed',
         }
     } catch (err) {
@@ -263,6 +320,33 @@ async function updateRedisData(lotInformation, client) {
 }
 
 /**
+ * Update Redis data for all lots
+ */
+async function findAndUpdateTime(auctionLots, client, extend_time) {
+    console.log(`🗃️ [REDIS] Starting Redis updates for ${auctionLots.length} lots`)
+
+    try {
+        const redisDataUpdate = []
+        for (const item of auctionLots) {
+            item.lot_end_time = item.end_date + extend_time
+            if (item.end_date > currentTimeEpoch) {
+                redisDataUpdate.push(updateRedisData(item, client))
+            }
+        }
+
+        const results = await Promise.allSettled(redisDataUpdate)
+        const successful = results.filter((r) => r.status === 'fulfilled' && r.value.success).length
+        const failed = results.filter((r) => r.status === 'rejected' || !r.value.success).length
+
+        console.log(`✅ [REDIS] Updates completed: ${successful} successful, ${failed} failed`)
+        return { successful, failed, results }
+    } catch (err) {
+        console.error('❌ [REDIS] Error in findAndUpdateTime:', err)
+        throw err
+    }
+}
+
+/**
  * Batch process with controlled concurrency
  */
 async function processBatchWithConcurrency(items, processor, batchSize = 10, delayBetweenBatches = 500, operationType = 'operation') {
@@ -312,7 +396,7 @@ async function processBatchWithConcurrency(items, processor, batchSize = 10, del
 }
 
 /**
- * PHASE 1: Stop all executions
+ * PHASE 1: Stop all executions and bulk update statuses
  */
 async function stopAllExecutions(lotsWithValidArns) {
     console.log('🛑 ===== PHASE 1: STOPPING ALL EXECUTIONS =====')
@@ -326,11 +410,21 @@ async function stopAllExecutions(lotsWithValidArns) {
         'stop execution',
     )
 
-    const stopSuccessful = stopResults.filter((r) => r.success)
+    const stopSuccessful = stopResults.filter((r) => r.success && r.wasRunning)
     const stopFailed = stopResults.filter((r) => !r.success)
 
     console.log(`🛑 Phase 1 completed in ${Date.now() - stopStart}ms`)
     console.log(`📊 Stop results: ${stopSuccessful.length} successful, ${stopFailed.length} failed`)
+
+    // ✅ BULK UPDATE DATABASE STATUSES
+    if (stopSuccessful.length > 0) {
+        try {
+            await bulkUpdateArnStatuses(stopSuccessful)
+        } catch (bulkError) {
+            console.error('❌ Bulk status update failed:', bulkError)
+            // Don't fail entire operation for DB update failure
+        }
+    }
 
     // Log sample failures for debugging
     if (stopFailed.length > 0) {
@@ -358,7 +452,7 @@ async function waitForCleanup(waitTimeMs = 5000) {
 }
 
 /**
- * PHASE 2: Start all new executions
+ * PHASE 2: Start all new executions and bulk insert records
  */
 async function startAllNewExecutions(lotsWithValidArns, stateMachineArn) {
     console.log('🚀 ===== PHASE 2: STARTING ALL NEW EXECUTIONS =====')
@@ -378,6 +472,16 @@ async function startAllNewExecutions(lotsWithValidArns, stateMachineArn) {
     console.log(`🚀 Phase 2 completed in ${Date.now() - startStart}ms`)
     console.log(`📊 Start results: ${startSuccessful.length} successful, ${startFailed.length} failed`)
 
+    // ✅ BULK INSERT NEW ARN RECORDS
+    if (startSuccessful.length > 0) {
+        try {
+            await bulkInsertNewArnRecords(startSuccessful)
+        } catch (bulkError) {
+            console.error('❌ Bulk insert failed:', bulkError)
+            // Don't fail entire operation for DB insert failure
+        }
+    }
+
     // Log sample failures for debugging
     if (startFailed.length > 0) {
         console.error('❌ Sample start failures:')
@@ -395,34 +499,7 @@ async function startAllNewExecutions(lotsWithValidArns, stateMachineArn) {
 }
 
 /**
- * Update Redis data for all lots
- */
-async function findAndUpdateTime(auctionLots, client, extend_time) {
-    console.log(`🗃️ [REDIS] Starting Redis updates for ${auctionLots.length} lots`)
-
-    try {
-        const redisDataUpdate = []
-        for (const item of auctionLots) {
-            item.lot_end_time = item.end_date + extend_time
-            if (item.end_date > currentTimeEpoch) {
-                redisDataUpdate.push(updateRedisData(item, client))
-            }
-        }
-
-        const results = await Promise.allSettled(redisDataUpdate)
-        const successful = results.filter((r) => r.status === 'fulfilled' && r.value.success).length
-        const failed = results.filter((r) => r.status === 'rejected' || !r.value.success).length
-
-        console.log(`✅ [REDIS] Updates completed: ${successful} successful, ${failed} failed`)
-        return { successful, failed, results }
-    } catch (err) {
-        console.error('❌ [REDIS] Error in findAndUpdateTime:', err)
-        throw err
-    }
-}
-
-/**
- * Main optimized update handler with phased approach
+ * Main optimized update handler with bulk operations and ended lots handling
  */
 module.exports.updateHandler = async (event, context) => {
     const startTime = Date.now()
@@ -463,13 +540,24 @@ module.exports.updateHandler = async (event, context) => {
         console.log('🗃️ ===== STEP 1: UPDATING REDIS DATA =====')
         const redisResults = await findAndUpdateTime(auctionLots, client, extend_time)
 
-        // Step 2: Filter active lots
+        // Step 2: Filter active and ended lots
         const activeLots = auctionLots.filter((item) => {
             item.lot_end_time = item.end_date + extend_time
             return item.end_date > currentTimeEpoch
         })
 
-        console.log(`📊 Found ${activeLots.length} active lots out of ${auctionLots.length} total`)
+        const endedLots = auctionLots.filter((item) => {
+            item.lot_end_time = item.end_date + extend_time
+            return item.end_date <= currentTimeEpoch
+        })
+
+        console.log(`📊 Found ${activeLots.length} active lots and ${endedLots.length} ended lots`)
+
+        // Handle ended lots (run in parallel with active lot processing)
+        let endedLotsResult = { lotsUpdated: 0, arnsUpdated: 0 }
+        if (endedLots.length > 0) {
+            endedLotsResult = await handleEndedLots(endedLots)
+        }
 
         if (activeLots.length === 0) {
             return {
@@ -478,6 +566,8 @@ module.exports.updateHandler = async (event, context) => {
                 summary: {
                     total_lots: auctionLots.length,
                     active_lots: 0,
+                    ended_lots: endedLots.length,
+                    ended_lots_processed: endedLotsResult,
                     redis_results: redisResults,
                 },
                 timestamp: new Date().toISOString(),
@@ -485,7 +575,7 @@ module.exports.updateHandler = async (event, context) => {
             }
         }
 
-        // Step 3: Get execution ARNs
+        // Step 3: Get execution ARNs for active lots
         console.log('🔍 ===== STEP 2: RETRIEVING EXECUTION ARNS =====')
         const lotsWithArns = await processBatchWithConcurrency(
             activeLots,
@@ -529,6 +619,8 @@ module.exports.updateHandler = async (event, context) => {
                 summary: {
                     total_lots: auctionLots.length,
                     active_lots: activeLots.length,
+                    ended_lots: endedLots.length,
+                    ended_lots_processed: endedLotsResult,
                     lots_with_arns: 0,
                     lots_without_arns: lotsWithoutArns.length,
                     redis_results: redisResults,
@@ -538,13 +630,13 @@ module.exports.updateHandler = async (event, context) => {
             }
         }
 
-        // PHASE 1: Stop all executions
+        // PHASE 1: Stop all executions with bulk updates
         const { stopResults, stopSuccessful, stopFailed } = await stopAllExecutions(lotsWithValidArns)
 
         // CLEANUP PHASE: Wait for AWS cleanup
         await waitForCleanup(5000)
 
-        // PHASE 2: Start all new executions
+        // PHASE 2: Start all new executions with bulk inserts
         const { startResults, startSuccessful, startFailed } = await startAllNewExecutions(
             lotsWithValidArns,
             process.env.STATE_MACHINE_LOT_ARN,
@@ -554,10 +646,12 @@ module.exports.updateHandler = async (event, context) => {
         const totalTime = Date.now() - startTime
         const response = {
             success: stopFailed.length === 0 && startFailed.length === 0,
-            approach: 'phased_stop_then_start',
+            approach: 'bulk_operations_with_ended_lots_handling',
             summary: {
                 total_lots: auctionLots.length,
                 active_lots: activeLots.length,
+                ended_lots: endedLots.length,
+                ended_lots_processed: endedLotsResult,
                 lots_with_arns: lotsWithValidArns.length,
                 lots_without_arns: lotsWithoutArns.length,
                 stop_successful: stopSuccessful.length,
@@ -587,6 +681,7 @@ module.exports.updateHandler = async (event, context) => {
                         stage: f.stage,
                     })),
                 },
+                ended_lots_phase: endedLotsResult,
             },
             timestamp: new Date().toISOString(),
         }
@@ -610,6 +705,7 @@ module.exports.updateHandler = async (event, context) => {
             summary: {
                 total_lots: event.lots ? event.lots.length : 0,
                 active_lots: 0,
+                ended_lots: 0,
                 lots_with_arns: 0,
                 stop_successful: 0,
                 stop_failed: 0,
