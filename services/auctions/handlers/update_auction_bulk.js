@@ -1,3 +1,4 @@
+/* eslint-disable no-plusplus */
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-return-await */
 /* eslint-disable no-multiple-empty-lines */
@@ -82,6 +83,7 @@ async function stopExecutionWithRetry(executionArn, maxRetries = 3, retryDelay =
                 const delay = retryDelay * 2 ** attempt + Math.random() * 1000
                 console.log(`⏳ [STOP] Throttling detected, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`)
                 await sleep(delay)
+                // eslint-disable-next-line no-continue
                 continue
             } else {
                 console.error('❌ [STOP] Non-retryable error:', error.message)

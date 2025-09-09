@@ -1,3 +1,5 @@
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable no-plusplus */
 /* eslint-disable no-multiple-empty-lines */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-unused-vars */
