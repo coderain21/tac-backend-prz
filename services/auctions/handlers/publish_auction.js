@@ -11,7 +11,6 @@
 /* eslint-disable import/extensions */
 /* eslint-disable no-param-reassign */
 /* eslint-disable camelcase */
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-undef */
 
 const { StepFunctions, config } = require('aws-sdk')
