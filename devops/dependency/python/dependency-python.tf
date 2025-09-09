@@ -36,7 +36,7 @@ resource "aws_ssm_parameter" "s3_bucket" {
 
 resource "null_resource" "python2" {
   provisioner "local-exec" {
-    command = "rm -rf python_lib2/python && pip install --no-cache-dir --force-reinstall -r requirements2.txt -t python_lib2/python"
+    command = "pip install -r requirements2.txt -t python_lib2/python"
     }
 }
 
