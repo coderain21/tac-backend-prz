@@ -1,7 +1,6 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-plusplus */
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-lone-blocks */
 /* eslint-disable no-undef */
@@ -28,7 +27,6 @@ function sleep(ms) {
 
 // eslint-disable-next-line consistent-return
 async function stopExecutions(executionArn, maxRetries = 3, retryDelay = 1000) {
-    // Copy exact same function from your main file
     console.log('INSIDE STOP: ', executionArn)
     const stepFunctions = new StepFunctions()
     const params = {
@@ -36,7 +34,8 @@ async function stopExecutions(executionArn, maxRetries = 3, retryDelay = 1000) {
         cause: 'User initiated stop',
     }
 
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    // Replace for loop with recursive function
+    async function attemptStop(attempt = 0) {
         try {
             return new Promise((resolve, reject) => {
                 stepFunctions.stopExecution(params, async (error, data) => {
@@ -63,21 +62,28 @@ async function stopExecutions(executionArn, maxRetries = 3, retryDelay = 1000) {
             const delay = retryDelay * 2 ** attempt + Math.random() * 1000
             console.log(`Throttling detected for ${executionArn}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`)
             await sleep(delay)
+            return attemptStop(attempt + 1)
         }
     }
+
+    return attemptStop()
 }
 
 async function stopExecutionsInBatches(arns, arnRecords, batchSize = 100) {
-    // Copy exact same function from your main file but with smaller default batch size
     const results = []
     const totalBatches = Math.ceil(arns.length / batchSize)
 
     console.log(`Starting to stop ${arns.length} step functions in ${totalBatches} batches of ${batchSize}`)
 
-    for (let i = 0; i < arns.length; i += batchSize) {
-        const batch = arns.slice(i, i + batchSize)
-        const batchNumber = Math.floor(i / batchSize) + 1
+    // Replace for loop with recursive batch processing
+    async function processBatch(batchIndex = 0) {
+        const start = batchIndex * batchSize
+        const end = start + batchSize
+        const batch = arns.slice(start, end)
 
+        if (batch.length === 0) return
+
+        const batchNumber = batchIndex + 1
         console.log(`Processing batch ${batchNumber}/${totalBatches} with ${batch.length} executions`)
 
         const startTime = Date.now()
@@ -91,29 +97,33 @@ async function stopExecutionsInBatches(arns, arnRecords, batchSize = 100) {
         const failed = batchResults.length - successful
         console.log(`Batch ${batchNumber} completed in ${endTime - startTime}ms: ${successful} successful, ${failed} failed`)
 
-        if (i + batchSize < arns.length) {
+        // Continue to next batch if there are more
+        if (batchIndex < totalBatches - 1) {
             const delay = failed > batchSize * 0.3 ? 2000 : 1000
             await sleep(delay)
+            await processBatch(batchIndex + 1)
         }
     }
+
+    await processBatch()
 
     const totalSuccessful = results.filter((result) => result.status === 'fulfilled' && result.value.status).length
     const totalFailed = results.length - totalSuccessful
     console.log(`All batches completed: ${totalSuccessful}/${arns.length} successful, ${totalFailed} failed`)
 
-    for (let i = 0; i < results.length; i++) {
+    // Replace for loop with Promise.all and map
+    await Promise.all(arnRecords.map(async (arnRecord, i) => {
         const result = results[i]
-        const arnRecord = arnRecords[i]
 
         try {
             if (result.status === 'fulfilled' && result.value.status) {
-            // Successfully stopped
+                // Successfully stopped
                 await mongoConnection.update(StepFunctionArn, arnRecord._id.toString(), {
                     status: 'ABORTED',
                     stopped_at: Math.floor(Date.now() / 1000),
                 })
             } else {
-            // Failed to stop
+                // Failed to stop
                 await mongoConnection.update(StepFunctionArn, arnRecord._id.toString(), {
                     status: 'STOP_FAILED',
                     stop_error: result.reason || 'Unknown error',
@@ -123,19 +133,19 @@ async function stopExecutionsInBatches(arns, arnRecords, batchSize = 100) {
         } catch (error) {
             console.error(`Failed to update final status for ARN ${arnRecord._id}:`, error)
         }
-    }
+    }))
 
     return results
 }
 
 async function updateArnStatusToAborted(arnRecords) {
-    // Copy exact same function from your main file
     const updateResults = []
     const updateErrors = []
 
     console.log(`Updating ${arnRecords.length} ARN records to ABORTED status`)
 
-    for (const record of arnRecords) {
+    // Replace for...of loop with Promise.all and map
+    await Promise.all(arnRecords.map(async (record) => {
         try {
             await mongoConnection.update(StepFunctionArn, record._id.toString(), { status: 'ABORTED' })
             updateResults.push({ id: record._id, arn: record.arn, status: 'updated' })
@@ -144,7 +154,7 @@ async function updateArnStatusToAborted(arnRecords) {
             console.error(`Failed to update ARN record ${record._id}:`, error.message)
             updateErrors.push({ id: record._id, arn: record.arn, error: error.message })
         }
-    }
+    }))
 
     return { updateResults, updateErrors }
 }
@@ -172,22 +182,24 @@ module.exports.handler = async (event) => {
         // Update lot statuses based on operation type
         // if (operation_type === 'UNPUBLISH') {
         //     const runningLots = await mongoConnection.view(Lot, { auction_id, status: 'RUNNING' })
-        //     for (const lot of runningLots) {
+        //     // Replace for...of with Promise.all
+        //     await Promise.all(runningLots.map(async (lot) => {
         //         try {
         //             await mongoConnection.update(Lot, lot._id.toString(), { status: 'ABORTED' })
         //         } catch (error) {
         //             console.error(`Failed to update lot ${lot._id} status:`, error.message)
         //         }
-        //     }
+        //     }))
         // } else if (operation_type === 'CANCEL') {
         //     const runningLots = await mongoConnection.view(Lot, { auction_id, status: { $in: ['RUNNING', 'PENDING'] } })
-        //     for (const lot of runningLots) {
+        //     // Replace for...of with Promise.all
+        //     await Promise.all(runningLots.map(async (lot) => {
         //         try {
         //             await mongoConnection.update(Lot, lot._id.toString(), { status: 'ABORTED' })
         //         } catch (error) {
         //             console.error(`Failed to update lot ${lot._id} status:`, error.message)
         //         }
-        //     }
+        //     }))
         // }
 
         // // Update auction with completion status
@@ -196,12 +208,12 @@ module.exports.handler = async (event) => {
         //     background_cleanup_completed: true,
         // })
 
-        // console.log(`✅ Cleanup completed: ${updateResults.length} ARNs updated, operation: ${operation_type}`)
+        console.log(`✅ Cleanup completed: ${updateResults.length} ARNs updated, operation: ${operation_type}`)
     } catch (error) {
         console.error('Cleanup lambda failed:', error)
 
-        // Mark ARNs as failed
-        for (const record of arnRecords || []) {
+        // Replace for...of loop with Promise.all and map
+        await Promise.all((arnRecords || []).map(async (record) => {
             try {
                 await mongoConnection.update(StepFunctionArn, record._id.toString(), {
                     status: 'STOP_FAILED',
@@ -211,8 +223,7 @@ module.exports.handler = async (event) => {
             } catch (updateError) {
                 console.error(`Failed to update ARN ${record._id}:`, updateError)
             }
-        }
-
+        }))
         throw error // Re-throw so Lambda marks it as failed
     }
 }
