@@ -216,7 +216,7 @@ functions:
       
   send-reset-link:
     handler: handlers/send_reset_link.send_reset_link
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -232,7 +232,7 @@ functions:
 
   update-new-password:
     handler: handlers/reset_password.password_reset
-    runtime: python3.10
+    runtime: python3.9
     layers: 
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -248,7 +248,7 @@ functions:
   
   view-profile:
     handler: handlers/view_profile.view_customer
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -288,7 +288,7 @@ functions:
 
   generate_token:
     handler: handlers/generate.generate_token
-    runtime: python3.10
+    runtime: python3.9
     memorySize: 128
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -308,7 +308,7 @@ functions:
 
   kyc_webhook:
     handler: handlers/kyc_webhook.kyc_webhook
-    runtime: python3.10
+    runtime: python3.9
     memorySize: 128
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -362,7 +362,7 @@ functions:
   
   kyb_generate_token:
     handler: handlers/kyb_generate.generate_token
-    runtime: python3.10
+    runtime: python3.9
     memorySize: 128
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -401,7 +401,7 @@ functions:
     
   seller_sub_domain:
     handler: handlers/seller_domain.create_subdomain
-    runtime: python3.10
+    runtime: python3.9
     memorySize: 128
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -421,7 +421,7 @@ functions:
 
   disconnect_account:
     handler: handlers/stripe_disconnect.disconnect_account
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -440,7 +440,7 @@ functions:
 
   stripe-connect:
     handler: handlers/create.create
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -459,7 +459,7 @@ functions:
 
   stripe-webhook:
       handler: handlers/stripe_webhook.create
-      runtime: python3.10
+      runtime: python3.9
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
       vpc:
