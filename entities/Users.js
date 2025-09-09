@@ -59,6 +59,7 @@ const UserSchema = new Schema({
     send_automated_auction_complete_email: { type: Boolean, default: true },
     stripe_status: { type: String, default: '' },
     paypal_status: { type: String, default: '' },
+    checkout_enabled: { type: Boolean, default: true },
 })
 
 UserSchema.plugin(mongoosePaginate)

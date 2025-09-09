@@ -243,8 +243,16 @@ def view(event, context):
         del result["passcode"]
         if domain_data is not None:
             result["sub_domain"] = domain_data["subdomain"]
+        # Add checkout_enabled flag
+        checkout_enabled = None
+        seller_email = result.get("seller_email")
+        if seller_email:
+            seller_collection = db[os.environ["SELLERS_TABLE"]]
+            seller = seller_collection.find_one({"email_address": seller_email}, {"checkout_enabled": 1})
+            checkout_enabled = seller.get("checkout_enabled") if seller else None
         body = {
             "data": result,
+            "checkout_enabled": checkout_enabled
         }
         return {
             "statusCode": 200,

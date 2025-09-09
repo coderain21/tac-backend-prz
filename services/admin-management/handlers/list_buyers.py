@@ -117,8 +117,21 @@ def list_buyers(event, context):
 
         total_buyers_result = list(buyer_collection.aggregate(total_buyers_pipeline))
         total_buyers = total_buyers_result[0]["total_buyers"] if total_buyers_result else 0
+
+        # Add checkout_enabled to each buyer by fetching seller settings
+        seller_collection = db[os.environ["SELLERS_TABLE"]]
+        buyers_list = []
+        for buyer in buyers:
+            seller_email = buyer.get("seller_email")
+            checkout_enabled = None
+            if seller_email:
+                seller = seller_collection.find_one({"email_address": seller_email}, {"checkout_enabled": 1})
+                checkout_enabled = seller.get("checkout_enabled") if seller else None
+            buyer["checkout_enabled"] = checkout_enabled
+            buyers_list.append(buyer)
+
         response_body = {
-            "buyers": list(buyers),
+            "buyers": buyers_list,
             "total_buyers": total_buyers,
             "page_size": page_size,
             "page_number": page_number

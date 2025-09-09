@@ -3,6 +3,7 @@ import os
 import logging
 import urllib.parse
 import json
+import json
 
 logging.basicConfig(
     level=logging.INFO,
@@ -92,6 +93,7 @@ def set_authorization(transaction):
     if (transaction['request']['method'] == 'PATCH' and '/update-seller-settings' in transaction['request']['uri']):
         if transaction['expected']['statusCode'] == '422':
             transaction['request']['body'] = json.dumps({
-                "send_automated_auction_complete_email": "invalid_boolean"
+                "send_automated_auction_complete_email": "invalid_boolean",
+                "checkout_enabled": "invalid_boolean"
             })
         return

@@ -63,7 +63,9 @@ async function startExecutionAfterPublish(executionARN, lots) {
                         lot_id: lots._id.toString(),
                         auction_id: lots.auction_id,
                         seller_email: lots.seller_email,
+                        status: 'RUNNING',
                     }
+                    console.log('--- DEBUG: Payload before save ---', JSON.stringify(requestPayload, null, 2))
                     const x = await mongodbHelper.save(requestPayload, StepFunctionArn)
                     console.log('x', x)
 
@@ -301,13 +303,18 @@ module.exports.handler = async (event, context, callback) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
-        const firstRecord = event.Records[0]
+        // const firstRecord = event.Records[0]
         // Get the lots, auction details and type from the event message
-        const lotsString = firstRecord.messageAttributes.lots.stringValue
-        const auctionString = firstRecord.messageAttributes.auction.stringValue
-        const type = firstRecord.messageAttributes.type.stringValue
-        const auctionLots = JSON.parse(lotsString)
-        const auctionDetails = JSON.parse(auctionString)
+        // const lotsString = firstRecord.messageAttributes.lots.stringValue
+        // const auctionString = firstRecord.messageAttributes.auction.stringValue
+        // const type = firstRecord.messageAttributes.type.stringValue
+        // const auctionLots = JSON.parse(lotsString)
+        // const auctionDetails = JSON.parse(auctionString)
+        const { lots, auction, type } = event
+
+        // The payload is already a JavaScript object, no need for JSON.parse
+        const auctionLots = lots
+        const auctionDetails = auction
         // Create a Redis client
         const client = await redisHelper.createRedisClient()
         // Calculate the extension time in ms
