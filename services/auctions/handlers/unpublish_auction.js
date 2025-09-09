@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-lone-blocks */
 /* eslint-disable no-undef */
@@ -97,7 +96,7 @@ module.exports.handler = async (event) => {
         }
         const getAuctionDetails = auctionDetails[0]
         // setting the throttle time based on total number of lots
-        const totalLots = getAuctionDetails[0].total_lots
+        const totalLots = getAuctionDetails.total_lots
         let throttle = 2
         if (totalLots < 100) {
             throttle = 1
@@ -183,6 +182,7 @@ module.exports.handler = async (event) => {
 
             // Update lot statuses to ABORTED
             const runningLots = await mongoConnection.view(Lot, { auction_id, status: 'RUNNING' })
+            // eslint-disable-next-line no-restricted-syntax
             for (const lot of runningLots) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
@@ -281,6 +281,7 @@ module.exports.handler = async (event) => {
             const runningLots = await mongoConnection.view(Lot, { auction_id, status: { $in: ['RUNNING', 'PENDING'] } })
             console.log(`Found ${runningLots.length} lots to update to ABORTED status`)
 
+            // eslint-disable-next-line no-restricted-syntax
             for (const lot of runningLots) {
                 try {
                     // eslint-disable-next-line no-await-in-loop
