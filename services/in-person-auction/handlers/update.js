@@ -58,13 +58,20 @@ module.exports.update_auction = async (event) => {
         // console.log('email', email)
         const query = { auction_id, seller_email: email }
         // console.log('query', query)
-        const auctionDetails = await Auction.findOne({ auction_id, seller_email: email })
+        const auctionDetails = await mongoConnection.view(Auction, { auction_id, seller_email: email })
         // console.log('auctionDetails', auctionDetails)
         if (!auctionDetails) {
             return {
                 statusCode: 404,
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Auction not found' }),
+            }
+        }
+        if (auctionDetails[0].start_date < Math.floor(Date.now()) && auctionDetails[0].status !== 'Draft') {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction has already started' }),
             }
         }
         if (auctionDetails.status === 'In Progress' || auctionDetails.status === 'Completed') {
@@ -77,7 +84,6 @@ module.exports.update_auction = async (event) => {
         // for published auction these fields cant be edited
         const notUpdateAbleFields = ['currency', 'add_buyer_fees', 'fees', 'percentage', 'terms_and_conditions', 'registration_type']
         // console.log('notUpdateAbleFields', notUpdateAbleFields)
-        console.log('auctionDetails.status', auctionDetails.status)
         if (auctionDetails.status === 'Published') {
             const requestedFields = Object.keys(request_body)
             const invalidField = requestedFields.find((field) => notUpdateAbleFields.includes(field))
