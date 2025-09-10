@@ -126,10 +126,10 @@ def view(event, context):
         if result['status']=='draft':
             if "paddle" in result and "_id" in result["paddle"]:
                 del result["paddle"]["_id"]
-            
+
             if "event_display" not in result:
                 result["event_display"] = {}
-            
+
             # client.close()
             body = {
                 "data": result,
@@ -187,10 +187,10 @@ def view(event, context):
 
         if "paddle" in result and "_id" in result["paddle"]:
             del result["paddle"]["_id"]
-        
+
         if "event_display" not in result:
             result["event_display"] = {}
-        
+
         # client.close()
         body = {
             "data": result,
