@@ -817,6 +817,110 @@
             "BearerAuth": []
           }
         ]
+      },
+      "delete": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "Delete lot",
+        "description": "Deletes a lot from an auction. Also reorders subsequent lot numbers sequentially and updates the lot counter.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id": {
+                    "type": "string",
+                    "description": "Unique identifier of the auction"
+                  },
+                  "lot_id": {
+                    "type": "string",
+                    "description": "Unique identifier of the lot to delete"
+                  }
+                },
+                "required": ["auction_id", "lot_id"]
+              },
+              "example": {
+                "auction_id": "A0012",
+                "lot_id": "64efb24b9a3c9d2f78a3e12a"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Lot deleted successfully"
+          },
+          "400": {
+            "description": "Missing parameters in request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot ID and auction ID is required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden – user is not authorized",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lot or Auction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
       }
     },
     "/list-lots": {
