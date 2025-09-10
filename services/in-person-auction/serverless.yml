@@ -306,6 +306,7 @@ functions:
 
   delete-bid: 
     handler: handlers/delete_bid.delete_bid
+    timeout: 30
     vpc:
       securityGroupIds: 
         - ${ssm:SECURITY_GROUP_ID}
