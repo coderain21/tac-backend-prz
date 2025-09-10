@@ -371,7 +371,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "A29098"
+            "example": "A28724"
           }
         ],
         "requestBody": {
@@ -551,6 +551,85 @@
                       "message": "Internal server error"
                     }
                   }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Auction Management"],
+        "summary": "Delete an auction",
+        "description": "Deletes an auction and all related lots, live bids, buyer wishlists, and registered bidders. The auction must belong to the logged-in seller.",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A29098"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Auction deleted successfully",
+          },
+          "400": {
+            "description": "Bad Request - Auction ID missing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "Auction ID is required"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Unauthorized access",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "You do not have access to perform this API action"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Auction not found or already deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "examples": {
+                  "not_found": {
+                    "value": {
+                      "message": "Auction not found or you do not have permission to delete it"
+                    }
+                  },
+                  "already_deleted": {
+                    "value": {
+                      "message": "Auction not found or already deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "Internal Server Error"
                 }
               }
             }
@@ -1350,7 +1429,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "A29098"
+            "example": "A28724"
           },
           {
             "name": "bid_type",
