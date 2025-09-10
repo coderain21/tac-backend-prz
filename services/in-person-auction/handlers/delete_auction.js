@@ -8,11 +8,11 @@ const Lot = require('../entities/Lot')
 const helpers = require('../lib/helper')
 const LiveBid = require('../entities/LiveBid')
 const RegisteredBidder = require('../entities/RegisteredUser')
+const BuyerWishlist = require('../entities/BuyerWishlist')
 
 let connection = null
 
 module.exports.delete_auction = async (event) => {
-    console.log('event', event)
     try {
         // --- Authorization Check ---
         const { claims } = event.requestContext.authorizer
@@ -31,7 +31,6 @@ module.exports.delete_auction = async (event) => {
 
         const { auction_id } = event.pathParameters || {}
         const email = claims['cognito:username']
-        console.log('email', email)
 
         // --- Validate request parameter ---
         if (!auction_id) {
@@ -43,9 +42,8 @@ module.exports.delete_auction = async (event) => {
         }
 
         // --- Check if auction exists and belongs to the seller ---
-        const existingAuction = await Auction.findOne({ auction_id, seller_email: email })
-        console.log('existingAuction', existingAuction)
-        if (!existingAuction) {
+        const existingAuction = await mongoConnection.view(Auction, { auction_id, seller_email: email })
+        if (!existingAuction || existingAuction.length === 0) {
             return {
                 statusCode: 404,
                 headers: helpers.getHeaders(),
@@ -55,14 +53,15 @@ module.exports.delete_auction = async (event) => {
 
         // --- Delete related data in parallel ---
         await Promise.all([
-            Lot.deleteMany({ auction_id, seller_email: email }),
-            LiveBid.deleteMany({ auction_id, seller_email: email }),
+            mongoConnection.deleteBulk(Lot, { auction_id, seller_email: email }),
+            mongoConnection.deleteBulk(LiveBid, { auction_id, seller_email: email }),
+            mongoConnection.deleteBulk(BuyerWishlist, { auction_id, seller_email: email }),
             // eslint-disable-next-line no-underscore-dangle
-            RegisteredBidder.deleteMany({ auction_id: existingAuction._id, seller_email: email }),
+            mongoConnection.deleteBulk(RegisteredBidder, { auction_id: (existingAuction[0]._id), seller_email: email }),
         ])
 
         // --- Delete the auction ---
-        const auctionDelete = await Auction.findOneAndDelete({ auction_id, seller_email: email })
+        const auctionDelete = await mongoConnection.deleteData(Auction, { auction_id, seller_email: email })
 
         if (!auctionDelete) {
             return {
