@@ -12,7 +12,7 @@ let connection = null
 module.exports.delete_bid = async (event) => {
     try {
         // --- Authorization Check ---
-        const { claims } = event.requestContext.authorizer
+        const { claims } = event.requestContext?.authorizer || {}
         if (!claims || !claims['cognito:username']) {
             return {
                 statusCode: 403,
