@@ -7,7 +7,6 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
-// eslint-disable-next-line import/no-extraneous-dependencies
 
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
@@ -18,119 +17,127 @@ const helpers = require('../lib/helper')
 let connection = null
 
 /**
- * Unpublish Auction | Seller unpublish auction
- * @description - API to update auction status to draft if unpublished
+ * Cancel Auction | Seller cancel auction
+ * @description - API to update auction status to cancelled if in progress
  * @route - PATCH /{auction_id}
  * @access - (Private)
  * @user - IndyAuction Seller
- * @returns {Object} (201) - Updated SUccessfully
+ * @returns {Object} (204) - Updated Successfully
  * @returns {Error} (500) - There was an error while updating auction status
  */
 
 module.exports.cancel_auction = async (event) => {
     try {
+        // --- Authorization Check ---
         const { claims } = event.requestContext.authorizer
         if (!claims || !claims['cognito:username']) {
-            throw new Error('Unauthorized')
+            return {
+                statusCode: 403,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
+            }
         }
-        // You can add group checks here if needed
-    } catch (error) {
-        return {
-            statusCode: 403,
-            headers: await helpers.getHeaders(),
-            body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
-        }
-    }
-    // --- End Authorization Check ---
-    try {
+
+        // --- Ensure MongoDB connection ---
         if (connection === null || !connection.readyState) {
             connection = await mongoConnection.connect()
         }
-        const request_body = JSON.parse(event.body)
+
+        // --- Parse request body with error handling ---
+        let request_body
+        try {
+            request_body = JSON.parse(event.body)
+        } catch (parseError) {
+            console.log('JSON parsing error:', parseError)
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Invalid JSON in request body' }),
+            }
+        }
+
         const seller_email = event.requestContext.authorizer.claims['cognito:username']
         const { auction_id } = request_body
         const email = request_body.seller_email
+
+        // --- Validate required parameters ---
         if (!email || !auction_id) {
             return {
                 statusCode: 400,
-                headers: helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'Missing required parameters',
-                }),
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Missing required parameters' }),
             }
         }
+
+        // --- Validate seller email matches authenticated user ---
         if (email !== seller_email) {
             return {
                 statusCode: 403,
-                headers: helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'You do not have access to perform this API action',
-                }),
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
             }
         }
+
+        // --- Check if auction exists and belongs to the seller ---
         const getAuctionDetails = await mongoConnection.view(Auction, { seller_email, auction_id })
+
         if (!getAuctionDetails || getAuctionDetails.length === 0) {
             return {
                 statusCode: 404,
-                headers: helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'Auction not found',
-                }),
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
 
+        // --- Additional seller verification (redundant but keeping for consistency) ---
         if (seller_email !== getAuctionDetails[0].seller_email) {
             return {
                 statusCode: 401,
-                headers: helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'Unauthorized',
-                }),
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Unauthorized' }),
             }
         }
 
-        if (getAuctionDetails[0].status === 'In Progress') {
-            try {
-                const newStatus = 'Cancelled'
-                const updatePayload = {
-                    status: newStatus,
-                }
-                await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
-            } catch (error) {
-                console.log('Error updating auction status:', error)
-                return {
-                    statusCode: 500,
-                    headers: helpers.getHeaders(),
-                    body: JSON.stringify({
-                        message: 'Internal Server Error',
-                    }),
-                }
+        // --- Check if auction status is 'In Progress' ---
+        if (getAuctionDetails[0].status !== 'In Progress') {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Update Error | Auction status not In Progress' }),
+            }
+        }
+
+        // --- Update auction status to 'Cancelled' ---
+        try {
+            const newStatus = 'Cancelled'
+            const updatePayload = {
+                status: newStatus,
+                updated_at: new Date(),
             }
 
-            // await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
+            // After update - verify the auction still exists:
+            const verifyAuction = await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
+            console.log('Auction after update:', verifyAuction)
+
             return {
                 statusCode: 204,
-                headers: helpers.getHeaders(),
-                body: JSON.stringify({
-                    message: 'Successfully Updated',
-                }),
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Successfully Updated' }),
+            }
+        } catch (updateError) {
+            console.log('Error updating auction status:', updateError)
+            return {
+                statusCode: 500,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Internal Server Error' }),
             }
         }
-        return {
-            statusCode: 400,
-            headers: helpers.getHeaders(),
-            body: JSON.stringify({
-                message: 'Update Error | Auction status not in the Published state',
-            }),
-        }
     } catch (error) {
-        console.log(error)
+        console.log('Unexpected error:', error)
         return {
             statusCode: 500,
-            headers: helpers.getHeaders(),
-            body: JSON.stringify({
-                message: 'Internal Server Error',
-            }),
+            headers: await helpers.getHeaders(),
+            body: JSON.stringify({ message: 'Internal Server Error' }),
         }
     }
 }
