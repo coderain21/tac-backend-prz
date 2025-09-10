@@ -302,6 +302,23 @@ functions:
           method: delete
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  delete-lot: 
+    handler: handlers/delete_lot.delete_lot
+    vpc:
+      securityGroupIds: 
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: delete
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
  
 
 resources:
