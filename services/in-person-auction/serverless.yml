@@ -285,6 +285,24 @@ functions:
           method: delete
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  cancel-auction:
+    handler: handlers/cancel_auction.cancel_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /cancel-auction
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   delete-bid: 
     handler: handlers/delete_bid.delete_bid

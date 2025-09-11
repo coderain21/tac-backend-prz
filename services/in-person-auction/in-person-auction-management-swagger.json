@@ -1410,6 +1410,103 @@
         ]
       }
     },
+    "/cancel-auction": {
+      "patch": {
+        "tags": ["Auction Management"],
+        "summary": "Cancel an auction",
+        "description": "Updates the status of an auction to `Canceled` if it is currently in `In Progress` state. Only the seller who owns the auction can cancel it.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["auction_id", "seller_email"],
+                "properties": {
+                  "auction_id": {
+                    "type": "string",
+                    "example": "A29098"
+                  },
+                  "seller_email": {
+                    "type": "string",
+                    "example": "seller@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Auction canceled successfully",
+          },
+          "400": {
+            "description": "Bad Request - Missing parameters or invalid state",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_params": {
+                    "value": {
+                      "message": "Missing required parameters"
+                    }
+                  },
+                  "invalid_state": {
+                    "value": {
+                      "message": "Update Error | Auction status not in the Published state"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Seller mismatch",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Unauthorized access",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "You do not have access to perform this API action"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Auction not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Auction not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/bids": {
       "get": {
         "tags": ["Bid Management"],

@@ -34,9 +34,9 @@ test.describe('In Person Auction Publish handler tests', () => {
   const auctionId = 'A-CLASSIC-TEST';
 
   test.beforeAll(async () => {
-      client = new MongoClient(process.env.MONGO_CLIENT!);
+      client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
       await client.connect();
-      db = client.db(process.env.DATABASE);
+      db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
@@ -44,23 +44,62 @@ test.describe('In Person Auction Publish handler tests', () => {
   });
 
   test.beforeEach(async () => {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    const users = db.collection(`${stage}-users`);
+    const lots = db.collection(`${stage}-lots`);
+    
     await auctions.deleteMany({});
+    await users.deleteMany({});
+    await lots.deleteMany({});
+    
+    // Create test user data
+    await users.insertOne({
+      email_address: sellerEmail,
+      status: 'Active',
+      stripe_status: 'connected',
+      paypal_status: 'connected',
+      created_at: new Date(),
+      updated_at: new Date()
+    });
   });
 
   test('should update an existing in person auction with a valid user', async () => {
     // First, create an auction to update
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     const existingAuction = {
       auction_id: auctionId,
       seller_email: sellerEmail,
       status: 'Draft', // Must be Draft to allow updates
       title: 'Original Title',
       description: 'Original Description',
+      auction_image: 'https://example.com/image.jpg',
+      currency: 'USD',
+      time_zone: 'America/New_York',
+      registration_type: 'Email only',
+      start_date: Date.now() + 86400000, // 24 hours from now
       // Add other required fields based on your auction schema
     };
     
     await auctions.insertOne(existingAuction);
+
+    // Create lots with images for the auction
+    const stage = process.env.STAGE || 'test';
+    const lots = db.collection(`${stage}-lots`);
+    await lots.insertOne({
+      auction_id: auctionId,
+      seller_email: sellerEmail,
+      lot_number: 1,
+      title: 'Test Lot',
+      images: [
+        {
+          url: 'https://example.com/lot-image.jpg',
+          featured: true
+        }
+      ],
+      created_at: new Date(),
+      updated_at: new Date()
+    });
 
     // Prepare update data (only updatable fields for Draft status)
     const updateData = {
@@ -118,7 +157,7 @@ test.describe('In Person Auction Publish handler tests', () => {
 
   test('should return 400 if trying to update restricted fields for published auction', async () => {
     // First, create a published auction
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     const publishedAuction = {
       auction_id: auctionId,
       seller_email: sellerEmail,
