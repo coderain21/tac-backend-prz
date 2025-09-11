@@ -27,20 +27,49 @@ const { delete_lot } = require('../../services/in-person-auction/handlers/delete
 test.describe('Delete Lot - Basic Functionality', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
   
   let testLotObjectId: ObjectId;
   let auctionId: string;
   let lotId: string;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
+  });
+
+  test.beforeEach(async () => {
+    const stage = process.env.STAGE || 'test';
+    const liveBids = db.collection(`${stage}-live-bids`);
+    const auctions = db.collection(`${stage}-auctions`);
+    const lots = db.collection(`${stage}-lots`);
+    const counters = db.collection(`${stage}-counters`);
+    
+    // Clean up all test data more aggressively
+    await liveBids.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED|DELETE-LOT-TEST)-/ }
+    });
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED|DELETE-LOT-TEST)-/ }
+    });
+    await lots.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED|DELETE-LOT-TEST)-/ }
+    });
+    await counters.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED|DELETE-LOT-TEST)-/ }
+    });
+    await delay(1000); // Give more time for cleanup
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupTestData() {
@@ -48,17 +77,26 @@ test.describe('Delete Lot - Basic Functionality', () => {
     const auctions = db.collection(`${process.env.STAGE}-auctions`);
     const counters = db.collection(`${process.env.STAGE}-counters`);
 
-    // Clean up test data
-    await lots.deleteMany({ seller_email: sellerEmail });
-    await auctions.deleteMany({ seller_email: sellerEmail });
-    await counters.deleteMany({ seller_email: sellerEmail });
+    // Generate unique IDs first
+    auctionId = `DELETE-LOT-TEST-${Date.now()}-${Math.random()}`;
+    lotId = `DELETE-LOT-TEST-${Date.now()}-${Math.random()}`;
+
+    // Clean up test data more specifically
+    await lots.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^DELETE-LOT-TEST-/ }
+    });
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^DELETE-LOT-TEST-/ }
+    });
+    await counters.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^DELETE-LOT-TEST-/ }
+    });
     await delay(350);
 
     const insertOptions = { writeConcern: { w: 'majority', j: true } };
-
-    // Generate unique IDs
-    auctionId = `TEST-AUCTION-${Date.now()}`;
-    lotId = `TEST-LOT-${Date.now()}`;
 
     // Create test auction in Draft status
     await auctions.insertOne({
@@ -297,7 +335,8 @@ test.describe('Delete Lot - Basic Functionality', () => {
 
   test('should return 404 when lot not found', async () => {
     await setupTestData();
-    const nonExistentLotId = new ObjectId();
+    // Use a valid ObjectId format but one that doesn't exist in the database
+    const nonExistentLotId = new ObjectId('507f1f77bcf86cd799439011');
     
     const event = {
       requestContext: {

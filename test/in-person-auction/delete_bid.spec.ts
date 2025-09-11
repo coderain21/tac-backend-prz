@@ -27,25 +27,49 @@ const { delete_bid } = require('../../services/in-person-auction/handlers/delete
 test.describe('Delete Bid - Basic Functionality', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
   
   let testBidObjectId: ObjectId;
   let auctionId: string;
   let lotId: string;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
+  });
+
+  test.beforeEach(async () => {
+    const stage = process.env.STAGE || 'test';
+    const liveBids = db.collection(`${stage}-live-bids`);
+    const auctions = db.collection(`${stage}-auctions`);
+    const lots = db.collection(`${stage}-lots`);
+    
+    // Clean up all test data more aggressively
+    await liveBids.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED)-/ }
+    });
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED)-/ }
+    });
+    await lots.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED)-/ }
+    });
+    await delay(1000); // Give more time for cleanup
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupTestData() {
-    const liveBids = db.collection(`${process.env.STAGE}-live-bids`);
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const liveBids = db.collection(`${process.env.STAGE || 'test'}-live-bids`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
 
     // Clean up test data
     await liveBids.deleteMany({ bidder_email: sellerEmail });
@@ -105,7 +129,7 @@ test.describe('Delete Bid - Basic Functionality', () => {
     expect(response.statusCode).toBe(204);
 
     // Verify bid was deleted from database
-    const liveBids = db.collection(`${process.env.STAGE}-live_bids`);
+    const liveBids = db.collection(`${process.env.STAGE || 'test'}-live_bids`);
     const deletedBid = await liveBids.findOne({ _id: testBidObjectId });
     expect(deletedBid).toBeNull();
   });
@@ -287,7 +311,7 @@ test.describe('Delete Bid - Basic Functionality', () => {
     expect(response.statusCode).toBe(204);
 
     // Verify bid was deleted from database
-    const liveBids = db.collection(`${process.env.STAGE}-live_bids`);
+    const liveBids = db.collection(`${process.env.STAGE || 'test'}-live_bids`);
     const deletedBid = await liveBids.findOne({ _id: testBidObjectId });
     expect(deletedBid).toBeNull();
   });

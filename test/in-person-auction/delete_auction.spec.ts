@@ -27,40 +27,58 @@ const { delete_auction } = require('../../services/in-person-auction/handlers/de
 test.describe('Delete Auction - Complete Tests', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
   
   let auctionId: string;
   let queryAuctionObjectId: ObjectId;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupTestData() {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
-    const lots = db.collection(`${process.env.STAGE}-lots`);
-    const liveBids = db.collection(`${process.env.STAGE}-live-bids`);
-    const registeredUsers = db.collection(`${process.env.STAGE}-register-auction`);
-    const buyerWishlists = db.collection(`${process.env.STAGE}-buyer-wishlists`);
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    const lots = db.collection(`${stage}-lots`);
+    const liveBids = db.collection(`${stage}-live-bids`);
+    const registeredUsers = db.collection(`${stage}-register-auction`);
+    const buyerWishlists = db.collection(`${stage}-buyer-wishlists`);
 
-    // Clean up test data
-    await liveBids.deleteMany({ seller_email: sellerEmail });
-    await lots.deleteMany({ seller_email: sellerEmail });
-    await registeredUsers.deleteMany({ seller_email: sellerEmail });
-    await buyerWishlists.deleteMany({ seller_email: sellerEmail });
-    await auctions.deleteMany({ seller_email: sellerEmail });
+    // Clean up test data - be more specific to avoid conflicts
+    await liveBids.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(DELETE|TEST)-TEST-AUCTION-/ }
+    });
+    await lots.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(DELETE|TEST)-TEST-AUCTION-/ }
+    });
+    await registeredUsers.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(DELETE|TEST)-TEST-AUCTION-/ }
+    });
+    await buyerWishlists.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(DELETE|TEST)-TEST-AUCTION-/ }
+    });
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(DELETE|TEST)-TEST-AUCTION-/ }
+    });
     await delay(500);
 
     const insertOptions = { writeConcern: { w: 'majority', j: true } };
 
     // Generate unique auction ID
-    auctionId = `TEST-AUCTION-${Date.now()}`;
+    auctionId = `DELETE-TEST-AUCTION-${Date.now()}-${Math.random()}`;
 
     // Create auction
     const auctionInsertResult = await auctions.insertOne({
@@ -386,9 +404,10 @@ test('should return 404 when auction belongs to different seller', async () => {
     const otherSellerEmail = 'other-seller@example.com';
     const otherAuctionId = `OTHER-AUCTION-${Date.now()}`;
 
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
-    const lots = db.collection(`${process.env.STAGE}-lots`);
-    const buyerWishlists = db.collection(`${process.env.STAGE}-buyer-wishlists`);
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    const lots = db.collection(`${stage}-lots`);
+    const buyerWishlists = db.collection(`${stage}-buyer-wishlists`);
 
     await auctions.insertOne({
       auction_id: otherAuctionId,

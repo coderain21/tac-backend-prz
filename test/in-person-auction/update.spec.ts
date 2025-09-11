@@ -34,9 +34,9 @@ test.describe('In Person Auction Update handler tests', () => {
   const auctionId = 'A-CLASSIC-TEST';
 
   test.beforeAll(async () => {
-      client = new MongoClient(process.env.MONGO_CLIENT!);
+      client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
       await client.connect();
-      db = client.db(process.env.DATABASE);
+      db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
@@ -44,13 +44,13 @@ test.describe('In Person Auction Update handler tests', () => {
   });
 
   test.beforeEach(async () => {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     await auctions.deleteMany({});
   });
 
   test('should update an existing in person auction with a valid user', async () => {
     // First, create an auction to update
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     const existingAuction = {
       auction_id: auctionId,
       seller_email: sellerEmail,
@@ -120,7 +120,7 @@ test.describe('In Person Auction Update handler tests', () => {
 
   test('should return 400 if trying to update restricted fields for published auction', async () => {
     // First, create a published auction
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     const publishedAuction = {
       auction_id: auctionId,
       seller_email: sellerEmail,
@@ -151,7 +151,7 @@ test.describe('In Person Auction Update handler tests', () => {
 
   test('should return 400 if trying to update status or auction_type', async () => {
     // Create a draft auction
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     const existingAuction = {
       auction_id: auctionId,
       seller_email: sellerEmail,
