@@ -4,6 +4,7 @@ import json
 import pymongo
 from lib.helper_python import update_lot_data
 from lib.common_helper import Encoder
+from datetime import datetime
 
 
 
@@ -108,8 +109,12 @@ def update_lot(event):
                     # )
 
             lot_id = str(lot_information['_id'])
-            if auction_record['status'] in ['Accepting bids' , 'Published']:
+            timestamp = datetime.now().timestamp() * 1000
+            if auction_record['status'] == 'Accepting bids' or (
+                auction_record['status'] == 'Published' and auction_record["start_date"] < timestamp
+            ):
                 update = update_lot_data(request_body, lot_id)
+
             # client.close()
             return (204, {})
 

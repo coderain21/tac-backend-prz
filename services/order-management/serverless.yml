@@ -184,7 +184,7 @@ functions:
   
   order_update:
     handler: handlers/order_update.order_update
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
