@@ -525,7 +525,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   # list-sellers:
   #   handler: handlers/list_sellers.list_sellers
-  #   runtime: python3.8
+  #   runtime: python3.9
   #   layers:
   #     - ${ssm:COMMON_LIB_ARN_PYTHON}
   #   vpc:
@@ -552,7 +552,7 @@ functions:
   #           arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   seller-view:
     handler: handlers/seller_view.seller_view
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -739,7 +739,7 @@ functions:
   
   list-all-sellers:
     handler: handlers/all_sellers.list_all_sellers
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -767,7 +767,7 @@ functions:
 
   admin_update_password:
     handler: handlers/update_password.update_password
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:

@@ -481,7 +481,7 @@ functions:
 
   footer-links:
     handler: handlers/get_link.get_link
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -509,7 +509,7 @@ functions:
 
   buyer-signin-logger:
     handler: handlers/buyer_signin_logger.buyer_signin_logger
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
