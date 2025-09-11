@@ -182,7 +182,7 @@ functions:
     
   add_callback_logout_urls:
     handler: handlers/add_callback_logout_urls.add_callback_logout_urls
-    runtime: python3.9
+    runtime: python3.10
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:

@@ -138,7 +138,7 @@ custom:
 functions: 
   sub-domain:
     handler: handlers/subdomain.subdomain
-    runtime: python3.9
+    runtime: python3.10
     timeout: 100
     role: ${ssm:LAMBDA_EXECTION_ARN}
     layers:

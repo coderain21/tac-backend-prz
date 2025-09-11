@@ -10,7 +10,7 @@ disabledDeprecations:
 
 provider:
   name: aws
-  runtime: python3.9
+  runtime: python3.10
   endpointType: REGIONAL
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
