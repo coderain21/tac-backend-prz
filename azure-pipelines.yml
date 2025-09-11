@@ -439,7 +439,10 @@ stages:
           and(
             contains(variables['System.PullRequest.SourceBranch'], 'release'),
             contains(variables['System.PullRequest.TargetBranch'], 'pre-prod')
-          )
+          ),
+          and(
+            contains(variables['System.PullRequest.SourceBranch'], 'hotfix'),
+            contains(variables['System.PullRequest.TargetBranch'], 'master')
         ),
         succeeded())
       pool:
