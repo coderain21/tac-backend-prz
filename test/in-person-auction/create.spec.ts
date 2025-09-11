@@ -30,16 +30,18 @@ const { create_auction } = require('../../services/in-person-auction/handlers/cr
 test.describe('In Person Auction Create handler tests', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
 
   test.beforeAll(async () => {
-      client = new MongoClient(process.env.MONGO_CLIENT!);
+      client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
       await client.connect();
-      db = client.db(process.env.DATABASE);
+      db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
-    await closeDatabaseConnection();
+    if (client) {
+      await client.close();
+    }
   });
 
 //   if (!process.env.STAGE) {
@@ -47,8 +49,9 @@ test.describe('In Person Auction Create handler tests', () => {
 // }
 
   test.beforeEach(async () => {
-    const users = db.collection(`${process.env.STAGE}-users`);
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const stage = process.env.STAGE || 'test';
+    const users = db.collection(`${stage}-users`);
+    const auctions = db.collection(`${stage}-auctions`);
     await users.deleteMany({});
     await auctions.deleteMany({});
 
@@ -78,7 +81,8 @@ test.describe('In Person Auction Create handler tests', () => {
         const body = JSON.parse(response.body);
         expect(body).toHaveProperty('_id');
 
-        const auctionsCollection = db.collection(`${process.env.STAGE}-auctions`);
+        const stage = process.env.STAGE || 'test';
+        const auctionsCollection = db.collection(`${stage}-auctions`);
         
         // Find auction by seller_email that was created after our timestamp
         const newAuction = await auctionsCollection.findOne({ 

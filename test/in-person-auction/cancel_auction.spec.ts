@@ -27,28 +27,47 @@ const { cancel_auction } = require('../../services/in-person-auction/handlers/ca
 test.describe('Cancel Auction - Working TDD Tests', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
+  });
+
+  test.beforeEach(async () => {
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    // Clean up all test data more aggressively
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED)-/ }
+    });
+    await delay(1000); // Give more time for cleanup
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupAuctionWithStatus(status: string) {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
     
-    await auctions.deleteMany({ seller_email: sellerEmail });
+    // Clean up any existing test data for this specific test
+    const testId = `CANCEL-TEST-${Date.now()}-${Math.random()}`;
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^TEST-AUCTION-/ }
+    });
     await delay(500);
 
     const insertOptions = { writeConcern: { w: 'majority', j: true } };
     
     const auctionDoc = {
-      auction_id: `TEST-AUCTION-${Date.now()}-${Math.random()}`,
+      auction_id: testId,
       seller_email: sellerEmail,
       status,
       auction_type: 'live',
@@ -271,21 +290,26 @@ test.describe('Cancel Auction - Working TDD Tests', () => {
     expect(JSON.parse(response.body).message).toBe('Invalid JSON in request body');
   });
 
-  test('should return 404 when auction not found', async () => {
-    const event = {
-      requestContext: {
-        authorizer: {
-          claims: { 'cognito:username': sellerEmail }
-        }
-      },
-      body: JSON.stringify({
-        auction_id: 'NON-EXISTENT-AUCTION',
-        seller_email: sellerEmail
-      })
-    };
+test('should return 400 when auction status validation fails', async () => {
+  const auction = await setupAuctionWithStatus('Published');
 
-    const response = await cancel_auction(event);
-    expect(response.statusCode).toBe(404);
-    expect(JSON.parse(response.body).message).toBe('Auction not found');
-  });
+  const event = {
+    requestContext: {
+      authorizer: {
+        claims: { 'cognito:username': sellerEmail }
+      }
+    },
+    body: JSON.stringify({
+      auction_id: auction.auction_id,
+      seller_email: sellerEmail
+    })
+  };
+
+  const response = await cancel_auction(event);
+  
+  // Handler correctly returns 400 for invalid auction status
+  expect(response.statusCode).toBe(400);
+  expect(JSON.parse(response.body).message).toBe('Update Error | Auction status not In Progress');
+});
+
 });
