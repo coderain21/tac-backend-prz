@@ -302,7 +302,7 @@ functions:
     
   list_auction:
       handler: handlers/list.list_auction
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -316,7 +316,7 @@ functions:
   
   delete_note:
       handler: handlers/delete_note.delete_note
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -330,7 +330,7 @@ functions:
   
   create_lots:
     handler: handlers/create_lots.lambda_handler
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
@@ -343,7 +343,7 @@ functions:
             
   list_lots:
     handler: handlers/view_lots.list_lots
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
@@ -356,7 +356,7 @@ functions:
  
   admin_list_lots:
     handler: handlers/admin_list_lots.list_lots
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
@@ -380,7 +380,7 @@ functions:
 
   delete_lot:
       handler: handlers/delete_lot.delete_lot
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -394,7 +394,7 @@ functions:
 
   reorder_lot:
       handler: handlers/reorder_lots.lambda_handler
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -408,7 +408,7 @@ functions:
     
   clone_auction:
       handler: handlers/clone_auction.clone_auction
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -422,7 +422,7 @@ functions:
 
   view:
     handler: handlers/view.view
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
@@ -435,7 +435,7 @@ functions:
 
   update_lot:
       handler: handlers/update_lot.update
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -451,7 +451,7 @@ functions:
 
   import_lots:
     handler: handlers/import_lots.import_lots
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
@@ -464,7 +464,7 @@ functions:
 
   update_auction:
       handler: handlers/update.update_auction
-      runtime: python3.10
+      runtime: python3.9
       timeout: 120
       maximumRetryAttempts: 0
       memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
@@ -481,7 +481,7 @@ functions:
 
   delete_auction:
       handler: handlers/delete.delete_auction
-      runtime: python3.10
+      runtime: python3.9
       memorySize: 128
       layers:
         - ${ssm:COMMON_LIB_ARN_PYTHON}
@@ -495,7 +495,7 @@ functions:
 
   deactivate:
     handler: handlers/deactivate.deactivate
-    runtime: python3.10
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:
