@@ -102,7 +102,7 @@ custom:
 functions:
   view:
       handler: handlers/view.get_dashboard
-      runtime: python3.8
+      runtime: python3.9
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -121,7 +121,7 @@ functions:
   auction-view:
       handler: handlers/auction_view.get_auction_dashboard
       timeout: 30
-      runtime: python3.8
+      runtime: python3.9
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -140,7 +140,7 @@ functions:
 
   admin-view:
       handler: handlers/admin_view.admin_get_dashboard
-      runtime: python3.8
+      runtime: python3.9
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -159,7 +159,7 @@ functions:
   admin-auction-view:
       handler: handlers/admin_auction_view.admin_get_dashboard
       timeout: 30
-      runtime: python3.8
+      runtime: python3.9
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}

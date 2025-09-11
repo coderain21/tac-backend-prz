@@ -206,7 +206,7 @@ functions:
   delete-buyer:
     handler: handlers/delete_buyer.delete_buyer
     timeout: 60
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
