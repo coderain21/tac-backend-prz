@@ -158,6 +158,24 @@ functions:
           authorizer: 
             arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
+  update-bid:
+    handler: handlers/update_bid.update_bid
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /bids/${bid_id}
+          method: patch
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
 
 resources:
   Conditions:
