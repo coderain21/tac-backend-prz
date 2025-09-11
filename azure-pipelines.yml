@@ -443,6 +443,7 @@ stages:
           and(
             contains(variables['System.PullRequest.SourceBranch'], 'hotfix'),
             contains(variables['System.PullRequest.TargetBranch'], 'master')
+          )
         ),
         succeeded())
       pool:
