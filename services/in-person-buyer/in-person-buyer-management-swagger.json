@@ -658,8 +658,167 @@
           }
         }
       }
+    },
+    "/bids/{bid_id}": {
+      "patch": {
+        "summary": "Update a bid",
+        "description": "Allows an authenticated buyer to update their existing bid on a specific lot within an auction. Behavior differs depending on bid type (telephone vs absentee).",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "bid_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "689eac4f4fba11423e92910a"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "bid_amount": {
+                    "type": "number",
+                    "format": "double",
+                    "example": 6000
+                  },
+                  "phone_number": {
+                    "type": "string",
+                    "example": "2345678934",
+                    "description": "Required only for telephone bids"
+                  },
+                  "country_code": {
+                    "type": "string",
+                    "example": "+91",
+                    "description": "Required only for telephone bids"
+                  }
+                },
+                "required": ["bid_amount"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Bid updated successfully (no content returned)"
+          },
+          "400": {
+            "description": "Invalid request or business rule violation (e.g., auction started, invalid bid type, required fields missing)",
+            "content": {
+            "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                },
+                "examples": {
+                  "invalidBidIdFormat": {
+                    "summary": "Invalid bid ID format",
+                    "value": { "message": "Invalid bid ID format" }
+                  },
+                  "auctionStarted": {
+                    "summary": "Auction already started",
+                    "value": { "message": "Cannot edit bid after auction has started" }
+                  },
+                  "missingTelephoneFields": {
+                    "summary": "Missing required fields for telephone bid",
+                    "value": { "message": "Phone number, country code and bid amount are required for telephone bids" }
+                  },
+                  "missingAbsenteeBidAmount": {
+                    "summary": "Missing bid amount for absentee bid",
+                    "value": { "message": "Bid amount is required for absentee bids" }
+                  },
+                  "invalidBidType": {
+                    "summary": "Unsupported bid type",
+                    "value": { "message": "Invalid bid type" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Unauthorized request (invalid/missing Cognito claims or buyer trying to update someone else's bid)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                },
+                "examples": {
+                  "noAccessToken": {
+                    "summary": "Missing Cognito claims",
+                    "value": { "message": "You do not have access to perform this API action" }
+                  },
+                  "unauthorizedBidder": {
+                    "summary": "Buyer trying to update someone else's bid",
+                    "value": { "message": "You do not have access to modify this bid" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource not found (e.g., bid, auction, lot, or buyer not found)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                },
+                "examples": {
+                  "bidNotFound": {
+                    "summary": "Bid not found",
+                    "value": { "message": "Bid not found" }
+                  },
+                  "auctionNotFound": {
+                    "summary": "Auction not found",
+                    "value": { "message": "Auction not found" }
+                  },
+                  "lotNotFound": {
+                    "summary": "Lot not found",
+                    "value": { "message": "Lot not found" }
+                  },
+                  "buyerNotFound": {
+                    "summary": "Buyer not found",
+                    "value": { "message": "Buyer not found" }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string" }
+                  }
+                },
+                "example": {
+                  "message": "Internal Server Error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
-
   },
   "components": {
     "schemas": {
