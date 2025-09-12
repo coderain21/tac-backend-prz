@@ -39,6 +39,14 @@ jobs:
               - script: |
                   npm install --cache .npm
                 condition: ne(variables.CACHE_RESTORED, 'true')
+              - bash: |
+                  # Clean up disk space
+                  sudo apt-get clean
+                  sudo rm -rf /var/lib/apt/lists/*
+                  sudo rm -rf /tmp/*
+                  docker system prune -af || true
+                  df -h
+                displayName: 'Clean up disk space'
               - bash: |                 
                  wget https://rolesanywhere.amazonaws.com/releases/1.0.3/X86_64/Linux/aws_signing_helper; 
                  chmod +x aws_signing_helper
@@ -69,6 +77,9 @@ jobs:
                     fi
                     git push
                   else 
+                    # Clean Terraform cache and lock files
+                    find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
+                    find . -name ".terraform.lock.hcl" -delete 2>/dev/null || true
                     # Run terraform deployment script
                     bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
                     if [ $? -ne 0 ]; then
