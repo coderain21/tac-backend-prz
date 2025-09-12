@@ -97,7 +97,7 @@ module.exports.update_bid = async (event) => {
         const auction = auctionDetails[0]
 
         // --- Check if auction has started (prevent editing during active auction) ---
-        const currentTime = Math.floor(Date.now() / 1000) // Convert to seconds
+        const currentTime = Math.floor(Date.now())
         if ((auction.start_date < currentTime && auction.status === 'Published') || auction.status === 'In Progress' || auction.status === 'Draft') {
             return {
                 statusCode: 400,
