@@ -194,6 +194,34 @@ resource "aws_wafv2_web_acl" "secure_api_web_acl" {
             allow {}  # or count {} if you want to monitor instead
           }
         }
+        
+        rule_action_override {
+          name            = "CrossSiteScripting_COOKIE"
+          action_to_use {
+            allow {}
+          }
+        }
+        
+        rule_action_override {
+          name            = "CrossSiteScripting_QUERYARGUMENTS"
+          action_to_use {
+            allow {}
+          }
+        }
+        
+        rule_action_override {
+          name            = "CrossSiteScripting_BODY"
+          action_to_use {
+            allow {}
+          }
+        }
+        
+        rule_action_override {
+          name            = "CrossSiteScripting_URIPATH"
+          action_to_use {
+            allow {}
+          }
+        }
       }
     }
   }
