@@ -172,7 +172,7 @@ functions:
     events:
       - http:
           cors: true
-          path: /bids/${bid_id}
+          path: /bids/{bid_id}
           method: patch
           authorizer: 
             arn: ${ssm:BUYER_COGNITO_AUTH_ARN}

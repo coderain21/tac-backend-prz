@@ -6,8 +6,12 @@
 const { ObjectId } = require('mongodb')
 const helpers = require('../lib/helper')
 const mongoConnection = require('../lib/mongodb_helper')
+const { sendTransactionalEmail, getBidConfirmationTemplate } = require('../lib/mailchimp_helper')
 const LiveBid = require('../entities/LiveBid')
 const Auction = require('../entities/Auction')
+const Lot = require('../entities/Lot')
+const Buyer = require('../entities/Buyers')
+const Users = require('../entities/Users')
 
 let connection = null
 
@@ -69,7 +73,7 @@ module.exports.update_bid = async (event) => {
 
         const bidData = existingBid[0]
 
-        if (buyerEmail !== bidData.buyer_email) {
+        if (buyerEmail !== bidData.email_address) {
             return {
                 statusCode: 403,
                 headers: await helpers.getHeaders(),
@@ -100,6 +104,17 @@ module.exports.update_bid = async (event) => {
                 headers: await helpers.getHeaders(),
                 body: JSON.stringify({
                     message: 'Cannot edit bid after auction has started',
+                }),
+            }
+        }
+
+        // --- Check if the auction accepts the bid type ---
+        if (auction[`accept_${bidData.bid_type}_bid`] !== true) {
+            return {
+                statusCode: 400,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({
+                    message: `This auction is not accepting ${bidData.bid_type} bids`,
                 }),
             }
         }
@@ -137,6 +152,29 @@ module.exports.update_bid = async (event) => {
             }
         }
 
+        // --- Fetch lot and buyer details ---
+        const lot = await mongoConnection.view(Lot, { _id: new ObjectId(bidData.lot_id) })
+        if (lot.length === 0) {
+            return {
+                statusCode: 404,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Lot not found' }),
+            }
+        }
+
+        const buyer = await mongoConnection.view(Buyer, { _id: new ObjectId(bidData.buyer_id) })
+        if (buyer.length === 0) {
+            return {
+                statusCode: 404,
+                headers: await helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Buyer not found' }),
+            }
+        }
+
+        // --- Fetch seller details to get seller ID ---
+        const sellerDetails = await mongoConnection.view(Users, { email_address: bidData.seller_email })
+        const sellerId = sellerDetails[0]._id
+
         // --- Prepare update data based on bid type ---
         const updateData = {
             bid_amount: parseFloat(bid_amount),
@@ -165,6 +203,22 @@ module.exports.update_bid = async (event) => {
                 }),
             }
         }
+
+        // Prepare data for email
+        const currentBidDetails = {
+            buyer_id: updateData.buyer_id,
+            lot_id: updateData.lot_id,
+            bid_amount: updateData.bid_amount,
+            bid_type: bidData.bid_type,
+            country_code: updateData.country_code,
+            phone_number: updateData.phone_number,
+        }
+
+        // Single call approach
+        const templateName = await getBidConfirmationTemplate(sellerId, currentBidDetails.bid_type)
+
+        // Send transactional email
+        await sendTransactionalEmail([], lot[0], auction, currentBidDetails, buyer[0], templateName)
 
         // --- Return successful response ---
         return {

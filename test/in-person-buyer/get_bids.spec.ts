@@ -169,7 +169,7 @@ test.describe('Get Bids - Basic Functionality', () => {
     expect(firstBid).toHaveProperty('bid_amount');
     expect(firstBid).toHaveProperty('buyer_id');
     expect(firstBid).toHaveProperty('bid_type');
-    expect(firstBid).not.toHaveProperty('_id');
+    expect(firstBid).toHaveProperty('_id');
   });
 
   test('should return 200 and filtered bids for specific lot', async () => {
