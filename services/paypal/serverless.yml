@@ -158,7 +158,7 @@ custom:
 functions: 
   paypal_connect:
     handler: handlers/paypal_connect.connect
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -186,7 +186,7 @@ functions:
   
   paypal_connect_webhook:
     handler: handlers/connect_webhook.create
-    runtime: python3.8
+    runtime: python3.9
     layers:
     - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
@@ -212,7 +212,7 @@ functions:
   
   paypal-disconnect:
     handler: handlers/paypal_disconnect.disconnect_account
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     vpc:
