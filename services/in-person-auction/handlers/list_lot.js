@@ -15,9 +15,12 @@ const mongoConnection = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
 const Counter = require('../entities/Counter')
+const LiveBid = require('../entities/LiveBid') // Add this import for bid collection
 const helpers = require('../lib/helper')
 
+
 let connection = null
+
 
 /**
  * Cleans HTML tags and escapes CSV special characters
@@ -27,6 +30,7 @@ let connection = null
 function cleanTextForCSV(text) {
     if (!text) return ''
 
+
     return text
         .replace(/<[^>]*>/g, '') // Remove HTML tags
         .replace(/,/g, ';') // Replace commas with semicolons
@@ -34,6 +38,7 @@ function cleanTextForCSV(text) {
         .replace(/\r?\n/g, ' ') // Replace line breaks with spaces
         .trim()
 }
+
 
 /**
  * Escapes text for CSV format
@@ -43,6 +48,69 @@ function cleanTextForCSV(text) {
 function escapeCSVField(text) {
     if (!text) return ''
     return `"${cleanTextForCSV(text)}"`
+}
+
+
+/**
+ * Gets bid counts for all lots in an auction
+ * @param {string} auctionId - The auction ID
+ * @param {string} sellerEmail - The seller email
+ * @returns {Object} Object mapping lot_id to bid counts
+ */
+async function getBidCountsForAuction(auctionId, sellerEmail) {
+    try {
+        const bidCounts = await LiveBid.aggregate([
+            {
+                $match: {
+                    auction_id: auctionId,
+                    seller_email: sellerEmail,
+                },
+            },
+            {
+                $group: {
+                    _id: {
+                        lot_id: '$lot_id',
+                        bid_type: '$bid_type',
+                    },
+                    count: { $sum: 1 },
+                },
+            },
+            {
+                $group: {
+                    _id: '$_id.lot_id',
+                    bids: {
+                        $push: {
+                            bid_type: '$_id.bid_type',
+                            count: '$count',
+                        },
+                    },
+                },
+            },
+        ])
+
+        // Transform to easier lookup format
+        const bidCountMap = {}
+        bidCounts.forEach((item) => {
+            const lotId = item._id.toString()
+            bidCountMap[lotId] = {
+                absentee: 0,
+                telephone: 0,
+            }
+
+            item.bids.forEach((bid) => {
+                if (bid.bid_type === 'absentee') {
+                    bidCountMap[lotId].absentee = bid.count
+                } else if (bid.bid_type === 'telephone') {
+                    bidCountMap[lotId].telephone = bid.count
+                }
+            })
+        })
+
+        return bidCountMap
+    } catch (error) {
+        console.error('Error getting bid counts:', error)
+        return {}
+    }
 }
 
 
@@ -58,11 +126,14 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
         const s3Key = `exports/lots/${fileName}`
         const s3Bucket = process.env.S3_BUCKET
 
+
         if (!s3Bucket) {
             throw new Error('S3_BUCKET environment variable is not set')
         }
 
+
         console.log('Direct S3 upload for file:', fileName)
+
 
         // CSV Headers
         const csvHeaders = [
@@ -74,7 +145,9 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             'Telephone Bids',
         ]
 
+
         let csvContent = `${csvHeaders.join(',')}\n`
+
 
         // Process each lot
         // eslint-disable-next-line no-restricted-syntax
@@ -89,6 +162,7 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
                     lot.number_of_telephone_bids || 0,
                 ]
 
+
                 csvContent += `${csvRow.join(',')}\n`
             } catch (err) {
                 console.error(`Error processing lot ${lot.lot_number}:`, err)
@@ -96,8 +170,10 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             }
         }
 
+
         // Upload directly to S3 using Buffer
         const s3Client = new AWS.S3({ region: process.env.AWS_REGION || 'eu-west-2' })
+
 
         const uploadResult = await s3Client.upload({
             Bucket: s3Bucket,
@@ -111,7 +187,9 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             },
         }).promise()
 
+
         console.log('Direct upload successful:', uploadResult.Location)
+
 
         // Generate signed URL
         const signedUrl = s3Client.getSignedUrl('getObject', {
@@ -120,12 +198,14 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
             Expires: 3600,
         })
 
+
         return signedUrl
     } catch (err) {
         console.error('Direct export error:', err)
         return null
     }
 }
+
 
 /**
  * Validates and sanitizes query parameters
@@ -135,6 +215,7 @@ async function exportLotsAsCSVDirect(auctionData, lots) {
 function validateQueryParams(params) {
     const validSortFields = ['reserve', 'lot_number', 'title1', 'number_of_absentee_bids', 'number_of_telephone_bids']
     const validSortOrders = ['ascending', 'descending']
+
 
     return {
         auctionId: params?.auction_id,
@@ -147,6 +228,7 @@ function validateQueryParams(params) {
     }
 }
 
+
 /**
  * Checks user authorization
  * @param {Object} event - Lambda event object
@@ -156,12 +238,15 @@ function validateQueryParams(params) {
 function checkAuthorization(event) {
     const { claims } = event.requestContext?.authorizer || {}
 
+
     if (!claims || !claims['cognito:username']) {
         throw new Error('Unauthorized')
     }
 
+
     return claims['cognito:username']
 }
+
 
 /**
  * Main Lambda handler for listing lots
@@ -171,10 +256,12 @@ module.exports.list_lot = async (event) => {
         // Authorization check
         const sellerEmail = checkAuthorization(event)
 
+
         // Database connection
         if (connection === null || !connection.readyState) {
             connection = await mongoConnection.connect()
         }
+
 
         // Validate query parameters
         const {
@@ -187,6 +274,7 @@ module.exports.list_lot = async (event) => {
             exportAsCsv,
         } = validateQueryParams(event.queryStringParameters)
 
+
         if (!auctionId) {
             return {
                 statusCode: 400,
@@ -195,9 +283,11 @@ module.exports.list_lot = async (event) => {
             }
         }
 
+
         // Verify auction exists and belongs to seller
         const auctionQuery = { auction_id: auctionId, seller_email: sellerEmail }
         const auctionData = await Auction.findOne(auctionQuery)
+
 
         if (!auctionData) {
             return {
@@ -207,10 +297,12 @@ module.exports.list_lot = async (event) => {
             }
         }
 
+
         // Build sort criteria
         const sortCriteria = {
             [sortBy]: sortOrder === 'ascending' ? 1 : -1,
         }
+
 
         // Build search criteria
         const searchCriteria = searchKeyword ? {
@@ -220,17 +312,36 @@ module.exports.list_lot = async (event) => {
             ],
         } : {}
 
+
         // Final query combining auction, search criteria
         const finalQuery = { ...auctionQuery, ...searchCriteria }
+
+
+        // Get bid counts for the entire auction
+        const bidCounts = await getBidCountsForAuction(auctionId, sellerEmail)
+
 
         let lots = []
         let totalCount = 0
         const response = {}
 
+
         if (exportAsCsv) {
             // fetch ALL lots for CSV export
             lots = await Lot.find(finalQuery).sort(sortCriteria).lean()
             totalCount = lots.length
+
+            // Add bid counts to each lot
+            lots = lots.map((lot) => {
+                const lotIdStr = lot._id.toString()
+                const counts = bidCounts[lotIdStr] || { absentee: 0, telephone: 0 }
+                return {
+                    ...lot,
+                    number_of_absentee_bids: counts.absentee,
+                    number_of_telephone_bids: counts.telephone,
+                }
+            })
+
 
             const signedUrl = await exportLotsAsCSVDirect(auctionData, lots)
             if (signedUrl) {
@@ -248,15 +359,28 @@ module.exports.list_lot = async (event) => {
                     .lean(),
                 Lot.countDocuments(finalQuery),
             ])
-            lots = lotDocs
+
+            // Add bid counts to each lot
+            lots = lotDocs.map((lot) => {
+                const lotIdStr = lot._id.toString()
+                const counts = bidCounts[lotIdStr] || { absentee: 0, telephone: 0 }
+                return {
+                    ...lot,
+                    number_of_absentee_bids: counts.absentee,
+                    number_of_telephone_bids: counts.telephone,
+                }
+            })
+
             totalCount = count
         }
+
 
         // Build response
         response.data = lots
         response.total_records_found = totalCount
         response.total_pages = Math.ceil(totalCount / perPage)
         response.current_page = page
+
 
         return {
             statusCode: 200,
@@ -266,6 +390,7 @@ module.exports.list_lot = async (event) => {
     } catch (error) {
         console.error('Error in list_lot:', error)
 
+
         // Handle authorization errors
         if (error.message === 'Unauthorized') {
             return {
@@ -274,6 +399,7 @@ module.exports.list_lot = async (event) => {
                 body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
             }
         }
+
 
         return {
             statusCode: 500,
@@ -285,4 +411,3 @@ module.exports.list_lot = async (event) => {
         }
     }
 }
-
