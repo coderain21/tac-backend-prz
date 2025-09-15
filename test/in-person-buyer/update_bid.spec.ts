@@ -79,7 +79,7 @@ test.describe('Update Bid Tests', () => {
     }, insertOptions);
 
     // Auction (set to start in future to allow bid editing)
-    const futureStartDate = Math.floor((Date.now() + (2 * 60 * 60 * 1000)) / 1000);
+    const futureStartDate = Math.floor((Date.now() + (2 * 60 * 60 * 1000)));
     const auctionData = await auctions.insertOne({
       auction_id: auctionId,
       seller_email: sellerEmail,
@@ -318,7 +318,7 @@ test.describe('Update Bid Tests', () => {
     const auctions = db.collection(`${stage}-auctions`);
     const liveBids = db.collection(`${stage}-live-bids`);
     
-    const pastStartDate = Math.floor((Date.now() - (1 * 60 * 60 * 1000)) / 1000); // 1 hour ago
+    const pastStartDate = Math.floor((Date.now() - (1 * 60 * 60 * 1000))); // 1 hour ago
     const pastAuctionId = `PAST-AUCTION-${Date.now()}`;
     
     await auctions.insertOne({
@@ -363,7 +363,7 @@ test.describe('Update Bid Tests', () => {
     const auctions = db.collection(`${stage}-auctions`);
     const liveBids = db.collection(`${stage}-live-bids`);
     
-    const futureStartDate = Math.floor((Date.now() + (2 * 60 * 60 * 1000)) / 1000);
+    const futureStartDate = Math.floor((Date.now() + (2 * 60 * 60 * 1000)));
     const restrictedAuctionId = `RESTRICTED-AUCTION-${Date.now()}`;
     
     await auctions.insertOne({
