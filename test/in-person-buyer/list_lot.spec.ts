@@ -30,12 +30,12 @@ const { list_lots } = require('../../services/in-person-buyer/handlers/list_lot.
 test.describe('In Person Buyer list lot handler tests', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
 
   test.beforeAll(async () => {
-      client = new MongoClient(process.env.MONGO_CLIENT!);
+      client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
       await client.connect();
-      db = client.db(process.env.DATABASE);
+      db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
@@ -45,8 +45,8 @@ test.describe('In Person Buyer list lot handler tests', () => {
   let auctionId: string;
 
   test.beforeEach(async () => {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
-    const lots = db.collection(`${process.env.STAGE}-lots`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
+    const lots = db.collection(`${process.env.STAGE || 'test'}-lots`);
     await auctions.deleteMany({});
     await lots.deleteMany({});
 

@@ -27,32 +27,49 @@ const { mark_complete } = require('../../services/in-person-auction/handlers/mar
 test.describe('Mark Complete Auction - Basic Functionality', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
   
   let queryAuctionObjectId: ObjectId;
   let auctionId: string;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
+  });
+
+  test.beforeEach(async () => {
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    // Clean up all test data more aggressively
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED)-/ }
+    });
+    await delay(1000); // Give more time for cleanup
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupTestData(auctionStatus = 'Published') {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
 
-    // Clean up test data
-    await auctions.deleteMany({ seller_email: sellerEmail });
+    // Generate unique auction ID first
+    auctionId = `MARK-COMPLETE-TEST-${Date.now()}-${Math.random()}`;
+
+    // Clean up test data more specifically
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^MARK-COMPLETE-TEST-/ }
+    });
     await delay(350);
 
     const insertOptions = { writeConcern: { w: 'majority', j: true } };
-
-    // Generate unique auction ID
-    auctionId = `TEST-AUCTION-${Date.now()}`;
 
     // Create auction with specified status
     const auctionInsertResult = await auctions.insertOne({
@@ -91,7 +108,7 @@ test.describe('Mark Complete Auction - Basic Functionality', () => {
     expect(response.statusCode).toBe(204);
 
     // Verify auction status was updated in database
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
+    const auctions = db.collection(`${process.env.STAGE || 'test'}-auctions`);
     const updatedAuction = await auctions.findOne({ auction_id: auctionId });
     expect(updatedAuction?.status).toBe('Completed');
   });
@@ -242,25 +259,8 @@ test.describe('Mark Complete Auction - Basic Functionality', () => {
   });
 
   test('should return 400 when trying to complete already completed auction', async () => {
-  // Clean up first to ensure isolation
-  const auctions = db.collection(`${process.env.STAGE}-auctions`);
-  await auctions.deleteMany({ seller_email: sellerEmail });
-  await delay(500);
-
-  // Create a fresh completed auction
-  const completedAuctionId = `COMPLETED-AUCTION-${Date.now()}`;
-  await auctions.insertOne({
-    auction_id: completedAuctionId,
-    seller_email: sellerEmail,
-    status: 'Completed',
-    auction_type: 'live',
-    start_date: Date.now(),
-    accept_absentee_bid: true,
-    accept_telephone_bid: true,
-    total_lots: 0
-  }, { writeConcern: { w: 'majority', j: true } });
-  
-  await delay(500);
+  // Use the setupTestData function for consistency
+  await setupTestData('Completed');
 
   const event = {
     requestContext: {
@@ -269,7 +269,7 @@ test.describe('Mark Complete Auction - Basic Functionality', () => {
       }
     },
     body: JSON.stringify({
-      auction_id: completedAuctionId,
+      auction_id: auctionId,
       status: 'Completed'
     })
   };

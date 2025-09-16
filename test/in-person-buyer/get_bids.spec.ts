@@ -27,33 +27,59 @@ const { get_bids } = require('../../services/in-person-buyer/handlers/get_bids.j
 test.describe('Get Bids - Basic Functionality', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
   
   let queryAuctionObjectId: ObjectId;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
+  });
+
+  test.beforeEach(async () => {
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    const liveBids = db.collection(`${stage}-live-bids`);
+    
+    // Clean up all test data more aggressively
+    await liveBids.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED|GET-BIDS-TEST)-/ }
+    });
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^(CANCEL|TEST|DELETE|COMPLETED|GET-BIDS-TEST)-/ }
+    });
+    await delay(1000); // Give more time for cleanup
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupTestData() {
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
-    const liveBids = db.collection(`${process.env.STAGE}-live-bids`);
+    const stage = process.env.STAGE || 'test';
+    const auctions = db.collection(`${stage}-auctions`);
+    const liveBids = db.collection(`${stage}-live-bids`);
 
-    // Clean up test data first
-    await liveBids.deleteMany({ seller_email: sellerEmail });
-    await auctions.deleteMany({ seller_email: sellerEmail });
+    // Generate a unique auction_id for business logic
+    const auctionId = `GET-BIDS-TEST-${Date.now()}-${Math.random()}`;
+
+    // Clean up test data more specifically
+    await liveBids.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^GET-BIDS-TEST-/ }
+    });
+    await auctions.deleteMany({ 
+      seller_email: sellerEmail,
+      auction_id: { $regex: /^GET-BIDS-TEST-/ }
+    });
     await delay(500); // Longer delay for cleanup
 
     const insertOptions = { writeConcern: { w: 'majority', j: true } };
-
-    // Generate a unique auction_id for business logic
-    const auctionId = `TEST-AUCTION-${Date.now()}`;
 
     // Create auction with proper structure
     const auctionInsertResult = await auctions.insertOne({
