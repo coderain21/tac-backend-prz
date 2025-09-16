@@ -187,7 +187,7 @@ functions:
   
   total-lots:
     handler: handlers/quicksight_total_lots.total_lots
-    runtime: python3.8
+    runtime: python3.9
     layers:
       - ${ssm:COMMON_LIB_ARN_PYTHON}
     events:

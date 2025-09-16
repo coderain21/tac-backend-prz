@@ -125,6 +125,9 @@ def update_lot_data(item, lot_id):
                 "images": item.get('images', []),
             }
 
+            # ✅ Remove description key entirely
+            update_request.pop('description', None)
+
             if get_lot.get('starting_price') != item.get('starting_price') and get_lot.get('bid_amount'):
                 print('Lot has current bid')
                 return (400, {"message": "Lot has already been bid"})
