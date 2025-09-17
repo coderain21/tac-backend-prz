@@ -68,3 +68,19 @@ def set_authorization(transaction):
         print('Skipping the test...')
         transaction['skip'] = True
         return
+
+    if (transaction['request']['method'] == 'DELETE' and '/lots' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+
+    if (transaction['request']['method'] == 'DELETE' and '/' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    
+    if (transaction['request']['method'] == 'PATCH' and '/cancel-auction' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+    

@@ -30,23 +30,26 @@ const { update_lot } = require('../../services/in-person-auction/handlers/update
 test.describe('In Person Auction Update Lot handler tests', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
 
   test.beforeAll(async () => {
-      client = new MongoClient(process.env.MONGO_CLIENT!);
+      client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
       await client.connect();
-      db = client.db(process.env.DATABASE);
+      db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
-    await closeDatabaseConnection();
+    if (client) {
+      await client.close();
+    }
   });
 
     let auctionId: ObjectId;
 
   test.beforeEach(async () => {
-    const users = db.collection(`${process.env.STAGE}-users`);
-    const lots = db.collection(`${process.env.STAGE}-lots`);
+    const stage = process.env.STAGE || 'test';
+    const users = db.collection(`${stage}-users`);
+    const lots = db.collection(`${stage}-lots`);
     await users.deleteMany({});
     await lots.deleteMany({});
 

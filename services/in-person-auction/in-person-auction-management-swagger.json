@@ -371,7 +371,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "A29098"
+            "example": "A28724"
           }
         ],
         "requestBody": {
@@ -551,6 +551,85 @@
                       "message": "Internal server error"
                     }
                   }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": ["Auction Management"],
+        "summary": "Delete an auction",
+        "description": "Deletes an auction and all related lots, live bids, buyer wishlists, and registered bidders. The auction must belong to the logged-in seller.",
+        "parameters": [
+          {
+            "name": "auction_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "A29098"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Auction deleted successfully",
+          },
+          "400": {
+            "description": "Bad Request - Auction ID missing",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "Auction ID is required"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Unauthorized access",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "You do not have access to perform this API action"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Auction not found or already deleted",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "examples": {
+                  "not_found": {
+                    "value": {
+                      "message": "Auction not found or you do not have permission to delete it"
+                    }
+                  },
+                  "already_deleted": {
+                    "value": {
+                      "message": "Auction not found or already deleted"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" },
+                "example": {
+                  "message": "Internal Server Error"
                 }
               }
             }
@@ -805,6 +884,110 @@
                     "message": {
                       "type": "string",
                       "example": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Lots"
+        ],
+        "summary": "Delete lot",
+        "description": "Deletes a lot from an auction. Also reorders subsequent lot numbers sequentially and updates the lot counter.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "auction_id": {
+                    "type": "string",
+                    "description": "Unique identifier of the auction"
+                  },
+                  "lot_id": {
+                    "type": "string",
+                    "description": "Unique identifier of the lot to delete"
+                  }
+                },
+                "required": ["auction_id", "lot_id"]
+              },
+              "example": {
+                "auction_id": "A0012",
+                "lot_id": "64efb24b9a3c9d2f78a3e12a"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Lot deleted successfully"
+          },
+          "400": {
+            "description": "Missing parameters in request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot ID and auction ID is required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden – user is not authorized",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "value": {
+                      "message": "You do not have access to perform this API action"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lot or Auction not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Lot not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Internal Server Error"
                     }
                   }
                 }
@@ -1227,6 +1410,103 @@
         ]
       }
     },
+    "/cancel-auction": {
+      "patch": {
+        "tags": ["Auction Management"],
+        "summary": "Cancel an auction",
+        "description": "Updates the status of an auction to `Canceled` if it is currently in `In Progress` state. Only the seller who owns the auction can cancel it.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["auction_id", "seller_email"],
+                "properties": {
+                  "auction_id": {
+                    "type": "string",
+                    "example": "A29098"
+                  },
+                  "seller_email": {
+                    "type": "string",
+                    "example": "seller@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Auction canceled successfully",
+          },
+          "400": {
+            "description": "Bad Request - Missing parameters or invalid state",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing_params": {
+                    "value": {
+                      "message": "Missing required parameters"
+                    }
+                  },
+                  "invalid_state": {
+                    "value": {
+                      "message": "Update Error | Auction status not in the Published state"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - Seller mismatch",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Unauthorized"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - Unauthorized access",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "You do not have access to perform this API action"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found - Auction not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Auction not found"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Internal Server Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
     "/bids": {
       "get": {
         "tags": ["Bid Management"],
@@ -1246,7 +1526,7 @@
             "schema": {
               "type": "string"
             },
-            "example": "A29098"
+            "example": "A28724"
           },
           {
             "name": "bid_type",
