@@ -123,12 +123,7 @@ run_command terraform -chdir=devops/seller_web_application init -backend-config=
 run_command terraform -chdir=devops/seller_web_application apply -auto-approve
 run_command terraform -chdir=devops/api_gateway init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/api_gateway/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/api_gateway apply -auto-approve
-run_command terraform -chdir=devops/dependency/node init 
-run_command terraform -chdir=devops/dependency/node apply -auto-approve
-run_command terraform -chdir=devops/dependency/nodejs-auth-layer init
-run_command terraform -chdir=devops/dependency/nodejs-auth-layer apply -auto-approve
-run_command terraform -chdir=devops/dependency/python init
-run_command terraform -chdir=devops/dependency/python apply -auto-approve
+
 
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
     run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -260,7 +255,9 @@ eval $( $(pwd)/aws_signing_helper credential-process \
 | jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
 
-
+cd services/dependency-management
+run_command sls deploy --region $REGION --stage $STAGE
+cd ../..
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..

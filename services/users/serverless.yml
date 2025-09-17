@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: { Ref: SellerUsers }
@@ -140,7 +140,7 @@ functions:
     handler: handlers/cognito_presignup.handler
     timeout: 300
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -156,7 +156,7 @@ functions:
   cognito-post-auth-trigger:
     handler: handlers/cognito_post_auth.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -172,7 +172,7 @@ functions:
   verify-recaptha:
     handler: handlers/verify_the_recaptcha.verifyReCaptcha
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -187,7 +187,7 @@ functions:
   otp-validation:
     handler: handlers/otp_validation.otpValidation
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -202,7 +202,7 @@ functions:
   request-otp:
     handler: handlers/request-otp.generate_otp
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -218,7 +218,7 @@ functions:
     handler: handlers/send_reset_link.send_reset_link
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -234,7 +234,7 @@ functions:
     handler: handlers/reset_password.password_reset
     runtime: python3.9
     layers: 
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
           securityGroupIds:
             - ${ssm:SECURITY_GROUP_ID}
@@ -250,7 +250,7 @@ functions:
     handler: handlers/view_profile.view_customer
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -271,7 +271,7 @@ functions:
   update-profile:
         handler: handlers/update_profile.updateUserInformation
         layers:
-          - ${ssm:COMMON_LIB_ARN}
+          - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
         vpc:
           securityGroupIds:
             - ${ssm:SECURITY_GROUP_ID}
@@ -291,7 +291,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -311,7 +311,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -327,7 +327,7 @@ functions:
   update-password:
         handler: handlers/update_password.updatePassword
         layers:
-          - ${ssm:COMMON_LIB_ARN}
+          - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
         vpc:
           securityGroupIds:
             - ${ssm:SECURITY_GROUP_ID}
@@ -345,7 +345,7 @@ functions:
   update-plans:
         handler: handlers/update_plan.updatePlan
         layers:
-          - ${ssm:COMMON_LIB_ARN}
+          - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
         vpc:
           securityGroupIds:
             - ${ssm:SECURITY_GROUP_ID}
@@ -365,7 +365,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -384,7 +384,7 @@ functions:
     handler: handlers/split_payment.splitPayment
     memorySize: 128
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -404,7 +404,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -423,7 +423,7 @@ functions:
     handler: handlers/stripe_disconnect.disconnect_account
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -442,7 +442,7 @@ functions:
     handler: handlers/create.create
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -461,7 +461,7 @@ functions:
       handler: handlers/stripe_webhook.create
       runtime: python3.9
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -479,7 +479,7 @@ functions:
   # save-logs:
   #     handler: handlers/login_log.handler
   #     layers:
-  #       - ${ssm:COMMON_LIB_ARN}
+  #       - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
   #     vpc:
   #       securityGroupIds:
   #         - ${ssm:SECURITY_GROUP_ID}
@@ -499,7 +499,7 @@ functions:
     handler: handlers/cognito_callback.handler
     timeout: 30
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -514,7 +514,7 @@ functions:
   get-mailchimp-template:
     handler: handlers/get_template.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -531,7 +531,7 @@ functions:
   create-mailchimp-template:
     handler: handlers/create_template.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}

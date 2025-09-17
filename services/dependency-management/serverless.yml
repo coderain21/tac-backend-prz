@@ -1,0 +1,105 @@
+service: dependency-management
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ${env:REGION}
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket:
+    versioning: true
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:PublishLayerVersion
+            - ssm:PutParameter
+          Resource: "*"
+
+layers:
+  devNodejs:
+    path: ./layer
+    name: ${sls:stage}-nodejs
+    retain: true
+    description: "Node.js shared dependencies for Lambdas"
+    compatibleRuntimes:
+      - nodejs18.x
+  
+  devPython:
+    path: ./python_lib
+    name: ${sls:stage}-python
+    retain: true
+    description: "Python shared dependencies for Lambdas"
+    compatibleRuntimes:
+      - python3.9
+  
+  devPython2:
+    path: ./python_lib2
+    name: ${sls:stage}-python-2
+    retain: true
+    description: "Python secondary dependencies for Lambdas"
+    compatibleRuntimes:
+      - python3.9
+
+package:
+  patterns:
+    - '!.git/**'
+    - '!.env*'
+    - '!README.md'
+    - '!*.log'
+
+resources: {}
+    
+custom:
+  layerArns:
+    nodejs: !Ref DevNodejsLambdaLayerVersion
+    python: !Ref DevPythonLambdaLayerVersion  
+    python2: !Ref DevPython2LambdaLayerVersion
+  scripts:
+    hooks:
+      'package:initialize': |
+        LAYER_PATH="./layer"
+        NODEJS_PATH="$LAYER_PATH/nodejs"
+        PYTHON_LIB_PATH="./python_lib"
+        PYTHON_LIB2_PATH="./python_lib2"
+        
+        echo "Checking Node.js layer dependencies..."
+        
+        if [ ! -d "$NODEJS_PATH/node_modules" ] || 
+           [ "$NODEJS_PATH/package.json" -nt "$NODEJS_PATH/node_modules" ]; then
+          echo "Installing dependencies..."
+          
+          if ! npm ci --prefix "$NODEJS_PATH" 2>/dev/null; then
+            echo "Lock file out of sync. Running npm install..."
+            npm install --prefix "$NODEJS_PATH"
+          fi
+        else
+          echo "Dependencies are up to date, skipping installation"
+        fi
+        
+        echo "Checking Python layer dependencies..."
+        
+        if [ -f "./requirements.txt" ]; then
+          if [ ! -d "$PYTHON_LIB_PATH/python" ] || 
+             [ "./requirements.txt" -nt "$PYTHON_LIB_PATH/python" ]; then
+            echo "Installing Python main dependencies..."
+            pip install -r "./requirements.txt" -t "$PYTHON_LIB_PATH/python"
+          else
+            echo "Python main dependencies are up to date"
+          fi
+        fi
+        
+        if [ -f "./requirements2.txt" ]; then
+          if [ ! -d "$PYTHON_LIB2_PATH/python" ] || 
+             [ "./requirements2.txt" -nt "$PYTHON_LIB2_PATH/python" ]; then
+            echo "Installing Python secondary dependencies..."
+            pip install -r "./requirements2.txt" -t "$PYTHON_LIB2_PATH/python"
+          else
+            echo "Python secondary dependencies are up to date"
+          fi
+        fi
+
+plugins:
+  - serverless-package-external
+  - serverless-plugin-scripts

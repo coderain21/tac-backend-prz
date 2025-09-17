@@ -124,8 +124,8 @@ functions:
   delete-redis-data:
     handler: handler/handler.delete_old_redis_data  # Fixed path
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      - ${cf:dependency-management-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}

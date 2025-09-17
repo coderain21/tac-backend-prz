@@ -19,7 +19,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -108,7 +108,7 @@ functions:
     timeout: 60
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     events:
       - http:
           cors: true
@@ -122,7 +122,7 @@ functions:
     timeout: 60
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
     events:
       - http:
           cors: true
