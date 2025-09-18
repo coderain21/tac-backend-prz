@@ -27,11 +27,11 @@ def extract_s3_key_from_image(image_obj):
     """
     if not image_obj or not isinstance(image_obj, dict) or 'url' not in image_obj:
         return None
-    
+
     url = image_obj.get('url')
     if not url or not isinstance(url, str) or url.strip() == '':
         return None
-    
+
     return url.strip()
 
 
@@ -43,24 +43,24 @@ def delete_images_from_s3(images):
     """
     if not images or not isinstance(images, list) or len(images) == 0:
         return True  # No images to delete
-    
+
     try:
         # Initialize S3 client
         s3_client = boto3.client('s3', region_name=os.environ.get('REGION', 'eu-west-2'))
-        
+
         bucket_name = os.environ.get('S3_BUCKET')
-        
+
         # Extract S3 keys from image objects
         s3_keys = []
         for image in images:
             key = extract_s3_key_from_image(image)
             if key:
                 s3_keys.append(key)
-        
+
         if len(s3_keys) == 0:
             print('No valid S3 keys found in images array')
             return True
-        
+
         # Delete objects from S3
         success_count = 0
         for key in s3_keys:
@@ -70,10 +70,10 @@ def delete_images_from_s3(images):
                 success_count += 1
             except ClientError as e:
                 print(f'Failed to delete S3 object {key}: {str(e)}')
-        
+
         print(f'Deleted {success_count}/{len(s3_keys)} images from S3')
         return success_count == len(s3_keys)
-        
+
     except Exception as e:
         print(f'Error deleting images from S3: {str(e)}')
         return False
@@ -178,7 +178,7 @@ def delete_lot(event, context):
         if lot.get('images') and len(lot['images']) > 0:
             print(f"Deleting {len(lot['images'])} images from S3 for lot {lot_number}")
             s3_delete_success = delete_images_from_s3(lot['images'])
-            
+
             if not s3_delete_success:
                 print('Some images failed to delete from S3, but continuing with lot deletion')
 
