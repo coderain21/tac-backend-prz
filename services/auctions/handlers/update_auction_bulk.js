@@ -154,7 +154,7 @@ async function startExecutionWithRetry(stateMachineArn, lot, maxRetries = 3) {
 /**
  * Stop executions in controlled batches (following unpublish pattern)
  */
-async function stopExecutionsInBatches(arnRecords, batchSize = 5) {
+async function stopExecutionsInBatches(arnRecords, batchSize = 30) {
     console.log(`Starting to stop ${arnRecords.length} step functions in batches of ${batchSize}`)
 
     // Helper function to process batches recursively (avoiding for loops)
@@ -208,7 +208,7 @@ async function stopExecutionsInBatches(arnRecords, batchSize = 5) {
 /**
  * Start executions in controlled batches (following publish pattern)
  */
-async function startExecutionsInBatches(lots, stateMachineArn, batchSize = 3) {
+async function startExecutionsInBatches(lots, stateMachineArn, batchSize = 30) {
     console.log(`Starting ${lots.length} new executions in batches of ${batchSize}`)
 
     // Helper function to process batches recursively (avoiding for loops)
