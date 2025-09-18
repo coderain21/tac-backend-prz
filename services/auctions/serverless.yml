@@ -777,7 +777,7 @@ functions:
           - CleanupStepFunctionsDLQ
           - Arn
 
-  deleteImage:
+  delete-image:
       handler: handlers/delete_image.delete_image
       layers:
         - ${ssm:COMMON_LIB_ARN}

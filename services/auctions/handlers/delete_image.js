@@ -4,12 +4,12 @@
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 const AWS = require('aws-sdk')
-const helpers = require('../../lib/helper')
+const helpers = require('../lib/helper')
 
 /**
  * Delete Image from S3 API
  * @description - API to delete an image from S3 bucket using S3 key
- * @route - DELETE /s3/delete
+ * @route - DELETE /image
  * @access - (Private)
  * @user - IndyAuction Admin/Seller
  * @returns {Object} (200) - Success message
@@ -49,14 +49,14 @@ module.exports.delete_image = async (event) => {
 
         // --- Initialize S3 client ---
         const s3Client = new AWS.S3({
-            region: process.env.AWS_REGION || 'eu-west-2',
+            region: process.env.REGION || 'eu-west-2',
         })
 
         // --- Check if object exists before deletion ---
         try {
             await s3Client.headObject({
                 Bucket: bucketName,
-                Key: key,
+                Key: `public/${key}`,
             }).promise()
         } catch (headError) {
             if (headError.statusCode === 404) {
@@ -75,7 +75,7 @@ module.exports.delete_image = async (event) => {
         // --- Delete the object from S3 ---
         const deleteResult = await s3Client.deleteObject({
             Bucket: bucketName,
-            Key: key,
+            Key: `public/${key}`,
         }).promise()
 
         console.log('S3 delete result:', deleteResult)
@@ -86,8 +86,6 @@ module.exports.delete_image = async (event) => {
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
                 message: 'Image deleted successfully from S3',
-                bucket: bucketName,
-                key,
             }),
         }
     } catch (error) {
@@ -97,7 +95,6 @@ module.exports.delete_image = async (event) => {
             statusCode: 500,
             body: JSON.stringify({
                 message: 'Internal Server Error',
-                error: error.message,
             }),
         }
     }

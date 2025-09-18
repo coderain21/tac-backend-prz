@@ -2,6 +2,8 @@
 import os
 import json
 import pymongo
+import boto3
+from botocore.exceptions import ClientError
 headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
@@ -16,6 +18,65 @@ collection = db[os.environ["LOT_COLLECTION_NAME"]]
 auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 counter_collection = db[os.environ["COUNTER_LOT"]]
 
+
+def extract_s3_key_from_image(image_obj):
+    """
+    Extract S3 key from image object
+    :param image_obj: The image object with url and featured properties
+    :return: The validated S3 key or None if invalid
+    """
+    if not image_obj or not isinstance(image_obj, dict) or 'url' not in image_obj:
+        return None
+    
+    url = image_obj.get('url')
+    if not url or not isinstance(url, str) or url.strip() == '':
+        return None
+    
+    return url.strip()
+
+
+def delete_images_from_s3(images):
+    """
+    Delete images from S3
+    :param images: Array of image objects with url and featured properties
+    :return: Success status (True if all deleted successfully, False otherwise)
+    """
+    if not images or not isinstance(images, list) or len(images) == 0:
+        return True  # No images to delete
+    
+    try:
+        # Initialize S3 client
+        s3_client = boto3.client('s3', region_name=os.environ.get('REGION', 'eu-west-2'))
+        
+        bucket_name = os.environ.get('S3_BUCKET')
+        
+        # Extract S3 keys from image objects
+        s3_keys = []
+        for image in images:
+            key = extract_s3_key_from_image(image)
+            if key:
+                s3_keys.append(key)
+        
+        if len(s3_keys) == 0:
+            print('No valid S3 keys found in images array')
+            return True
+        
+        # Delete objects from S3
+        success_count = 0
+        for key in s3_keys:
+            try:
+                s3_client.delete_object(Bucket=bucket_name, Key=f"public/{key}")
+                print(f'Successfully deleted S3 object: {key}')
+                success_count += 1
+            except ClientError as e:
+                print(f'Failed to delete S3 object {key}: {str(e)}')
+        
+        print(f'Deleted {success_count}/{len(s3_keys)} images from S3')
+        return success_count == len(s3_keys)
+        
+    except Exception as e:
+        print(f'Error deleting images from S3: {str(e)}')
+        return False
 
 
 def update_lot_numbers(auction_id, seller_email, deleted_lot_number):
@@ -97,10 +158,36 @@ def delete_lot(event, context):
                 })
             }
 
+        # Find the lot first to get image data before deletion
+        lot = collection.find_one({
+            "lot_number": lot_number, 
+            "seller_email": seller_email, 
+            "auction_id": auction_id
+        })
+
+        if not lot:
+            return {
+                "statusCode": 404,
+                'headers': headers,
+                "body": json.dumps({
+                    "message": "Lot not found"
+                })
+            }
+
+        # Delete images from S3 before deleting the lot
+        if lot.get('images') and len(lot['images']) > 0:
+            print(f"Deleting {len(lot['images'])} images from S3 for lot {lot_number}")
+            s3_delete_success = delete_images_from_s3(lot['images'])
+            
+            if not s3_delete_success:
+                print('Some images failed to delete from S3, but continuing with lot deletion')
+
         # Delete the specified lot from the MongoDB collection
         delete_result = collection.delete_one({
-            "lot_number":lot_number, "seller_email": seller_email,"auction_id": auction_id
-            })
+            "lot_number": lot_number, 
+            "seller_email": seller_email, 
+            "auction_id": auction_id
+        })
 
         if delete_result.deleted_count == 1:
             auction_record = auction_collection.find_one({"auction_id": auction_id, "seller_email": seller_email})

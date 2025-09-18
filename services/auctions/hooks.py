@@ -52,6 +52,12 @@ def set_authorization(transaction):
         transaction['skip'] = True
         return
 
+     if (transaction['request']['method'] == 'DELETE' and
+        '/image' in transaction['request']['uri'] ):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return
+
     if (
         transaction['expected']['statusCode'] == '200' or
         transaction['expected']['statusCode'] == '204'

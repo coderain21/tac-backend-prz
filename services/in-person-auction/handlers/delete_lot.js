@@ -63,7 +63,7 @@ async function deleteImagesFromS3(images) {
             try {
                 await s3Client.deleteObject({
                     Bucket: bucketName,
-                    Key: key,
+                    Key: `public/${key}`,
                 }).promise()
                 console.log(`Successfully deleted S3 object: ${key}`)
                 return true
