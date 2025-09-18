@@ -106,3 +106,5 @@ results.xml
 coverage/
 arns_data_prod_after.txt
 arns_data_prod.txt
+awscliv2.zip
+aws/*
