@@ -777,6 +777,17 @@ functions:
           - CleanupStepFunctionsDLQ
           - Arn
 
+  delete-image:
+      handler: handlers/delete_image.delete_image
+      layers:
+        - ${ssm:COMMON_LIB_ARN}
+      events:
+        - http:
+            cors: true
+            path: /image
+            method: delete
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
   Conditions:
