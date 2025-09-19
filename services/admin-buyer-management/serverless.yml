@@ -19,7 +19,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
@@ -125,7 +125,7 @@ functions:
   update:
     handler: handlers/accept_reject_buyers.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -137,7 +137,7 @@ functions:
   list-bids:
     handler: handlers/list.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -150,7 +150,7 @@ functions:
     handler: handlers/list_of_buyers.handler
     timeout: 30
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -163,7 +163,7 @@ functions:
     timeout: 30
     runtime: python3.9
     layers:
-    - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -190,7 +190,7 @@ functions:
     handler: handlers/bid_info.handler
     timeout: 30
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -208,7 +208,7 @@ functions:
     timeout: 30
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}

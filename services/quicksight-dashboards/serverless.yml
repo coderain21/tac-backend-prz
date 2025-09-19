@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}
@@ -108,7 +108,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+         -  ${ssm:PYTHON_LIB_ARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
@@ -127,7 +127,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+         -  ${ssm:PYTHON_LIB_ARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
@@ -146,7 +146,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+         -  ${ssm:PYTHON_LIB_ARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
@@ -165,7 +165,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+         -  ${ssm:PYTHON_LIB_ARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:

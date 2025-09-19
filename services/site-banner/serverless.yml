@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
@@ -165,7 +165,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+         -  ${ssm:NODE_LIB_ARN}
       events:
         - http:
             cors: true
@@ -177,7 +177,7 @@ functions:
   list:
     handler: handlers/list.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -194,7 +194,7 @@ functions:
   view:
     handler: handlers/view.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -209,7 +209,7 @@ functions:
   delete:
     handler: handlers/delete.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}

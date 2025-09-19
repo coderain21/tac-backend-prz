@@ -20,7 +20,7 @@ provider:
     subnetIds:
       - ${ssm:SUBNET_ID}
 
-  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -115,7 +115,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -131,7 +131,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -149,7 +149,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -167,7 +167,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true

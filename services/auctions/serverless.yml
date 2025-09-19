@@ -20,7 +20,7 @@ provider:
     subnetIds:
       - ${ssm:SUBNET_ID}
 
-  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -266,7 +266,7 @@ functions:
   create:
     handler: handlers/create.create_auction
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -279,7 +279,7 @@ functions:
   unpublish_auction:
     handler: handlers/unpublish_auction.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors:
@@ -304,7 +304,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -318,7 +318,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -331,7 +331,7 @@ functions:
     handler: handlers/create_lots.lambda_handler
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -344,7 +344,7 @@ functions:
     handler: handlers/view_lots.list_lots
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -357,7 +357,7 @@ functions:
     handler: handlers/admin_list_lots.list_lots
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors:
@@ -382,7 +382,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -396,7 +396,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -410,7 +410,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -423,7 +423,7 @@ functions:
     handler: handlers/view.view
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -437,8 +437,8 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
-        - ${cf:dependency-management-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
+        -  ${ssm:PYTHON_LIB_ARN_2}
 
       events:
         - http:
@@ -452,7 +452,7 @@ functions:
     handler: handlers/import_lots.import_lots
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -468,8 +468,8 @@ functions:
       maximumRetryAttempts: 0
       memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
-        - ${cf:dependency-management-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
+        -  ${ssm:PYTHON_LIB_ARN_2}
       events:
         - http:
             cors: true
@@ -483,7 +483,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -496,7 +496,7 @@ functions:
     handler: handlers/deactivate.deactivate
     runtime: python3.9
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -510,19 +510,19 @@ functions:
     timeout: ${ssm:LAMBDA_TIMEOUT}
     memorySize: ${ssm:PROCESS_LAMBDA_MEMORY}
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
 
   # send-email_auction:
   #   handler: handlers/auto_completion_bid.handler
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
 
   batchLotsPublish:
     handler: handlers/publish_auction.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
     timeout: 90
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     deadLetter:
       targetArn:
         Fn::GetAtt:
@@ -536,7 +536,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 60
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
 
 
 
@@ -547,7 +547,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -561,7 +561,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -575,7 +575,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -589,7 +589,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -603,7 +603,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 60
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -616,7 +616,7 @@ functions:
   #   maximumRetryAttempts: 0
   #   timeout: 60
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -628,7 +628,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -642,7 +642,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -653,7 +653,7 @@ functions:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -665,7 +665,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -677,7 +677,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -690,7 +690,7 @@ functions:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   layers:
-  #     - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -701,12 +701,12 @@ functions:
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
       
   sqs-trigger-function:
     handler: handlers/sqs_trigger_function.sqsTriggerFunction
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs: 
           arn: 
@@ -717,13 +717,13 @@ functions:
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
   
 
   bdd_update_status:
     handler: handlers/bdd_api.handler
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors:
@@ -746,7 +746,7 @@ functions:
   get-leaderboard:
     handler: handlers/get_leaderboard.get_leaderboard
     layers:
-      - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors:

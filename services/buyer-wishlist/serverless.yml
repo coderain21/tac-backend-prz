@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     LOTS_TABLE_NAME: ${opt:stage, self:provider.stage}-lots
@@ -136,7 +136,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -164,7 +164,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -191,7 +191,7 @@ functions:
     runtime: python3.9
     memorySize: 128
     layers:
-        - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+        -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}

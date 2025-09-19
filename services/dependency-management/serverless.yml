@@ -58,14 +58,30 @@ package:
     - '!extra/**'
   excludeDevDependencies: false
 
-resources: {}
+resources:
+  Resources:
+    NodeLibArnStore:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: NODE_LIB_ARN
+        Type: String
+        Value: ${cf:${self:service}-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+    PythonLibArnStore:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: PYTHON_LIB_ARN
+        Type: String
+        Value: ${cf:${self:service}-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+    
+    PythonLibArn2Store:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: PYTHON_LIB_ARN_2
+        Type: String
+        Value: ${cf:${self:service}-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
+
     
 custom:
-  # References to the deployed layer versions that can be used by Lambda functions
-  layerArns:
-    nodejs: !Ref DevNodejsLambdaLayerVersion
-    python: !Ref DevPythonLambdaLayerVersion  
-    python2: !Ref DevPython2LambdaLayerVersion
   scripts:
     hooks:
       # This hook runs during package/deploy to install dependencies
