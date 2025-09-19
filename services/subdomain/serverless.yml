@@ -139,7 +139,7 @@ functions:
   sub-domain:
     handler: handlers/subdomain.subdomain
     runtime: python3.9
-    timeout: 100
+    timeout: 30
     role: ${ssm:LAMBDA_EXECTION_ARN}
     layers:
       - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}

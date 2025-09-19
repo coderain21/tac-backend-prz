@@ -148,7 +148,7 @@ functions:
 
   list:
     handler: handlers/list_of_buyers.handler
-    timeout: 60
+    timeout: 30
     layers:
       - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     events:
@@ -160,7 +160,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bids:
     handler: handlers/bid_list.list_bids
-    timeout: 60
+    timeout: 30
     runtime: python3.9
     layers:
     - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
@@ -188,7 +188,7 @@ functions:
               arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bid-info:
     handler: handlers/bid_info.handler
-    timeout: 60
+    timeout: 30
     layers:
       - ${cf:dependency-management-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
     vpc:
@@ -205,7 +205,7 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   delete-buyer:
     handler: handlers/delete_buyer.delete_buyer
-    timeout: 60
+    timeout: 30
     runtime: python3.9
     layers:
       - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}

@@ -113,10 +113,6 @@ run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bu
 run_command terraform -chdir=devops/assets apply -auto-approve
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ses apply -auto-approve
-# if [ "${STAGE}" = "prod" ]; then
-#     run_command terraform -chdir=devops/waf init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/waf/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-#     run_command terraform -chdir=devops/waf apply -auto-approve
-# fi
 run_command terraform -chdir=devops/admin_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/admin_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/admin_web_application apply -auto-approve
 run_command terraform -chdir=devops/seller_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/seller_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -136,12 +132,6 @@ fi
 if [ "${STAGE}" = "pre-production" ] ; then
     run_command terraform -chdir=devops/vpc init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/vpc/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/vpc apply -auto-approve
-    # terraform -chdir=devops/ecs init
-    # terraform -chdir=devops/ecs destroy -auto-approve 
-    # terraform -chdir=devops/redis-cluster init
-    # terraform -chdir=devops/redis-cluster destroy -auto-approve
-    # terraform -chdir=devops/mongodb init
-    # terraform -chdir=devops/mongodb destroy -auto-approve
     run_command terraform -chdir=devops/mongodb_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongodb_new apply -auto-approve
     run_command terraform -chdir=devops/redis_cluster_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis_cluster_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -233,7 +223,6 @@ if [ "${STAGE}" = "prod" ]; then
     run_command terraform -chdir=devops/cloudwatch init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/cloudwatch apply -auto-approve
 fi
-# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 npm i -g serverless@3.15.2
 npm i -g @serverless/compose
 npm i serverless-aws-documentation
@@ -264,13 +253,9 @@ cd ../..
 cd services/users
 run_command sls deploy --region $REGION --stage $STAGE 
 cd ../..
-# cd services/lambda-authorizer
-# run_command sls deploy --region $REGION --stage $STAGE
-# cd ../..
 cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
-# terraform -chdir=devops/buyer_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/buyer_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
@@ -278,9 +263,6 @@ run_command terraform -chdir=devops/buyer_web_application init -backend-config="
 run_command terraform -chdir=devops/buyer_web_application apply -auto-approve
 run_command terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-# terraform -chdir=devops/cognito_custom_domain init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cognito_custom_domain/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-# terraform -chdir=devops/cognito_custom_domain apply -auto-approve
-# aws s3 sync . $log_bucket --exclude "*" --include "*.tfstate" --include "*tf-key-pair*" --exclude "*/dependency/*" --profile $PROFILE_MAIN
 unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
   --certificate $CERT_PATH \

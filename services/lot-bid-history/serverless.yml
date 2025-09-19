@@ -136,7 +136,7 @@ functions:
             
   bid-listing:
     handler: handlers/bid_list.list_bids
-    timeout: 60
+    timeout: 30
     runtime: python3.9
     layers:
     - ${cf:dependency-management-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
