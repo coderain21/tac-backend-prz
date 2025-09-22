@@ -233,7 +233,6 @@ npm i serverless-offline
 npm i serverless-package-external
 npm i serverless-python-requirements
 npm i serverless-appsync-plugin
-npm i -g serverless-plugin-scripts
 export config=serverless.yml
 unset AWS_PROFILE
 eval $( $(pwd)/aws_signing_helper credential-process \
@@ -246,6 +245,7 @@ eval $( $(pwd)/aws_signing_helper credential-process \
 
 
 cd services/dependency-management
+npm install serverless-plugin-scripts
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/cognito-auth
