@@ -20,7 +20,7 @@ provider:
     subnetIds:
       - ${ssm:SUBNET_ID}
 
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -61,7 +61,6 @@ provider:
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
-    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
@@ -267,7 +266,7 @@ functions:
   create:
     handler: handlers/create.create_auction
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors: true
@@ -280,7 +279,7 @@ functions:
   unpublish_auction:
     handler: handlers/unpublish_auction.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors:
@@ -305,7 +304,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -319,7 +318,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -332,7 +331,7 @@ functions:
     handler: handlers/create_lots.lambda_handler
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -345,7 +344,7 @@ functions:
     handler: handlers/view_lots.list_lots
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -358,7 +357,7 @@ functions:
     handler: handlers/admin_list_lots.list_lots
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors:
@@ -383,7 +382,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -397,7 +396,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -411,7 +410,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -424,7 +423,7 @@ functions:
     handler: handlers/view.view
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -438,8 +437,8 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
-        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+        -  ${ssm:PYTHON_LIB_ARN}
+        -  ${ssm:PYTHON_LIB_ARN_2}
 
       events:
         - http:
@@ -453,7 +452,7 @@ functions:
     handler: handlers/import_lots.import_lots
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -465,12 +464,12 @@ functions:
   update_auction:
       handler: handlers/update.update_auction
       runtime: python3.9
-      timeout: 120
+      timeout: 30
       maximumRetryAttempts: 0
       memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
-        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+        -  ${ssm:PYTHON_LIB_ARN}
+        -  ${ssm:PYTHON_LIB_ARN_2}
       events:
         - http:
             cors: true
@@ -484,7 +483,7 @@ functions:
       runtime: python3.9
       memorySize: 128
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PYTHON_LIB_ARN}
       events:
         - http:
             cors: true
@@ -497,7 +496,7 @@ functions:
     handler: handlers/deactivate.deactivate
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     events:
       - http:
           cors: true
@@ -511,19 +510,19 @@ functions:
     timeout: ${ssm:LAMBDA_TIMEOUT}
     memorySize: ${ssm:PROCESS_LAMBDA_MEMORY}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
 
   # send-email_auction:
   #   handler: handlers/auto_completion_bid.handler
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
 
   batchLotsPublish:
     handler: handlers/publish_auction.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
     timeout: 90
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     deadLetter:
       targetArn:
         Fn::GetAtt:
@@ -537,7 +536,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
 
 
 
@@ -548,7 +547,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -562,7 +561,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -576,7 +575,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -590,7 +589,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 180
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -604,7 +603,7 @@ functions:
     maximumRetryAttempts: 0
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs:
           arn: 
@@ -617,7 +616,7 @@ functions:
   #   maximumRetryAttempts: 0
   #   timeout: 60
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -629,7 +628,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -643,7 +642,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -654,7 +653,7 @@ functions:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -666,7 +665,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -678,7 +677,7 @@ functions:
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   timeout: 60
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -691,7 +690,7 @@ functions:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NODE_LIB_ARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -702,12 +701,12 @@ functions:
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
       
   sqs-trigger-function:
     handler: handlers/sqs_trigger_function.sqsTriggerFunction
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - sqs: 
           arn: 
@@ -718,13 +717,13 @@ functions:
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
   
 
   bdd_update_status:
     handler: handlers/bdd_api.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors:
@@ -747,7 +746,7 @@ functions:
   get-leaderboard:
     handler: handlers/get_leaderboard.get_leaderboard
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NODE_LIB_ARN}
     events:
       - http:
           cors:
@@ -777,6 +776,17 @@ functions:
           - CleanupStepFunctionsDLQ
           - Arn
 
+  delete-image:
+      handler: handlers/delete_image.delete_image
+      layers:
+        - ${ssm:COMMON_LIB_ARN}
+      events:
+        - http:
+            cors: true
+            path: /image
+            method: delete
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 resources:
   Conditions:

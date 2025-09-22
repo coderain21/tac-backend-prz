@@ -1,0 +1,92 @@
+service: dependency-management
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ${env:REGION}
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket:
+    versioning: true
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - lambda:PublishLayerVersion
+            - ssm:PutParameter
+          Resource: "*"
+
+# Lambda layers for Node.js and Python dependencies
+layers:
+  # Node.js Layer - installs from services/dependency-management/package.json
+  devNodejs:
+    path: ./layer
+    name: ${sls:stage}-nodejs
+    retain: true
+    description: "Node.js shared dependencies for Lambdas"
+    compatibleRuntimes:
+      - nodejs18.x
+  
+  # Python Layer 1 - installs from services/dependency-management/requirements.txt
+  devPython:
+    path: ./python_lib
+    name: ${sls:stage}-python
+    retain: true
+    description: "Python shared dependencies for Lambdas"
+    compatibleRuntimes:
+      - python3.9
+  
+  # Python Layer 2 - installs from services/dependency-management/requirements2.txt
+  devPython2:
+    path: ./python_lib2
+    name: ${sls:stage}-python-2
+    retain: true
+    description: "Python secondary dependencies for Lambdas"
+    compatibleRuntimes:
+      - python3.9
+
+package:
+  individually: true
+  patterns:
+    - '!.git/**'
+    - '!.env*'
+    - '!README.md'
+    - '!*.log'
+    - '!node_modules/**'
+    - '!requirements*.txt'
+    - '!extra/**'
+  excludeDevDependencies: false
+
+resources:
+  Resources:
+    NodeLibArnStore:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: NODE_LIB_ARN
+        Type: String
+        Value: ${cf:${self:service}-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
+    PythonLibArnStore:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: PYTHON_LIB_ARN
+        Type: String
+        Value: ${cf:${self:service}-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
+    
+    PythonLibArn2Store:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: PYTHON_LIB_ARN_2
+        Type: String
+        Value: ${cf:${self:service}-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
+
+    
+custom:
+  scripts:
+    hooks:
+      # This hook runs during package/deploy to install dependencies
+      'package:initialize': npm run build:all
+
+plugins:
+  - serverless-package-external
+  - serverless-plugin-scripts
