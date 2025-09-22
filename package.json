@@ -55,7 +55,6 @@
     "path": "^0.12.7",
     "qrcode": "^1.5.3",
     "request": "^2.88.2",
-    "serverless": "^3.36.0",
     "serverless-appsync-plugin": "^2.7.0",
     "serverless-aws-documentation": "^1.1.0",
     "serverless-domain-manager": "^7.3.8",

@@ -1,0 +1,42 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:node": "npm i --force && mkdir -p layer/nodejs && cp -r node_modules layer/nodejs/ && find layer/nodejs/node_modules -name '*.md' -delete && find layer/nodejs/node_modules -name '*.txt' -delete && rm -rf layer/nodejs/node_modules/.cache && rm -rf layer/nodejs/node_modules/*/test && rm -rf layer/nodejs/node_modules/*/tests && rm -rf layer/nodejs/node_modules/*/docs && rm -rf layer/nodejs/node_modules/*/examples",
+    "build:python": "pip install -r requirements.txt -t python_lib/python && rm -rf python_lib/python/cffi* && rm -rf python_lib/python/_cffi_* && cp -a extra/* python_lib/python/",
+    "build:python2": "pip install -r requirements2.txt -t python_lib2/python",
+    "build:all": "npm run build:node && npm run build:python && npm run build:python2",
+    "clean": "rm -rf layer python_lib python_lib2"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@mailchimp/mailchimp_transactional": "^1.0.59",
+    "aws-sdk": "^2.1427.0",
+    "axios": "^1.6.8",
+    "crypto": "^1.0.1",
+    "crypto-js": "^4.1.1",
+    "csv-writer": "^1.6.0",
+    "dotenv": "^16.0.3",
+    "he": "^1.2.0",
+    "ioredis": "^4.16.0",
+    "joi": "^17.9.2",
+    "mongodb": "^5.5.0",
+    "mongoose": "^7.4.1",
+    "mongoose-paginate-v2": "^1.7.1",
+    "node-fetch": "^2.6.7",
+    "otp-generator": "^4.0.1",
+    "password-validator": "^5.3.0",
+    "redis": "^4.6.11",
+    "request": "^2.88.2",
+    "split-array": "^1.0.1",
+    "stripe": "^13.2.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "serverless-plugin-scripts": "^1.0.2"
+  }
+}
