@@ -84,11 +84,11 @@ def bulk_reorder_lots(event):
 
         # Start bulk update operation
         bulk_operations = []
-        
+
         for order in lot_orders:
             lot_id = order['lot_id']
             new_lot_number = order['new_lot_number']
-            
+
             # Update the lot with new lot_number
             bulk_operations.append({
                 "updateOne": {
@@ -109,7 +109,7 @@ def bulk_reorder_lots(event):
             print(f"Updated {result.modified_count} lots")
 
         client.close()
-        
+
         return {
             "statusCode": 200,
             "headers": headers,
@@ -134,26 +134,15 @@ def lambda_handler(event, context):
     try:
         # Check HTTP method
         if event.get('httpMethod') == 'POST':
-            status_code, response_body = bulk_reorder_lots(event)
-            
-            # Handle tuple return from bulk_reorder_lots
-            if isinstance(status_code, tuple):
-                actual_status, actual_body = status_code
-                return {
-                    "statusCode": actual_status,
-                    "headers": headers,
-                    "body": json.dumps(actual_body)
-                }
-            else:
-                # Handle dict return (new format)
-                return response_body
+            response = bulk_reorder_lots(event)
+            return response
         else:
             return {
                 "statusCode": 405,
                 "headers": headers,
                 "body": json.dumps({"message": "Method not allowed"})
             }
-            
+
     except Exception as e:
         print(f"Lambda handler error: {str(e)}")
         return {
