@@ -523,17 +523,9 @@ resources:
               Statement:
                 - Effect: "Allow"
                   Action:
-                    - "s3:PutObject"
+                    - "s3:PutObject" # Adjust permissions as needed
                     - "s3:GetObject"
-                    - "s3:DeleteObject"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/users/${cognito-identity.amazonaws.com:sub}/*"
-                - Effect: "Allow"
-                  Action:
-                    - "s3:ListBucket"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}"
-                  Condition:
-                    StringLike:
-                      "s3:prefix": "users/${cognito-identity.amazonaws.com:sub}/*"
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -714,17 +706,9 @@ resources:
               Statement:
                 - Effect: "Allow"
                   Action:
-                    - "s3:PutObject"
+                    - "s3:PutObject" # Adjust permissions as needed
                     - "s3:GetObject"
-                    - "s3:DeleteObject"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/admin/${cognito-identity.amazonaws.com:sub}/*"
-                - Effect: "Allow"
-                  Action:
-                    - "s3:ListBucket"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}"
-                  Condition:
-                    StringLike:
-                      "s3:prefix": "admin/${cognito-identity.amazonaws.com:sub}/*"
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
 
     AdminCognitoIdentityPoolIDStore:
