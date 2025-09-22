@@ -167,7 +167,7 @@ module.exports.handler = async (event) => {
 
             console.log('updateArnStatus', updateArn)
 
-            await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
+            // await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
 
             const payload = { auction: { _id: getAuctionDetails[0]._id } }
             const headersList = {
