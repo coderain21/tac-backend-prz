@@ -745,6 +745,15 @@
             "example": "66338b58736f46983bbd2de1"
           },
           {
+            "name": "auction_id",
+            "in": "query",
+            "description": "Auction Id",
+            "schema": {
+              "type": "string"
+            },
+            "example": "6520008e74542648a5819807"
+          },
+          {
             "name": "sort_by",
             "in": "query",
             "description": "sorting by key",
