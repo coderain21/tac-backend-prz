@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NODE_LIB_ARN}
   environment:
     BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
@@ -159,7 +159,7 @@ functions:
     handler: handlers/view.view
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -175,7 +175,7 @@ functions:
     handler: handlers/userpool.create
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -191,7 +191,7 @@ functions:
     handler: handlers/verify_the_recaptcha.verify
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -207,7 +207,7 @@ functions:
     handler: handlers/otp_validation.validate
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -223,7 +223,7 @@ functions:
     handler: handlers/view_list_lots.view_list_lots
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -239,7 +239,7 @@ functions:
     handler: handlers/search_lots.lot_search
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -256,7 +256,7 @@ functions:
     handler: handlers/view_lots.lot_details
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -272,7 +272,7 @@ functions:
     handler: handlers/credit_card.credit_card
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -288,7 +288,7 @@ functions:
       handler: handlers/accept_buyer.accept_buyer
       runtime: python3.9
       layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
       vpc:
         securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -306,7 +306,7 @@ functions:
     handler: handlers/update_password.update_password
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -336,7 +336,7 @@ functions:
     handler: handlers/register_auction.register_auction
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -364,7 +364,7 @@ functions:
     handler: handlers/view_profile.view_profile
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -392,7 +392,7 @@ functions:
     handler: handlers/add_address.add_address
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -420,7 +420,7 @@ functions:
     handler: handlers/get_paddle.paddle_number
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -449,7 +449,7 @@ functions:
     handler: handlers/send_reset_link.send_reset_link
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -465,8 +465,8 @@ functions:
     handler: handlers/reset.password_reset
     runtime: python3.9
     layers: 
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
-      - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+      -  ${ssm:PYTHON_LIB_ARN}
+      -  ${ssm:PYTHON_LIB_ARN_2}
     vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -483,7 +483,7 @@ functions:
     handler: handlers/get_link.get_link
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -511,7 +511,7 @@ functions:
     handler: handlers/buyer_signin_logger.buyer_signin_logger
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -540,7 +540,7 @@ functions:
     handler: handlers/get_policy.get_policy
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PYTHON_LIB_ARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
