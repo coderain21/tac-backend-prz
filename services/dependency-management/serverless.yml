@@ -58,29 +58,7 @@ package:
     - '!extra/**'
   excludeDevDependencies: false
 
-resources:
-  Resources:
-    NodeLibArnStore:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: NODE_LIB_ARN
-        Type: String
-        Value: ${cf:${self:service}-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
-    PythonLibArnStore:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: PYTHON_LIB_ARN
-        Type: String
-        Value: ${cf:${self:service}-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
-    
-    PythonLibArn2Store:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: PYTHON_LIB_ARN_2
-        Type: String
-        Value: ${cf:${self:service}-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
 
-    
 custom:
   scripts:
     hooks:
