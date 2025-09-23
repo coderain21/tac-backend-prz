@@ -63,6 +63,8 @@ def admin_get_dashboard(event, context):
 
         user_name = seller_email
 
+        admin_user_name = email_address
+
         auctions_data = auction_collection.find_one({"auction_id":auction_id, "seller_email":seller_email})
 
         a_id = auctions_data['_id']
@@ -136,7 +138,7 @@ def admin_get_dashboard(event, context):
                 }
             },
             SessionLifetimeInMinutes=60,
-            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{user_name}"
+            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{admin_user_name}"
         )
 
         embed_url = response['EmbedUrl']

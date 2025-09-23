@@ -46,6 +46,7 @@ def admin_get_dashboard(event, context):
         print('account id', aws_account_id)
         dashboard_id = os.environ['ADMIN_DASHBOARD_ID']
         user_name = email_address
+        admin_user_name = email_address
         print(user_name,"user_name")
 
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-production':
@@ -117,7 +118,7 @@ def admin_get_dashboard(event, context):
                 }
             },
             SessionLifetimeInMinutes=60,
-            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{email_address}"
+            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{admin_user_name}"
         )
 
         embed_url = response['EmbedUrl']

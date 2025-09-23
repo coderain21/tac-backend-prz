@@ -53,11 +53,9 @@ def get_auction_dashboard(event, context):
 
 
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
-        print('account id', aws_account_id)
         dashboard_id = os.environ['QUICKSIGHT_AUCTION_DASHBOARD_ID']
-        print('dashboard id', dashboard_id)
         user_name = email_address
-        print(user_name,"user_name")
+        admin_user_name = os.environ['ADMIN_USERNAME']
 
         data = event['queryStringParameters']
         auction_id = data['auction_id']
@@ -137,7 +135,7 @@ def get_auction_dashboard(event, context):
                 }
             },
             SessionLifetimeInMinutes=60,
-            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/indyauctiontestops+admin@gmail.com"
+            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{admin_user_name}"
         )
 
         embed_url = response['EmbedUrl']

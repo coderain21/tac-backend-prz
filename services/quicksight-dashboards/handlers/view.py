@@ -43,10 +43,9 @@ def get_dashboard(event, context):
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
-        print('account id', aws_account_id)
         dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
         user_name = email_address
-        print(user_name,"user_name")
+        admin_user_name = os.environ['ADMIN_USERNAME']
 
         if os.environ.get('STAGE') == 'dev' or os.environ.get('STAGE') == 'pre-production':
             sts_client = boto3.client('sts')
@@ -117,7 +116,7 @@ def get_dashboard(event, context):
                 }
             },
             SessionLifetimeInMinutes=60,
-            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/indyauctiontestops+admin@gmail.com"
+            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{admin_user_name}"
         )
 
         embed_url = response['EmbedUrl']
