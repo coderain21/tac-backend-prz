@@ -22,8 +22,6 @@ layers:
   # Node.js Layer - installs from services/dependency-management/package.json
   devNodejs:
     path: ./layer
-    name: ${sls:stage}-nodejs
-    retain: true
     description: "Node.js shared dependencies for Lambdas"
     compatibleRuntimes:
       - nodejs18.x
@@ -31,17 +29,13 @@ layers:
   # Python Layer 1 - installs from services/dependency-management/requirements.txt
   devPython:
     path: ./python_lib
-    name: ${sls:stage}-python
-    retain: true
     description: "Python shared dependencies for Lambdas"
     compatibleRuntimes:
       - python3.9
   
   # Python Layer 2 - installs from services/dependency-management/requirements2.txt
-  devPython2:
+  devPythonSecond:
     path: ./python_lib2
-    name: ${sls:stage}-python-2
-    retain: true
     description: "Python secondary dependencies for Lambdas"
     compatibleRuntimes:
       - python3.9
@@ -58,34 +52,52 @@ package:
     - '!extra/**'
   excludeDevDependencies: false
 
-resources:
-  Resources:
-    NodeLibArnStore:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: NODE_LIB_ARN
-        Type: String
-        Value: ${cf:${self:service}-${sls:stage}.DevNodejsLambdaLayerQualifiedArn}
-    PythonLibArnStore:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: PYTHON_LIB_ARN
-        Type: String
-        Value: ${cf:${self:service}-${sls:stage}.DevPythonLambdaLayerQualifiedArn}
-    
-    PythonLibArn2Store:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: PYTHON_LIB_ARN_2
-        Type: String
-        Value: ${cf:${self:service}-${sls:stage}.DevPython2LambdaLayerQualifiedArn}
 
-    
 custom:
   scripts:
     hooks:
       # This hook runs during package/deploy to install dependencies
       'package:initialize': npm run build:all
+
+resources:
+  Resources:
+    DevNodejsLambdaLayer:
+      Type: AWS::Lambda::LayerVersion
+      UpdateReplacePolicy: Retain
+      DeletionPolicy: Retain
+
+    DevPythonLambdaLayer:
+      Type: AWS::Lambda::LayerVersion
+      UpdateReplacePolicy: Retain
+      DeletionPolicy: Retain
+
+    DevPythonSecondLambdaLayer:
+      Type: AWS::Lambda::LayerVersion
+      UpdateReplacePolicy: Retain
+      DeletionPolicy: Retain
+
+    # SSM Parameter to store the layer ARNs
+    NodejsLayerArn:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: NodeLayerARN
+        Type: String
+        Value: !Ref DevNodejsLambdaLayer
+        Description: Node.js layer ARN
+    PythonLayerArn:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: PythonLayerARN
+        Type: String
+        Value: !Ref DevPythonLambdaLayer
+        Description: Python layer ARN
+    PythonLayer2Arn:
+      Type: 'AWS::SSM::Parameter'
+      Properties:
+        Name: PythonLayer2ARN
+        Type: String
+        Value: !Ref DevPythonSecondLambdaLayer
+        Description: Python layer 2 ARN
 
 plugins:
   - serverless-package-external

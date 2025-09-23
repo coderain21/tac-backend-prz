@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers:  ${ssm:NODE_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   environment:
     BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
@@ -125,7 +125,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - cognitoUserPool:
           pool: ${self:provider.stage}-indyauction-buyers
@@ -135,7 +135,7 @@ functions:
   post-auth:
     handler: handlers/post_auth.handler
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -151,7 +151,7 @@ functions:
   cognito-create-auth-challenge:
     handler: handlers/cognito_create_auth_challenge.handler
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - cognitoUserPool:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
@@ -162,7 +162,7 @@ functions:
   cognito-define-auth-challenge:
     handler: handlers/cognito_define_auth_challenge.handler
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - cognitoUserPool:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
@@ -173,7 +173,7 @@ functions:
   cognito-verify-auth-challenge:
     handler: handlers/cognito_verify_auth_challenge.handler
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - cognitoUserPool:
           pool: ${opt:stage, self:provider.stage}-indyauction-admin
@@ -184,7 +184,7 @@ functions:
     handler: handlers/add_callback_logout_urls.add_callback_logout_urls
     runtime: python3.9
     layers:
-      -  ${ssm:PYTHON_LIB_ARN}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -199,7 +199,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - cognitoUserPool:
           pool: ${self:provider.stage}-indyauction-admin
@@ -523,17 +523,9 @@ resources:
               Statement:
                 - Effect: "Allow"
                   Action:
-                    - "s3:PutObject"
+                    - "s3:PutObject" # Adjust permissions as needed
                     - "s3:GetObject"
-                    - "s3:DeleteObject"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/users/${cognito-identity.amazonaws.com:sub}/*"
-                - Effect: "Allow"
-                  Action:
-                    - "s3:ListBucket"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}"
-                  Condition:
-                    StringLike:
-                      "s3:prefix": "users/${cognito-identity.amazonaws.com:sub}/*"
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
     CognitoIdentityPoolRole:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
@@ -714,17 +706,9 @@ resources:
               Statement:
                 - Effect: "Allow"
                   Action:
-                    - "s3:PutObject"
+                    - "s3:PutObject" # Adjust permissions as needed
                     - "s3:GetObject"
-                    - "s3:DeleteObject"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/admin/${cognito-identity.amazonaws.com:sub}/*"
-                - Effect: "Allow"
-                  Action:
-                    - "s3:ListBucket"
-                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}"
-                  Condition:
-                    StringLike:
-                      "s3:prefix": "admin/${cognito-identity.amazonaws.com:sub}/*"
+                  Resource: "arn:aws:s3:::${ssm:BUCKET_NAME}/*" # Replace with your S3 bucket ARN
   
 
     AdminCognitoIdentityPoolIDStore:

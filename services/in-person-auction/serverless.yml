@@ -20,7 +20,7 @@ provider:
     subnetIds:
       - ${ssm:SUBNET_ID}
 
-  layers:  ${ssm:NODE_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -113,7 +113,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -131,7 +131,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -149,7 +149,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -167,7 +167,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -185,7 +185,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -204,7 +204,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -222,7 +222,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -240,7 +240,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -258,7 +258,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -276,7 +276,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -294,7 +294,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -312,7 +312,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -329,7 +329,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -347,7 +347,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true

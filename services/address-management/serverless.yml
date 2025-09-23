@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers:  ${ssm:NODE_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -133,7 +133,7 @@ functions:
     handler: handlers/add_shipping_address.add_shipping_address
     runtime: python3.9
     layers:
-    -  ${ssm:PYTHON_LIB_ARN}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -159,7 +159,7 @@ functions:
     handler: handlers/view_address.view_address
     runtime: python3.9
     layers:
-    -  ${ssm:PYTHON_LIB_ARN}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -185,7 +185,7 @@ functions:
     handler: handlers/update_address.update_address
     runtime: python3.9
     layers:
-    -  ${ssm:PYTHON_LIB_ARN}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
