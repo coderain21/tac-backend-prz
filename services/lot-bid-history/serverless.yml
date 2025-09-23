@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers:  ${ssm:NODE_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
@@ -94,7 +94,7 @@ functions:
   list-bids:
     handler: handlers/list.handler
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -111,7 +111,7 @@ functions:
   buyer-list-bids:
     handler: handlers/list.handler
     layers:
-      -  ${ssm:NODE_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -139,7 +139,7 @@ functions:
     timeout: 30
     runtime: python3.9
     layers:
-    -  ${ssm:PYTHON_LIB_ARN}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
