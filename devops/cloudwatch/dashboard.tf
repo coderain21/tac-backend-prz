@@ -77,7 +77,7 @@ resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
 
 # Create CloudWatch Alarm for process cart logs
 resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
-  alarm_name          = "Process Cart Logs Error Alarm"
+  alarm_name          = "P3-IndyAuction-${var.STAGE}-Process-Cart-Logs-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].name
@@ -94,7 +94,65 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
 
 
 
+resource "aws_cloudwatch_log_metric_filter" "sqs_lambda_error_metric_filter" {
+  count          = length([
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ])
+  name           = "SQS Lot Update Error ${count.index}"
+  log_group_name = [
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ][count.index]
+  pattern        = "\"ERROR	Error: TypeError: Cannot read properties of\""
 
+  metric_transformation {
+    name      = "LambdaErrorCount_${count.index}"
+    namespace = "LambdaErrors"
+    value     = "1"
+  }
+  provider             = aws.deployment-eu
+
+}
+
+resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
+  count                 = length([
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ])
+  alarm_name            = "P3-IndyAuction-${var.STAGE}-SQS-Lot-Update-Error-Alarm-${count.index}"
+  comparison_operator   = "GreaterThanOrEqualToThreshold"
+  evaluation_periods    = 1
+  metric_name           = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].name
+  namespace             = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].namespace
+  period                = 300
+  statistic             = "Sum"
+  threshold             = 1
+  alarm_description     = "Alarm when Lambda logs contain 'ERROR	Error: TypeError: Cannot read properties of' in log group ${[
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+  ][count.index]}"
+
+  # Actions
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
 resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_filter" {
   name           = "Save To Cache All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-save-to-cache"
@@ -110,10 +168,9 @@ resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_f
 }
 
 resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
-  alarm_name          = "IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 3
-  datapoints_to_alarm = 2
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].name
   namespace           = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].namespace
   period              = 300
@@ -131,7 +188,7 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
 #Creating alarm for Admin web application erros 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-Stauscode 5xx Admin Web Application"
+  alarm_name     = "P3-IndyAuction-${var.STAGE}-Statuscode-5xx-Admin-Web-Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http5xxCount"
@@ -154,7 +211,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_admin_500_status_co
 #Creating alarm for Buyer web application erros 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-Stauscode 5xx Buyer Web Application"
+  alarm_name     = "P1-IndyAuction-${var.STAGE}-Statuscode-5xx-Buyer-Web-Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http5xxCount"
@@ -176,7 +233,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_buyer_500_status_co
 #Creating alarm for Seller web application erros 
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_code" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-Stauscode 5xx Seller Web Application"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Statuscode-5xx-Seller-Web-Application"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Http5xxCount"
@@ -199,7 +256,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_rum_alarm_seller_500_status_c
 # Create CloudWatch Alarms for DocuementDB maximum connections metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-DocuemntDB Max Connection"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-Max-Connection"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "DatabaseConnectionsMax"
@@ -219,7 +276,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
 # Create CloudWatch Alarms for DocuementDB CPU utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-DocuemntDB CPU"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-CPU"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -240,7 +297,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_cpu" {
 # Create CloudWatch Alarms for DocuementDB Memory utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-DocuemntDB Memory"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-Memory"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "FreeLocalStorage"
@@ -262,7 +319,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_docuementdb_memory" {
 # Create CloudWatch Alarms for ECS Service Memory utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}ECS Service Memory"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-ECS-Service-Memory"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "MemoryUtilization"
@@ -284,7 +341,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_memory" {
 # Create CloudWatch Alarms for ECS Service CPU utilization metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-ECS Service CPU"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-ECS-Service-CPU"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -306,7 +363,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_ecs_cpu" {
 # Create CloudWatch Alarms for Redis  CPU utilization metrics for primary node
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-Redis-CPU"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Redis-CPU-Primary"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -328,7 +385,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
 # Create CloudWatch Alarms for Redis  CPU utilization metrics for replica node
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   provider = aws.deployment-eu
-  alarm_name     = "IndyAuction-${var.STAGE}-Redis-CPU"
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Redis-CPU-Replica"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "CPUUtilization"
@@ -387,7 +444,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
 
 resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   provider             = aws.deployment-eu
-  alarm_name          = "IndyAuction-${var.STAGE}-Redis-NetworkPacketsAllowanceExceeded"
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-NetworkPacketsAllowanceExceeded"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "NetworkPacketsPerSecondAllowanceExceeded"
@@ -406,7 +463,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
 
 resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
   provider             = aws.deployment-eu
-  alarm_name          = "IndyAuction-${var.STAGE}-Redis-MemoryEvictions"
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-MemoryEvictions"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Evictions"
@@ -424,7 +481,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
 
 resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
   provider             = aws.deployment-eu
-  alarm_name          = "IndyAuction-${var.STAGE}--Redis-MemoryUsage"
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-MemoryUsage"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "DatabaseMemoryUsagePercentage"
@@ -443,7 +500,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
 
 # STEP FUNCTIONS ALARMS
 resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed" {
-  alarm_name          = "IndyAuction-${var.STAGE}-StepFunction-ExecutionsFailed"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-StepFunction-ExecutionsFailed"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "ExecutionsFailed"
@@ -460,7 +517,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
-  alarm_name          = "IndyAuction-${var.STAGE}-StepFunction-ExecutionsTimedOut"
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-StepFunction-ExecutionsTimedOut"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "ExecutionsTimedOut"
@@ -476,27 +533,46 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
   provider             = aws.deployment-eu
 }
 
-
-
-
-resource "aws_cloudwatch_metric_alarm" "lambda_concurrent_executions" {
-  alarm_name          = "IndyAuction-${var.STAGE}-Lambda-ConcurrentExecutions"
+# LAMBDA ALARMS
+resource "aws_cloudwatch_metric_alarm" "lambda_throttles_all" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Lambda-AllFunctions-Throttles"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "ConcurrentExecutions"
+  metric_name         = "Throttles"
   namespace           = "AWS/Lambda"
   period              = 300
-  statistic           = "Maximum"
+  statistic           = "Sum"
   threshold           = 900
-  alarm_description   = "Concurrent Lambda executions > 500"
-    alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  provider             = aws.deployment-eu
+
+  # 🔹 No dimensions block — applies across all functions
+  alarm_description   = "Total Lambda throttles across all functions > 1000"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+
+  provider            = aws.deployment-eu
 }
 
 
+# SQS ALARM FOR LARGE MESSAGE
+resource "aws_cloudwatch_metric_alarm" "sqs_large_message" {
+  alarm_name          = "P4-IndyAuction-${var.STAGE}-SQS-SentMessageSizeExceeded"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "SentMessageSize"
+  namespace           = "AWS/SQS"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = 262144  # 256 KB in bytes
+  dimensions = {
+    QueueName = "${var.STAGE}-bulk-lots-update"
+  }
+  alarm_description   = "SQS message size > 256 KB"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
 # ECS ALARMS
 resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures" {
-  alarm_name          = "IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
+  alarm_name          = "P4-IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "TaskLaunchFailures"
@@ -514,7 +590,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs_task_count" {
-  alarm_name          = "IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
+  alarm_name          = "P4-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 1
   metric_name         = "RunningTaskCount"
@@ -548,7 +624,7 @@ resource "aws_cloudwatch_log_metric_filter" "throttling_exception_filter" {
 
 
 resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
-  alarm_name          = "ThrottlingExceptionAlarm-Unpublish-Auction"
+  alarm_name          = "P4-IndyAuction-${var.STAGE}-ThrottlingException-Unpublish-Auction"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].name
@@ -581,7 +657,7 @@ resource "aws_cloudwatch_log_metric_filter" "ecs_type_error_filter" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
-  alarm_name          = "IndyAuction-${var.STAGE}-Redis-Data-Miss-Email-Fails"
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-Data-Miss-Email-Fails"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.ecs_type_error_filter.metric_transformation[0].name
@@ -614,3 +690,4 @@ resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_2" {
   protocol  = "email"
   endpoint  = "ranjith.n@7edge.com"  # Replace with your email address
 }
+
