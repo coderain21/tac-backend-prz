@@ -45,11 +45,11 @@ def extract_s3_key_from_image(image_obj):
     """Extract S3 key from image object"""
     if not image_obj or not isinstance(image_obj, dict) or 'url' not in image_obj:
         return None
-    
+
     url = image_obj.get('url')
     if not url or not isinstance(url, str) or url.strip() == '':
         return None
-    
+
     return url.strip()
 
 def delete_single_s3_object(s3_key, bucket_name, add_public_prefix=False):
@@ -57,7 +57,7 @@ def delete_single_s3_object(s3_key, bucket_name, add_public_prefix=False):
     try:
         s3_client = get_s3_client()
         full_key = f"public/{s3_key}" if add_public_prefix else s3_key
-        
+
         s3_client.delete_object(Bucket=bucket_name, Key=full_key)
         print(f'Successfully deleted S3 object: {full_key}')
         return True, full_key, None
@@ -74,25 +74,25 @@ def delete_images_from_s3_batch(images, max_workers=10):
     """Delete lot images from S3 using concurrent processing"""
     if not images or not isinstance(images, list) or len(images) == 0:
         return True
-    
+
     print(f"Processing {len(images)} lot images for deletion")
-    
+
     try:
         bucket_name = os.environ.get('S3_BUCKET')
         if not bucket_name:
             print("S3_BUCKET environment variable not set")
             return False
-        
+
         # Extract S3 keys
         s3_keys = []
         for image in images:
             key = extract_s3_key_from_image(image)
             if key:
                 s3_keys.append(key)
-        
+
         if len(s3_keys) == 0:
             return True
-        
+
         # Delete objects concurrently
         success_count = 0
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -100,7 +100,7 @@ def delete_images_from_s3_batch(images, max_workers=10):
                 executor.submit(delete_single_s3_object, key, bucket_name, True): key 
                 for key in s3_keys
             }
-            
+
             for future in as_completed(future_to_key):
                 key = future_to_key[future]
                 try:
@@ -109,10 +109,10 @@ def delete_images_from_s3_batch(images, max_workers=10):
                         success_count += 1
                 except Exception as e:
                     print(f'Exception in thread for key {key}: {str(e)}')
-        
+
         print(f'Successfully deleted {success_count}/{len(s3_keys)} lot images')
         return success_count == len(s3_keys)
-    
+
     except Exception as e:
         print(f'Error in batch deletion: {str(e)}')
         return False
@@ -121,18 +121,18 @@ def delete_auction_image_from_s3(auction_image_url):
     """Delete auction image from S3"""
     if not auction_image_url:
         return True
-    
+
     try:
         bucket_name = os.environ.get('S3_BUCKET')
         s3_key = auction_image_url.strip()
-        
+
         success, full_key, error = delete_single_s3_object(s3_key, bucket_name, True)
-        
+
         if success:
             print(f'Successfully deleted auction image: {s3_key}')
         else:
             print(f'Failed to delete auction image: {error}')
-        
+
         return success
     except Exception as e:
         print(f'Error deleting auction image: {str(e)}')
@@ -141,56 +141,54 @@ def delete_auction_image_from_s3(auction_image_url):
 def delete_lots_batch(auction_id, seller_email, batch_size=100):
     """Delete lots and their images in batches"""
     print(f"Starting cleanup for auction {auction_id}")
-    
+
     total_lots_deleted = 0
     total_images_deleted = 0
     batch_number = 0
-    
     try:
         while True:
             batch_number += 1
-            
-            # Get next batch of lots
+
+            # Get next batch of lots (keep _id for deletion)
             lots = list(lot_collection.find(
-                {"auction_id": auction_id, "seller_email": seller_email}, 
-                {"_id": 0}
+                {"auction_id": auction_id, "seller_email": seller_email}
             ).limit(batch_size))
-            
+
             if not lots:
                 break
-            
+
             print(f"Processing batch {batch_number} with {len(lots)} lots")
-            
+
             # Collect and delete images
             batch_images = []
             for lot in lots:
                 if 'images' in lot and lot['images']:
                     batch_images.extend(lot['images'])
-            
+
             if batch_images:
                 success = delete_images_from_s3_batch(batch_images, max_workers=15)
                 if success:
                     total_images_deleted += len(batch_images)
-            
-            # Delete lots from database
-            lot_ids = [lot.get('lot_id') for lot in lots if lot.get('lot_id')]
-            
-            if lot_ids:
-                delete_result = lot_collection.delete_many({
-                    "auction_id": auction_id, 
-                    "seller_email": seller_email,
-                    "lot_id": {"$in": lot_ids}
-                })
-                total_lots_deleted += delete_result.deleted_count
-            
-            if len(lots) < batch_size:
+
+            # Delete lots directly using auction_id and seller_email
+            delete_result = lot_collection.delete_many({
+                "auction_id": auction_id, 
+                "seller_email": seller_email
+            })
+            total_lots_deleted += delete_result.deleted_count
+
+            # If we deleted fewer than batch_size, we're done
+            if delete_result.deleted_count < batch_size:
                 break
-    
+
     except Exception as e:
         print(f"Error in cleanup: {str(e)}")
-    
+
     print(f"Cleanup completed. Lots deleted: {total_lots_deleted}, Images deleted: {total_images_deleted}")
     return total_lots_deleted, total_images_deleted
+
+
+
 
 def cleanup_auction_assets(event, context):
     """
@@ -207,22 +205,31 @@ def cleanup_auction_assets(event, context):
         auction_id = event['auction_id']
         seller_email = event['seller_email']
         auction_image = event.get('auction_image')
-        auction_logo_image = event.get('logo_image')
-        
+        auction_logo_image = event.get('auction_logo_image')
+        event_background_image = event.get('event_background_image')
+        event_left_image = event.get('event_left_image')
+        event_right_image = event.get('event_right_image')
+
         print(f"Starting cleanup for auction {auction_id}")
-        
+
         # Delete lots and their images
         lots_deleted, images_deleted = delete_lots_batch(auction_id, seller_email)
-        
+
         # Delete auction image
         auction_image_deleted = False
         if auction_image:
             auction_image_deleted = delete_auction_image_from_s3(auction_image)
         if auction_logo_image:
             auction_image_deleted = delete_auction_image_from_s3(auction_logo_image)
-        
+        if event_background_image:
+            auction_image_deleted = delete_auction_image_from_s3(event_background_image)
+        if event_left_image:
+            auction_image_deleted = delete_auction_image_from_s3(event_left_image)
+        if event_right_image:
+            auction_image_deleted = delete_auction_image_from_s3(event_right_image)
+
         print(f"Cleanup completed for auction {auction_id}")
-        
+
         return {
             'statusCode': 200,
             'body': json.dumps({
@@ -232,7 +239,7 @@ def cleanup_auction_assets(event, context):
                 'auction_image_deleted': auction_image_deleted
             })
         }
-        
+
     except Exception as e:
         print(f"Error in cleanup function: {str(e)}")
         return {

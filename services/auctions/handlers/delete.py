@@ -118,11 +118,15 @@ def delete_auction(event, context):
                 cleanup_payload = {
                     'auction_id': auction_id,
                     'seller_email': seller_email,
-                    'auction_image': auction.get('auction_image')
+                    'auction_image': auction.get('auction_image'),
+                    'auction_logo_image': auction.get('logo_image'),
+                    'event_background_image': auction.get('event_display').get('background_image'),
+                    'event_left_image': auction.get('event_display').get('left_logo_image'),
+                    'event_right_image': auction.get('event_display').get('right_logo_image')
                 }
                 
                 lambda_client.invoke(
-                    FunctionName=os.environ.get('CLEANUP_LAMBDA_NAME', 'auction-cleanup-lambda'),
+                    FunctionName=os.environ.get('CLEANUP_LAMBDA_NAME'),
                     InvocationType='Event',  # Async invocation
                     Payload=json.dumps(cleanup_payload)
                 )
