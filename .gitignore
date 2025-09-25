@@ -106,3 +106,9 @@ results.xml
 coverage/
 arns_data_prod_after.txt
 arns_data_prod.txt
+aws_signing_helper
+aws 
+awscliv2.zip
+feature_api_mapping.txt
+missing_apis_clean.txt
+api_specific_mon
