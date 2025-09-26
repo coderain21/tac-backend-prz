@@ -97,7 +97,7 @@ def delete_images_from_s3_batch(images, max_workers=10):
         success_count = 0
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             future_to_key = {
-                executor.submit(delete_single_s3_object, key, bucket_name, True): key 
+                executor.submit(delete_single_s3_object, key, bucket_name, True): key
                 for key in s3_keys
             }
 
