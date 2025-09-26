@@ -76,7 +76,7 @@ def delete_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        
+
         # Get the auction_id from the path parameter
         auction_id = event['pathParameters']['auction_id']
         print(f"Processing deletion for auction_id: {auction_id}, seller_email: {seller_email}")
@@ -111,7 +111,7 @@ def delete_auction(event, context):
 
         if update_result.modified_count == 1:
             print("Auction status updated to 'Deleted' successfully")
-            
+
             # Trigger async cleanup Lambda
             try:
                 lambda_client = boto3.client('lambda')
@@ -124,7 +124,7 @@ def delete_auction(event, context):
                     'event_left_image': auction.get('event_display').get('left_logo_image'),
                     'event_right_image': auction.get('event_display').get('right_logo_image')
                 }
-                
+
                 lambda_client.invoke(
                     FunctionName=os.environ.get('CLEANUP_LAMBDA_NAME'),
                     InvocationType='Event',  # Async invocation
