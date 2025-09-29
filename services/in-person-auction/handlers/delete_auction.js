@@ -52,6 +52,14 @@ module.exports.delete_auction = async (event) => {
             }
         }
 
+        if (existingAuction[0].status !== 'Draft') {
+            return {
+                statusCode: 400,
+                headers: helpers.getHeaders(),
+                body: JSON.stringify({ message: 'Cannot delete this Auction with the current status' }),
+            }
+        }
+
         // --- Delete related data in parallel ---
         await Promise.all([
             // mongoConnection.deleteBulk(Lot, { auction_id, seller_email: email }),
