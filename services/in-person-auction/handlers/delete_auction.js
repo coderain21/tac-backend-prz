@@ -2,9 +2,10 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
+const AWS = require('aws-sdk')
 const mongoConnection = require('../lib/mongodb_helper')
 const Auction = require('../entities/Auction')
-const Lot = require('../entities/Lot')
+// const Lot = require('../entities/Lot')
 const helpers = require('../lib/helper')
 const LiveBid = require('../entities/LiveBid')
 const RegisteredBidder = require('../entities/RegisteredUser')
@@ -53,7 +54,7 @@ module.exports.delete_auction = async (event) => {
 
         // --- Delete related data in parallel ---
         await Promise.all([
-            mongoConnection.deleteBulk(Lot, { auction_id, seller_email: email }),
+            // mongoConnection.deleteBulk(Lot, { auction_id, seller_email: email }),
             mongoConnection.deleteBulk(LiveBid, { auction_id, seller_email: email }),
             mongoConnection.deleteBulk(BuyerWishlist, { auction_id, seller_email: email }),
             // eslint-disable-next-line no-underscore-dangle
@@ -69,6 +70,30 @@ module.exports.delete_auction = async (event) => {
                 headers: helpers.getHeaders(),
                 body: JSON.stringify({ message: 'Auction not found or already deleted' }),
             }
+        }
+
+        // --- Trigger async cleanup Lambda ---
+        try {
+            const lambda = new AWS.Lambda()
+            const cleanupPayload = {
+                auction_id,
+                seller_email: email,
+                auction_image: existingAuction[0].auction_image,
+                auction_logo_image: existingAuction[0].logo_image,
+                event_background_image: existingAuction[0].event_display.background_image,
+                event_left_image: existingAuction[0].event_display.left_logo_image,
+                event_right_image: existingAuction[0].event_display.right_logo_image,
+            }
+
+            await lambda.invoke({
+                FunctionName: `auctions-${process.env.STAGE}-auction-cleanup`,
+                InvocationType: 'Event', // Async invocation
+                Payload: JSON.stringify(cleanupPayload),
+            }).promise()
+
+            console.log(`Triggered async cleanup for auction ${auction_id}`)
+        } catch (error) {
+            console.error(`Failed to trigger cleanup Lambda: ${error.message}`)
         }
 
         // --- Return success with deleted auction id ---
