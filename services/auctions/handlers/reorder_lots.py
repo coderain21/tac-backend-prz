@@ -1,7 +1,8 @@
 """This module is used to bulk reorder lots"""
 import json
 import os
-from pymongo import MongoClient
+from pymongo import MongoClient, UpdateOne
+from bson import ObjectId
 
 headers = {
     'Content-Type': 'application/json',
@@ -55,10 +56,21 @@ def bulk_reorder_lots(event):
 
         # Validate that all lots belong to the seller and auction
         lot_ids = [order['lot_id'] for order in lot_orders]
+        
+        # Convert string IDs to ObjectId objects
+        try:
+            object_ids = [ObjectId(lot_id) for lot_id in lot_ids]
+        except Exception as e:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid lot_id format"})
+            }
+        
         existing_lots = list(lot_collection.find({
             "seller_email": seller_email,
             "auction_id": auction_id,
-            "_id": {"$in": lot_ids}
+            "_id": {"$in": object_ids}
         }))
 
         if len(existing_lots) != len(lot_orders):
@@ -69,17 +81,28 @@ def bulk_reorder_lots(event):
             }
 
         # Check for auction status (should be in draft)
-        auction_collection = db[os.environ.get("AUCTION_COLLECTION_NAME", "auctions")]
+        auction_collection = db[os.environ.get("AUCTION_MONGODB_COLLECTION_NAME", "auctions")]
+        
         auction = auction_collection.find_one({
             "auction_id": auction_id,
             "seller_email": seller_email
         })
 
-        if not auction or auction.get('status') != 'Draft':
+        if not auction:
             return {
                 "statusCode": 400,
                 "headers": headers,
-                "body": json.dumps({"message": "Auction must be in draft state to reorder lots."})
+                "body": json.dumps({"message": "Auction not found or you don't have permission to modify it."})
+            }
+
+        auction_status = auction.get('status')
+        if auction_status != 'Draft':
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({
+                    "message": f"Auction must be in draft state to reorder lots. Current status: {auction_status}"
+                })
             }
 
         # Start bulk update operation
@@ -90,18 +113,18 @@ def bulk_reorder_lots(event):
             new_lot_number = order['new_lot_number']
 
             # Update the lot with new lot_number
-            bulk_operations.append({
-                "updateOne": {
-                    "filter": {
-                        "_id": lot_id,
+            bulk_operations.append(
+                UpdateOne(
+                    {
+                        "_id": ObjectId(lot_id),
                         "seller_email": seller_email,
                         "auction_id": auction_id
                     },
-                    "update": {
+                    {
                         "$set": {"lot_number": int(new_lot_number)}
                     }
-                }
-            })
+                )
+            )
 
         # Execute all updates in a single bulk operation for consistency
         if bulk_operations:
