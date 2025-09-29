@@ -484,6 +484,8 @@ functions:
       memorySize: 128
       layers:
         -  ${ssm:PythonLayerARN}
+      environment:
+        CLEANUP_LAMBDA_NAME: ${self:service}-${opt:stage, self:provider.stage}-auction-cleanup
       events:
         - http:
             cors: true
@@ -491,6 +493,14 @@ functions:
             method: delete
             authorizer:
                 arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  auction-cleanup:
+      handler: handlers/auction_cleanup.cleanup_auction_assets
+      runtime: python3.9
+      memorySize: 512
+      timeout: 900  # 15 minutes for cleanup operations
+      layers:
+        -  ${ssm:PythonLayerARN}
 
   deactivate:
     handler: handlers/deactivate.deactivate
