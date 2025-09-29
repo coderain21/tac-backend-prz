@@ -87,12 +87,12 @@ def delete_images_from_s3_batch(images):
         for i in range(0, len(s3_keys), 1000):
             batch_keys = s3_keys[i:i+1000]
             objects_to_delete = [{'Key': key} for key in batch_keys]
-            
+
             response = s3_client.delete_objects(
                 Bucket=bucket_name,
                 Delete={'Objects': objects_to_delete, 'Quiet': True}
             )
-            
+
             success_count += len(batch_keys)
             if 'Errors' in response and response['Errors']:
                 for error in response['Errors']:
