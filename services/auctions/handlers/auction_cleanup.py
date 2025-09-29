@@ -21,17 +21,8 @@ import json
 from pymongo import MongoClient
 import boto3
 from botocore.exceptions import ClientError
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import threading
-
-# Thread-safe S3 client creation
-_local = threading.local()
-
-def get_s3_client():
-    """Get thread-local S3 client for concurrent operations"""
-    if not hasattr(_local, 's3_client'):
-        _local.s3_client = boto3.client('s3', region_name=os.environ.get('REGION', 'eu-west-2'))
-    return _local.s3_client
+# S3 client
+s3_client = boto3.client('s3', region_name=os.environ.get('REGION', 'eu-west-2'))
 
 # MongoDB connection
 client = MongoClient(
@@ -55,9 +46,7 @@ def extract_s3_key_from_image(image_obj):
 def delete_single_s3_object(s3_key, bucket_name, add_public_prefix=False):
     """Delete a single S3 object with error handling"""
     try:
-        s3_client = get_s3_client()
         full_key = f"public/{s3_key}" if add_public_prefix else s3_key
-
         s3_client.delete_object(Bucket=bucket_name, Key=full_key)
         print(f'Successfully deleted S3 object: {full_key}')
         return True, full_key, None
@@ -70,8 +59,8 @@ def delete_single_s3_object(s3_key, bucket_name, add_public_prefix=False):
         print(error_msg)
         return False, full_key, error_msg
 
-def delete_images_from_s3_batch(images, max_workers=10):
-    """Delete lot images from S3 using concurrent processing"""
+def delete_images_from_s3_batch(images):
+    """Delete lot images from S3 using batch delete_objects API"""
     if not images or not isinstance(images, list) or len(images) == 0:
         return True
 
@@ -83,32 +72,32 @@ def delete_images_from_s3_batch(images, max_workers=10):
             print("S3_BUCKET environment variable not set")
             return False
 
-        # Extract S3 keys
+        # Extract S3 keys with public prefix
         s3_keys = []
         for image in images:
             key = extract_s3_key_from_image(image)
             if key:
-                s3_keys.append(key)
+                s3_keys.append(f"public/{key}")
 
         if len(s3_keys) == 0:
             return True
 
-        # Delete objects concurrently
+        # Delete objects in batches of 1000 (S3 limit)
         success_count = 0
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            future_to_key = {
-                executor.submit(delete_single_s3_object, key, bucket_name, True): key
-                for key in s3_keys
-            }
-
-            for future in as_completed(future_to_key):
-                key = future_to_key[future]
-                try:
-                    success, full_key, error = future.result()
-                    if success:
-                        success_count += 1
-                except Exception as e:
-                    print(f'Exception in thread for key {key}: {str(e)}')
+        for i in range(0, len(s3_keys), 1000):
+            batch_keys = s3_keys[i:i+1000]
+            objects_to_delete = [{'Key': key} for key in batch_keys]
+            
+            response = s3_client.delete_objects(
+                Bucket=bucket_name,
+                Delete={'Objects': objects_to_delete, 'Quiet': True}
+            )
+            
+            success_count += len(batch_keys)
+            if 'Errors' in response and response['Errors']:
+                for error in response['Errors']:
+                    print(f"Failed to delete {error['Key']}: {error['Message']}")
+                    success_count -= 1
 
         print(f'Successfully deleted {success_count}/{len(s3_keys)} lot images')
         return success_count == len(s3_keys)
@@ -166,7 +155,7 @@ def delete_lots_batch(auction_id, seller_email, batch_size=100):
                     batch_images.extend(lot['images'])
 
             if batch_images:
-                success = delete_images_from_s3_batch(batch_images, max_workers=15)
+                success = delete_images_from_s3_batch(batch_images)
                 if success:
                     total_images_deleted += len(batch_images)
 
