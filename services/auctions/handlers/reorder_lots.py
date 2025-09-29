@@ -56,7 +56,7 @@ def bulk_reorder_lots(event):
 
         # Validate that all lots belong to the seller and auction
         lot_ids = [order['lot_id'] for order in lot_orders]
-        
+
         # Convert string IDs to ObjectId objects
         try:
             object_ids = [ObjectId(lot_id) for lot_id in lot_ids]
@@ -66,7 +66,7 @@ def bulk_reorder_lots(event):
                 "headers": headers,
                 "body": json.dumps({"message": "Invalid lot_id format"})
             }
-        
+
         existing_lots = list(lot_collection.find({
             "seller_email": seller_email,
             "auction_id": auction_id,
@@ -82,7 +82,7 @@ def bulk_reorder_lots(event):
 
         # Check for auction status (should be in draft)
         auction_collection = db[os.environ.get("AUCTION_MONGODB_COLLECTION_NAME", "auctions")]
-        
+
         auction = auction_collection.find_one({
             "auction_id": auction_id,
             "seller_email": seller_email
