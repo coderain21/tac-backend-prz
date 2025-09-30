@@ -84,7 +84,7 @@ test.describe('Delete Auction - Complete Tests', () => {
     const auctionInsertResult = await auctions.insertOne({
       auction_id: auctionId,
       seller_email: sellerEmail,
-      status: 'Published',
+      status: 'Draft',
       auction_type: 'live',
       start_date: Date.now() + (2 * 60 * 60 * 1000),
       total_lots: 2
@@ -435,7 +435,7 @@ test('should return 404 when auction belongs to different seller', async () => {
       lot_id: 'other-lot'
     });
 
-    // Delete first seller's auction
+    // Delete first seller's auction (should succeed since it's Draft)
     const event = {
       requestContext: {
         authorizer: {
