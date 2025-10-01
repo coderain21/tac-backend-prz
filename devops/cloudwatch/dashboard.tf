@@ -93,65 +93,65 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
 
 
 
-resource "aws_cloudwatch_log_metric_filter" "sqs_lambda_error_metric_filter" {
-  count          = length([
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ])
-  name           = "SQS Lot Update Error ${count.index}"
-  log_group_name = [
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ][count.index]
-  pattern        = "\"ERROR	Error: TypeError: Cannot read properties of\""
+# resource "aws_cloudwatch_log_metric_filter" "sqs_lambda_error_metric_filter" {
+#   count          = length([
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+#   ])
+#   name           = "SQS Lot Update Error ${count.index}"
+#   log_group_name = [
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+#   ][count.index]
+#   pattern        = "\"ERROR	Error: TypeError: Cannot read properties of\""
 
-  metric_transformation {
-    name      = "LambdaErrorCount_${count.index}"
-    namespace = "LambdaErrors"
-    value     = "1"
-  }
-  provider             = aws.deployment-eu
+#   metric_transformation {
+#     name      = "LambdaErrorCount_${count.index}"
+#     namespace = "LambdaErrors"
+#     value     = "1"
+#   }
+#   provider             = aws.deployment-eu
 
-}
+# }
 
-resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
-  count                 = length([
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ])
-  alarm_name            = "P3-IndyAuction-${var.STAGE}-SQS-Lot-Update-Error-Alarm-${count.index}"
-  comparison_operator   = "GreaterThanOrEqualToThreshold"
-  evaluation_periods    = 1
-  metric_name           = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].name
-  namespace             = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].namespace
-  period                = 300
-  statistic             = "Sum"
-  threshold             = 1
-  alarm_description     = "Alarm when Lambda logs contain 'ERROR	Error: TypeError: Cannot read properties of' in log group ${[
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ][count.index]}"
+# resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
+#   count                 = length([
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+#   ])
+#   alarm_name            = "P3-IndyAuction-${var.STAGE}-SQS-Lot-Update-Error-Alarm-${count.index}"
+#   comparison_operator   = "GreaterThanOrEqualToThreshold"
+#   evaluation_periods    = 1
+#   metric_name           = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].name
+#   namespace             = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].namespace
+#   period                = 300
+#   statistic             = "Sum"
+#   threshold             = 1
+#   alarm_description     = "Alarm when Lambda logs contain 'ERROR	Error: TypeError: Cannot read properties of' in log group ${[
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
+#     "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
+#   ][count.index]}"
 
-  # Actions
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  provider             = aws.deployment-eu
-}
+#   # Actions
+#   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+#   provider             = aws.deployment-eu
+# }
 resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_filter" {
   name           = "Save To Cache Logs Error"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-save-to-cache"
@@ -672,6 +672,819 @@ resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
   alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
   provider            = aws.deployment-eu
 }
+
+resource "aws_cloudwatch_metric_alarm" "api_5xx_consolidated_p1" {
+  provider            = aws.deployment-eu
+  alarm_name          = "p1-indyauction-${var.STAGE}-web-ApiGw-5xx-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  threshold           = 1
+  alarm_description   = "Consolidated alarm for all Buyer,Seller,Admin 5XX errors"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+
+  # Buyer: Register and Sign In
+  metric_query {
+    id = "buyer_verify_captcha"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/verify-captcha"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_otp_validation"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/otp-validation"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_bids_update"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "bids/update"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_auth_login"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/auth/login"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Register and Sign In
+  metric_query {
+    id = "seller_verify_captcha"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/verify-captcha"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "seller_otp_validation"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/otp-validation"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "seller_request_otp"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/request-otp"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: View Published Auctions
+  metric_query {
+    id = "buyer_view"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/view"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_view_lots"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/view-lots"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_lot_details"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/lot-details"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_paddle"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/paddle"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: Checkout process
+  metric_query {
+    id = "stripe_checkout"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-payments"
+        Resource = "payments/stripe"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "paypal_order"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-paypal"
+        Resource = "paypal/paypal-order"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "paypal_capture"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-paypal"
+        Resource = "paypal/capture-order"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "cart_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-cart-management"
+        Resource = "cart-management/cart"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: Credit card verification
+  metric_query {
+    id = "buyer_verify_card"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/verify-card"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: View auction details
+  metric_query {
+    id = "seller_auctions_view"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/view"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+  #Seller: Publish the auction
+  metric_query {
+    id = "seller_publish_auction"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/update/{auction_id}"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Unpublish the auction
+  metric_query {
+    id = "seller_unpublish_auction"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/{auction_id}"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: Register for the auction
+  metric_query {
+    id = "buyer_auction_register"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/auction-register"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Create an auction
+  metric_query {
+    id = "seller_create_auction"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Create a lot
+  metric_query {
+    id = "seller_create_lot"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/lots"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: View bid history
+  metric_query {
+    id = "buyer_bid_history"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "lot-bid-history/{lot_id}"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: View cart
+  metric_query {
+    id = "buyer_view_cart"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "cart-management/cart"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Update lot
+  metric_query {
+    id = "seller_update_lot"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/lots"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: List bidders
+  metric_query {
+    id = "seller_list_bidders"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-bids"
+        Resource = "bids/"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Admin: List auctions
+  metric_query {
+    id = "admin_list_auctions"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-admin-management"
+        Resource = "admin-management/auctions"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: List auctions
+  metric_query {
+    id = "seller_list_auctions"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "/"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Admin: View orders / transactions / payment tracking
+  metric_query {
+    id = "admin_accountings"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-admin-management"
+        Resource = "admin-management/accountings"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Subdomain update
+  metric_query {
+    id = "seller_subdomain_update"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-subdomain"
+        Resource = "subdomain/subdomain"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Consolidated MAX expression
+  metric_query {
+    id          = "max5xx"
+    expression  = "MAX([seller_publish_auction, seller_unpublish_auction, buyer_auction_register, seller_create_auction, seller_create_lot, buyer_bid_history, buyer_view_cart, seller_update_lot, seller_list_bidders, admin_list_auctions, seller_list_auctions, admin_accountings, seller_subdomain_update])"
+    label       = "Max 5XX Errors"
+    return_data = true
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "api_5xx_consolidated_p2" {
+  provider            = aws.deployment-eu
+  alarm_name          = "p2-indyauction-${var.STAGE}-web-ApiGw-5xx-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  threshold           = 1
+  alarm_description   = "Consolidated alarm for all Buyer,Seller,Admin 5XX errors"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+
+  # Buyer: Register and Sign In
+  metric_query {
+    id = "buyer_verify_captcha"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/verify-captcha"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_otp_validation"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/otp-validation"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_bids_update"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "bids/update"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_auth_login"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/auth/login"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: Register and Sign In
+  metric_query {
+    id = "seller_verify_captcha"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/verify-captcha"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "seller_otp_validation"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/otp-validation"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "seller_request_otp"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-users-management"
+        Resource = "users-management/request-otp"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: View Published Auctions
+  metric_query {
+    id = "buyer_view"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/view"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_view_lots"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/view-lots"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_lot_details"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/lot-details"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "buyer_paddle"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/paddle"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: Checkout process
+  metric_query {
+    id = "stripe_checkout"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-payments"
+        Resource = "payments/stripe"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "paypal_order"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-paypal"
+        Resource = "paypal/paypal-order"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "paypal_capture"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-paypal"
+        Resource = "paypal/capture-order"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  metric_query {
+    id = "cart_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-cart-management"
+        Resource = "cart-management/cart"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Buyer: Credit card verification
+  metric_query {
+    id = "buyer_verify_card"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-buyers"
+        Resource = "buyers/verify-card"
+        Stage    = var.STAGE
+        Method   = "POST"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Seller: View auction details
+  metric_query {
+    id = "seller_auctions_view"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-auctions"
+        Resource = "auctions/view"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "sum"
+    }
+  }
+
+  # Consolidated MAX expression
+  metric_query {
+    id          = "max5xx"
+    expression  = "MAX([buyer_verify_captcha, buyer_otp_validation, buyer_bids_update, buyer_auth_login, seller_verify_captcha, seller_otp_validation, seller_request_otp, buyer_view, buyer_view_lots, buyer_lot_details, buyer_paddle, stripe_checkout, paypal_order, paypal_capture, cart_management, buyer_verify_card, seller_auctions_view])"
+    label       = "Max 5XX Errors"
+    return_data = true
+  }
+}
+
 
 resource "aws_sns_topic_subscription" "cloudwatch_rum_subscription_1" {
   provider = aws.deployment-eu

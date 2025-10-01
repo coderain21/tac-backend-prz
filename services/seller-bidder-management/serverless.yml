@@ -20,6 +20,13 @@ provider:
   region: eu-west-2
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
+  apiGateway:
+    methodSettings:
+      - metricsEnabled: true
+        loggingLevel: INFO
+        dataTraceEnabled: false
+        resourcePath: "/*"
+        httpMethod: "*"  
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}

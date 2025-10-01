@@ -15,6 +15,13 @@ provider:
   region: eu-west-2
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
+  apiGateway:
+    methodSettings:
+      - metricsEnabled: true
+        loggingLevel: INFO
+        dataTraceEnabled: false
+        resourcePath: "/*"
+        httpMethod: "*"  
   vpc:
     securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
