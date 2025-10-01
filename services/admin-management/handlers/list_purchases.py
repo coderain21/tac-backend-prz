@@ -28,7 +28,6 @@ db = client[os.environ['DATABASE']]
 orders_collection = db[os.environ['ORDERS_COLLECTION']]
 buyer_collection = db[os.environ['BUYER_COLLECTION']]
 user_collection = db[os.environ['SELLERS_TABLE']]
-auction_collection = db[os.environ['AUCTION_MONGODB_COLLECTION_NAME']]
 
 def prepend_backslash(text):
     """
@@ -49,40 +48,70 @@ def prepend_backslash(text):
     return modified_text
 
 def list_purchases(event, context):
+    """
+    List orders based on various parameters.
+
+    Args:
+        event (dict): The event data passed to the function, typically from an API Gateway.
+        context: The runtime information.
+
+    Returns:
+        dict: A dictionary containing the response with order information.
+    """
     try:
         try:
             email_address = event['requestContext']['authorizer']['claims']['cognito:username']
+            print('email', email_address)
         except:
             return {
                 "statusCode": 403,
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
-        # Initialize the query
-        query = {"auction_id": event['queryStringParameters'].get('auction_id', '')}
-        export = event['queryStringParameters'].get('export', False)
-        download_link = None
+        # Connect to MongoDB
+        # print('Event:', json.dumps(event, indent=2))
+        # result= user_collection.find_one({"user_type":"admin","email_address":email_address})
+        # if result is None:
+        #     return {
+        #         "statusCode": 403,
+        #         "headers": headers,
+        #         "body": json.dumps({"message": "You do not have access to perform this API action"})
+        #     }
 
+        # Extract buyer ID from path parameters
+        id = event['pathParameters'].get('id', '')
 
-        # Fetch auction details
-        auction_id = query["auction_id"]
-        auction_details = auction_collection.find_one({"_id": ObjectId(auction_id)})
+        if not id:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Invalid request, buyer ID not provided"})
+            }
 
-        if auction_details is None:
+        # Fetch buyer details from MongoDB
+        buyer_details = buyer_collection.find_one({"_id": ObjectId(id)})
+
+        if buyer_details is None:
             return {
                 "statusCode": 404,
                 "headers": headers,
-                "body": json.dumps({"message": "Auction doesn't exist"})
+                "body": json.dumps({"message": "User doesn't exist"})
             }
 
-        # Extract parameters from the request
-        data = event.get('queryStringParameters', {})
+        # Extract parameters from the request, defaulting to empty dictionary if not present
+        data = event.get('queryStringParameters', {}).copy() if event.get('queryStringParameters') else {}
+
 
         # Extract individual parameters with default values
         sort_by = data.get('sort_by', 'created_at')
         sort_order = data.get('sort_order', 'descending')
+        payment_type = data.get("payment_type", '')
+        payment_status = data.get("payment_status", '')
         page = int(data.get('page', '1'))
         limit = int(data.get('per_page', '10'))
+
+        print('Page:', page)
+        print('Limit:', limit)
 
         # Initialize sort_criteria with a default value
         sort_criteria = []
@@ -90,20 +119,15 @@ def list_purchases(event, context):
         if sort_by and sort_by in ['created_at', 'payment_status', 'order_number', 'name', 'payment_status', 'auction_title', 'payment', 'amount']:
             sort_criteria = [(sort_by, pymongo.ASCENDING if sort_order == 'ascending' else pymongo.DESCENDING)]
 
-        # Initialize search query
-        search_query = {}
-
-        if 'search' in data:
-            search_text = prepend_backslash(data['search'])
-            search_query["$or"] = [
-                {"order_number": {"$regex": search_text, "$options": "i"}},
-                {"name": {"$regex": search_text, "$options": "i"}}
-            ]
-
-        # Merge search query with the existing query
-        query.update(search_query)
+        # Build the query based on parameters
+        query = {"email_address": buyer_details['email_address']}
+        if payment_type:
+            query["payment"] = payment_type
+        if payment_status:
+            query["payment_status"] = payment_status
 
         # Query the MongoDB collection
+        # Use cursor-based pagination instead of skip
         orders_list = orders_collection.find(
             query,
             {
@@ -118,6 +142,7 @@ def list_purchases(event, context):
                 'auction_title': 1
             }
         ).sort(sort_criteria).skip((page - 1) * limit).limit(limit)
+
         # Calculate total records and pages
         total_records = orders_collection.count_documents(query)
         total_pages = math.ceil(total_records / limit)
@@ -128,31 +153,15 @@ def list_purchases(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "No Orders found"})
             }
+
         body = {
             "data": list(orders_list),
             "total_pages": total_pages,
             "total_records": total_records,
             "current_page": page
+            # "total_orders": total_records
         }
-        if export:
-            orders = orders_collection.find(
-                query,
-                {
-                    "_id": 1,
-                    "name": 1,
-                    "amount": 1,
-                    "created_at": 1,
-                    "order_number": 1,
-                    "currency": 1,
-                    "payment_status": 1,
-                    "payment": 1,
-                    'auction_title': 1,
-                    'shipping_address': 1,
-                }
-            ).sort(sort_criteria)
-            download_link = export_as_csv(list(orders))
-        if download_link is not None:
-            body["csv_url"] = download_link
+
         return {
             "statusCode": 200,
             "headers": headers,
@@ -171,18 +180,8 @@ def list_purchases(event, context):
 
 
 
-currencySymbolMapping = {
-    "GBP": '£',
-    "USD": '$',
-    "EUR": '€',
-    "HKD": 'HK$',
-    "JPY": '¥',
-    "CHF": 'Fr',
-    "SGD": 'S$',
-    "AUD": 'A$',
-    "CAD": 'C$',
-    "INR": '₹',
-}
+
+
 
 
 
@@ -208,40 +207,29 @@ def export_as_csv(sales):
         s3_bucket = os.environ['S3_BUCKET']
         print(s3_bucket, type(s3_bucket))
         with open(csv_file, "w") as file:
-            writer = csv.DictWriter(file, ["Order no.", "Customer name", "Date", "Result", "Payment type", "Payment status"])
+            writer = csv.DictWriter(file, ["ORDER ID", "Customer Name", "Auction Name","Order Date","Payment Type", "Payment Status"])
             writer.writeheader()
             print(333)
             # Format the created_at field as dd-mm-year
             for sale in sales:
                 modified_sales = {}
-                # date = datetime.fromtimestamp(sale['created_at'])
-                # Assuming sale['created_at'] is a Unix timestamp
-                timestamp = sale['created_at']
-
-                # Convert Unix timestamp to datetime object
-                date = datetime.fromtimestamp(timestamp)
+                date = datetime.fromtimestamp(sale['created_at'])
                 # Format the date as a string with only the date
-                formatted_date = date.strftime('%d %b %Y')
-                # Format the date as a string with only the date
-                shipping_address = sale.get("shipping_address", {})  # Use get() to handle missing 'shipping_address']
-                if shipping_address:
-                    full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
-
-                #currency formatting
-                currency = sale.get("currency", "USD")
-                symbol = currencySymbolMapping.get(currency, "")
-                amount_value = sale.get("amount", 0) or 0
-                amount = f"{symbol}{amount_value:,.2f}"
-
-                modified_sales["Order no."] = sale["order_number"]
-                modified_sales["Customer name"] = sale['name']
-                modified_sales["Date"] = formatted_date
-                modified_sales['Result'] = amount
-                modified_sales["Payment status"] = sale.get("payment_status","")
-                modified_sales["Payment type"]= sale.get("payment","")
+                formatted_date = date.strftime('%Y-%m-%d')
+                shipping_address = sale.get('shipping_address')
+                full_name = f"{shipping_address['first_name']} {shipping_address['last_name']}"
+                modified_sales["ORDER ID"] = sale.get("order_number")
+                modified_sales["Customer Name"] = full_name
+                modified_sales["Auction Name"] = sale.get('auction_title')
+                modified_sales["Order Date"] = formatted_date
+                modified_sales["Payment Status"] = sale.get("payment_status", "")
+                modified_sales["Payment Type"]= sale.get("payment", "")
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
+        s3_resource = boto3.resource("s3", region_name='eu-west-2')
+        object_acl = s3_resource.ObjectAcl(s3_bucket, s3_key)
+        object_acl.put(ACL="public-read")
         s3_signed_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": s3_bucket, "Key": s3_key},
