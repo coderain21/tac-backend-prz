@@ -48,28 +48,13 @@ async function hasImagesForAuctionAndSeller(auctionId, sellerEmail) {
 
 
 module.exports.publish_auction = async (event) => {
-    // --- Authorization Check ---
-    try {
-        const { claims } = event.requestContext.authorizer
-        if (!claims || !claims['cognito:username']) {
-            throw new Error('Unauthorized')
-        }
-        // You can add group checks here if needed
-    } catch (error) {
-        return {
-            statusCode: 403,
-            headers: await helpers.getHeaders(),
-            body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
-        }
-    }
-    // --- End Authorization Check ---
-
     try {
         if (connection === null || !connection.readyState) {
             connection = await mongoConnection.connect()
         }
 
         const request_body = JSON.parse(event.body)
+        const { seller_email } = request_body
 
         if (!request_body) {
             return {
@@ -86,20 +71,10 @@ module.exports.publish_auction = async (event) => {
             }
         }
 
-
-        const email = event.requestContext.authorizer.claims['cognito:username']
-        if (email !== request_body.seller_email) {
-            return {
-                statusCode: 403,
-                headers: await helpers.getHeaders(),
-                body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
-            }
-        }
-
         const { auction_id } = request_body
-        const sellerDetails = await mongoConnection.view(User, { email_address: email })
-        console.log('sellerDetails', sellerDetails[0])
-        console.log('sellerDetails', sellerDetails[0].stripe_status, sellerDetails[0].paypal_status)
+        const sellerDetails = await mongoConnection.view(User, { email_address: seller_email })
+        // console.log('sellerDetails', sellerDetails[0])
+        // console.log('sellerDetails', sellerDetails[0].stripe_status, sellerDetails[0].paypal_status)
         if (!sellerDetails) {
             return {
                 statusCode: 404,
@@ -115,7 +90,7 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'You do not have access to perform this API action' }),
             }
         }
-        console.log('sellerDetails', sellerDetails[0].stripe_status, sellerDetails[0].paypal_status)
+        // console.log('sellerDetails', sellerDetails[0].stripe_status, sellerDetails[0].paypal_status)
         if (
             (sellerDetails[0].stripe_status === undefined || sellerDetails[0].stripe_status === 'disconnected')
                 && (sellerDetails[0].paypal_status === undefined || sellerDetails[0].paypal_status === 'disconnected')
@@ -128,10 +103,10 @@ module.exports.publish_auction = async (event) => {
         }
 
         // console.log('email', email)
-        const query = { auction_id, seller_email: email }
+        const query = { auction_id, seller_email }
         // console.log('query', query)
-        const auctionDetails = await Auction.findOne({ auction_id, seller_email: email })
-        // console.log('auctionDetails', auctionDetails)
+        const auctionDetails = await Auction.findOne({ auction_id, seller_email })
+        console.log('auctionDetails', auctionDetails)
         if (!auctionDetails) {
             return {
                 statusCode: 404,
@@ -153,7 +128,7 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction cannot be published with the start date in the past' }),
             }
         }
-        const required_fields = ['auction_image', 'title', 'description', 'currency',
+        required_fields = ['auction_image', 'title', 'description', 'currency',
             'time_zone', 'registration_type']
         // eslint-disable-next-line no-restricted-syntax
         for (const field of required_fields) {
@@ -165,6 +140,7 @@ module.exports.publish_auction = async (event) => {
                 }
             }
         }
+        console.log('auctionDetails.make_your_auction_private', auctionDetails.make_your_auction_private, auctionDetails.passcode)
         if (auctionDetails.make_your_auction_private === true && auctionDetails.passcode === '') {
             return {
                 statusCode: 400,
@@ -172,7 +148,7 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'required and cannot be empty.' }),
             }
         }
-        const hasImages = await hasImagesForAuctionAndSeller(auction_id, email)
+        const hasImages = await hasImagesForAuctionAndSeller(auction_id, seller_email)
         if (!hasImages) {
             return {
                 statusCode: 400,
@@ -187,7 +163,7 @@ module.exports.publish_auction = async (event) => {
             const updatePayload = {
                 status: 'Published',
             }
-            const updatedAuction = await Auction.updateOne({ auction_id, seller_email: email }, { $set: updatePayload })
+            const updatedAuction = await Auction.updateOne({ auction_id, seller_email }, { $set: updatePayload })
             // console.log('updatedAuction', updatedAuction)
             return {
                 statusCode: 204,

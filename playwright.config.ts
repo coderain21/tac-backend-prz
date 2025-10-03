@@ -63,7 +63,7 @@ export default defineConfig({
     timeout: 30000,
     expect: { timeout: 5000 },
     fullyParallel: true,
-    workers: 2,
+    workers: 1,
     reporter: [['junit', { outputFile: 'results.xml' }]],
     projects: testDirs,
 })
