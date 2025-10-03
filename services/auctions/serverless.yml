@@ -518,11 +518,35 @@ functions:
   #   layers:
   #     - ${ssm:COMMON_LIB_ARN}
 
+  batchLotsPublish:
+    handler: handlers/publish_auction.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    timeout: 90
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    deadLetter:
+      targetArn:
+        Fn::GetAtt:
+          - BatchLotsUpdateDLQ
+          - Arn
+
+
+  batchLotsUpdate:  
+    handler: handlers/update_auction_bulk.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 300
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+
+
+
+
   sqs-lot-update:
     handler: handlers/batch_lots_update.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
     maximumRetryAttempts: 0
-    timeout: 60
+    timeout: 180
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -536,7 +560,7 @@ functions:
     handler: handlers/batch_lots_update.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
     maximumRetryAttempts: 0
-    timeout: 60
+    timeout: 180
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -550,7 +574,7 @@ functions:
     handler: handlers/batch_lots_update.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
     maximumRetryAttempts: 0
-    timeout: 60
+    timeout: 180
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -564,7 +588,7 @@ functions:
     handler: handlers/batch_lots_update.handler
     memorySize: ${ssm:LAMBDA_MEMORY}
     maximumRetryAttempts: 0
-    timeout: 60
+    timeout: 180
     layers:
       - ${ssm:COMMON_LIB_ARN}
     events:
@@ -587,19 +611,19 @@ functions:
             Fn::GetAtt:
                     - updateLotsQueue
                     - Arn
-  sqs-lot-update_5:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      - ${ssm:COMMON_LIB_ARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
+  # sqs-lot-update_5:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   timeout: 60
+  #   layers:
+  #     - ${ssm:COMMON_LIB_ARN}
+  #   events:
+  #     - sqs:
+  #         arn: 
+  #           Fn::GetAtt:
+  #                   - updateLotsQueue
+  #                   - Arn
   # sqs-lot-update_6:
   #   handler: handlers/batch_lots_update.handler
   #   memorySize: ${ssm:LAMBDA_MEMORY}
@@ -744,6 +768,27 @@ functions:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
 
+  cleanupStepFunctions:
+    handler: handlers/cleanup-handler.handler
+    timeout: 600  # 10 minutes
+    deadLetter:
+      targetArn:
+        Fn::GetAtt:
+          - CleanupStepFunctionsDLQ
+          - Arn
+
+  delete-image:
+      handler: handlers/delete_image.delete_image
+      layers:
+        - ${ssm:COMMON_LIB_ARN}
+      events:
+        - http:
+            cors: true
+            path: /image
+            method: delete
+            authorizer:
+                arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
 resources:
   Conditions:
     IsProd:
@@ -781,12 +826,24 @@ resources:
         QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
         FifoQueue: true
 
+    # new dlq for lot update failures
+    BatchLotsUpdateDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${opt:stage, self:provider.stage}-batch-lots-update-dlq
+
+    
+    # new dlq for cleanup step functions
+    CleanupStepFunctionsDLQ:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${opt:stage, self:provider.stage}-cleanup-step-functions-dlq
         
     updateLotsQueue:
       Type: AWS::SQS::Queue
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
-        VisibilityTimeout: 90
+        VisibilityTimeout: 180
 
     SQSSSMParameter:
       Type: AWS::SSM::Parameter
