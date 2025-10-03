@@ -37,7 +37,7 @@ provider:
     ACCESS_LOGS_TABLE: ${opt:stage, self:provider.stage}-access-logs
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
-    CDN_LINK: ${ssm:CDN_URL}
+    CDN_URL: ${ssm:CDN_URL}
     COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
@@ -45,6 +45,7 @@ provider:
     SOCKET_URL: ${ssm:SOCKET_URL}
     S3_BUCKET_URL:  ${ssm:CDN_URL}
     BUYER_WISHLIST_TABLE: ${opt:stage, self:provider.stage}-buyer-wishlists
+    MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
 
 
     
@@ -155,6 +156,24 @@ functions:
           cors: true
           path: /get-bids/{auction_id}
           method: get
+          authorizer: 
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+
+  update-bid:
+    handler: handlers/update_bid.update_bid
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      - ${ssm:COMMON_LIB_ARN}
+    events:
+      - http:
+          cors: true
+          path: /bids/{bid_id}
+          method: patch
           authorizer: 
             arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
 
