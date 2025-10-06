@@ -4,22 +4,7 @@
 # source .env
 # set +a
 overall_status=0
-
-# Aggressive disk cleanup function
-cleanup_disk() {
-    echo "Cleaning up disk space..."
-    sudo rm -rf /tmp/* 2>/dev/null || true
-    sudo rm -rf /var/tmp/* 2>/dev/null || true
-    sudo rm -rf ~/.cache/* 2>/dev/null || true
-    sudo rm -rf /var/cache/* 2>/dev/null || true
-    find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
-    find . -name "terraform-provider-*" -delete 2>/dev/null || true
-    docker system prune -af --volumes 2>/dev/null || true
-    df -h
-}
-
 run_command() {
-    cleanup_disk
     "$@"
     local status=$?
     if [ $status -ne 0 ]; then
@@ -33,8 +18,6 @@ run_command() {
 CERT_PATH="$1"
 KEY_PATH="$2" 
 
-# Initial cleanup
-cleanup_disk
 apt-get update && apt-get install python-is-python3 -y && apt-get install python3-pip -y
 
 # Function to resolve and write AWS credentials to ~/.aws/credentials
@@ -104,10 +87,6 @@ fi
 
 # Enabling AWS SDK config loading
 export AWS_SDK_LOAD_CONFIG=1
-
-# Set Terraform plugin cache to prevent repeated downloads
-export TF_PLUGIN_CACHE_DIR="/tmp/terraform-plugin-cache"
-mkdir -p "$TF_PLUGIN_CACHE_DIR"
 
 # Confirm AWS credentials and configuration
 run_command aws sts get-caller-identity --profile "${PROFILE_MAIN}"
