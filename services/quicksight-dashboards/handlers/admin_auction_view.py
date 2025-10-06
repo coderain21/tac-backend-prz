@@ -54,7 +54,7 @@ def admin_get_dashboard(event, context):
 
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
 
-        dashboard_id = os.environ['QUICKSIGHT_AUCTION_DASHBOARD_ID']
+        dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
 
 
         data = event['queryStringParameters']
