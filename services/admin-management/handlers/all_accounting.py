@@ -270,13 +270,13 @@ def export_as_csv(sales, email_address):
                 # shipping_address = sale['shipping_address']
                 # full_name = sale['name']
                 # print('full_name', full_name)
-                modified_sales["Order ID"] = sale["order_number"]
+                modified_sales["Order ID"] = sale.get("order_number")
                 modified_sales["Customer name"] = sale.get("name", "")
-                modified_sales["Auction name"] = sale['auction_title']
+                modified_sales["Auction name"] = sale.get('auction_title')
                 modified_sales["Order date"] = formatted_date
                 # modified_sales["Result"] = currency + str(sale["amount"])
-                modified_sales["Payment status"] = sale["payment_status"]
-                modified_sales["Payment type"]= sale["payment"]
+                modified_sales["Payment status"] = sale.get("payment_status")
+                modified_sales["Payment type"]= sale.get("payment")
                 writer.writerow(modified_sales)
         s3_client = boto3.client("s3", region_name='eu-west-2')
         s3_client.upload_file(csv_file, s3_bucket, s3_key)
