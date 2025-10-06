@@ -103,6 +103,7 @@ async function exportAsCsv(bidders) {
                 { id: 'Paddle Number', title: 'Paddle Number' },
                 { id: 'Bidder Name', title: 'Bidder Name' },
                 { id: 'Amount', title: 'Amount' },
+                { id: 'Max Bid', title: 'Max Bid' },
                 { id: 'Bid Date', title: 'Bid Date' },
             ],
         })
@@ -120,6 +121,7 @@ async function exportAsCsv(bidders) {
                 'Paddle Number': bidder.paddle_number || '',
                 'Bidder Name': bidder.name, // `${bidder.first_name || ''} ${bidder.last_name || ''}`.trim(),
                 Amount: amountWithSymbol,
+                'Max Bid': bidder.max_bid,
                 'Bid Date': formattedDate,
             })
         }
