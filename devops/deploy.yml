@@ -40,11 +40,19 @@ jobs:
                   npm install --cache .npm
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - bash: |
-                  # Clean up disk space
+                  # Aggressive disk cleanup
                   sudo apt-get clean
+                  sudo apt-get autoremove -y
                   sudo rm -rf /var/lib/apt/lists/*
                   sudo rm -rf /tmp/*
-                  docker system prune -af || true
+                  sudo rm -rf /var/cache/*
+                  sudo rm -rf ~/.cache/*
+                  docker system prune -af --volumes || true
+                  # Clean Terraform cache
+                  find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
+                  find . -name ".terraform.lock.hcl" -delete 2>/dev/null || true
+                  # Clean npm cache
+                  npm cache clean --force || true
                   df -h
                 displayName: 'Clean up disk space'
               - bash: |                 
@@ -77,9 +85,14 @@ jobs:
                     fi
                     git push
                   else 
+                    # Additional cleanup before Terraform
+                    sudo rm -rf /opt/hostedtoolcache/* || true
+                    sudo rm -rf /usr/share/dotnet || true
+                    sudo rm -rf /usr/local/lib/android || true
                     # Clean Terraform cache and lock files
                     find . -name ".terraform" -type d -exec rm -rf {} + 2>/dev/null || true
                     find . -name ".terraform.lock.hcl" -delete 2>/dev/null || true
+                    df -h
                     # Run terraform deployment script
                     bash devops/terraform_run.sh "$(Certificate.secureFilePath)" "$(Privatekey.secureFilePath)"
                     if [ $? -ne 0 ]; then
