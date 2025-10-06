@@ -53,7 +53,7 @@ def get_auction_dashboard(event, context):
 
 
         aws_account_id = os.environ['QUICKSIGHT_ACCOUNT_ID']
-        dashboard_id = os.environ['QUICKSIGHT_AUCTION_DASHBOARD_ID']
+        dashboard_id = os.environ['QUICKSIGHT_DASHBOARD_ID']
         user_name = email_address
         admin_user_name = os.environ['ADMIN_USERNAME']
 
