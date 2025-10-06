@@ -110,7 +110,7 @@ stages:
         # - script: npm config set registry https://registry.npmmirror.com
         - script: |
             npm install -g license-checker 
-            license-checker --json --start devops/dependency/node > node-licenses.json
+            license-checker --json --start services/dependency-management > node-licenses.json
             node license.js    
             python license.py                   
             if [ $? -ne 0 ]; then
@@ -123,8 +123,8 @@ stages:
             pip3 install pip-licenses PyGithub requests
             python -m venv venv
             source venv/bin/activate
-            pip3 install -r devops/dependency/python/requirements.txt || true
-            pip3 install -r devops/dependency/python/requirements2.txt || true
+            pip3 install -r services/dependency-management/requirements.txt || true
+            pip3 install -r services/dependency-management/requirements2.txt || true
             python generate-python-licenses.py
             if [ $? -ne 0 ]; then
               echo "API testing failed"
@@ -157,9 +157,10 @@ stages:
           vmImage: "ubuntu-latest"
       steps:
         - script: |
-            npm i devops/dependency/node
+            cd services/dependency-management && npm install
+            cd ../..
             npm install -g retire
-            retire --path devops/dependency/node/node_modules --outputformat json --severity high
+            retire --path services/dependency-management/node_modules --outputformat json --severity high
             if [ $? -eq 0 ]; then
               echo "Dependency scanning passed!"
             else

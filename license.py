@@ -13,8 +13,8 @@ SKIP_PACKAGES = {'mailchimp-marketing', 'mailchimp-transactional'}
 # Get packages from requirements
 def get_required_packages():
     files = [
-        'devops/dependency/python/requirements.txt',
-        'devops/dependency/python/requirements2.txt'
+        'services/dependency-management/requirements.txt',
+        'services/dependency-management/requirements2.txt'
     ]
     packages = set()
     for file_path in files:
