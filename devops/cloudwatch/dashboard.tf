@@ -63,14 +63,15 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
 
 # Create CloudWatch Log Metric Filter
 resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
-  name           = "Process Cart Logs Error"
+  name           = "Process Cart All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-process-cart"
-  pattern        = "\"TypeError: Cannot read properties of\""
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*TypeError*\" || message=\"*Cannot read properties*\" || message=\"*ClusterAllFailedError*\" || message=\"*Redis*\" || message=\"*ECONNREFUSED*\" || message=\"*ETIMEDOUT*\" || message=\"*undefined*\"]"
   provider             = aws.deployment-eu
   metric_transformation {
     name      = "ProcessCartErrorCount"
     namespace = "ProcessCartError"
     value     = "1"
+    default_value = "0"
   }
 }
 
@@ -84,7 +85,7 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
   period              = 300
   statistic           = "Sum"
   threshold           = 1
-  alarm_description   = "Alarm when Lambda logs contain 'TypeError: Cannot read properties of'"
+  alarm_description   = "Alarm when Lambda logs contain 'error'"
 
   # Actions
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
@@ -93,95 +94,35 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
 
 
 
-resource "aws_cloudwatch_log_metric_filter" "sqs_lambda_error_metric_filter" {
-  count          = length([
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ])
-  name           = "SQS Lot Update Error ${count.index}"
-  log_group_name = [
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ][count.index]
-  pattern        = "\"ERROR	Error: TypeError: Cannot read properties of\""
 
-  metric_transformation {
-    name      = "LambdaErrorCount_${count.index}"
-    namespace = "LambdaErrors"
-    value     = "1"
-  }
-  provider             = aws.deployment-eu
-
-}
-
-resource "aws_cloudwatch_metric_alarm" "sqs_lambda_error_alarm" {
-  count                 = length([
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ])
-  alarm_name            = "SQS Lot Update Error Alarm ${count.index}"
-  comparison_operator   = "GreaterThanOrEqualToThreshold"
-  evaluation_periods    = 1
-  metric_name           = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].name
-  namespace             = aws_cloudwatch_log_metric_filter.sqs_lambda_error_metric_filter[count.index].metric_transformation[0].namespace
-  period                = 300
-  statistic             = "Sum"
-  threshold             = 1
-  alarm_description     = "Alarm when Lambda logs contain 'ERROR	Error: TypeError: Cannot read properties of' in log group ${[
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_1",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_2",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_3",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_4",
-    "/aws/lambda/auctions-${var.STAGE}-sqs-lot-update_5"
-  ][count.index]}"
-
-  # Actions
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  provider             = aws.deployment-eu
-}
 resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_filter" {
-  name           = "Save To Cache Logs Error"
+  name           = "Save To Cache All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-save-to-cache"
-  pattern        = "\"getRedisClient: error occurred for  ClusterAllFailedError: Failed to refresh slots cache\""
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*ClusterAllFailedError*\" || message=\"*Failed to refresh slots cache*\" || message=\"*Redis connection*\" || message=\"*ECONNREFUSED*\" || message=\"*ETIMEDOUT*\" || message=\"*Cannot read properties*\"]"
 
   metric_transformation {
     name      = "SaveToCacheErrorCount"
     namespace = "SaveToCacheError"
     value     = "1"
+    default_value = "0"
   }
   provider             = aws.deployment-eu
-
 }
 
-# Create CloudWatch Alarm for process cart logs
 resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
-  alarm_name          = "Save To Cache Logs Error Alarm"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
+  alarm_name          = "IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 3
+  datapoints_to_alarm = 2
   metric_name         = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].name
   namespace           = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].namespace
   period              = 300
   statistic           = "Sum"
   threshold           = 5
-  alarm_description   = "Alarm when Lambda logs contain 'getRedisClient: error occurred for  ClusterAllFailedError: Failed to refresh slots cache'"
-
-  # Actions
+  alarm_description   = "Save-to-cache Redis errors > 5 in 5 minutes (2 out of 3 periods)"
+  treat_missing_data  = "notBreaching"
   alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
   provider             = aws.deployment-eu
-
 }
 
 
@@ -535,23 +476,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
   provider             = aws.deployment-eu
 }
 
-# LAMBDA ALARMS
-resource "aws_cloudwatch_metric_alarm" "lambda_throttles_all" {
-  alarm_name          = "IndyAuction-${var.STAGE}-Lambda-AllFunctions-Throttles"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Throttles"
-  namespace           = "AWS/Lambda"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 900
 
-  # 🔹 No dimensions block — applies across all functions
-  alarm_description   = "Total Lambda throttles across all functions > 1000"
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
-
-  provider            = aws.deployment-eu
-}
 
 
 resource "aws_cloudwatch_metric_alarm" "lambda_concurrent_executions" {
@@ -568,23 +493,6 @@ resource "aws_cloudwatch_metric_alarm" "lambda_concurrent_executions" {
   provider             = aws.deployment-eu
 }
 
-# SQS ALARM FOR LARGE MESSAGE
-resource "aws_cloudwatch_metric_alarm" "sqs_large_message" {
-  alarm_name          = "IndyAuction-${var.STAGE}-SQS-SentMessageSizeExceeded"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "SentMessageSize"
-  namespace           = "AWS/SQS"
-  period              = 60
-  statistic           = "Maximum"
-  threshold           = 262144  # 256 KB in bytes
-  dimensions = {
-    QueueName = "${var.STAGE}-bulk-lots-update"
-  }
-  alarm_description   = "SQS message size > 256 KB"
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
-  provider             = aws.deployment-eu
-}
 
 # ECS ALARMS
 resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures" {

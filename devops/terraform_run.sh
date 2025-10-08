@@ -326,7 +326,23 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
 
 fi
 if [ "${STAGE}" = "pre-production" ]; then
-    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region $REGION --profile $PROFILE_ENV
+    existing_route=$(aws ec2 describe-route-tables \
+    --route-table-id rtb-03e6b72aede44f529 \
+    --query "RouteTables[0].Routes[?DestinationCidrBlock=='172.31.0.0/20'].VpcPeeringConnectionId" \
+    --output text \
+    --region $REGION \
+    --profile $PROFILE_ENV)
+    if [ -z "$existing_route" ] || [ "$existing_route" = "None" ]; then
+        echo "Route does not exist, creating..."
+        run_command aws ec2 create-route \
+        --route-table-id rtb-03e6b72aede44f529 \
+        --destination-cidr-block 172.31.0.0/20 \
+        --vpc-peering-connection-id pcx-02b13a02de617b06e \
+        --region $REGION \
+        --profile $PROFILE_ENV
+    else
+        echo "Route already exists and points to $existing_route, skipping."
+    fi
 fi
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     cd devops/disaster_recovery
