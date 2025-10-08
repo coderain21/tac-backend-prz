@@ -52,8 +52,14 @@ async function getLot(rediskey, client, auctionData) {
      * Then, we filter the array of bidders based on whether the seller_email and auction_id match what was passed in
      */
     return Object.values(allBidders || {}).filter((bidder) => {
-        const parsedBidder = JSON.parse(bidder)
-        return parsedBidder.seller_email === auctionData.seller_email && parsedBidder.auction_id === auctionData.auction_id
+        try {
+            const cleanBidder = bidder.replace(/"/g, '"')
+            const parsedBidder = JSON.parse(cleanBidder)
+            return parsedBidder.seller_email === auctionData.seller_email && parsedBidder.auction_id === auctionData.auction_id
+        } catch (err) {
+            console.error('Parse error at line 55:', err.message)
+            return false
+        }
     })
 }
 
