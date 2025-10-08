@@ -259,7 +259,8 @@ def update_auction(event, context):
                                 "extension_time_between_lots",
                                 "faq", "publish_auction_results",
                                 "show_bidder_location_in_bidder_history", "show_bidding_history", "make_your_auction_private", "passcode",
-                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name"
+                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name","toggle_powered_by_indy"
+                                "hide_auction_lots"
                                 }
         elif auction_status == "Completed":
             updatable_fields = {}
@@ -269,7 +270,7 @@ def update_auction(event, context):
                                 "description", "start_date", "end_date",
                                 "faq", "time_zone", "publish_auction_results",
                                 "show_bidder_location_in_bidder_history", "show_bidding_history", "make_your_auction_private", "passcode",
-                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name", "hide_auction_lots"
+                                "font", "buttons", "header", "content_area", "footer", "paddle", "template_name", "hide_auction_lots","toggle_powered_by_indy"
                                 }
         else:
             updatable_fields = {}
