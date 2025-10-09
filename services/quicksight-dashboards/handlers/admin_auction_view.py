@@ -143,7 +143,7 @@ def admin_get_dashboard(event, context):
 
         embed_url = response['EmbedUrl']
 
-        final_embed_url = f'{embed_url}#email={seller_email}&p.id={auction_id}&p.auctionid={a_id}'
+        final_embed_url = f'{embed_url}#p.email={seller_email}&p.id={auction_id}&p.auctionid={a_id}'
 
         return {
             'statusCode': 200,
