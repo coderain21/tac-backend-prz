@@ -98,12 +98,17 @@ def wishlist_list(event, context):
                 "auction_id": "$auction_details.auction_id",
                  # for in person auction
                 "auction_type": "$auction_details.auction_type",
+                "auction_status": "$auction_details.status",
+                "accept_absentee_bid": "$auction_details.accept_absentee_bid",
+                "accept_telephone_bid": "$auction_details.accept_telephone_bid",
+                "seller_email": "$auction_details.seller_email",
                 "auction_start_date": "$auction_details.start_date",
                 "auction_end_date": "$auction_details.end_date",
                 "currency": "$auction_details.currency",
                 "time_zone": "$auction_details.time_zone",
                 "auction_uid": "$auction_details._id",
-                "registration_type": "$auction_details.registration_type"
+                "registration_type": "$auction_details.registration_type",
+                "publish_auction_results" : "$auction_details.publish_auction_results"
             }}
         ]
 

@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     methodSettings:
       - metricsEnabled: true
@@ -165,7 +165,7 @@ functions:
     handler: handlers/create.create_intent
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -191,7 +191,7 @@ functions:
     handler: handlers/stripe_webhook.update
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}

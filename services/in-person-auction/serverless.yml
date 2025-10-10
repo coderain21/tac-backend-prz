@@ -20,7 +20,7 @@ provider:
     subnetIds:
       - ${ssm:SUBNET_ID}
 
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     methodSettings:
       - metricsEnabled: true
@@ -45,7 +45,6 @@ provider:
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     CDN_LINK: ${ssm:CDN_URL}
-    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
@@ -121,7 +120,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -139,7 +138,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -157,7 +156,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -175,7 +174,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -193,7 +192,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -212,7 +211,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -230,7 +229,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -248,12 +247,119 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
           path: /auction-complete
           method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  list-bids:
+    handler: handlers/list_bids.list_bids
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /bids
+          method: get
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  delete-auction:
+    handler: handlers/delete_auction.delete_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /{auction_id}
+          method: delete
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  cancel-auction:
+    handler: handlers/cancel_auction.cancel_auction
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /cancel-auction
+          method: patch
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
+  delete-bid: 
+    handler: handlers/delete_bid.delete_bid
+    timeout: 30
+    vpc:
+      securityGroupIds: 
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /delete-bid/{bid_id}
+          method: delete
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  delete-lot: 
+    handler: handlers/delete_lot.delete_lot
+    vpc:
+      securityGroupIds: 
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /lots
+          method: delete
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+  
+  auction-statistics:
+    handler: handlers/auction_stats.auction_stats
+    timeout: 30
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /auction-statistics
+          method: get
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
  

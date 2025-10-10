@@ -27,7 +27,7 @@ const { place_bid } = require('../../services/in-person-buyer/handlers/place_bid
 test.describe('Place Bid - Negative Cases', () => {
   let db: Db;
   let client: MongoClient;
-  const sellerEmail = process.env.API_USERNAME!;
+  const sellerEmail = process.env.API_USERNAME || 'test-user@example.com';
   const auctionId = `TEST-AUCTION-${Date.now()}`;
   const lotId = `TEST-LOT-${Date.now()}`;
   const buyerId = `TEST-BUYER-${Date.now()}`;
@@ -37,22 +37,25 @@ test.describe('Place Bid - Negative Cases', () => {
   let queryAuctionObjectId: ObjectId;
 
   test.beforeAll(async () => {
-    client = new MongoClient(process.env.MONGO_CLIENT!);
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
     await client.connect();
-    db = client.db(process.env.DATABASE);
+    db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
-    await client.close();
+    if (client) {
+      await client.close();
+    }
   });
 
   async function setupPassengers() {
-    const users = db.collection(`${process.env.STAGE}-users`);
-    const auctions = db.collection(`${process.env.STAGE}-auctions`);
-    const lots = db.collection(`${process.env.STAGE}-lots`);
-    const buyers = db.collection(`${process.env.STAGE}-buyers`);
-    const registeredUsers = db.collection(`${process.env.STAGE}-register-auction`);
-    const liveBids = db.collection(`${process.env.STAGE}-live-bids`);
+    const stage = process.env.STAGE || 'test';
+    const users = db.collection(`${stage}-users`);
+    const auctions = db.collection(`${stage}-auctions`);
+    const lots = db.collection(`${stage}-lots`);
+    const buyers = db.collection(`${stage}-buyers`);
+    const registeredUsers = db.collection(`${stage}-register-auction`);
+    const liveBids = db.collection(`${stage}-live-bids`);
 
     // Clean up test data
     await registeredUsers.deleteMany({ email_address: 'buyer@example.com' });

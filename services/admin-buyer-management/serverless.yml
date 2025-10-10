@@ -19,7 +19,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     methodSettings:
       - metricsEnabled: true
@@ -132,7 +132,7 @@ functions:
   update:
     handler: handlers/accept_reject_buyers.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -144,7 +144,7 @@ functions:
   list-bids:
     handler: handlers/list.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -155,9 +155,9 @@ functions:
 
   list:
     handler: handlers/list_of_buyers.handler
-    timeout: 60
+    timeout: 30
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -167,10 +167,10 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bids:
     handler: handlers/bid_list.list_bids
-    timeout: 60
+    timeout: 30
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -195,9 +195,9 @@ functions:
               arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   bid-info:
     handler: handlers/bid_info.handler
-    timeout: 60
+    timeout: 30
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -212,10 +212,10 @@ functions:
             arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   delete-buyer:
     handler: handlers/delete_buyer.delete_buyer
-    timeout: 60
+    timeout: 30
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}

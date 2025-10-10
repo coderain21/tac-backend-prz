@@ -110,7 +110,7 @@ stages:
         # - script: npm config set registry https://registry.npmmirror.com
         - script: |
             npm install -g license-checker 
-            license-checker --json --start devops/dependency/node > node-licenses.json
+            license-checker --json --start services/dependency-management > node-licenses.json
             node license.js    
             python license.py                   
             if [ $? -ne 0 ]; then
@@ -123,9 +123,13 @@ stages:
             pip3 install pip-licenses PyGithub requests
             python -m venv venv
             source venv/bin/activate
-            pip3 install -r devops/dependency/python/requirements.txt || true
-            pip3 install -r devops/dependency/python/requirements2.txt || true
+            pip3 install -r services/dependency-management/requirements.txt || true
+            pip3 install -r services/dependency-management/requirements2.txt || true
             python generate-python-licenses.py
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
             aws s3 cp node-licenses.json s3://$DOCS_BUCKET_NAME/licences/node/licenses.json --profile "indyauction-main"
             aws s3 cp python-licenses.json s3://$DOCS_BUCKET_NAME/licences/python/licenses.json --profile "indyauction-main"
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main"
@@ -153,9 +157,10 @@ stages:
           vmImage: "ubuntu-latest"
       steps:
         - script: |
-            npm i devops/dependency/node
+            cd services/dependency-management && npm install
+            cd ../..
             npm install -g retire
-            retire --path devops/dependency/node/node_modules --outputformat json --severity high
+            retire --path services/dependency-management/node_modules --outputformat json --severity high
             if [ $? -eq 0 ]; then
               echo "Dependency scanning passed!"
             else
@@ -191,6 +196,10 @@ stages:
           displayName: Obtain AWS Credentials
         - script: |
             ./envs.sh
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
           displayName: 'Copy Environment Files'
         - publish: $(System.DefaultWorkingDirectory)/.env
           artifact: Environment
@@ -327,6 +336,10 @@ stages:
             chmod +x ./tdd-test.sh
             cat .env            
             ./tdd-test.sh  
+            if [ $? -ne 0 ]; then
+              echo "API testing failed"
+              exit 1
+            fi
             aws s3 sync coverage s3://$DOCS_BUCKET_NAME/backend-tdd-coverage  --profile "indyauction-main"
             aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*" --profile "indyauction-main" --profile "indyauction-main"
           displayName: Run TDD Tests

@@ -14,14 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
-  apiGateway:
-    methodSettings:
-      - metricsEnabled: true
-        loggingLevel: INFO
-        dataTraceEnabled: false
-        resourcePath: "/*"
-        httpMethod: "*"  
+  layers:  ${ssm:NodeLayerARN}
   vpc:
     securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -154,7 +147,7 @@ functions:
     timeout: 30
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     events:
       - http:
           cors: true
@@ -166,7 +159,7 @@ functions:
   # create:
   #   handler: handlers/create.create_auction
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NodeLayerARN}
   #   events:
   #     - http:
   #         cors: true
@@ -182,8 +175,8 @@ functions:
       runtime: python3.9
       memorySize: 2048
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
-        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+        -  ${ssm:PythonLayerARN}
+        -  ${ssm:PythonLayer2ARN}
       events:
         - http:
             cors: true
@@ -196,7 +189,7 @@ functions:
     handler: handlers/quicksight_total_lots.total_lots
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     events:
       - http:
           cors: true
@@ -208,7 +201,7 @@ functions:
   #   memorySize: 6400
   #   timeout: 120
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN}
+  #     -  ${ssm:NodeLayerARN}
   #   events:
   #     - sqs:
   #         arn: 
@@ -221,7 +214,7 @@ functions:
     runtime: python3.9
     timeout: 30
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     events:
       - http:
           cors: true
@@ -232,13 +225,35 @@ functions:
     handler: handlers/get_lot.handler
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     events:
       - http:
           cors: true
           path: /get-lots
           method: get
 
+
+  in-person-create: 
+    handler: handlers/in_person_create.create_auction
+    timeout: 30
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /in-person/create
+          method: post
+  
+  in-person-publish:
+    handler: handlers/in_person_publish.publish_auction
+    timeout: 30
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - http:
+          cors: true
+          path: /in-person/publish
+          method: patch
 
 stepFunctions:
   stateMachines:

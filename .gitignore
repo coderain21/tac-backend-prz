@@ -35,7 +35,7 @@ generate_architecture_diagram_final.py
 generate_architecture_diagram_simple.py
 generate_architecture_diagram.py
 ARCHITECTURE_DOCUMENTATION.md
-requirements.txt
+# requirements.txt
 indy_auction_architecture.png
 python_lib
 python2.zip
@@ -106,6 +106,14 @@ results.xml
 coverage/
 arns_data_prod_after.txt
 arns_data_prod.txt
+awscliv2.zip
+install
+aws/
+# Dependency management service - auto-generated files
+services/dependency-management/layer/nodejs/node_modules/
+services/dependency-management/python_lib/python/
+services/dependency-management/python_lib2/python/
+
 aws_signing_helper
 aws 
 awscliv2.zip

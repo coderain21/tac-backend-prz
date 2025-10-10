@@ -3,7 +3,7 @@
 const fs = require('fs')
 
 // Read package.json and licenses.json
-const packageData = JSON.parse(fs.readFileSync('devops/dependency/node/package.json'))
+const packageData = JSON.parse(fs.readFileSync('services/dependency-management/package.json'))
 const licensesData = JSON.parse(fs.readFileSync('node-licenses.json'))
 
 // Extract dependencies and devDependencies from package.json
@@ -42,7 +42,7 @@ function checkLicenses() {
     ]
 
     const nonOpenSourcePackages = Object.entries(data)
-        .filter(([_, pkg]) => !openSourceLicenses.some((license) => pkg.licenses.includes(license)))
+        .filter(([_, pkg]) => !pkg.license || !openSourceLicenses.includes(pkg.license))
         .map(([name]) => name)
 
     if (nonOpenSourcePackages.length > 0) {

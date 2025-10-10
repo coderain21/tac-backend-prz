@@ -69,11 +69,13 @@ module.exports.get_bids = async (event) => {
 
         // fetch bids
         const bids = await LiveBid.find(query, {
-            _id: 0,
+            _id: 1,
             lot_id: 1,
             bid_amount: 1,
             buyer_id: 1,
             bid_type: 1,
+            phone_number: 1,
+            country_code: 1,
         }).lean()
 
         return {
