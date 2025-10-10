@@ -1,15 +1,10 @@
 import Module from 'module';
 import path from 'path';
 import { test, expect } from '@playwright/test';
-import { ObjectId } from 'mongodb';
+import { ObjectId, MongoClient, Db } from 'mongodb';
 import { loadEnvironmentVariables } from '../lib/env_loader';
 import { LambdaEventFactory } from '../lib/lambda_event_factory';
 import { lotTestData, bidTestData } from '../lib/test_data_manager';
-import {
-  connectToDatabase,
-  getDb,
-  closeDatabaseConnection,
-} from '../lib/db_helper';
 
 // --- MONKEY-PATCH TO FIX BROKEN REQUIRE PATHS ---
 const originalResolveFilename = (Module as any)._resolveFilename;
@@ -30,15 +25,19 @@ loadEnvironmentVariables('services/lot-bid-history');
 const { handler } = require('../../services/lot-bid-history/handlers/list.js');
 
 test.describe('Lot Bid History API', () => {
-  let db: ReturnType<typeof getDb>;
+  let client: MongoClient;
+  let db: Db;
 
   test.beforeAll(async () => {
-    await connectToDatabase();
-    db = getDb();
+    client = new MongoClient(process.env.MONGO_CLIENT || 'mongodb://localhost:27017');
+    await client.connect();
+    db = client.db(process.env.DATABASE || 'indyauction-test');
   });
 
   test.afterAll(async () => {
-    await closeDatabaseConnection();
+    if (client) {
+      await client.close();
+    }
   });
 
   test('should return 200 OK and a list of bids for a valid lot ID', async () => {
