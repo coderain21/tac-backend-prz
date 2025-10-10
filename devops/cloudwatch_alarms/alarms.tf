@@ -458,54 +458,75 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
   }
 }
 
-# RUM alarms
-resource "aws_cloudwatch_metric_alarm" "rum_admin_500_p1" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Statuscode-5xx-Admin-Web-Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/RUM"
-  period              = 300
-  statistic           = "Sum"
-  threshold           = 1
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-  dimensions = {
-    application_name = "Admin-Web-Application"
+
+# Create CloudWatch Log Metric Filter
+resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
+  name           = "Process Cart All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-process-cart"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*TypeError*\" || message=\"*Cannot read properties*\" || message=\"*ClusterAllFailedError*\" || message=\"*Redis*\" || message=\"*ECONNREFUSED*\" || message=\"*ETIMEDOUT*\" || message=\"*undefined*\"]"
+  provider             = aws.deployment-eu
+  metric_transformation {
+    name      = "ProcessCartErrorCount"
+    namespace = "ProcessCartError"
+    value     = "1"
+    default_value = "0"
   }
 }
 
-resource "aws_cloudwatch_metric_alarm" "rum_buyer_500_p1" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Statuscode-5xx-Buyer-Web-Application"
+# Create CloudWatch Alarm for process cart logs
+resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
+  alarm_name          = "p1-IndyAuction-${var.STAGE}-Process Cart Logs Error Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/RUM"
+  metric_name         = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].namespace
   period              = 300
   statistic           = "Sum"
   threshold           = 1
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-  dimensions = {
-    application_name = "Buyer-Web-Application"
-  }
+  alarm_description   = "Alarm when Lambda logs contain 'error'"
+
+  # Actions
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
 }
 
-resource "aws_cloudwatch_metric_alarm" "rum_seller_500_p1" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Statuscode-5xx-Seller-Web-Application"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "Http5xxCount"
-  namespace           = "AWS/RUM"
+
+resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_filter" {
+  name           = "Save To Cache All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-save-to-cache"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*ClusterAllFailedError*\" || message=\"*Failed to refresh slots cache*\" || message=\"*Redis connection*\" || message=\"*ECONNREFUSED*\" || message=\"*ETIMEDOUT*\" || message=\"*Cannot read properties*\"]"
+
+  metric_transformation {
+    name      = "SaveToCacheErrorCount"
+    namespace = "SaveToCacheError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider             = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
+  alarm_name          = "p1-IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 3
+  datapoints_to_alarm = 2
+  metric_name         = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.save_to_cache_lambda_error_metric_filter.metric_transformation[0].namespace
   period              = 300
   statistic           = "Sum"
-  threshold           = 1
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-  dimensions = {
-    application_name = "Seller-Web-Application"
-  }
+  threshold           = 5
+  alarm_description   = "Save-to-cache Redis errors > 5 in 5 minutes (2 out of 3 periods)"
+  treat_missing_data  = "notBreaching"
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
 }
+
+
+
+
+
+
+
 
 # Other service alarms
 resource "aws_cloudwatch_metric_alarm" "lambda_throttles_p1" {
@@ -522,22 +543,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles_p1" {
   provider            = aws.deployment-eu
 }
 
-resource "aws_cloudwatch_metric_alarm" "sqs_large_message_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-SQS-SentMessageSizeExceeded"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  metric_name         = "SentMessageSize"
-  namespace           = "AWS/SQS"
-  period              = 60
-  statistic           = "Maximum"
-  threshold           = 262144
-  dimensions = {
-    QueueName = "${var.STAGE}-bulk-lots-update"
-  }
-  alarm_description   = "P1 SQS message size > 256 KB"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-  provider            = aws.deployment-eu
-}
+
 
 resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
   alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
