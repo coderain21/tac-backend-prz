@@ -10,7 +10,6 @@ const { ObjectId } = require('mongodb')
 const helpers = require('../lib/helper')
 const BidInformation = require('../entities/BidInformation')
 const Lot = require('../entities/Lot')
-const Bid = require('../entities/Bid')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
 
