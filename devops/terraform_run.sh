@@ -244,7 +244,7 @@ eval $( $(pwd)/aws_signing_helper credential-process \
   --role-arn $ROLE_ARN \
 | jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
-
+echo "Serverless Service wise Deployment Started"
 cd services/dependency-management
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
@@ -257,6 +257,7 @@ cd ../..
 cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
+echo "Serverless Service wise Deployment Ended"
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
