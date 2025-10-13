@@ -16,12 +16,7 @@ provider:
   versionFunctions: false
   layers:  ${ssm:NodeLayerARN}
   apiGateway:
-    methodSettings:
-      - metricsEnabled: true
-        loggingLevel: INFO
-        dataTraceEnabled: false
-        resourcePath: "/*"
-        httpMethod: "*"  
+    metrics: true 
   environment:
     BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
