@@ -21,12 +21,7 @@ provider:
   versionFunctions: false
   layers:  ${ssm:NodeLayerARN}
   apiGateway:
-    methodSettings:
-      - metricsEnabled: true
-        loggingLevel: INFO
-        dataTraceEnabled: false
-        resourcePath: "/*"
-        httpMethod: "*"  
+    metrics: true 
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:SELLER_COGNITO_USERPOOL_ID}
