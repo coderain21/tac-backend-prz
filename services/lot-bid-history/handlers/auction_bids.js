@@ -77,8 +77,8 @@ module.exports.handler = async (event) => {
         }
 
         const options = {
-            page: parseInt(queryParams?.page, 10) || 1,
-            limit: queryParams?.limit ? parseInt(queryParams.limit, 10) : 10,
+            page: 1,
+            limit: 1000,
             sort: { time_stamp: -1 },
             projection: {
                 paddle_number: 1,
@@ -96,9 +96,7 @@ module.exports.handler = async (event) => {
 
         const bidsList = await mongodbHelper.list(BidInformation, mongoose_query, options)
 
-        // Group bids by lot_id
         // Group bids by lot_id and limit to 1 bid per lot
-        // Initialize all lots with empty arrays, then add bids (limit 1 per lot)
         const groupedData = {}
         lotIds.forEach((lotId) => {
             groupedData[lotId] = []
@@ -110,18 +108,38 @@ module.exports.handler = async (event) => {
             }
         })
 
+        // Apply pagination to lots
+        const page = parseInt(queryParams?.page, 10) || 1
+        const limit = parseInt(queryParams?.per_page, 10) || 52
+
+        // Sort lots by lot_number ascending
+        const sortedLots = lots.sort((a, b) => a.lot_number - b.lot_number)
+        const sortedLotIds = sortedLots.map((lot) => lot._id.toString())
+
+        const totalLots = sortedLotIds.length
+        const totalPages = Math.ceil(totalLots / limit)
+        const startIndex = (page - 1) * limit
+        const endIndex = startIndex + limit
+        const paginatedLotIds = sortedLotIds.slice(startIndex, endIndex)
+
+        // Create paginated data with only the lots for current page
+        const paginatedData = {}
+        paginatedLotIds.forEach((lotId) => {
+            paginatedData[lotId] = groupedData[lotId]
+        })
+
         return {
             statusCode: 200,
             headers: await helpers.getHeaders(),
             body: JSON.stringify({
-                data: groupedData,
+                data: paginatedData,
                 pagination: {
-                    total_pages: bidsList.totalPages,
-                    limit: bidsList.limit,
-                    total_records: bidsList.totalDocs,
-                    next_page: bidsList.nextPage,
-                    page: bidsList.page,
-                    total_lots: lots.length,
+                    total_pages: totalPages,
+                    limit,
+                    total_records: totalLots,
+                    next_page: page < totalPages ? page + 1 : null,
+                    page,
+                    total_lots: totalLots,
                 },
             }),
         }
