@@ -213,8 +213,8 @@ fi
 
 run_command terraform -chdir=devops/secret_manager init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/secret_manager/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/secret_manager apply -auto-approve
-run_command terraform -chdir=devops/cloudwatch_alarms init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch_alarms/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
+run_command terraform -chdir=devops/ses_alert init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses_alert/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/ses_alert apply -auto-approve
 run_command terraform -chdir=devops/budgets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/budgets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/budgets apply -auto-approve
 run_command terraform -chdir=devops/stripe_webhook init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/stripe_webhook/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -222,6 +222,8 @@ run_command terraform -chdir=devops/stripe_webhook apply -auto-approve
 if [ "${STAGE}" = "prod" ]; then
     run_command terraform -chdir=devops/cloudwatch init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/cloudwatch apply -auto-approve
+    run_command terraform -chdir=devops/cloudwatch_alarms init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch_alarms/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 fi
 npm i -g serverless@3.15.2
 npm i -g @serverless/compose

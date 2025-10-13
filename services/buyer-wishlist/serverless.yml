@@ -15,6 +15,13 @@ provider:
   region: eu-west-2
   versionFunctions: false
   layers:  ${ssm:NodeLayerARN}
+  apiGateway:
+    methodSettings:
+      - metricsEnabled: true
+        loggingLevel: INFO
+        dataTraceEnabled: false
+        resourcePath: "/*"
+        httpMethod: "*"  
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     LOTS_TABLE_NAME: ${opt:stage, self:provider.stage}-lots
