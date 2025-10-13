@@ -15,6 +15,13 @@ provider:
   region: eu-west-2
   versionFunctions: false
   layers:  ${ssm:NodeLayerARN}
+  apiGateway:
+    methodSettings:
+      - metricsEnabled: true
+        loggingLevel: INFO
+        dataTraceEnabled: false
+        resourcePath: "/*"
+        httpMethod: "*"  
   environment:
     REGION: ${env:REGION}
     STAGE: ${opt:stage, self:provider.stage}

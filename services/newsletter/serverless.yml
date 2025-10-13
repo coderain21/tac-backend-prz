@@ -15,6 +15,13 @@ provider:
   region: eu-west-2
   versionFunctions: false
   layers:  ${ssm:NodeLayerARN}
+  apiGateway:
+    methodSettings:
+      - metricsEnabled: true
+        loggingLevel: INFO
+        dataTraceEnabled: false
+        resourcePath: "/*"
+        httpMethod: "*"  
   environment:
     COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     COGNITO_SELLER_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
