@@ -16,12 +16,7 @@ provider:
   versionFunctions: false
   layers: ${ssm:COMMON_LIB_ARN}
   apiGateway:
-    methodSettings:
-      - metricsEnabled: true
-        loggingLevel: INFO
-        dataTraceEnabled: false
-        resourcePath: "/*"
-        httpMethod: "*"  
+    metrics: true 
   environment:
     BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     RECAPTCHA_KEY: ${ssm:RECAPTCHA_KEY}
