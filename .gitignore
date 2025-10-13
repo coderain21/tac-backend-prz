@@ -113,3 +113,10 @@ aws/
 services/dependency-management/layer/nodejs/node_modules/
 services/dependency-management/python_lib/python/
 services/dependency-management/python_lib2/python/
+
+aws_signing_helper
+aws 
+awscliv2.zip
+feature_api_mapping.txt
+missing_apis_clean.txt
+api_specific_mon
