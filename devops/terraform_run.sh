@@ -246,6 +246,7 @@ eval $( $(pwd)/aws_signing_helper credential-process \
 
 echo "Serverless Service wise Deployment Started"
 cd services/dependency-management
+npm i serverless-plugin-scripts
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
 cd services/cognito-auth
