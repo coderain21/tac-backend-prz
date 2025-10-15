@@ -332,6 +332,7 @@ async function updateRedisData(lotInformation, client) {
         const get_lot = JSON.parse(existingRecord)
         const updateRequest = {
             ...get_lot,
+            start_date: lotInformation.start_date,
             lot_end_date: lotInformation.lot_end_time,
             end_date: lotInformation.end_date,
         }

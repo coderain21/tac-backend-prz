@@ -679,7 +679,7 @@ def update_auction(event, context):
                 }
 
                 allLots = []
-                for item in listLots:
+                for item in documents:
                     winning_user = item.get('winning_user')
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
