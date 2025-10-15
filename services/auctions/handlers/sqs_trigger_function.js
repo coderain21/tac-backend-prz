@@ -29,6 +29,7 @@ const Cart = require('../entities/Cart')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
 let connection = null
+let client
 
 // Add a Set to track processed auctions to prevent duplicates
 const processedAuctions = new Set()
@@ -181,7 +182,7 @@ module.exports.sqsTriggerFunction = async (event) => {
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
         // Connect to Redis and retrieve the auction lots
-        const client = await redisHelper.createRedisClient()
+        client = await redisHelper.getClient()
 
         const auctionData = await mongodbHelper.getAuction(event, Auction)
 
