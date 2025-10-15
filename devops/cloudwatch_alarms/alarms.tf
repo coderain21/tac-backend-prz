@@ -486,7 +486,7 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
   alarm_description   = "Alarm when Lambda logs contain 'error'"
 
   # Actions
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider             = aws.deployment-eu
 }
 
@@ -517,7 +517,7 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
   threshold           = 5
   alarm_description   = "Save-to-cache Redis errors > 5 in 5 minutes (2 out of 3 periods)"
   treat_missing_data  = "notBreaching"
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider             = aws.deployment-eu
 }
 
