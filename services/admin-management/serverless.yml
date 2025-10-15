@@ -848,6 +848,22 @@ functions:
     layers:
       -  ${ssm:NodeLayerARN}
 
+  batchLotsPublish:
+    handler: handlers/publish_auction.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    timeout: 90
+    layers:
+      -  ${ssm:NodeLayerARN}
+
+  
+  batchLotsUpdate:  
+    handler: handlers/update_auction_bulk.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 300
+    layers:
+      -  ${ssm:NodeLayerARN}
+
 
   sqs-lot-update_1:
     handler: handlers/batch_lots_update.handler

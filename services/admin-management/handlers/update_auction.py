@@ -13,6 +13,7 @@ from datetime import datetime    #, timezone
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
 sqs = boto3.client('sqs')
+lambda_client = boto3.client('lambda')
 
 
 headers = {
@@ -303,10 +304,7 @@ def update_auction(event, context):
                             # Add more required fields as needed
                         }
                     allLots.append(required_fields)
-                print('allLots', allLots)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
-                # json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
-                # total_lots = len(json_serializable_list)
                 batch_size_lots = 50  # Batch size for lots
                 batch_size_queue = 3  # Number of batches to send at once
                 total_lots = len(json_serializable_list)
@@ -323,7 +321,9 @@ def update_auction(event, context):
                     # Prepare entries for each batch in send_batches
                     entries = []
                     for item in send_batches:
+                        print('published', item)
                         message_body = 'published'
+
 
                         message_attributes = {
                             'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
@@ -336,14 +336,28 @@ def update_auction(event, context):
                             'MessageAttributes': message_attributes
                             })
                     # Send the batch of entries to the queue
-                    cc = sqs.send_message_batch(
-                        QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
-                        Entries=entries
-                    )
-                    print('cc', cc)
+                    # cc = sqs.send_message_batch(
+                    #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+                    #     Entries=entries
+                    # )
+                    # print('cc', cc)
+                    # Invoke the batchLotsUpdate Lambda for each batch
+                    for item in send_batches:
+                        payload = {
+                            'lots': item,
+                            'auction': auction_data_sqs, # Re-using the auction data you already prepared
+                            'type': 'published'
+                        }
+                        lambda_client.invoke(
+                            FunctionName=f"auctions-{os.environ['STAGE']}-batchLotsPublish",
+                            InvocationType='Event', # Asynchronous invocation
+                            Payload=json.dumps(payload, cls=Encoder)
+                        )
+                    print(f"Successfully invoked batchLotsPublish for {len(send_batches)} batches.")
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
-                    {"$set": {"status": "Published"}}
+                    {"$set": {"status": "Published", "publish_session_started_at": int(datetime.utcnow().timestamp())}},
+                    upsert=True
                 )
 
                 return {
@@ -408,6 +422,9 @@ def update_auction(event, context):
 
         existing_lots_count = collection_lot.count_documents(
             {"seller_email": seller_email, "auction_id": auction_id})
+
+
+
         if auction_end_date != None:
             start_date = auction_record['start_date']
             end_date =  request_body['end_date']
@@ -488,7 +505,7 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
-                    print('result:', result)
+
             if  len(listLots) > 0 and auction_record['status'] in ['Accepting bids' , 'Published']:
                 auction_data_sqs = {
                     'extension_time': auction_record.get('extension_time'),
@@ -501,9 +518,10 @@ def update_auction(event, context):
                     winningUser = item.get('winning_user')
                     lot_id = str(item['_id'])
                     getExistingLot = get_Lot(item, lot_id)
-                    if len(getExistingLot) > 0:
+                    if getExistingLot is not None and len(getExistingLot) > 0:
                         # Create a new dictionary with only the required fields
                         required_fields = {
+                            # **getExistingLot,
                             '_id': item.get('_id'),
                             'start_date': item.get('start_date'),
                             'end_date': item.get('end_date'),
@@ -520,20 +538,24 @@ def update_auction(event, context):
                             "max_bid": getExistingLot.get('max_bid'),
                             "title2": getExistingLot.get('title2'),
                             "lot_end_date": getExistingLot.get('lot_end_date')
+                            # Add more required fields as needed
                         }
                     else:
-                        print('no from existing')
+                        # Handle case when getExistingLot is None or empty
                         required_fields = {
-                                '_id': item.get('_id'),
-                                'start_date': item.get('start_date'),
-                                'end_date': item.get('end_date'),
-                                'auction_id': item.get('auction_id'),
-                                'seller_email': item.get('seller_email'),
-                                'winning_user': item.get('winning_user', ''),
-                                'bid_amount': item.get('bid_amount', ''),
-                                'lot_number': item.get('lot_number'),
-                                # Add more required fields as needed
-                            }
+                            '_id': item.get('_id'),
+                            'start_date': item.get('start_date'),
+                            'end_date': item.get('end_date'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
+                            'winning_user': item.get('winning_user', ''),
+                            'bid_amount': item.get('bid_amount', ''),
+                            'lot_number': item.get('lot_number'),
+                            'starting_price': item.get('starting_price'),
+                            'images': item.get('images', []),  # Provide default empty list
+                            'title1': item.get('title1'),
+                            'title2': item.get('title2', '')  # Add missing fields with defaults
+                        }
                     allLots.append(required_fields)
                 json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
                 batch_size_lots = 50  # Batch size for lots
@@ -549,39 +571,42 @@ def update_auction(event, context):
                     # Get a sublist containing at most 3 batches
                     send_batches = user_batches[i:i+batch_size_queue]
                     # Prepare entries for each batch in send_batches
-                    entries = []
+                    # entries = []
+                    # for item in send_batches:
+                    #     message_body = 'update status'
+                    #     message_attributes = {
+                    #     'lots': {'DataType': 'String',  'StringValue': json.dumps(item)},
+                    #     'auction': {'DataType': 'String', 'StringValue': auction_record_str},
+                    #     'type': {'DataType': 'String', 'StringValue': 'update'},
+                    #     }
+                    #     entries.append({'Id': str(uuid.uuid4()),
+                    #                     'DelaySeconds': i,
+                    #                     'MessageBody': message_body,
+                    #                     'MessageAttributes': message_attributes
+                    #                     })
+                    # # Send the batch of entries to the queue
+                    # cc = sqs.send_message_batch(
+                    #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+                    #     Entries=entries
+                    # )
+                    # print('cc', cc)
+                    # Invoke the batchLotsUpdate Lambda for each batch
                     for item in send_batches:
-                        message_body = 'update status'
-                        message_attributes = {
-                        'lots': {'DataType': 'String',  'StringValue': json.dumps(item)},
-                        'auction': {'DataType': 'String', 'StringValue': auction_record_str},
-                        'type': {'DataType': 'String', 'StringValue': 'update'},
+                        payload = {
+                            'lots': item,
+                            'auction': auction_data_sqs, # Re-using the auction data
+                            'type': 'update'
                         }
-                        entries.append({'Id': str(uuid.uuid4()),
-                                        'DelaySeconds': i,
-                                        'MessageBody': message_body,
-                                        'MessageAttributes': message_attributes
-                                        })
-                    # Send the batch of entries to the queue
-                    cc = sqs.send_message_batch(
-                        QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
-                        Entries=entries
-                    )
-                    print('cc', cc)
-        if auction_extension_type or auction_extension_between_lots:
-            if auction_extension_type is None:
-                auction_extension_type = auction_record['extension_type']
-            if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
-                end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
-                auction_record['end_date'] = end_date_update
-                updatingLot = updateAllLot(listLots, auction_extension_type, auction_record, auction_id, extension_time)
-                if  len(listLots) > 0 and auction_extension_type in ["Cascade", "Individual Lots"]:
-                    additional_time_ms = end_date_update + (existing_lots_count -1 ) * extension_time * 60 * 1000
-                    update_data ['end_date'] = additional_time_ms
-                else:
-                    end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
-                    update_data ['end_date'] = end_date_update
-        if auction_start_date != None:
+
+                        lambda_client.invoke(
+                            FunctionName=f"auctions-{os.environ['STAGE']}-batchLotsUpdate",
+                            InvocationType='Event', # Asynchronous invocation
+                            Payload=json.dumps(payload, cls=Encoder)
+                        )
+                    print(f"Successfully invoked batchLotsUpdate for {len(send_batches)} batches for update.")
+
+
+        elif auction_start_date != None:
             start_date =  request_body['start_date']
             if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
                 for item in listLots:
@@ -604,6 +629,24 @@ def update_auction(event, context):
                 if bulk_operations:
                     # Execute the bulk operations
                     result = collection_lot.bulk_write(bulk_operations)
+
+        if auction_extension_type or auction_extension_between_lots:
+            if auction_extension_type is None:
+                auction_extension_type = auction_record['extension_type']
+            if  len(listLots) > 0 and auction_record['status'] in ['Draft']:
+                end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
+                auction_record['end_date'] = end_date_update
+                updatingLot = updateAllLot(listLots, auction_extension_type, auction_record, auction_id, extension_time)
+                if  len(listLots) > 0 and auction_extension_type in ["Cascade", "Individual Lots"]:
+                    additional_time_ms = end_date_update + (existing_lots_count -1 ) * extension_time * 60 * 1000
+                    update_data ['end_date'] = additional_time_ms
+                else:
+                    end_date_update =  request_body.get('end_date', auction_record.get('end_date'))
+                    update_data ['end_date'] = end_date_update
+        
+
+
+
         print('updatedataa', update_data)
         if len(update_data) > 0:
             # Add this block to include first_lot_end_date if end_date is updated
