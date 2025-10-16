@@ -198,8 +198,6 @@ def update_auction(event, context):
             published_status = 'false'
 
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
-        print('state', state)
-
 
 
         if auction_start_date and state['status'] not in ["Published", "Draft"]:
