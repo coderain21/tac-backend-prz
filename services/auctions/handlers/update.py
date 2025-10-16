@@ -180,6 +180,7 @@ def update_auction(event, context):
         auction_start_date = request_body.get('start_date', None)
         auction_end_date = request_body.get('end_date', None)
 
+
         #INDY-412  dynamic timezone
         start_time_zone = request_body.get('start_time_zone', None)
         end_time_zone = request_body.get('end_time_zone', None)
@@ -197,6 +198,15 @@ def update_auction(event, context):
             published_status = 'false'
 
         state = collection.find_one({"auction_id": auction_id, "seller_email": seller_email})
+
+
+        if auction_start_date and state['status'] not in ["Published", "Draft"]:
+            print('Auction in status', state['status'], 'cannot be updated')
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": "Auction is already in Accepting Bids"})
+            }
 
         total_lots = collection_lot.count_documents({"seller_email": seller_email,
                                                      "auction_id": auction_id})
@@ -441,7 +451,7 @@ def update_auction(event, context):
 
 
         if auction_end_date != None:
-            start_date = request_body['start_date'] if request_body['start_date'] else auction_record['start_date']
+            start_date = request_body.get('start_date') if request_body.get('start_date') else auction_record.get('start_date')
             end_date =  request_body['end_date']
             if  len(listLots) > 0 and auction_record['extension_type'] in ["Cascade", "Individual Lots"]:
                 additional_time_ms = end_date + (existing_lots_count -1 ) * extension_time * 60 * 1000
@@ -644,8 +654,8 @@ def update_auction(event, context):
                 if bulk_operations:
                     result = collection_lot.bulk_write(bulk_operations)
 
-            # ADD THIS NEW SECTION FOR PUBLISHED/ACCEPTING BIDS STATUS
-            if len(listLots) > 0 and auction_record['status'] in ['Published', 'Accepting bids']:
+            # ADD THIS NEW SECTION FOR PUBLISHED STATUS
+            if len(listLots) > 0 and auction_record['status'] in ['Published']:
                 # Get current time for checking ended lots
                 current_datetime = datetime.utcnow()
                 epoch_time_seconds = int(current_datetime.timestamp())
