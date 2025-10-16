@@ -11,6 +11,7 @@ from datetime import datetime
 client = boto3.client(
     'pinpoint-email', region_name=os.environ.get('REGION', 'eu-west-2'))
 sqs = boto3.client('sqs')
+lambda_client = boto3.client('lambda')
 
 headers = {
     'Content-Type': 'application/json',
@@ -84,7 +85,7 @@ def has_images_for_auction_and_seller(auction_id, seller_email):
     result = list(collection_lot.aggregate(pipeline))
     return bool(result)  # True if at least one lot has non-empty images array
 
-def update_auction(event, context):
+def publish_auction(event, context):
     """
     The `update_auction` function updates the specified fields of an auction
     in a MongoDB database based on the request body and the auction ID.
@@ -206,41 +207,91 @@ def update_auction(event, context):
                 }
             else:
                 # invoke_state_machine(event)
+                auction_data_sqs = {
+                    'extension_time': auction_record.get('extension_time'),
+                    'seller_email': auction_record.get('seller_email'),
+                    'auction_id': auction_record.get('auction_id'),
+                }
+                auction_record_str = json.dumps(auction_data_sqs, cls=Encoder)
+                allLots = []
+                for item in listLots:
+                    required_fields = {
+                            '_id': item.get('_id'),
+                            'start_date': item.get('start_date'),
+                            'end_date': item.get('end_date'),
+                            'auction_id': item.get('auction_id'),
+                            'seller_email': item.get('seller_email'),
+                            'winning_user': item.get('winning_user', ''),
+                            'bid_amount': item.get('bid_amount', ''),
+                            'lot_number': item.get('lot_number'),
+                            'starting_price': item.get('starting_price'),
+                            'images': item.get('images'),
+                            'title1': item.get('title1'),
+                            # Add more required fields as needed
+                        }
+                    allLots.append(required_fields)
+                json_serializable_list = json.loads(json.dumps(allLots, default=convert_object_id))
+                batch_size_lots = 50  # Batch size for lots
+                batch_size_queue = 3  # Number of batches to send at once
+                total_lots = len(json_serializable_list)
+                user_batches = []
+                # Batch lots by 30
+                for i in range(0, total_lots, batch_size_lots):
+                    batch_end = min(i + batch_size_lots, total_lots)
+                    user_batches.append(json_serializable_list[i:batch_end])
+                # Send batches of 3 to the queue
+                for i in range(0, len(user_batches), batch_size_queue):
+                    # Get a sublist containing at most 3 batches
+                    send_batches = user_batches[i:i+batch_size_queue]
+
+                    # Prepare entries for each batch in send_batches
+                    entries = []
+                    for item in send_batches:
+                        print('published', item)
+                        message_body = 'published'
+
+
+                        message_attributes = {
+                            'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
+                            'auction': {'DataType': 'String', 'StringValue': auction_record_str},
+                            'type': {'DataType': 'String', 'StringValue': 'published'},
+                        }
+                        entries.append(
+                            {'Id': str(uuid.uuid4()),
+                             'MessageBody': message_body,
+                            'MessageAttributes': message_attributes
+                            })
+                    # Send the batch of entries to the queue
+                    # cc = sqs.send_message_batch(
+                    #     QueueUrl=os.environ["LOT_UPDATE_QUEUE_URL"],
+                    #     Entries=entries
+                    # )
+                    # print('cc', cc)
+                    # Invoke the batchLotsUpdate Lambda for each batch
+                    for item in send_batches:
+                        payload = {
+                            'lots': item,
+                            'auction': auction_data_sqs, # Re-using the auction data you already prepared
+                            'type': 'published'
+                        }
+                        lambda_client.invoke(
+                            FunctionName=f"auctions-{os.environ['STAGE']}-batchLotsPublish",
+                            InvocationType='Event', # Asynchronous invocation
+                            Payload=json.dumps(payload, cls=Encoder)
+                        )
+                    print(f"Successfully invoked batchLotsPublish for {len(send_batches)} batches.")
                 collection.update_one(
                     {"seller_email": seller_email, "auction_id": auction_id},
-                    {"$set": {"status": "Published"}}
+                    {"$set": {"status": "Published", "publish_session_started_at": int(datetime.utcnow().timestamp())}},
+                    upsert=True
                 )
-                auction_record_str = json.dumps(auction_record, cls=Encoder)
-                # Convert the list of documents to a JSON-serializable format
-                json_serializable_list = json.loads(json.dumps(listLots, default=convert_object_id))
-                total_lots = len(json_serializable_list)
-                batch_size = 30
-                user_batches = []
-                for i in range(0, total_lots, batch_size):
-                    # Ensure all remaining items are included in the last batch
-                    batch_end = min(i + batch_size, total_lots)
-                    user_batches.append(json_serializable_list[i:batch_end])
 
-                # Split the list into batches of size 10
-                # user_batches = [json_serializable_list[i:i + 10] for i in range(0, len(json_serializable_list), 10)]
-
-                sqs.send_message_batch(
-                    QueueUrl= os.environ["LOT_UPDATE_QUEUE_URL"],
-                    Entries=[
-                        {'Id': str(uuid.uuid4()), 'MessageBody': 'update status', 'MessageAttributes':
-                        {'lots': {'DataType': 'String', 'StringValue': json.dumps(item)},
-                        'auction': {'DataType': 'String', 'StringValue': auction_record_str,
-                        },
-                        'type': {'DataType': 'String', 'StringValue':'published'},
-                        # 'status': {'DataType': 'String', 'StringValue': str(data['status'])}
-                        }} for item in user_batches
-                    ]
-                )
                 return {
                     "statusCode": 204,
                     'headers': headers,
-                    "body": json.dumps({'message': "suceessfull"})
+                    "body": json.dumps({'message': "successful"})
                 }
+
 
         auction_status = auction_record.get("status")
         if auction_status == "Draft":
