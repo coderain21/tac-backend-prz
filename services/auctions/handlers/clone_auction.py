@@ -131,6 +131,14 @@ def clone_auction(event, context):
             auction['auction_image'] = ''
         else:
             auction['auction_image'] = clone_auction_image(auction['auction_image'])
+            if auction.get('logo_image'):
+                auction['logo_image'] = clone_auction_image(auction['logo_image'])
+
+            event_display = auction.get('event_display')
+            if event_display:
+                for image_key in ['background_image', 'left_logo_image', 'right_logo_image']:
+                    if event_display.get(image_key):
+                        event_display[image_key] = clone_auction_image(event_display[image_key])
 
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
