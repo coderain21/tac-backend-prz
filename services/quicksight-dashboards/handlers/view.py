@@ -12,25 +12,25 @@ headers = {
 }
 
 
-# from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError
 
-# def check_user(client, aws_account_id, user_name):
-#     print('in check user')
-#     try:
-#         response = client.describe_user(
-#             AwsAccountId=aws_account_id,
-#             Namespace='default',
-#             UserName=user_name
-#         )
-#         print('after')
-#         # User exists, return user details
-#         return response['User']
-#     except ClientError as e:
-#         if e.response['Error']['Code'] == 'ResourceNotFoundException':
-#             print(f"User {user_name} not found.")
-#             return None
-#         else:
-#             raise
+def check_user(client, aws_account_id, user_name):
+    print('in check user')
+    try:
+        response = client.describe_user(
+            AwsAccountId=aws_account_id,
+            Namespace='default',
+            UserName=user_name
+        )
+        print('after')
+        # User exists, return user details
+        return response['User']
+    except ClientError as e:
+        if e.response['Error']['Code'] == 'ResourceNotFoundException':
+            print(f"User {user_name} not found.")
+            return None
+        else:
+            raise
 
 def get_dashboard(event, context):
     try:
@@ -70,57 +70,72 @@ def get_dashboard(event, context):
         quicksight_client = session.client('quicksight')
         print("here")
 
-        # user_exists = check_user(quicksight_client, aws_account_id, user_name)
+        if os.environ.get('STAGE') == 'prod' or os.environ.get('STAGE') == 'pre-production':
+            user_exists = check_user(quicksight_client, aws_account_id, user_name)
 
-        # if not user_exists:
-        #     #if os.environ.get('STAGE') == 'prod':
-        #     print('User does not exist, creating user in quicksight')
-        #     try:
-        #         params = {
-        #             'AwsAccountId': str(aws_account_id),
-        #             'Namespace': 'default',
-        #             'IdentityType': 'QUICKSIGHT',
-        #             'UserName': user_name,
-        #             'UserRole': 'READER',
-        #             'Email': 'placeholder@example.com',   #temporary dummy email
-        #         }
-        #         print('param', params)
-        #         response = quicksight_client.register_user(**params)  # Create the user in QuickSight
-        #         print('registered user', response)
+            if not user_exists:
+                #if os.environ.get('STAGE') == 'prod':
+                print('User does not exist, creating user in quicksight')
+                try:
+                    params = {
+                        'AwsAccountId': str(aws_account_id),
+                        'Namespace': 'default',
+                        'IdentityType': 'QUICKSIGHT',
+                        'UserName': user_name,
+                        'UserRole': 'READER',
+                        'Email': 'placeholder@example.com',   #temporary dummy email
+                    }
+                    print('param', params)
+                    response = quicksight_client.register_user(**params)  # Create the user in QuickSight
+                    print('registered user', response)
 
-        #         update_params = {
-        #             'AwsAccountId': str(aws_account_id),
-        #             'UserName': user_name,
-        #             'Namespace': 'default',
-        #             'Email': user_name,
-        #             'Role': 'READER'
-        #         }
-        #         update_response = quicksight_client.update_user(**update_params)  # Update the user in QuickSight
-        #         print('updated user', update_response)
+                    update_params = {
+                        'AwsAccountId': str(aws_account_id),
+                        'UserName': user_name,
+                        'Namespace': 'default',
+                        'Email': user_name,
+                        'Role': 'READER'
+                    }
+                    update_response = quicksight_client.update_user(**update_params)  # Update the user in QuickSight
+                    print('updated user', update_response)
 
-        #     except Exception as e:
-        #         print('eeeeee')
-        #         print('Error:', str(e))
-        #         return {
-        #                 'statusCode': 500,
-        #                 'headers': headers,
-        #                 'body': json.dumps({'error': str(e)})
-        #             }
+                except Exception as e:
+                    print('eeeeee')
+                    print('Error:', str(e))
+                    return {
+                            'statusCode': 500,
+                            'headers': headers,
+                            'body': json.dumps({'error': str(e)})
+                        }
 
+            response = quicksight_client.generate_embed_url_for_registered_user(
+                AwsAccountId=aws_account_id,
+                ExperienceConfiguration={
+                    'Dashboard': {
+                        'InitialDashboardId': dashboard_id
+                    }
+                },
+                SessionLifetimeInMinutes=60,
+                UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{user_name}"
+            )
 
-        response = quicksight_client.generate_embed_url_for_registered_user(
-            AwsAccountId=aws_account_id,
-            ExperienceConfiguration={
-                'Dashboard': {
-                    'InitialDashboardId': dashboard_id
-                }
-            },
-            SessionLifetimeInMinutes=60,
-            UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{admin_user_name}"
-        )
+            embed_url = response['EmbedUrl']
+            final_embed_url = f'{embed_url}'
 
-        embed_url = response['EmbedUrl']
-        final_embed_url = f'{embed_url}#p.email={email_address}'
+        else:
+            response = quicksight_client.generate_embed_url_for_registered_user(
+                AwsAccountId=aws_account_id,
+                ExperienceConfiguration={
+                    'Dashboard': {
+                        'InitialDashboardId': dashboard_id
+                    }
+                },
+                SessionLifetimeInMinutes=60,
+                UserArn=f"arn:aws:quicksight:eu-west-2:{aws_account_id}:user/default/{admin_user_name}"
+            )
+
+            embed_url = response['EmbedUrl']
+            final_embed_url = f'{embed_url}#p.email={email_address}'
 
         return {
             'statusCode': 200,
