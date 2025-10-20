@@ -294,7 +294,7 @@ def update_auction(event, context):
                     "body": json.dumps({"message": "Some lots are missing lot images"})
                 }
             # print('seller data', seller_data['stripe_status'])
-            if ('stripe_status' not in seller_data or seller_data['stripe_status'] == 'disconnected') and ('paypal_status' not in seller_data or seller_data['paypal_status'] == 'disconnected'):
+            if not (('stripe_status' in seller_data and seller_data['stripe_status'] == 'connected') or ('paypal_status' in seller_data and seller_data['paypal_status'] == 'connected')):
                 return {
                     "statusCode": 400,
                     'headers': headers,

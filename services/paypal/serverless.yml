@@ -188,7 +188,7 @@ functions:
   
   paypal_connect_webhook:
     handler: handlers/connect_webhook.create
-    runtime: python3.9
+    runtime: python3.10
     layers:
     -  ${ssm:PythonLayerARN}
     vpc:
