@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -141,10 +141,10 @@ functions:
   sub-domain:
     handler: handlers/subdomain.subdomain
     runtime: python3.9
-    timeout: 100
+    timeout: 30
     role: ${ssm:LAMBDA_EXECTION_ARN}
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}

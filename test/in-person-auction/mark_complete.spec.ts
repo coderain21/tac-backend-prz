@@ -255,7 +255,7 @@ test.describe('Mark Complete Auction - Basic Functionality', () => {
 
     const response = await mark_complete(event);
     expect(response.statusCode).toBe(400);
-    expect(JSON.parse(response.body).message).toBe('Cannot complete a draft or completed auction');
+    expect(JSON.parse(response.body).message).toBe('Cannot complete a draft or completed auction or cancelled auction');
   });
 
   test('should return 400 when trying to complete already completed auction', async () => {
@@ -276,7 +276,7 @@ test.describe('Mark Complete Auction - Basic Functionality', () => {
 
   const response = await mark_complete(event);
   expect(response.statusCode).toBe(400);
-  expect(JSON.parse(response.body).message).toBe('Cannot complete a draft or completed auction');
+  expect(JSON.parse(response.body).message).toBe('Cannot complete a draft or completed auction or cancelled auction');
 });
 
 

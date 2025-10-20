@@ -9,8 +9,8 @@ for dist in distributions():
 
 # Step 2: Extract package names from requirements.txt
 requirements_files = [
-    'devops/dependency/python/requirements.txt',
-    'devops/dependency/python/requirements2.txt'
+    'services/dependency-management/requirements.txt',
+    'services/dependency-management/requirements2.txt'
 ]
 
 package_names = set()

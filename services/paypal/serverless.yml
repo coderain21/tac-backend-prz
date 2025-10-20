@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -162,7 +162,7 @@ functions:
     handler: handlers/paypal_connect.connect
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -188,9 +188,9 @@ functions:
   
   paypal_connect_webhook:
     handler: handlers/connect_webhook.create
-    runtime: python3.9
+    runtime: python3.10
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -216,7 +216,7 @@ functions:
     handler: handlers/paypal_disconnect.disconnect_account
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -235,7 +235,7 @@ functions:
     timeout: 30
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -254,7 +254,7 @@ functions:
     timeout: 30
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -284,7 +284,7 @@ functions:
       timeout: 30
       runtime: python3.9
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
+        -  ${ssm:PythonLayerARN}
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}

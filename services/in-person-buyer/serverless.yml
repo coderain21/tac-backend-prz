@@ -20,7 +20,7 @@ provider:
     subnetIds:
       - ${ssm:SUBNET_ID}
 
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -40,7 +40,6 @@ provider:
     LOT_COLLECTION_NAME: ${opt:stage, self:provider.stage}-lots
     COUNTER_LOT: ${opt:stage, self:provider.stage}-counters
     CDN_URL: ${ssm:CDN_URL}
-    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     AMPLIFY_DOMAIN_NAME: ${ssm:AMPLIFY_DOMAIN_NAME}
@@ -118,7 +117,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -134,7 +133,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -152,7 +151,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true
@@ -170,7 +169,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors: true

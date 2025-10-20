@@ -533,12 +533,14 @@ resource "aws_ssm_parameter" "ecr_repo_tag" {
 }
 
 data "aws_ssm_parameter" "waf_web_acl" {
+  count = var.STAGE == "prod" ? 1 : 0
   name ="SECURE_API_WEB_ACL_ARN"
   provider = aws.deployment-eu
 }
 
 resource "aws_wafv2_web_acl_association" "web_acl_association" {
-  web_acl_arn = data.aws_ssm_parameter.waf_web_acl.value
+  count = var.STAGE == "prod" ? 1 : 0
+  web_acl_arn = data.aws_ssm_parameter.waf_web_acl[0].value
   resource_arn = aws_lb.load-balancer.arn
   provider = aws.deployment-eu
 }

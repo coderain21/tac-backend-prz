@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -129,7 +129,7 @@ functions:
     handler: handlers/list.list_bidders
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -146,7 +146,7 @@ functions:
     handler: handlers/view.view_bidder
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -163,7 +163,7 @@ functions:
     handler: handlers/admin_view.view_bidder
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -181,7 +181,7 @@ functions:
     handler: handlers/update.update_user
     runtime: python3.9
     layers: 
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}

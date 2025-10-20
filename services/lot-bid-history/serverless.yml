@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -96,7 +96,7 @@ functions:
   list-bids:
     handler: handlers/list.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -113,7 +113,7 @@ functions:
   buyer-list-bids:
     handler: handlers/list.handler
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -138,10 +138,10 @@ functions:
             
   bid-listing:
     handler: handlers/bid_list.list_bids
-    timeout: 60
+    timeout: 30
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}

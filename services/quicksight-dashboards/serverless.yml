@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -30,14 +30,13 @@ provider:
     ADMIN_COGNITO_CLIENT_ID: ${ssm:ADMIN_COGNITO_CLIENT_ID}
     COGNITO_ADMIN_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
     ADMIN_COGNITO_USERPOOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
-    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     QUICKSIGHT_ASSUME_ROLE_ARN: ${ssm:QUICKSIGHT_ASSUME_ROLE_ARN}
     QUICKSIGHT_ACCOUNT_ID: ${ssm:QUICKSIGHT_ACCOUNT_ID}
     QUICKSIGHT_DASHBOARD_ID: ${ssm:QUICKSIGHT_DASHBOARD_ID}
     S3_BUCKET_URL: ${ssm:CDN_URL}
     SENDER_EMAIL: ${ssm:SENDER_EMAIL_ADDRESS}
-    QUICKSIGHT_AUCTION_DASHBOARD_ID: ${ssm:QUICKSIGHT_AUCTION_DASHBOARD_ID}
     ADMIN_DASHBOARD_ID: ${ssm:ADMIN_DASHBOARD_ID}
+    ADMIN_USERNAME: ${ssm:ADMIN_USERNAME}
 
 
 
@@ -111,7 +110,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${ssm:COMMON_LIB_ARN_PYTHON}
+         -  ${ssm:PythonLayerARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
@@ -130,7 +129,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${ssm:COMMON_LIB_ARN_PYTHON}
+         -  ${ssm:PythonLayerARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
@@ -149,7 +148,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${ssm:COMMON_LIB_ARN_PYTHON}
+         -  ${ssm:PythonLayerARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:
@@ -168,7 +167,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${ssm:COMMON_LIB_ARN_PYTHON}
+         -  ${ssm:PythonLayerARN}
       role: ${ssm:QUICKSIGHT_LAMBDA_ROLE_ARN}
       events:
         - http:

@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   apiGateway:
     metrics: true 
   environment:
@@ -123,7 +123,6 @@ provider:
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
     SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
-    COMMON_LIB_ARN_PYTHON_2: ${ssm:COMMON_LIB_ARN_PYTHON_2}
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     SOCKET_URL: ${ssm:SOCKET_URL}
@@ -257,7 +256,7 @@ functions:
     handler: handlers/list_auction.list_auction
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -284,7 +283,7 @@ functions:
     handler: handlers/list_buyers.list_buyers
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -311,7 +310,7 @@ functions:
     handler: handlers/buyer_detail.buyer_detail
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -338,7 +337,7 @@ functions:
     handler: handlers/buyer_list_auction.buyer_list_auction
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -365,7 +364,7 @@ functions:
     handler: handlers/list_purchases.list_purchases
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -392,7 +391,7 @@ functions:
     handler: handlers/clone_auction.clone_auction
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -419,7 +418,7 @@ functions:
     handler: handlers/order_details.order_detail
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -447,7 +446,7 @@ functions:
     handler: handlers/auction_purchases.list_purchases
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -474,7 +473,7 @@ functions:
     handler: handlers/auction_details.auction_details
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -502,7 +501,7 @@ functions:
     handler: handlers/all_accounting.list_all_purchases
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -529,7 +528,7 @@ functions:
   #   handler: handlers/list_sellers.list_sellers
   #   runtime: python3.9
   #   layers:
-  #     - ${ssm:COMMON_LIB_ARN_PYTHON}
+  #     -  ${ssm:PythonLayerARN}
   #   vpc:
   #     securityGroupIds:
   #       - ${ssm:SECURITY_GROUP_ID}
@@ -556,7 +555,7 @@ functions:
     handler: handlers/seller_view.seller_view
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -583,7 +582,7 @@ functions:
     handler: handlers/update_seller_status.update_seller_status
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -611,7 +610,7 @@ functions:
     handler: handlers/unpublish_auction.handler
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -642,7 +641,7 @@ functions:
       subnetIds:
         - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - http:
           cors:
@@ -671,8 +670,8 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
-        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+        -  ${ssm:PythonLayerARN}
+        -  ${ssm:PythonLayer2ARN}
       events:
         - http:
             cors: true
@@ -685,7 +684,7 @@ functions:
     runtime: python3.9
     # timeout: 100
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -709,8 +708,8 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
-        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+        -  ${ssm:PythonLayerARN}
+        -  ${ssm:PythonLayer2ARN}
       events:
         - http:
             cors: true
@@ -729,8 +728,8 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-        - ${ssm:COMMON_LIB_ARN_PYTHON}
-        - ${ssm:COMMON_LIB_ARN_PYTHON_2}
+        -  ${ssm:PythonLayerARN}
+        -  ${ssm:PythonLayer2ARN}
       events:
         - http:
             cors: true
@@ -743,7 +742,7 @@ functions:
     handler: handlers/all_sellers.list_all_sellers
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -771,7 +770,7 @@ functions:
     handler: handlers/update_password.update_password
     runtime: python3.9
     layers:
-    - ${ssm:COMMON_LIB_ARN_PYTHON}
+    -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
       - ${ssm:SECURITY_GROUP_ID}
@@ -802,7 +801,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
       layers:
-         - ${ssm:COMMON_LIB_ARN}
+         -  ${ssm:NodeLayerARN}
       events:
         - http:
             cors: true
@@ -815,7 +814,7 @@ functions:
     handler: handlers/update_seller_settings.update_seller_settings
     runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -847,7 +846,7 @@ functions:
         subnetIds:
           - ${ssm:SUBNET_ID}
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
 
 
   sqs-lot-update_1:
@@ -861,7 +860,7 @@ functions:
         - ${ssm:SUBNET_ID}
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - sqs:
           arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
@@ -877,7 +876,7 @@ functions:
         - ${ssm:SUBNET_ID}
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - sqs:
           arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
@@ -893,7 +892,7 @@ functions:
         - ${ssm:SUBNET_ID}
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - sqs:
           arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
@@ -909,7 +908,7 @@ functions:
         - ${ssm:SUBNET_ID}
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - sqs:
           arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
@@ -928,7 +927,7 @@ functions:
         - ${ssm:SUBNET_ID}
     timeout: 60
     layers:
-      - ${ssm:COMMON_LIB_ARN}
+      -  ${ssm:NodeLayerARN}
     events:
       - sqs:
           arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
