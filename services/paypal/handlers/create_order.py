@@ -261,7 +261,6 @@ def create_paypal_order(event, context):
 
 
 
-
         amount = int(float(data.get("amount")))
         billing = data.get("billing")
         shipping = data.get("shipping")
@@ -388,32 +387,38 @@ def create_paypal_order(event, context):
 
 
 
+        orders_data = orders_collection.find_one({"seller_email": seller_data_of_auction['seller_email'], "email_address": email_address, "auction_id": auction_id})
+        if not orders_data:
+            counter_record = counter_collection.find_one({"auction_id": auction_id,
+                                                        "email_address": email_address,
+                                                        "seller_email": seller_email,
+                                                        'record_type': 'Orders'}
+                                                        )
+            if counter_record is None:
+                last_order_number = 0
+                counter_record = {
+                    "auction_id": auction_id,
+                    "seller_email": seller_email,
+                    "email_address": email_address,
+                    "record_type": "Orders",
+                    "starting_sequence": last_order_number
+                }
+                result = counter_collection.insert_one(counter_record)
 
 
-        # existing_orders_count = orders_collection.count_documents(
-        #     {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
-        # counter_record = counter_collection.find_one({"auction_id": auction_id,
-        #                                               "email_address": email_address,
-        #                                               "seller_email": seller_email,
-        #                                               'record_type': 'Orders'}
-        #                                              )
-        # if counter_record is None:
-        #     last_order_number = 0
-        #     counter_record = {
-        #         "auction_id": auction_id,
-        #         "seller_email": seller_email,
-        #         "email_address": email_address,
-        #         "record_type": "Orders",
-        #         "starting_sequence": last_order_number
-        #     }
-        #     result = counter_collection.insert_one(counter_record)
-
-
-        # last_order_number = counter_record["starting_sequence"]+1
-        # update_data = {
-        #     "starting_sequence": last_order_number
-        # }
-        insert_data["order_number"] = order_number
+            last_order_number = counter_record["starting_sequence"]+1
+            update_data = {
+                "starting_sequence": last_order_number
+            }
+            order_number = generate_order_code(last_order_number)
+            counter_collection.update_one(
+                {"auction_id": auction_id,
+                "email_address": email_address,
+                "seller_email": seller_email,
+                'record_type': 'Orders'},
+                {"$set": update_data}
+            )
+            insert_data["order_number"] = order_number
 
 
 
