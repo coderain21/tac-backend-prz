@@ -213,8 +213,8 @@ fi
 
 run_command terraform -chdir=devops/secret_manager init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/secret_manager/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/secret_manager apply -auto-approve
-run_command terraform -chdir=devops/cloudwatch_alarms init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch_alarms/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
+run_command terraform -chdir=devops/ses_alert init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses_alert/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/ses_alert apply -auto-approve
 run_command terraform -chdir=devops/budgets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/budgets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/budgets apply -auto-approve
 run_command terraform -chdir=devops/stripe_webhook init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/stripe_webhook/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
@@ -222,6 +222,8 @@ run_command terraform -chdir=devops/stripe_webhook apply -auto-approve
 if [ "${STAGE}" = "prod" ]; then
     run_command terraform -chdir=devops/cloudwatch init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/cloudwatch apply -auto-approve
+    run_command terraform -chdir=devops/cloudwatch_alarms init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/cloudwatch_alarms/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+    run_command terraform -chdir=devops/cloudwatch_alarms apply -auto-approve
 fi
 npm i -g serverless@3.15.2
 npm i -g @serverless/compose
@@ -243,9 +245,9 @@ eval $( $(pwd)/aws_signing_helper credential-process \
   --role-arn $ROLE_ARN \
 | jq -r '. | "export AWS_ACCESS_KEY_ID=\(.AccessKeyId)\nexport AWS_SECRET_ACCESS_KEY=\(.SecretAccessKey)\nexport AWS_SESSION_TOKEN=\(.SessionToken)"' )
 
-
+echo "Serverless Service wise Deployment Started"
 cd services/dependency-management
-npm install serverless-plugin-scripts
+npm i serverless-plugin-scripts
 run_command sls deploy --region $REGION --stage $STAGE
 # Store layer ARNs to SSM after deployment
 NODE_ARN=$(aws cloudformation describe-stacks --stack-name dependency-management-$STAGE --query "Stacks[0].Outputs[?OutputKey=='DevNodejsLambdaLayerQualifiedArn'].OutputValue" --output text --region $REGION)
@@ -264,6 +266,7 @@ cd ../..
 cd services/auctions
 run_command sls deploy --region $REGION --stage $STAGE
 cd ../..
+echo "Serverless Service wise Deployment Ended"
 unset AWS_ACCESS_KEY_ID
 unset AWS_SECRET_ACCESS_KEY
 unset AWS_SESSION_TOKEN
@@ -333,7 +336,23 @@ if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
 
 fi
 if [ "${STAGE}" = "pre-production" ]; then
-    run_command aws ec2 create-route --route-table-id rtb-03e6b72aede44f529 --destination-cidr-block 172.31.0.0/20 --vpc-peering-connection-id pcx-02b13a02de617b06e --region $REGION --profile $PROFILE_ENV
+    existing_route=$(aws ec2 describe-route-tables \
+    --route-table-id rtb-03e6b72aede44f529 \
+    --query "RouteTables[0].Routes[?DestinationCidrBlock=='172.31.0.0/20'].VpcPeeringConnectionId" \
+    --output text \
+    --region $REGION \
+    --profile $PROFILE_ENV)
+    if [ -z "$existing_route" ] || [ "$existing_route" = "None" ]; then
+        echo "Route does not exist, creating..."
+        run_command aws ec2 create-route \
+        --route-table-id rtb-03e6b72aede44f529 \
+        --destination-cidr-block 172.31.0.0/20 \
+        --vpc-peering-connection-id pcx-02b13a02de617b06e \
+        --region $REGION \
+        --profile $PROFILE_ENV
+    else
+        echo "Route already exists and points to $existing_route, skipping."
+    fi
 fi
 if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
     cd devops/disaster_recovery
