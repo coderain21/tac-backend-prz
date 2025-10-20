@@ -338,7 +338,7 @@ def create_intent(event, context):
             }
 
 
-        # counter_collection = db[os.environ['COUNTER_LOT']]
+        counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
         orders_collection = db[os.environ["ORDERS_COLLECTION"]]
 
@@ -349,28 +349,40 @@ def create_intent(event, context):
         insert_data["billing_address"] = billing_address
 
 
-        # existing_orders_count = orders_collection.count_documents(
-        #     {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
-        # counter_record = counter_collection.find_one({"auction_id": auction_id,
-        #                                               "email_address": email_address,
-        #                                               "seller_email": seller_email,
-        #                                               'record_type': 'Orders'}
-        #                                              )
-        # if counter_record is None:
-        #     last_order_number = 0
-        #     counter_record = {
-        #         "auction_id": auction_id,
-        #         "seller_email": seller_email,
-        #         "email_address": email_address,
-        #         "record_type": "Orders",
-        #         "starting_sequence": last_order_number
-        #     }
-        #     result = counter_collection.insert_one(counter_record)
-        # last_order_number = counter_record["starting_sequence"]+1
-        # update_data = {
-        #     "starting_sequence": last_order_number
-        # }
-        insert_data["order_number"] = data["order_number"]
+
+        #checking whether order is present or not 
+        orders_collection = db[os.environ['ORDERS_COLLECTION']]
+        orders_data = orders_collection.find_one({"seller_email": seller_email, "email_address": email_address, "auction_id": auction_id})
+        if not orders_data:
+            counter_record = counter_collection.find_one({"auction_id": auction_id,
+                                                        "email_address": email_address,
+                                                        "seller_email": seller_email,
+                                                        'record_type': 'Orders'}
+                                                        )
+            if counter_record is None:
+                last_order_number = 0
+                counter_record = {
+                    "auction_id": auction_id,
+                    "seller_email": seller_email,
+                    "email_address": email_address,
+                    "record_type": "Orders",
+                    "starting_sequence": last_order_number
+                }
+                result = counter_collection.insert_one(counter_record)
+            last_order_number = counter_record["starting_sequence"]+1
+            update_data = {
+                "starting_sequence": last_order_number
+            }
+            counter_collection.update_one({"auction_id": auction_id,
+                                        "seller_email": seller_email,
+                                        "email_address": email_address,
+                                        "record_type": "Orders"}, {
+                "$set": update_data})
+            insert_data["order_number"] = generate_order_code(last_order_number)
+            insert_data["created_at"] = time_stamp
+        else:
+            insert_data["order_number"] = orders_data["order_number"]
+
         buyer_data = fetch_buyer_data(seller_email,email_address)
         name = ""
         if buyer_data is not None:
@@ -379,7 +391,7 @@ def create_intent(event, context):
             name = f_name+' '+l_name
         # cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["updated_at"] = time_stamp
-        # insert_data["auction_title"] = auction_title
+        insert_data["auction_title"] = auction_title
         # insert_data["auction_image"] = auction_image
         insert_data["purchases"] = cart_data
         # insert_data["lots"] = res
