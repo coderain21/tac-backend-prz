@@ -121,11 +121,12 @@ def register_auction(event, context):
             }
 
         common_time_zone = registration_type.get('time_zone', 'UTC')
-        time_zone = TIMEZONE_MAPPING.get(common_time_zone) if common_time_zone in TIMEZONE_MAPPING else common_time_zone  # Default to UTC if not mapped
+        # Use common_time_zone for lookup
+        time_zone = TIMEZONE_MAPPING.get(common_time_zone, 'UTC')
+
         try:
             tz = pytz.timezone(time_zone)
         except pytz.UnknownTimeZoneError:
-            print("Unknown timezone encountered:", time_zone)
             tz = pytz.utc  # Default to UTC if timezone is unknown
 
         # Handling date and time conversion

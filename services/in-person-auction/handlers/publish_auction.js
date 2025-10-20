@@ -153,7 +153,7 @@ module.exports.publish_auction = async (event) => {
                 body: JSON.stringify({ message: 'Auction cannot be published with the start date in the past' }),
             }
         }
-        required_fields = ['auction_image', 'title', 'description', 'currency',
+        const required_fields = ['auction_image', 'title', 'description', 'currency',
             'time_zone', 'registration_type']
         // eslint-disable-next-line no-restricted-syntax
         for (const field of required_fields) {

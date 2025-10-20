@@ -5,7 +5,7 @@ qrcode
 requests
 stripe
 wkhtmltopdf
-pymongo==4.6.1
+pymongo
 marshmallow
 pytz
 urllib3==1.26.6
@@ -21,4 +21,3 @@ cfnresponse
 mailchimp-marketing==3.0.80
 mailchimp-transactional==1.0.56
 paypalrestsdk==1.13.3
-

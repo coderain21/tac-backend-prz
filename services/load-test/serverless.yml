@@ -14,7 +14,7 @@ provider:
   stage: ${opt:stage, 'dev'}
   region: eu-west-2
   versionFunctions: false
-  layers: ${ssm:COMMON_LIB_ARN}
+  layers:  ${ssm:NodeLayerARN}
   environment:
     BUYER_RECAPTCHA_URL: https://www.google.com/recaptcha/api/siteverify
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
@@ -102,10 +102,10 @@ custom:
 functions: 
   registration:
     handler: handlers/register.handler
-    runtime: python3.8
+    runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN}
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:NodeLayerARN}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -121,10 +121,10 @@ functions:
 
   auction-registration:
     handler: handlers/register_auction.handler
-    runtime: python3.8
+    runtime: python3.9
     layers:
-      - ${ssm:COMMON_LIB_ARN}
-      - ${ssm:COMMON_LIB_ARN_PYTHON}
+      -  ${ssm:NodeLayerARN}
+      -  ${ssm:PythonLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
