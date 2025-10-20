@@ -103,6 +103,7 @@ async function exportAsCsv(bidders) {
                 { id: 'Paddle Number', title: 'Paddle Number' },
                 { id: 'Bidder Name', title: 'Bidder Name' },
                 { id: 'Amount', title: 'Amount' },
+                { id: 'Max Bid', title: 'Max Bid' },
                 { id: 'Bid Date', title: 'Bid Date' },
             ],
         })
@@ -115,11 +116,13 @@ async function exportAsCsv(bidders) {
             const currencySymbol = currencySymbolMapping[bidder.currency]
             // Append currency symbol to the bid amount
             const amountWithSymbol = `${currencySymbol}${bidder.bid_amount}`
+            const maxBidWithSymbol = `${currencySymbol}${bidder.max_bid}`
 
             records.push({
                 'Paddle Number': bidder.paddle_number || '',
                 'Bidder Name': bidder.name, // `${bidder.first_name || ''} ${bidder.last_name || ''}`.trim(),
                 Amount: amountWithSymbol,
+                'Max Bid': maxBidWithSymbol,
                 'Bid Date': formattedDate,
             })
         }

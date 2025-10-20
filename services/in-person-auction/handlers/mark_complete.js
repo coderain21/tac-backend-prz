@@ -67,11 +67,11 @@ module.exports.mark_complete = async (event) => {
                 body: JSON.stringify({ message: 'Auction not found' }),
             }
         }
-        if (auctionDetails.status === 'Draft' || auctionDetails.status === 'Completed') {
+        if (auctionDetails.status === 'Draft' || auctionDetails.status === 'Completed' || auctionDetails.status === 'Cancelled') {
             return {
                 statusCode: 400,
                 headers: helpers.getHeaders(),
-                body: JSON.stringify({ message: 'Cannot complete a draft or completed auction' }),
+                body: JSON.stringify({ message: 'Cannot complete a draft or completed auction or cancelled auction' }),
             }
         }
         try {

@@ -19,7 +19,7 @@ Environment Variables:
 import os
 import json
 from pymongo import MongoClient
-# from datetime import datetime
+import boto3
 
 headers = {
     'Content-Type': 'application/json',
@@ -36,9 +36,16 @@ client = MongoClient(
 db = client[os.environ['DATABASE']]
 auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 collection_seller = db[os.environ["SELLERS_TABLE"]]
+lot_collection = db[os.environ["LOT_COLLECTION_NAME"]]
 # access_logs_collection= db[os.environ["ACCESS_LOGS_TABLE"]]
 
+# MongoDB and collection setup
 
+
+# Image deletion functions moved to cleanup.py for async processing
+
+
+# Cleanup functions moved to cleanup.py for async processing
 
 
 def delete_auction(event, context):
@@ -54,6 +61,7 @@ def delete_auction(event, context):
         dict: A dictionary containing the API response including status code and body.
     """
     try:
+        # Authorization check
         try:
             seller_email = event['requestContext']['authorizer']['claims']['email']
             if "cognito:groups" in event['requestContext']['authorizer']['claims'] and not 'seller' in event['requestContext']['authorizer']['claims']["cognito:groups"]:
@@ -68,68 +76,104 @@ def delete_auction(event, context):
                 "headers": headers,
                 "body": json.dumps({"message": "You do not have access to perform this API action"})
             }
+
         # Get the auction_id from the path parameter
         auction_id = event['pathParameters']['auction_id']
-
-        # Set up the MongoDB connection
-        # auctions_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
+        print(f"Processing deletion for auction_id: {auction_id}, seller_email: {seller_email}")
 
         # Check if the auction with the given ID exists
         auction = auctions_collection.find_one(
             {'auction_id': auction_id, 'seller_email': seller_email}, {'_id': 0})
 
-        if auction:
-            # print(auction)
-            # Check if the status is "Draft" or "Published"
-            current_status = auction.get('status')
-            if current_status in ['Draft', 'Published', 'Deleted']:
-                # Update the status to "Deleted"
-                auctions_collection.update_one(
-                    {'auction_id': auction_id, 'seller_email': seller_email},
-                    {'$set': {'status': 'Deleted'}}
-                )
-                seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
-                # Get the current timestamp in seconds and convert to milliseconds
-                # timestamp_ms = int(datetime.now().timestamp() * 1000)
-
-                # Convert to float and format as a string with '.0'
-                # formatted_timestamp = float(timestamp_ms)
-
-                # access_logs = {
-                #     "actor_id": seller_data.get('seller_id'),
-                #     "updated_by": {
-                #         "type": 'Seller',
-                #         "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
-                #         "email_address": seller_email,
-                #     },
-                #     "section": {
-                #         "name": 'Auction Management',
-                #         "action": 'Delete',
-                #         "auction_id": auction_id,
-                #     },
-                #     "updated_at": formatted_timestamp
-                # }
-                # access_logs_collection.insert_one(access_logs)
-                return {
-                    "headers": headers,
-                    'statusCode': 204,
-                    'body': json.dumps({
-                    })
-                }
-            else:
-                return {
-                    "headers": headers,
-                    'statusCode': 400,
-                    'body': json.dumps({"message": 'You cannot delete the auction with the current status'})
-                }
-        else:
+        if not auction:
             return {
                 "headers": headers,
                 'statusCode': 404,
                 'body': json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
+
+        # Check if the status allows deletion
+        current_status = auction.get('status')
+        if current_status not in ['Draft', 'Published', 'Deleted']:
+            return {
+                "headers": headers,
+                'statusCode': 400,
+                'body': json.dumps({"message": 'You cannot delete the auction with the current status'})
+            }
+
+        print(f"Auction found with status: {current_status}. Proceeding with deletion...")
+
+        # Update the status to "Deleted" first
+        update_result = auctions_collection.update_one(
+            {'auction_id': auction_id, 'seller_email': seller_email},
+            {'$set': {'status': 'Deleted'}}
+        )
+
+        if update_result.modified_count == 1:
+            print("Auction status updated to 'Deleted' successfully")
+
+            # Trigger async cleanup Lambda
+            try:
+                lambda_client = boto3.client('lambda')
+                cleanup_payload = {
+                    'auction_id': auction_id,
+                    'seller_email': seller_email,
+                    'auction_image': auction.get('auction_image'),
+                    'auction_logo_image': auction.get('logo_image'),
+                    'event_background_image': auction.get('event_display').get('background_image'),
+                    'event_left_image': auction.get('event_display').get('left_logo_image'),
+                    'event_right_image': auction.get('event_display').get('right_logo_image')
+                }
+
+                lambda_client.invoke(
+                    FunctionName=os.environ.get('CLEANUP_LAMBDA_NAME'),
+                    InvocationType='Event',  # Async invocation
+                    Payload=json.dumps(cleanup_payload)
+                )
+                print(f"Triggered async cleanup for auction {auction_id}")
+            except Exception as e:
+                print(f"Failed to trigger cleanup Lambda: {str(e)}")
+        else:
+            print("Warning: Auction status update failed")
+            return {
+                "headers": headers,
+                'statusCode': 500,
+                'body': json.dumps({"message": "Failed to update auction status"})
+            }
+
+        # Access logs (commented as in original)
+        seller_data = collection_seller.find_one({"email_address": seller_email}, {"_id": 0})
+        # Get the current timestamp in seconds and convert to milliseconds
+        # timestamp_ms = int(datetime.now().timestamp() * 1000)
+
+        # Convert to float and format as a string with '.0'
+        # formatted_timestamp = float(timestamp_ms)
+
+        # access_logs = {
+        #     "actor_id": seller_data.get('seller_id'),
+        #     "updated_by": {
+        #         "type": 'Seller',
+        #         "name": seller_data.get('first_name') + ' ' + seller_data.get('last_name'),
+        #         "email_address": seller_email,
+        #     },
+        #     "section": {
+        #         "name": 'Auction Management',
+        #         "action": 'Delete',
+        #         "auction_id": auction_id,
+        #     },
+        #     "updated_at": formatted_timestamp
+        # }
+        # access_logs_collection.insert_one(access_logs)
+
+        print(f"Auction deletion initiated successfully for auction_id: {auction_id}")
+        return {
+            "headers": headers,
+            'statusCode': 204,
+            'body': json.dumps({})
+        }
+
     except Exception as err:
-        print(err)
+        print(f"Critical error in delete_auction: {str(err)}")
         return {
             "statusCode": 500,
             'headers': headers,
