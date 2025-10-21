@@ -440,7 +440,7 @@ resource "aws_ecs_service" "ecs_service" {
   name            = "websocket-ecs-service"
   cluster         = resource.aws_ecs_cluster.websocket-cluster.id
   task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -459,7 +459,7 @@ resource "aws_ecs_service" "ecs_service" {
 
 resource "aws_appautoscaling_target" "target" {
   max_capacity = 10
-  min_capacity = 5
+  min_capacity = 2
   resource_id =  "service/${aws_ecs_cluster.websocket-cluster.name}/${aws_ecs_service.ecs_service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace = "ecs"
@@ -499,6 +499,8 @@ resource "aws_appautoscaling_policy" "memory" {
   }
   provider = aws.deployment-eu
 }
+
+
 resource "aws_ssm_parameter" "socket" {
   name  = "SOCKET_URL"
   type  = "String"
@@ -551,3 +553,209 @@ resource "aws_ssm_parameter" "alb_arn" {
   provider = aws.deployment-eu
   overwrite = true
 }
+
+# Reference SES reputation topic from ses_alert module
+data "aws_sns_topic" "ses_reputation_topic" {
+  name = "SESReputationTopic"
+  provider = aws.deployment-eu
+}
+
+# Step Scaling Policy for CPU (handles both scale-out and scale-in)
+resource "aws_appautoscaling_policy" "ecs_cpu_scaling" {
+  name               = "ecs-cpu-scaling-${var.STAGE}"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown               = 300
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+    
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = -1
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+# Step Scaling Policy for Memory (handles both scale-out and scale-in)
+resource "aws_appautoscaling_policy" "ecs_memory_scaling" {
+  name               = "ecs-memory-scaling-${var.STAGE}"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown               = 300
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+    
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = -1
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+# Step Scaling Policy for Request Count (handles both scale-out and scale-in)
+resource "aws_appautoscaling_policy" "ecs_request_scaling" {
+  name               = "ecs-request-scaling-${var.STAGE}"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown               = 60
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+    
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = -1
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarm for ECS CPU Scale Out
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_out" {
+  alarm_name          = "ecs-cpu-scale-out-${var.STAGE}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "50"
+  alarm_description   = "Scale out when CPU > 60% for 1 minute"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarm for ECS CPU Scale In
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_in" {
+  alarm_name          = "ecs-cpu-scale-in-${var.STAGE}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "15"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = "60"
+  statistic           = "Average"
+  threshold           = "30"
+  alarm_description   = "Scale in when CPU < 30% for 15 minutes"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarm for ECS Memory Scale Out
+resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_out" {
+  alarm_name          = "ecs-memory-scale-out-${var.STAGE}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "60"
+  alarm_description   = "Scale out when Memory > 70% for 1 minute"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarm for ECS Memory Scale In
+resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_in" {
+  alarm_name          = "ecs-memory-scale-in-${var.STAGE}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "15"
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = "60"
+  statistic           = "Average"
+  threshold           = "40"
+  alarm_description   = "Scale in when Memory < 40% for 15 minutes"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarm for ECS Request Count Scale Out (> 500)
+resource "aws_cloudwatch_metric_alarm" "ecs_requests_scale_out" {
+  alarm_name          = "ecs-requests-scale-out-${var.STAGE}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  period              = "60"
+  statistic           = "Maximum"
+  threshold           = "100"
+  alarm_description   = "Scale out when requests > 500 for 2 periods"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_request_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    LoadBalancer = aws_lb.load-balancer.arn_suffix
+    TargetGroup  = aws_lb_target_group.target_group.arn_suffix
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarm for ECS Request Count Scale In (< 100)
+resource "aws_cloudwatch_metric_alarm" "ecs_requests_scale_in" {
+  alarm_name          = "ecs-requests-scale-in-${var.STAGE}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "15"
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  period              = "60"
+  statistic           = "Average"
+  threshold           = "50"
+  alarm_description   = "Scale in when requests < 100 for 5 periods (25 minutes)"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_request_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    LoadBalancer = aws_lb.load-balancer.arn_suffix
+    TargetGroup  = aws_lb_target_group.target_group.arn_suffix
+  }
+  provider = aws.deployment-eu
+}
+
+
