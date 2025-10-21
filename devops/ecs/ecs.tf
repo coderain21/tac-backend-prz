@@ -440,7 +440,7 @@ resource "aws_ecs_service" "ecs_service" {
   name            = "websocket-ecs-service"
   cluster         = resource.aws_ecs_cluster.websocket-cluster.id
   task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
-  desired_count   = 1
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
@@ -459,7 +459,7 @@ resource "aws_ecs_service" "ecs_service" {
 
 resource "aws_appautoscaling_target" "target" {
   max_capacity = 10
-  min_capacity = 5
+  min_capacity = 2
   resource_id =  "service/${aws_ecs_cluster.websocket-cluster.name}/${aws_ecs_service.ecs_service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace = "ecs"
