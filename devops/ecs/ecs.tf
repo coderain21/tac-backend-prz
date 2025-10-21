@@ -500,24 +500,7 @@ resource "aws_appautoscaling_policy" "memory" {
   provider = aws.deployment-eu
 }
 
-resource "aws_appautoscaling_policy" "request_count" {
-  name = "request-count"
-  policy_type = "TargetTrackingScaling"
-  resource_id = aws_appautoscaling_target.target.resource_id
-  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
-  service_namespace = aws_appautoscaling_target.target.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label = "${aws_lb.load-balancer.arn_suffix}/${aws_lb_target_group.target_group.arn_suffix}"
-    }
-    target_value = 1000
-    scale_out_cooldown = 300
-    scale_in_cooldown = 300
-  }
-  provider = aws.deployment-eu
-}
 resource "aws_ssm_parameter" "socket" {
   name  = "SOCKET_URL"
   type  = "String"
