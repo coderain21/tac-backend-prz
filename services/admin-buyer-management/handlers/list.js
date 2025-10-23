@@ -72,6 +72,7 @@ module.exports.handler = async (event) => {
             time_stamp: 1,
             bid_status: 1,
             lot_title: 1,
+            buyer_id: 1,
             currency: 1,
             time_zone: 1,
             lot_image: 1,

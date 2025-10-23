@@ -24,7 +24,7 @@ const headers = {
 /**
  * Deletes a bid from the system and updates related records
  */
-async function deleteBid(event, context) {
+module.exports.handler = async (event, context) => {
     try {
         // Connect to MongoDB using the helper
         await mongodbHelper.connect()
@@ -172,4 +172,4 @@ async function deleteBid(event, context) {
 /**
  * Lambda handler function for the delete_bid API endpoint
  */
-// exports.handler = async (event, context) => await deleteBid(event, context)
+// exports.handler = async (event, context) => deleteBid(event, context)

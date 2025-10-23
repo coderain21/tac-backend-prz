@@ -213,6 +213,7 @@ module.exports.handler = async (event) => {
             created_at: 1,
             updated_at: 1,
             time_zone: 1,
+            buyer_id: 1,
             max_bid: 1,
         }
 

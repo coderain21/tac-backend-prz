@@ -6,7 +6,7 @@ disabledDeprecations:
   - UNSUPPORTED_CLI_OPTIONS
   - CLI_OPTIONS_SCHEMA_V3
   - CONFIG_VALIDATION_MODE_DEFAULT_V3
-  - 
+  
 provider:
   name: aws
   endpointType: REGIONAL
@@ -33,21 +33,19 @@ provider:
     REGISTER_AUCTION_COLLECTION: ${opt:stage, self:provider.stage}-register-auction
     SENDER_EMAIL_ADDRESS: ${ssm:SENDER_EMAIL_ADDRESS}
     BUCKET_NAME: ${ssm:BUCKET_NAME}
-    CSV_FILE:  /tmp/Auctions.csv
+    JWT_SECRET_KEY: ${ssm:PASSWORD_SECRET_KEY}
+    CSV_FILE: /tmp/Auctions.csv
     S3_BUCKET: ${ssm:BUCKET_NAME}
     CDN_LINK: ${ssm:CDN_URL}
     SUMSUB_SECRET_KEY: ${ssm:SUMSUB_SECRET_KEY}
     SUMSUB_APP_TOKEN: ${ssm:SUMSUB_APP_TOKEN}
     REDIS_CLUSTER_ENDPOINT: ${ssm:REDIS_CLUSTER_ENDPOINT}
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
+    ADMIN_COGNITO_AUTH_ARN: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+    ADMIN_COGNITO_USERPOOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
 
   http:
     cors: true
-    authorizers:
-      cognito-auth:
-        identitySource: $request.header.Authorization
-        issuerUrl: https://cognito-idp.${env:REGION}.amazonaws.com/${ssm:SELLER_COGNITO_USERPOOL_ID}
-        audience: ${ssm:SELLER_COGNITO_CLIENT_ID}
 
   iam:
     role:
@@ -71,7 +69,7 @@ package:
     - ./lib/**
 
 custom:
-  isProd: ${self:provider.stage} # Will be resolved at deploy time
+  isProd: ${self:provider.stage}
   mongodbConnectionString: ${file(../env.yml):${self:provider.stage}.MONGODB_CONNECTION_STRING}
   packageExternal:
     external:
@@ -87,6 +85,7 @@ custom:
       createRoute53Record: true
       securityPolicy: tls_1_2
       endpointType: REGIONAL
+      
   serverlessIfElse:
     - If: '${param:offline, "false"} == true'
       Set:
@@ -95,8 +94,9 @@ custom:
 functions: 
   list-bids:
     handler: handlers/list.handler
+    timeout: 30
     layers:
-      -  ${ssm:NodeLayerARN}
+      - ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -111,9 +111,10 @@ functions:
             arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   buyer-list-bids:
-    handler: handlers/list.handler
+    handler: handlers/buyer_list_bids.handler
+    timeout: 30
     layers:
-      -  ${ssm:NodeLayerARN}
+      - ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
         - ${ssm:SECURITY_GROUP_ID}
@@ -121,20 +122,30 @@ functions:
         - ${ssm:SUBNET_ID}
     events:
       - http:
-          cors:
-            origin: '*'
-            headers:
-              - Content-Type
-              - X-Amz-Date
-              - Authorization
-              - X-Api-Key
-              - X-Amz-Security-Token
-              - X-Requested-With
-              - Accept
-              - Access-Control-Allow-Headers
+          cors: true
           path: /buyer/{lot_id}
           method: GET
-          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+          authorizer:
+            arn: ${ssm:BUYER_COGNITO_AUTH_ARN}
+            
+  bid-listing:
+    handler: handlers/bid_list.list_bids
+    timeout: 30
+    runtime: python3.9
+    layers:
+      - ${ssm:PythonLayerARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors: true
+          path: /seller/bids
+          method: get
+          authorizer:
+            arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
   auction-bid-list:
     handler: handlers/auction_bids.handler
@@ -161,18 +172,17 @@ functions:
           path: /auction/{auction_id}
           method: GET
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}
-            
-  bid-listing:
-    handler: handlers/bid_list.list_bids
+
+  delete-bid:
+    handler: handlers/delete_bid.handler
     timeout: 30
-    runtime: python3.9
     layers:
-    -  ${ssm:PythonLayerARN}
+      - ${ssm:NodeLayerARN}
     vpc:
       securityGroupIds:
-      - ${ssm:SECURITY_GROUP_ID}
+        - ${ssm:SECURITY_GROUP_ID}
       subnetIds:
-      - ${ssm:SUBNET_ID}
+        - ${ssm:SUBNET_ID}
     events:
       - http:
           cors:
@@ -186,12 +196,12 @@ functions:
               - X-Requested-With
               - Accept
               - Access-Control-Allow-Headers
-          path: /seller/bids
-          method: get
+            allowCredentials: false
+          path: /admin/bid/{bid_id}
+          method: DELETE
           authorizer:
-              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
-  
- 
+            arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
+
 plugins:
   - serverless-offline
   - serverless-package-external
