@@ -13,23 +13,39 @@ terraform {
   }
 }
 
+# Conditional data sources based on stage
 data "aws_vpc" "default" {
+  count = contains(["qa", "prod"], var.STAGE) ? 1 : 0
   default = true
   provider = aws.deployment-eu
 }
 
+data "aws_ssm_parameter" "vpc_id" {
+  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  name = "VPC_ID"
+  provider = aws.deployment-eu
+}
+
+data "aws_ssm_parameter" "subnet_id" {
+  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  name = "PUBLIC_SUBNET_ID"
+  provider = aws.deployment-eu
+}
+
 resource "aws_default_subnet" "default_az1" {
+  count = contains(["qa", "prod"], var.STAGE) ? 1 : 0
   availability_zone = "eu-west-2c"
   provider = aws.deployment-eu
 }
 resource "aws_elasticache_subnet_group" "subnet_groups" {
-  name       = "redis-subnet-group-cluster-enabled"
-  subnet_ids = [resource.aws_default_subnet.default_az1.id]
+  name = contains(["dev", "pre-prod"], var.STAGE) ? "new-redis-subnet-group-cluster-enabled" : "redis-subnet-group-cluster-enabled"
+  subnet_ids = contains(["qa", "prod"], var.STAGE) ? [resource.aws_default_subnet.default_az1[0].id] : [data.aws_ssm_parameter.subnet_id[0].value]
   provider = aws.deployment-eu
 }
 
 resource "aws_security_group" "security_groups" {
-  name        = "redis-security-group-cluster-enabled"
+  name        = contains(["dev", "pre-prod"], var.STAGE) ? "new-redis-security-group-cluster-enabled" : "redis-security-group-cluster-enabled"
+  vpc_id      = contains(["qa", "prod"], var.STAGE) ? data.aws_vpc.default[0].id : data.aws_ssm_parameter.vpc_id[0].value
   description = "Allow inbound traffic on ports 22, 80, 443, and 6379"
 
   ingress {
@@ -87,6 +103,7 @@ data "aws_ssm_parameter" "redis_node_replica_groups" {
   provider = aws.deployment-eu
 }
 resource "aws_elasticache_parameter_group" "custom_redis" {
+  count = contains(["qa", "prod", "dev", "pre-prod"], var.STAGE) ? 1 : 0
   name   = "custom-redis7-cluster"
   family = "redis7"
   provider = aws.deployment-eu
@@ -104,12 +121,12 @@ resource "aws_elasticache_parameter_group" "custom_redis" {
 resource "aws_elasticache_replication_group" "websocket" {
   automatic_failover_enabled  = true
   subnet_group_name           = aws_elasticache_subnet_group.subnet_groups.name
-  replication_group_id        = "websocket-redis-cluster-enabled"
+  replication_group_id        = contains(["dev", "pre-prod"], var.STAGE) ? "new-websocket-redis-cluster-enabled" : "websocket-redis-cluster-enabled"
   description                 = "websocket description with cluster enabled"
   node_type                   = data.aws_ssm_parameter.redis_node_type.value
   num_node_groups         = data.aws_ssm_parameter.redis_node_groups.value
   replicas_per_node_group = data.aws_ssm_parameter.redis_node_replica_groups.value
-  parameter_group_name        = aws_elasticache_parameter_group.custom_redis.name
+  parameter_group_name        = var.STAGE == "bidding-engine" ? "default.redis7.cluster.on" : aws_elasticache_parameter_group.custom_redis[0].name
   port                        = 6379
   security_group_ids = [resource.aws_security_group.security_groups.id]
   snapshot_window            = "04:00-05:00"
