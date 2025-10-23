@@ -672,30 +672,7 @@ resource "aws_appautoscaling_policy" "ecs_request_scaling" {
   provider = aws.deployment-eu
 }
 
-# Store scaling policy ARNs for cross-module reference
-resource "aws_ssm_parameter" "ecs_cpu_scaling_arn" {
-  name  = "ECS_CPU_SCALING_ARN"
-  type  = "String"
-  value = aws_appautoscaling_policy.ecs_cpu_scaling.arn
-  provider = aws.deployment-eu
-  overwrite = true
-}
 
-resource "aws_ssm_parameter" "ecs_memory_scaling_arn" {
-  name  = "ECS_MEMORY_SCALING_ARN"
-  type  = "String"
-  value = aws_appautoscaling_policy.ecs_memory_scaling.arn
-  provider = aws.deployment-eu
-  overwrite = true
-}
-
-resource "aws_ssm_parameter" "ecs_request_scaling_arn" {
-  name  = "ECS_REQUEST_SCALING_ARN"
-  type  = "String"
-  value = aws_appautoscaling_policy.ecs_request_scaling.arn
-  provider = aws.deployment-eu
-  overwrite = true
-}
 
 
 resource "aws_ssm_parameter" "socket" {
@@ -738,25 +715,6 @@ resource "aws_ssm_parameter" "alb_arn" {
 }
 
 
-
-# ECS CPU threshold percentage
-resource "aws_ssm_parameter" "ecs_cpu_threshold" {
-  name  = "ECS_CPU_THRESHOLD"
-  type  = "String"
-  value = "70"
-  provider = aws.deployment-eu
-  overwrite = true
-}
-
-# ECS Memory threshold percentage
-resource "aws_ssm_parameter" "ecs_memory_threshold" {
-  name  = "ECS_MEMORY_THRESHOLD"
-  type  = "String"
-  value = "70"
-  provider = aws.deployment-eu
-  overwrite = true
-}
-
 # CloudWatch Alarm for ECS CPU Scale Out - More Aggressive
 resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_out" {
   alarm_name          = "ecs-cpu-scale-out-${var.STAGE}"
@@ -764,10 +722,10 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_out" {
   evaluation_periods  = "1"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/ECS"
-  period              = "60"  # 1 minute for faster response
+  period              =  60 # 1 minute for faster response
   statistic           = "Maximum"  # Use Maximum since your data was maximum values
-  threshold           = "50"  # Even lower threshold - scale before 75% spike
-  alarm_description   = "Scale out when CPU > 50% for 1 minute"
+  threshold           = data.aws_ssm_parameter.ecs_cpu.value   # Scale at 70% CPU
+  alarm_description   = "Scale out when CPU > 70% for 1 minute"
   alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
   dimensions = {
@@ -781,13 +739,13 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_out" {
 resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_in" {
   alarm_name          = "ecs-cpu-scale-in-${var.STAGE}"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods  = "15"  # 15 minutes to avoid flapping
+  evaluation_periods  = "3"  # 3 minutes for scale-in
   metric_name         = "CPUUtilization"
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = "30"  # Lower threshold for scale-in
-  alarm_description   = "Scale in when CPU < 30% for 15 minutes"
+  threshold           = "60"  # Scale-in at 30% (70% reduction from 70%)
+  alarm_description   = "Scale in when CPU < 30% for 3 minutes"
   alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
   dimensions = {
@@ -806,8 +764,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_out" {
   namespace           = "AWS/ECS"
   period              = "60"  # 1 minute for faster response
   statistic           = "Maximum"  # Use Maximum to catch memory spikes
-  threshold           = "60"  # Lower threshold to prevent memory exhaustion
-  alarm_description   = "Scale out when Memory > 60% for 1 minute"
+  threshold           = data.aws_ssm_parameter.ecs_memory.value   # Scale at 70% Memory
+  alarm_description   = "Scale out when Memory > 70% for 1 minute"
   alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
   dimensions = {
@@ -821,13 +779,13 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_out" {
 resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_in" {
   alarm_name          = "ecs-memory-scale-in-${var.STAGE}"
   comparison_operator = "LessThanThreshold"
-  evaluation_periods  = "15"  # 15 minutes to avoid flapping
+  evaluation_periods  = "3"  # 3 minutes for scale-in
   metric_name         = "MemoryUtilization"
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = "40"  # Lower threshold for scale-in
-  alarm_description   = "Scale in when Memory < 40% for 15 minutes"
+  threshold           = "60"  # Scale-in at 30% (70% reduction from 70%)
+  alarm_description   = "Scale in when Memory < 60% for 3 minutes"
   alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
   dimensions = {
