@@ -5,755 +5,287 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>welcome email template</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400;1,700;1,900&amp;family=Noto+Sans:wght@300;400;500&amp;family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;0,1000;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900;1,1000&amp;family=Roboto:wght@100;400;500&amp;display=swap" rel="stylesheet">
     <style>
-        body {
-            background: #F7F8F9;
-            font-family: 'Inter', sans-serif !important;
-        }
-
-        .indy-logo {
-            margin: 48px auto 0px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .btn-main>.btn-con {
-            color: #ffffff !important;
-        }
-
-        .btn-main2>.btn-con2 {
-            color: #52525A !important;
-        }
-
-        .maincontent {
-            background: #FFFFFF;
-            max-width: 666px;
-            height: auto;
-            margin: 40px auto;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .headersection {
-            padding: 40px 0px 48px;
-            background-color: white;
-            border-radius: 6px;
-        }
-
-        .heading-con {
-            font-family: Inter;
-            font-size: 34px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            color: #343434;
-            margin: 0px 53px;
-        }
-
-        .paragraph {
-            font-family: Inter;
-            font-size: 16px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            color: #A1A1A9;
-            margin-top: 10px 0px;
-            padding: 0px 40px 0px 53px;
-        }
-
-        .btn-main {
-            border-radius: 6px;
-            background: var(--primary-black, #282828);
-            padding: 12px 32px;
-            width: fit-content;
-            margin: 18px 40px 25px 53px;
-            cursor: pointer !important;
-            z-index: 10 !important;
-            pointer-events: auto;
-            position: relative;
-        }
-
-        .btn-con {
-            color: #FFFFFF;
-            text-decoration: none;
-        }
-
-        .img-con {
-            position: relative;
-            z-index: 0;
-        }
-
-        .img {
-            height: 460px;
-        }
-
-        .account-setup-con {
-            margin-top: 40px;
-            text-align: center;
-        }
-
-        a {
-            cursor: pointer !important;
-        }
-
-        .right-mark {
-            margin-bottom: 18px;
-        }
-
-        .account-header {
-            color: var(--primary-black, #282828);
-            text-align: center;
-            font-family: Inter;
-            font-size: 20px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            margin: 0px;
-        }
-
-        .list-item {
-            color: var(--grey-500, #A1A1A9);
-            font-family: Inter;
-            font-size: 16px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: 25px;
-            width: fit-content;
-            margin: 5px auto;
-            list-style: none;
-            padding: 0;
-        }
-
-        .btn-main2 {
-            padding: 18px 0px 35px;
-        }
-
-        .btn-con2 {
-            color: var(--grey-700, #52525A);
-            text-align: center;
-            font-family: Inter;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            text-decoration: none;
-            padding: 12px 30px;
-            border-radius: 6px;
-            border: 1px solid var(--grey-500, #A1A1A9);
-        }
-
-        .auction-content {
-            margin: 0px auto !important;
-            width: 100%;
-            display: flex;
-        }
-
-        .auction-main-content {
-            margin: 0px 40px;
-        }
-
-        .auction-content.mobile-view {
-            display: none;
-        }
-
-        .auction-div1 {
-            width: 50%;
-            background: #EAEDE4;
-            padding-top: 50px;
-            padding-bottom: 66px;
-            border-top-left-radius: 10px;
-            border-bottom-left-radius: 10px;
-            background: var(--secondary-biege, #EAEDE4);
-        }
-
-        .con1 {
-            color: var(--primary-black, #282828);
-            font-family: Inter;
-            font-size: 20px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            padding: 0px 32px;
-            text-align: left;
-        }
-
-        .con2 {
-            color: var(--grey-900, #343434);
-            font-family: Inter;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            padding: 0px 32px;
-            text-align: left;
-        }
-
-        .con3 {
-            color: var(--grey-900, #343434);
-            font-family: Inter;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            text-decoration-line: underline;
-            padding: 0px 32px;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .create-aution-link {
-            text-align: left;
-        }
-
-        .auction-div2 {
-            width: 50%;
-            position: relative;
-            background: var(--primary-black, #282828);
-            border-top-right-radius: 10px;
-            border-bottom-right-radius: 10px;
-        }
-
-        .screen-shot {
-            position: absolute;
-            left: 0;
-            top: 49px;
-        }
-
-        .cards-grid {
-            width: 100%;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 28px;
-        }
-
-        .card {
-            border-radius: 10px;
-            padding: 32px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            text-decoration: none;
-            display: block;
-            color: inherit;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .card-1 {
-            background: #F3E8FF;
-        }
-
-        .card-2 {
-            background: #B8D5DB;
-        }
-
-        .card-3 {
-            background: #F7F8F9;
-        }
-
-        .card-4 {
-            background: #FED7AA;
-        }
-
-        .card-title {
-            font-family: Inter;
-            font-size: 20px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            color: var(--primary-black, #282828);
-            margin: 0px 0px 12px 0px;
-        }
-
-        .card-description {
-            font-family: Inter;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: 20px;
-            color: var(--grey-900, #343434);
-            margin: 0px 0px 20px 0px;
-        }
-
-        .card-arrow {
-            position: absolute;
-            right: 32px;
-            bottom: 32px;
-            width: 24px;
-            height: 24px;
-        }
-
-        .demo-auctions-card {
-            background: #DCFCE7;
-            border-radius: 10px;
-            padding: 32px;
-            margin-top: 20px;
-            position: relative;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            text-decoration: none;
-            display: block;
-            color: inherit;
-            box-sizing: border-box;
-        }
-
-        .demo-auctions-card:hover {
-            transform: translateY(-2px);
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .demo-title {
-            font-family: Inter;
-            font-size: 20px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            color: var(--primary-black, #282828);
-            margin: 0px 0px 12px 0px;
-        }
-
-        .demo-description {
-            font-family: Inter;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: 20px;
-            color: var(--grey-900, #343434);
-            margin: 0px 0px 20px 0px;
-        }
-
-        .demo-arrow {
-            position: absolute;
-            right: 32px;
-            bottom: 32px;
-            width: 24px;
-            height: 24px;
-        }
-
-        .footer-con {
-            margin: 22px auto 0px;
-            text-align: center;
-        }
-
-        .insta-icon {
-            margin-right: 16px;
-            cursor: pointer;
-        }
-
-        .linkedin-icon {
-            cursor: pointer;
-        }
-
-        .facebook-icon {
-            margin-right: 16px;
-            cursor: pointer;
-        }
-
-        .twitter-icon {
-            margin-right: 16px;
-            cursor: pointer;
-        }
-
-        .footer-content {
-            font-family: Inter;
-            font-size: 10px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            color: #A1A1A9;
-            margin-bottom: 40px;
-        }
-
-        @media(max-width:640px) {
-            .headersection {
-                padding: 10px 0px 20px;
+        /* Mobile responsive styles */
+        @media only screen and (max-width: 640px) {
+            .desktop-cards {
+                display: none !important;
             }
-
-            .maincontent {
-                margin: 20px auto !important;
-            }
-
-            .heading-con {
-                font-size: 28px;
-                margin: 24px 20px 0px;
-            }
-
-            .paragraph {
-                font-size: 15px;
-                padding: 0px 20px 20px 20px;
-            }
-
-            .btn-main {
-                display: block;
-                margin: 18px auto 40px auto;
-                text-align: center;
-                width: fit-content;
-                max-width: calc(100% - 40px);
-            }
-
-            .img-con {
-                height: 300px;
-                overflow: visible;
-                margin-bottom: 20px;
-                position: relative;
-            }
-
-            .img {
-                right: -65px;
-                height: 400px;
-                top: -50px;
-                position: absolute;
-            }
-
-            .account-setup-con {
-                margin-top: 20px;
-                text-align: center;
-                position: relative;
-                z-index: 10;
-                background: white;
-                padding: 20px;
-                border-radius: 10px;
-            }
-
-            .right-mark {
-                margin-bottom: 10px;
-            }
-
-            .account-header {
-                font-size: 17px;
-            }
-
-            .list-item {
-                font-size: 15px;
-            }
-
-            .btn-con2 {
-                font-size: 13px;
-            }
-
-            .auction-content {
-                display: block;
-            }
-
-            .auction-main-content {
-                margin: 0px 20px;
-            }
-
-            .auction-content.mobile-view {
-                display: block;
-            }
-
-            .auction-content.webview {
-                display: none;
-            }
-
-            .auction-div3 {
-                width: 100%;
-                position: relative;
-                background: var(--primary-black, #282828) !important;
-                border-top-left-radius: 10px;
-                border-top-right-radius: 10px;
-                height: 270px;
-            }
-
-            .screen-shot2 {
-                position: absolute;
-                left: 0;
-                top: 36px;
-            }
-
-            .auction-div4 {
-                width: 100%;
-                background: #EAEDE4;
-                padding-top: 30px;
-                padding-bottom: 40px;
-                border-bottom-left-radius: 10px;
-                border-bottom-right-radius: 10px;
-                text-align: center;
-            }
-
-            .cards-grid {
-                display: block;
-                margin-top: 21px;
-                width: 100%;
-            }
-
-            .card {
-                width: 100%;
-                margin-bottom: 16px;
-                padding: 20px;
-                box-sizing: border-box;
-            }
-
-            .card-title {
-                font-size: 16px;
-                margin-bottom: 10px;
-            }
-
-            .card-description {
-                font-size: 13px;
-                line-height: 18px;
-                margin-bottom: 16px;
-            }
-
-            .card-arrow {
-                right: 20px;
-                bottom: 20px;
-                width: 20px;
-                height: 20px;
-            }
-
-            .demo-auctions-card {
-                padding: 24px;
-                margin-top: 16px;
-            }
-
-            .demo-title {
-                font-size: 18px;
-                margin-bottom: 10px;
-            }
-
-            .demo-description {
-                font-size: 13px;
-                line-height: 18px;
-                margin-bottom: 16px;
-            }
-
-            .demo-arrow {
-                right: 24px;
-                bottom: 24px;
-                width: 20px;
-                height: 20px;
-            }
-
-            .footer-content {
-                margin-bottom: 30px;
-            }
-
-            @media(max-width:460px) {
-                .btn-main {
-                    margin: 18px auto 45px auto;
-                    max-width: calc(100% - 30px);
-                }
-
-                .img-con {
-                    height: 250px;
-                    margin-bottom: 30px;
-                }
-
-                .img {
-                    height: 315px;
-                    right: -50px;
-                    top: -40px;
-                }
-
-                .account-setup-con {
-                    margin-top: 60px;
-                    padding: 25px 15px;
-                }
-
-                .card {
-                    padding: 18px;
-                    margin-bottom: 14px;
-                    box-sizing: border-box;
-                }
-
-                .card-title {
-                    font-size: 15px;
-                    margin-bottom: 8px;
-                }
-
-                .card-description {
-                    font-size: 12px;
-                    line-height: 16px;
-                    margin-bottom: 14px;
-                }
-
-                .card-arrow {
-                    right: 18px;
-                    bottom: 18px;
-                    width: 18px;
-                    height: 18px;
-                }
-
-                .demo-auctions-card {
-                    padding: 20px;
-                    margin-top: 14px;
-                }
-
-                .demo-title {
-                    font-size: 16px;
-                }
-
-                .demo-description {
-                    font-size: 12px;
-                    line-height: 16px;
-                }
-
-                .demo-arrow {
-                    right: 20px;
-                    bottom: 20px;
-                    width: 18px;
-                    height: 18px;
-                }
-            }
-
-            .auction-div4 {
-                padding-top: 10px;
-                padding-bottom: 15px;
+            .mobile-cards {
+                display: block !important;
             }
         }
-
-        @media(max-width:360px) {
-            .btn-main {
-                margin: 18px auto 50px auto;
-                max-width: calc(100% - 20px);
+        
+        @media only screen and (min-width: 641px) {
+            .desktop-cards {
+                display: table !important;
             }
-
-            .img-con {
-                height: 200px;
-                margin-bottom: 40px;
-            }
-
-            .img {
-                height: 270px;
-                right: -30px;
-                top: -30px;
-            }
-
-            .account-setup-con {
-                margin-top: 70px;
-                padding: 30px 10px;
-            }
-
-            .card {
-                padding: 16px;
-                margin-bottom: 12px;
-                box-sizing: border-box;
-            }
-
-            .card-title {
-                font-size: 14px;
-                margin-bottom: 6px;
-            }
-
-            .card-description {
-                font-size: 11px;
-                line-height: 14px;
-                margin-bottom: 12px;
-            }
-
-            .card-arrow {
-                right: 16px;
-                bottom: 16px;
-                width: 16px;
-                height: 16px;
-            }
-
-            .demo-auctions-card {
-                padding: 16px;
-                margin-top: 12px;
-            }
-
-            .demo-title {
-                font-size: 15px;
-            }
-
-            .demo-description {
-                font-size: 11px;
-                line-height: 15px;
-            }
-
-            .demo-arrow {
-                right: 16px;
-                bottom: 16px;
-                width: 16px;
-                height: 16px;
+            .mobile-cards {
+                display: none !important;
             }
         }
     </style>
 </head>
-<body data-new-gr-c-s-check-loaded="14.1141.0" data-gr-ext-installed="" data-new-gr-c-s-loaded="14.1141.0">
-    <div class="indy-logo">
-        <a href="https://www.indy.auction" target="_blank"><img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/Logo-indy-email.png" alt="img"></a>
-    </div>
-    <div class="maincontent">
-        <div class="headersection">
-            <p class="heading-con">It's time to master the Art of Auctioneering </p>
-            <p class="paragraph">Welcome and thank you for joining Indy.auction, the professional auction software for anyone wanting to run their own auction. </p>
-            <div class="btn-main">
-                <a class="btn-con" href="https://seller.indy.auction" target="_blank">View dashboard</a>
-            </div>
-            <div class="img-con">
-                <img class="img" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/Laptop-Header.png" alt="img">
-            </div>
-            <div class="account-setup-con">
-                <img class="right-mark" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/create-account-setup-rightmark.png" alt="img">
-                <p class="account-header">Complete your account setup</p>
-                <ol class="list-item">
-                    <li>1. Add your Profile details</li>
-                    <li>2. Set up your Payment Provider</li>
-                </ol>
-                <div class="btn-main2">
-                    <a class="btn-con2" href="https://seller.indy.auction/account" target="_blank">Complete setup</a>
-                </div>
-            </div>
-            <!-- YouTube video section -->
-            <div class="auction-main-content">
-                <div class="video-container" style="margin: 20px 0; text-align: center;">
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/BPBS_c3hQd8?autoplay=1" 
-                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen style="max-width: 100%; border-radius: 10px;">
-                    </iframe>
-                </div>
-                <!-- cards information -->
-                <div class="cards-grid">
-                    <a href="https://support.indy.auction/auction-checklist" target="_blank" class="card card-1">
-                        <p class="card-title">Auction Checklist</p>
-                        <p class="card-description">Before creating your auction, we recommend gathering the following details.</p>
-                        <img class="card-arrow" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="arrow">
-                    </a>
-                    <a href="https://support.indy.auction/estimates-reserves-and-pricing" target="_blank" class="card card-2">
-                        <p class="card-title">Estimates & Starting Prices</p>
-                        <p class="card-description">Pricing an auction lot is both a science and an art. Find out more here.</p>
-                        <img class="card-arrow" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="arrow">
-                    </a>
-                    <a href="https://support.indy.auction/auction-marketing-a-step-by-step-guide" target="_blank" class="card card-3">
-                        <p class="card-title">Auction Marketing</p>
-                        <p class="card-description">Our auction management software lets you create a custom auction site, boosting your chances of sales and promoting your brand. Find out more.</p>
-                        <img class="card-arrow" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="arrow">
-                    </a>
-                    <a href="https://support.indy.auction/" target="_blank" class="card card-4">
-                        <p class="card-title">We are here to help</p>
-                        <p class="card-description">Check out our Help Centre for expert advice on running auctions plus video tutorials on how best to use indy.auction.</p>
-                        <img class="card-arrow" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="arrow">
-                    </a>
-                </div>
-                <!-- demo auctions card -->
-                <a href="https://www.indy.auction/pro-plan-demo-auctions" target="_blank" class="demo-auctions-card">
-                    <p class="demo-title">Demo Auctions</p>
-                    <p class="demo-description">Need some inspiration? Check out the bidder journey and customisation options with our Pro-Plan demo auctions.</p>
-                    <img class="demo-arrow" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="arrow">
+<body style="background: #F7F8F9; font-family: Arial, sans-serif; margin: 0; padding: 0;">
+    <!-- Logo Section -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0px auto 0px; background: #F7F8F9;">
+        <tr>
+            <td align="center" style="padding: 48px 0px 0px 0px;">
+                <a href="https://www.indy.auction" target="_blank" style="text-decoration: none;">
+                    <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/Logo-indy-email.png" alt="Indy Auction Logo" style="max-width: 100%; height: auto; display: block; border: 0;">
                 </a>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- Main Content Container -->
+    <div style="background: #FFFFFF; max-width: 666px; height: auto; margin: 40px auto; border-radius: 10px; overflow: visible;">
+        <!-- Header Section -->
+        <div style="padding: 40px 0px 48px; background-color: white; border-radius: 6px;">
+            <p style="font-family: Arial, sans-serif; font-size: 34px; font-weight: 500; color: #343434; margin: 0px 53px;">It's time to master the Art of Auctioneering</p>
+            <p style="font-family: Arial, sans-serif; font-size: 16px; font-weight: 500; color: #A1A1A9; margin-top: 10px; padding: 0px 40px 0px 53px;">Welcome and thank you for joining Indy.auction, the professional auction software for anyone wanting to run their own auction.</p>
+            
+            <!-- CTA Button -->
+            <div style="border-radius: 6px; background: #282828; padding: 12px 32px; width: fit-content; margin: 18px 40px 25px 53px;">
+                <a href="https://seller.indy.auction" target="_blank" style="color: #FFFFFF; text-decoration: none; font-family: Arial, sans-serif;">View dashboard</a>
+            </div>
+            
+            <!-- Laptop Image -->
+            <div style="position: relative; text-align: center;">
+                <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/Laptop-Header.png" alt="Laptop Dashboard Preview" style="max-width: 100%; height: auto; border: 0; display: block;">
+            </div>
+            
+            <!-- Account Setup Section -->
+            <div style="margin-top: 40px; text-align: center; background: white; padding: 20px; border-radius: 10px;">
+                <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/create-account-setup-rightmark.png" alt="Checkmark" style="max-width: 100%; height: auto; margin-bottom: 18px; border: 0;">
+                <p style="color: #282828; text-align: center; font-family: Arial, sans-serif; font-size: 20px; font-weight: 500; margin: 0px;">Complete your account setup</p>
+                <div style="color: #A1A1A9; font-family: Arial, sans-serif; font-size: 16px; font-weight: 500; line-height: 25px; margin: 5px auto; text-align: left; width: fit-content;">
+                    <div>1. Add your Profile details</div>
+                    <div>2. Set up your Payment Provider</div>
+                </div>
+                <div style="padding: 18px 0px 35px;">
+                    <a href="https://seller.indy.auction/account" target="_blank" style="color: #52525A; text-align: center; font-family: Arial, sans-serif; font-size: 14px; font-weight: 500; text-decoration: none; padding: 12px 30px; border-radius: 6px; border: 1px solid #A1A1A9; display: inline-block;">Complete setup</a>
+                </div>
+            </div>
+            
+            <!-- Video Section -->
+            <div style="margin: 20px 40px;">
+                <div style="margin: 20px 0; text-align: center;">
+                    <div style="background: #000; border-radius: 10px; padding: 0; max-width: 560px; margin: 0 auto; text-align: center; overflow: hidden;">
+                        <!-- Thumbnail image as hyperlink -->
+                        <a href="https://www.youtube.com/watch?v=BPBS_c3hQd8" target="_blank" rel="noopener noreferrer" style="display: block;">
+                            <img
+                              src="https://img.youtube.com/vi/BPBS_c3hQd8/hqdefault.jpg"
+                              alt="Watch Video"
+                              width="560"
+                              style="width:100%;max-width:560px;height:auto;display:block;border:0;"
+                            />
+                        </a>
+                        <!-- Watch button at bottom -->
+                        <div style="background: #f8f9fa; padding: 15px 20px; text-align: center; border-top: 1px solid #e9ecef;">
+                            <a href="https://www.youtube.com/watch?v=BPBS_c3hQd8" target="_blank" rel="noopener noreferrer" style="color: #495057; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; font-weight: 500; display: inline-block; padding: 8px 16px; background: #e9ecef; border-radius: 6px; border: 1px solid #dee2e6;">
+                                ▶ Watch Tutorial Video
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cards Grid - Desktop -->
+                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top: 28px;" class="desktop-cards">
+                    <tr>
+                        <!-- Card 1 -->
+                        <td width="50%" style="padding-right: 10px; vertical-align: top;">
+                            <div style="background: #F3E8FF; border-radius: 10px; padding: 28px; margin-bottom: 5px; min-height: 140px;">
+                                <a href="https://support.indy.auction/auction-checklist" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 140px;">
+                                        <tr>
+                                            <td style="vertical-align: top;">
+                                                <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Auction Checklist</p>
+                                                <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word; text-overflow: clip; display: block;">Before creating your auction, we recommend gathering the following details.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="vertical-align: bottom; text-align: right;">
+                                                <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </a>
+                            </div>
+                        </td>
+                        <!-- Card 2 -->
+                        <td width="50%" style="padding-left: 10px; vertical-align: top;">
+                            <div style="background: #B8D5DB; border-radius: 10px; padding: 28px; margin-bottom: 5px; min-height: 140px;">
+                                <a href="https://support.indy.auction/estimates-reserves-and-pricing" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 140px;">
+                                        <tr>
+                                            <td style="vertical-align: top;">
+                                                <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Estimates & Starting Prices</p>
+                                                <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Pricing an auction lot is both a science and an art. Find out more here.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="vertical-align: bottom; text-align: right;">
+                                                <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <!-- Card 3 -->
+                        <td width="50%" style="padding-right: 10px; vertical-align: top;">
+                            <div style="background: #F7F8F9; border-radius: 10px; padding: 28px; margin-bottom: 5px; min-height: 160px;">
+                                <a href="https://support.indy.auction/auction-marketing-a-step-by-step-guide" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 160px;">
+                                        <tr>
+                                            <td style="vertical-align: top;">
+                                                <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Auction Marketing</p>
+                                                <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Our auction management software lets you create a custom auction site, boosting your chances of sales and promoting your brand. Find out more.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="vertical-align: bottom; text-align: right;">
+                                                <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </a>
+                            </div>
+                        </td>
+                        <!-- Card 4 -->
+                        <td width="50%" style="padding-left: 10px; vertical-align: top;">
+                            <div style="background: #FED7AA; border-radius: 10px; padding: 28px; margin-bottom: 5px; min-height: 160px;">
+                                <a href="https://support.indy.auction/" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 160px;">
+                                        <tr>
+                                            <td style="vertical-align: top;">
+                                                <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">We are here to help</p>
+                                                <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Check out our Help Centre for expert advice on running auctions plus video tutorials on how best to use indy.auction.</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="vertical-align: bottom; text-align: right;">
+                                                <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                
+                <!-- Cards Grid - Mobile -->
+                <div class="mobile-cards" style="margin-top: 28px;">
+                    <!-- Card 1 -->
+                    <div style="background: #F3E8FF; border-radius: 10px; padding: 28px; margin-bottom: 20px; min-height: 140px;">
+                        <a href="https://support.indy.auction/auction-checklist" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 140px;">
+                                <tr>
+                                    <td style="vertical-align: top;">
+                                        <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Auction Checklist</p>
+                                        <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word; text-overflow: clip; display: block;">Before creating your auction, we recommend gathering the following details.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="vertical-align: bottom; text-align: right;">
+                                        <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                    </td>
+                                </tr>
+                            </table>
+                        </a>
+                    </div>
+                    
+                    <!-- Card 2 -->
+                    <div style="background: #B8D5DB; border-radius: 10px; padding: 28px; margin-bottom: 20px; min-height: 140px;">
+                        <a href="https://support.indy.auction/estimates-reserves-and-pricing" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 140px;">
+                                <tr>
+                                    <td style="vertical-align: top;">
+                                        <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Estimates & Starting Prices</p>
+                                        <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Pricing an auction lot is both a science and an art. Find out more here.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="vertical-align: bottom; text-align: right;">
+                                        <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                    </td>
+                                </tr>
+                            </table>
+                        </a>
+                    </div>
+                    
+                    <!-- Card 3 -->
+                    <div style="background: #F7F8F9; border-radius: 10px; padding: 28px; margin-bottom: 20px; min-height: 160px;">
+                        <a href="https://support.indy.auction/auction-marketing-a-step-by-step-guide" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 160px;">
+                                <tr>
+                                    <td style="vertical-align: top;">
+                                        <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Auction Marketing</p>
+                                        <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Our auction management software lets you create a custom auction site, boosting your chances of sales and promoting your brand. Find out more.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="vertical-align: bottom; text-align: right;">
+                                        <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                    </td>
+                                </tr>
+                            </table>
+                        </a>
+                    </div>
+                    
+                    <!-- Card 4 -->
+                    <div style="background: #FED7AA; border-radius: 10px; padding: 28px; margin-bottom: 20px; min-height: 160px;">
+                        <a href="https://support.indy.auction/" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="height: 160px;">
+                                <tr>
+                                    <td style="vertical-align: top;">
+                                        <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">We are here to help</p>
+                                        <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Check out our Help Centre for expert advice on running auctions plus video tutorials on how best to use indy.auction.</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="vertical-align: bottom; text-align: right;">
+                                        <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                                    </td>
+                                </tr>
+                            </table>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Demo Auctions Card -->
+                <div style="background: #DCFCE7; border-radius: 10px; padding: 28px; margin-top: 20px;">
+                    <a href="https://www.indy.auction/pro-plan-demo-auctions" target="_blank" style="text-decoration: none; color: inherit; display: block;">
+                        <p style="font-family: Arial, sans-serif; font-size: 18px; font-weight: 500; color: #282828; margin: 0px 0px 10px 0px;">Demo Auctions</p>
+                        <p style="font-family: Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 18px; color: #343434; margin: 0px 0px 15px 0px; overflow: visible; text-overflow: unset; white-space: normal; word-wrap: break-word;">Need some inspiration? Check out the bidder journey and customisation options with our Pro-Plan demo auctions.</p>
+                        <div style="text-align: right; margin-top: 10px;">
+                            <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/dark-arrow.png" alt="Arrow" style="width: 20px; height: 20px; border: 0;">
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="footer-con">
-        <a href="https://www.instagram.com/indy.auction/" target="_blank"><img class="insta-icon" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/insta-icon-dark.png" alt="img"></a>
-        <a href="https://www.facebook.com/indy.auction/" target="_blank"><img class="facebook-icon" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/facebook-dark-icon.png" alt="img"></a>
-        <a href="https://www.threads.net/@indy.auction" target="_blank"><img class="twitter-icon" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/threads.png" alt="img"></a>
-        <a href="https://www.linkedin.com/products/the-auction-collective-indyauction/" target="_blank"><img class="linkedin-icon" src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/linkedin-dark-logo.png" alt="img"></a>
-        <p class="footer-content">Copyright 2024 Indy.auction. All rights reserved.</p>
+    
+    <!-- Footer -->
+    <div style="margin: 22px auto 0px; text-align: center;">
+        <a href="https://www.instagram.com/indy.auction/" target="_blank" style="margin-right: 16px; text-decoration: none;">
+            <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/insta-icon-dark.png" alt="Instagram" style="max-width: 100%; height: auto; border: 0; display: inline-block;">
+        </a>
+        <a href="https://www.facebook.com/indy.auction/" target="_blank" style="margin-right: 16px; text-decoration: none;">
+            <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/facebook-dark-icon.png" alt="Facebook" style="max-width: 100%; height: auto; border: 0; display: inline-block;">
+        </a>
+        <a href="https://www.threads.net/@indy.auction" target="_blank" style="margin-right: 16px; text-decoration: none;">
+            <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/threads.png" alt="Threads" style="max-width: 100%; height: auto; border: 0; display: inline-block;">
+        </a>
+        <a href="https://www.linkedin.com/products/the-auction-collective-indyauction/" target="_blank" style="text-decoration: none;">
+            <img src="https://cdn.qa.indyauction.net/EMAIL-TEMPLATE-ASSETS/linkedin-dark-logo.png" alt="LinkedIn" style="max-width: 100%; height: auto; border: 0; display: inline-block;">
+        </a>
+        <p style="font-family: Arial, sans-serif; font-size: 10px; font-weight: 500; color: #A1A1A9; margin-bottom: 40px;">Copyright 2024 Indy.auction. All rights reserved.</p>
     </div>
-    <grammarly-desktop-integration data-grammarly-shadow-root="true"></grammarly-desktop-integration>
 </body>
 </html>
