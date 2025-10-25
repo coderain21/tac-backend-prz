@@ -23,25 +23,25 @@ terraform {
 
 # Data sources for dev/pre-prod
 data "aws_ssm_parameter" "vpc_id" {
-  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  count = contains(["dev", "pre-production"], var.STAGE) ? 1 : 0
   name = "VPC_ID"
   provider = aws.deployment-eu
 }
 
 data "aws_ssm_parameter" "subnet_id" {
-  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  count = contains(["dev", "pre-production"], var.STAGE) ? 1 : 0
   name = "PUBLIC_SUBNET_ID"
   provider = aws.deployment-eu
 }
 
 data "aws_ssm_parameter" "cidr_blocks" {
-  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  count = contains(["dev", "pre-production"], var.STAGE) ? 1 : 0
   name = "PUBLIC_SUBNET_CIDR_BLOCK_3"
   provider = aws.deployment-eu
 }
 
 data "aws_ssm_parameter" "mongo_password" {
-  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  count = contains(["dev", "pre-production"], var.STAGE) ? 1 : 0
   name = "MONGO_PASSWORD"
   provider = aws.deployment-eu
 }
@@ -56,13 +56,13 @@ resource "aws_default_vpc" "def_vpc"{
 resource "aws_subnet" "mongodb_subnet" {
   vpc_id            = contains(["qa", "prod"], var.STAGE) ? aws_default_vpc.def_vpc[0].id : data.aws_ssm_parameter.vpc_id[0].value
   cidr_block        = contains(["qa", "prod"], var.STAGE) ? "172.31.96.0/20" : data.aws_ssm_parameter.cidr_blocks[0].value
-  availability_zone = contains(["dev", "pre-prod"], var.STAGE) ? "eu-west-2c" : null
+  availability_zone = contains(["dev", "pre-production"], var.STAGE) ? "eu-west-2c" : null
   provider          = aws.deployment-eu
 }
 
 # Subnet group for dev/pre-prod
 data "aws_subnets" "filtered_subnets" {
-  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  count = contains(["dev", "pre-production"], var.STAGE) ? 1 : 0
   provider = aws.deployment-eu
   filter {
     name   = "vpc-id"
@@ -75,7 +75,7 @@ data "aws_subnets" "filtered_subnets" {
 }
 
 resource "aws_docdb_subnet_group" "subnet_group" {
-  count = contains(["dev", "pre-prod"], var.STAGE) ? 1 : 0
+  count = contains(["dev", "pre-production"], var.STAGE) ? 1 : 0
   name       = "mongodb-subnet-group"
   subnet_ids = data.aws_subnets.filtered_subnets[0].ids
   provider   = aws.deployment-eu
@@ -84,7 +84,7 @@ resource "aws_docdb_subnet_group" "subnet_group" {
 #######################
 
 resource "aws_key_pair" "my_key"{
-    key_name = contains(["dev", "pre-prod"], var.STAGE) ? "tf-key-pair-new-${var.STAGE}" : "tf-key-pair"
+    key_name = contains(["dev", "pre-production"], var.STAGE) ? "tf-key-pair-new-${var.STAGE}" : "tf-key-pair"
     public_key = tls_private_key.rsa.public_key_openssh
     provider = aws.deployment-eu
 }
@@ -94,14 +94,14 @@ resource "tls_private_key" "rsa"{
 }
 resource "local_file" "tf-key"{
     content  = tls_private_key.rsa.private_key_pem
-    filename = contains(["dev", "pre-prod"], var.STAGE) ? "tf-key-pair-new-${var.STAGE}.pem" : "tf-key-pair-${var.STAGE}.pem"
+    filename = contains(["dev", "pre-production"], var.STAGE) ? "tf-key-pair-new-${var.STAGE}.pem" : "tf-key-pair-${var.STAGE}.pem"
 }
 
 ########################
 
 
 resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
-  name        = contains(["dev", "pre-prod"], var.STAGE) ? "${var.STAGE}-new-parameter-group" : "${var.STAGE}-parameter-group"
+  name        = contains(["dev", "pre-production"], var.STAGE) ? "${var.STAGE}-new-parameter-group" : "${var.STAGE}-parameter-group"
   family      = "docdb5.0" # Adjust the family to match your DocumentDB version
   description = "My DocumentDB Parameter Group"
   parameter {
@@ -111,7 +111,7 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
   
   # Additional parameters for dev/pre-prod
   dynamic "parameter" {
-    for_each = contains(["dev", "pre-prod"], var.STAGE) ? [1] : []
+    for_each = contains(["dev", "pre-production"], var.STAGE) ? [1] : []
     content {
       name  = "audit_logs"
       value = "enabled"
@@ -119,7 +119,7 @@ resource "aws_docdb_cluster_parameter_group" "my_parameter_group" {
   }
   
   dynamic "parameter" {
-    for_each = contains(["dev", "pre-prod"], var.STAGE) ? [1] : []
+    for_each = contains(["dev", "pre-production"], var.STAGE) ? [1] : []
     content {
       name  = "profiler"
       value = "enabled"
@@ -138,7 +138,7 @@ resource "aws_nat_gateway" "nat_gateway" {
   allocation_id = aws_eip.nat_gateway.id
   subnet_id = contains(["qa", "prod"], var.STAGE) ? aws_default_subnet.default_az1[0].id : data.aws_ssm_parameter.subnet_id[0].value
   tags = {
-    "Name" = contains(["dev", "pre-prod"], var.STAGE) ? "NatGateway_new" : "NatGateway"
+    "Name" = contains(["dev", "pre-production"], var.STAGE) ? "NatGateway_new" : "NatGateway"
   }
   provider = aws.deployment-eu
 }
@@ -179,7 +179,7 @@ data "aws_ssm_parameter" "instance_class" {
   provider = aws.deployment-eu
 }
 resource "aws_docdb_cluster_instance" "cluster_instances" {
-  identifier         = contains(["dev", "pre-prod"], var.STAGE) ? "new-docdb-mongodb-instance" : "docdb-mongodb-instance"
+  identifier         = contains(["dev", "pre-production"], var.STAGE) ? "new-docdb-mongodb-instance" : "docdb-mongodb-instance"
   cluster_identifier = aws_docdb_cluster.my_documentdb_cluster.id
   instance_class     = data.aws_ssm_parameter.instance_class.value
   preferred_maintenance_window = "sun:01:00-sun:03:00"
@@ -191,15 +191,15 @@ resource "aws_docdb_cluster_instance" "cluster_instances" {
 
 # Create the DocumentDB instance
 resource "aws_docdb_cluster" "my_documentdb_cluster" {
-  cluster_identifier        = contains(["dev", "pre-prod"], var.STAGE) ? "new-${var.STAGE}" : "${var.STAGE}"
+  cluster_identifier        = contains(["dev", "pre-production"], var.STAGE) ? "new-${var.STAGE}" : "${var.STAGE}"
   engine                    = "docdb"
   engine_version            = "5.0.0" # Adjust the version as needed
   db_cluster_parameter_group_name      = aws_docdb_cluster_parameter_group.my_parameter_group.name
-  db_subnet_group_name = contains(["dev", "pre-prod"], var.STAGE) ? aws_docdb_subnet_group.subnet_group[0].name : null
+  db_subnet_group_name = contains(["dev", "pre-production"], var.STAGE) ? aws_docdb_subnet_group.subnet_group[0].name : null
   skip_final_snapshot        = true
   master_username         = "indyauctionAdmin"
   master_password         = contains(["qa", "prod"], var.STAGE) ? random_password.password[0].result : data.aws_ssm_parameter.mongo_password[0].value
-  enabled_cloudwatch_logs_exports = contains(["dev", "pre-prod"], var.STAGE) ? ["audit", "profiler"] : null
+  enabled_cloudwatch_logs_exports = contains(["dev", "pre-production"], var.STAGE) ? ["audit", "profiler"] : null
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
   preferred_maintenance_window = "sun:01:00-sun:03:00"
   preferred_backup_window = "04:00-05:00"
@@ -213,7 +213,7 @@ resource "aws_docdb_cluster" "my_documentdb_cluster" {
 
 
 resource "aws_security_group" "ssh_sg_1" {
-  name        = contains(["dev", "pre-prod"], var.STAGE) ? "new-ssh-security-groups" : "ssh-security-group1"
+  name        = contains(["dev", "pre-production"], var.STAGE) ? "new-ssh-security-groups" : "ssh-security-group1"
   description = "SSH Security Group"
   vpc_id = contains(["qa", "prod"], var.STAGE) ? aws_default_vpc.def_vpc[0].id : data.aws_ssm_parameter.vpc_id[0].value
   # Allow SSH traffic
@@ -250,7 +250,7 @@ resource "aws_security_group" "ssh_sg_1" {
 }
 
 resource "aws_iam_role" "ssm_role" {
-  name = contains(["dev", "pre-prod"], var.STAGE) ? "new-ssm-role-ec2" : "ssm-role-ec2"
+  name = contains(["dev", "pre-production"], var.STAGE) ? "new-ssm-role-ec2" : "ssm-role-ec2"
   provider = aws.deployment-eu
 
   assume_role_policy = jsonencode({
@@ -295,8 +295,8 @@ resource "aws_instance" "ssh_tunnel" {
   instance_type = "t2.micro"          # Choose an appropriate instance type
   key_name = aws_key_pair.my_key.key_name
   vpc_security_group_ids = [aws_security_group.ssh_sg_1.id]
-  subnet_id = contains(["dev", "pre-prod"], var.STAGE) ? data.aws_ssm_parameter.subnet_id[0].value : null
-  associate_public_ip_address = contains(["dev", "pre-prod"], var.STAGE) ? true : null
+  subnet_id = contains(["dev", "pre-production"], var.STAGE) ? data.aws_ssm_parameter.subnet_id[0].value : null
+  associate_public_ip_address = contains(["dev", "pre-production"], var.STAGE) ? true : null
   provider = aws.deployment-eu
   # User data to create the SSH tunnel
   user_data = <<-EOF
@@ -315,7 +315,7 @@ resource "aws_instance" "ssh_tunnel" {
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 }
 resource "aws_iam_instance_profile" "ssm_profile" {
-  name = contains(["dev", "pre-prod"], var.STAGE) ? "new-ssm-role-ec2" : "ssm-role-ec2"
+  name = contains(["dev", "pre-production"], var.STAGE) ? "new-ssm-role-ec2" : "ssm-role-ec2"
   provider = aws.deployment-eu
   role = aws_iam_role.ssm_role.name
 }
@@ -370,6 +370,6 @@ output "connection_details" {
     endpoint = aws_docdb_cluster.my_documentdb_cluster.endpoint
     port     = "27017"
     ec2_public_ip = aws_instance.ssh_tunnel.public_ip
-    shh_tunnel = contains(["dev", "pre-prod"], var.STAGE) ? "ssh -i tf-key-pair-new-${var.STAGE}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf" : "ssh -i tf-key-pair-${var.STAGE}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
+    shh_tunnel = contains(["dev", "pre-production"], var.STAGE) ? "ssh -i tf-key-pair-new-${var.STAGE}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf" : "ssh -i tf-key-pair-${var.STAGE}.pem -L 27017:${aws_docdb_cluster.my_documentdb_cluster.endpoint}:27017 ubuntu@${aws_instance.ssh_tunnel.public_ip} -Nf"
   }
 }
