@@ -101,7 +101,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-users-management"
-        Resource = "users-management/auth/login"
+        Resource = "/auth/login"
         Stage    = var.STAGE
         Method   = "GET"
       }
@@ -117,7 +117,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-users-management"
-        Resource = "users-management/verify-captcha"
+        Resource = "/verify-captcha"
         Stage    = var.STAGE
         Method   = "POST"
       }
@@ -133,7 +133,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-users-management"
-        Resource = "users-management/otp-validation"
+        Resource = "/otp-validation"
         Stage    = var.STAGE
         Method   = "POST"
       }
@@ -149,7 +149,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-users-management"
-        Resource = "users-management/request-otp"
+        Resource = "/request-otp"
         Stage    = var.STAGE
         Method   = "POST"
       }
@@ -165,7 +165,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/auction-register"
+        Resource = "/auction-register"
         Stage    = var.STAGE
         Method   = "GET"
       }
@@ -181,7 +181,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/verify-card"
+        Resource = "/verify-card"
         Stage    = var.STAGE
         Method   = "POST"
       }
@@ -215,13 +215,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-bids"
-        Resource = "bids/update"
+        Resource = "/update"
         Stage    = var.STAGE
         Method   = "PATCH"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -231,13 +232,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-payments"
-        Resource = "payments/stripe"
+        Resource = "/stripe"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -247,13 +249,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-paypal"
-        Resource = "paypal/paypal-order"
+        Resource = "/paypal-order"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -263,13 +266,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-paypal"
-        Resource = "paypal/capture-order"
+        Resource = "/capture-order"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -279,13 +283,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-cart-management"
-        Resource = "cart-management/cart"
+        Resource = "/cart"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -295,13 +300,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/"
+        Resource = "/"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -311,13 +317,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/lots"
+        Resource = "/lots"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -327,7 +334,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/update/{auction_id}"
+        Resource = "/update/{auction_id}"
         Stage    = var.STAGE
         Method   = "PATCH"
       }
@@ -361,13 +368,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/view"
+        Resource = "/view"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -377,13 +385,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/view-lots"
+        Resource = "/view-lots"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -393,13 +402,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/lot-details"
+        Resource = "/lot-details"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -409,13 +419,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/paddle"
+        Resource = "/paddle"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -425,13 +436,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/view"
+        Resource = "/view"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -441,7 +453,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/{auction_id}"
+        Resource = "/{auction_id}"
         Stage    = var.STAGE
         Method   = "PATCH"
       }
@@ -486,7 +498,7 @@ resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
   alarm_description   = "Alarm when Lambda logs contain 'error'"
 
   # Actions
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider             = aws.deployment-eu
 }
 
@@ -517,7 +529,7 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
   threshold           = 5
   alarm_description   = "Save-to-cache Redis errors > 5 in 5 minutes (2 out of 3 periods)"
   treat_missing_data  = "notBreaching"
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider             = aws.deployment-eu
 }
 
@@ -745,13 +757,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/update-password"
+        Resource = "/update-password"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -761,13 +774,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/forgot_password"
+        Resource = "/forgot_password"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -777,13 +791,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/reset_password"
+        Resource = "/reset_password"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -793,13 +808,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-users-management"
-        Resource = "users-management/forgot_password"
+        Resource = "/forgot_password"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -809,13 +825,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-users-management"
-        Resource = "users-management/reset_password"
+        Resource = "/reset_password"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -825,13 +842,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/profile"
+        Resource = "/profile"
         Stage    = var.STAGE
         Method   = "PATCH"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -841,13 +859,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-address-management"
-        Resource = "address-management/address"
+        Resource = "/address"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -857,7 +876,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-address-management"
-        Resource = "address-management/address"
+        Resource = "/address"
         Stage    = var.STAGE
         Method   = "GET"
       }
@@ -891,13 +910,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/clone"
+        Resource = "/clone"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -907,13 +927,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-bids"
-        Resource = "bids/"
+        Resource = "/"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -923,13 +944,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/approval"
+        Resource = "/approval"
         Stage    = var.STAGE
         Method   = "PATCH"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -939,13 +961,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/lots"
+        Resource = "/lots"
         Stage    = var.STAGE
         Method   = "PATCH"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -955,13 +978,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/lots"
+        Resource = "/lots"
         Stage    = var.STAGE
         Method   = "DELETE"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -971,7 +995,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-auctions"
-        Resource = "auctions/import"
+        Resource = "/import"
         Stage    = var.STAGE
         Method   = "POST"
       }
@@ -1005,13 +1029,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/search-lots"
+        Resource = "/search-lots"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -1021,13 +1046,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyer-wishlist"
-        Resource = "buyer-wishlist/"
+        Resource = "/"
         Stage    = var.STAGE
         Method   = "POST"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -1037,13 +1063,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyer-wishlist"
-        Resource = "buyer-wishlist/remove"
+        Resource = "/remove"
         Stage    = var.STAGE
         Method   = "DELETE"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -1053,13 +1080,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyer-wishlist"
-        Resource = "buyer-wishlist/wishlist"
+        Resource = "/wishlist"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -1069,13 +1097,14 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-orders"
-        Resource = "orders/seller"
+        Resource = "/seller"
         Stage    = var.STAGE
         Method   = "GET"
       }
       period = 300
       stat   = "Sum"
     }
+    return_data = true
   }
 
   metric_query {
@@ -1085,7 +1114,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-newsletter"
-        Resource = "newsletter/"
+        Resource = "/"
         Stage    = var.STAGE
         Method   = "GET"
       }
