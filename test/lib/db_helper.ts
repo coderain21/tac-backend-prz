@@ -34,5 +34,8 @@ export const getDb = () => {
 export const closeDatabaseConnection = async () => {
   if (client) {
     await client.close();
+    client = undefined as any;
+    db = undefined as any;
   }
 };
+
