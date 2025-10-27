@@ -120,65 +120,23 @@ run_command terraform -chdir=devops/seller_web_application apply -auto-approve
 run_command terraform -chdir=devops/api_gateway init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/api_gateway/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/api_gateway apply -auto-approve
 
-
-if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "qa" ]; then
-    run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/mongodb apply -auto-approve
-    run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/ecs apply -auto-approve
-    run_command terraform -chdir=devops/redis-cluster init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis-cluster/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/redis-cluster apply -auto-approve
-fi
 if [ "${STAGE}" = "pre-production" ] ; then
     run_command terraform -chdir=devops/vpc init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/vpc/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/vpc apply -auto-approve
-    run_command terraform -chdir=devops/mongodb_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/mongodb_new apply -auto-approve
-    run_command terraform -chdir=devops/redis_cluster_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis_cluster_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/redis_cluster_new apply -auto-approve
-    run_command terraform -chdir=devops/ecs_new init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs_new/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/ecs_new apply -auto-approve
 fi
+run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/mongodb apply -auto-approve 
+run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/ecs apply -auto-approve
+run_command terraform -chdir=devops/redis-cluster init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis-cluster/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
+run_command terraform -chdir=devops/redis-cluster apply -auto-approve
 
 
-if [ "${STAGE}" = "pre-production" ]; then
+
+if [ "${STAGE}" = "prod" ] || [ "${STAGE}" = "pre-production" ]; then
+
     run_command terraform -chdir=devops/mongobetween init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
     run_command terraform -chdir=devops/mongobetween apply -auto-approve
-
-    parameter_names=(
-    "REGION"
-    "MONGOBETWEEN_DOCKER_IMAGE"
-    "MONGOBETWEEN_ECR_REPO_NAME"
-    "MONGOBETWEEN_ECR_REPO_URI"
-    "MONGOBETWEEN_ECS_SERVICE_NAME"
-    "ECS_CLUSTER_NAME"
-    "ACCOUNT_ID"
-    )
-
-    # Loop through each parameter
-    for param_name in "${parameter_names[@]}"; do
-        echo "$param_name"
-        # Get parameter value
-        param_value=$(aws ssm get-parameter --name "$param_name" --query "Parameter.Value" --output text  --region $REGION --profile $PROFILE_ENV)
-
-        # Set environment variable
-        export "${param_name##*/}=$param_value"  # Set env var without the path, if the parameter name includes a path
-
-        echo "Set $param_name as environment variable with value: $param_value"
-    done <<< "$parameter_names"
-
-    echo docker login --username AWS -p $(aws ecr get-login-password --region $REGION --profile $PROFILE_ENV) https://$ACCOUNT_ID.dkr.ecr.eu-west-2.amazonaws.com  > login.sh
-    sh login.sh
-    run_command docker build -t $MONGOBETWEEN_ECR_REPO_NAME .
-    run_command docker tag $MONGOBETWEEN_ECR_REPO_NAME:latest $MONGOBETWEEN_ECR_REPO_URI
-    run_command docker push $MONGOBETWEEN_ECR_REPO_URI
-    run_command aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $MONGOBETWEEN_ECS_SERVICE_NAME --region $REGION --profile $PROFILE_ENV --force-new-deployment
-fi
-
-if [ "${STAGE}" = "prod"  ]; then
-
-    run_command terraform -chdir=devops/mongobetween-prod init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongobetween-prod/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-    run_command terraform -chdir=devops/mongobetween-prod apply -auto-approve
    
 
     parameter_names=(
