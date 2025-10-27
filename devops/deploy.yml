@@ -40,11 +40,17 @@ jobs:
                   npm install --cache .npm
                 condition: ne(variables.CACHE_RESTORED, 'true')
               - bash: |
-                  # Clean up disk space
+                  # Aggressive disk cleanup
                   sudo apt-get clean
+                  sudo apt-get autoremove -y
                   sudo rm -rf /var/lib/apt/lists/*
                   sudo rm -rf /tmp/*
-                  docker system prune -af || true
+                  sudo rm -rf /var/cache/*
+                  sudo rm -rf ~/.cache/*
+                  sudo rm -rf /opt/hostedtoolcache/* || true
+                  sudo rm -rf /usr/share/dotnet || true
+                  sudo rm -rf /usr/local/lib/android || true
+                  docker system prune -af --volumes || true
                   df -h
                 displayName: 'Clean up disk space'
               - bash: |                 
