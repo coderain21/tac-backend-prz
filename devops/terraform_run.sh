@@ -125,7 +125,7 @@ if [ "${STAGE}" = "pre-production" ] ; then
     run_command terraform -chdir=devops/vpc apply -auto-approve
 fi
 run_command terraform -chdir=devops/mongodb init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/mongodb/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
-run_command terraform -chdir=devops/mongodb apply -auto-approve -var-file="${STAGE}.tfvars"
+run_command terraform -chdir=devops/mongodb apply -auto-approve 
 run_command terraform -chdir=devops/ecs init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ecs/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ecs apply -auto-approve
 run_command terraform -chdir=devops/redis-cluster init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/redis-cluster/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"

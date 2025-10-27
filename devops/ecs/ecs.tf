@@ -142,6 +142,7 @@ resource "aws_security_group" "ecs_security_group" {
     to_port     = 27017
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow MongoDB access from anywhere"
   }
 
   ingress {
@@ -149,6 +150,7 @@ resource "aws_security_group" "ecs_security_group" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all ingress traffic from anywhere"
   }
 
   egress {
@@ -156,6 +158,7 @@ resource "aws_security_group" "ecs_security_group" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 }
 

@@ -234,6 +234,18 @@ resource "aws_security_group" "ssh_sg_1" {
     description = "Allow all inbound traffic (NOT recommended for prod)"
   }
 
+  # Pre-production specific security group rules
+  dynamic "ingress" {
+    for_each = var.STAGE == "pre-production" ? [1] : []
+    content {
+      from_port       = 0
+      to_port         = 0
+      protocol        = "-1"
+      security_groups = ["sg-03de2cb43b88c82cc", "sg-0f1901962564c798e", "sg-05f63b7c01e7d2939"]
+      description     = "Allow all traffic from specific security groups"
+    }
+  }
+
   # Allow all outbound traffic
   egress {
     from_port        = 0
