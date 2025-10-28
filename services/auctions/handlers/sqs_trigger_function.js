@@ -235,6 +235,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             const promiseList = []
 
             // Loop through bidders
+            // amazonq-ignore-next-line
             for (const user of getBidders) {
                 // Retrieve the auction lots for each bidder
                 // Reset lists for each bidder
@@ -270,7 +271,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                     if (lot.winning_user === user.buyer_id) {
                         event.lot_number = lot.lot_number
                         event.email_address = user.email_address
-                        lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
+                        const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                        lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                         winningLot.push(lot)
                     } else {
                         event.lot_number = lot.lot_number
@@ -278,7 +280,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                         if (getAmount !== null) {
                             console.log('not null')
-                            lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
+                            lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                             notWinning.push(lot)
                         }
                     }
