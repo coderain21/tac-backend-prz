@@ -126,3 +126,4 @@ awscliv2.zip
 feature_api_mapping.txt
 missing_apis_clean.txt
 api_specific_mon
+*.tfvars

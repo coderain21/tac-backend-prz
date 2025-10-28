@@ -25,12 +25,17 @@ terraform {
     }
   }
 }
+# VPC data sources - always available
 data "aws_vpc" "my_vpc" {
-  # Use the "Name" tag filter to find the VPC by name
   filter {
     name   = "tag:Name"
     values = ["new-vpc"]
   }
+  provider = aws.deployment-eu
+}
+
+data "aws_vpc" "default" {
+  default = true
   provider = aws.deployment-eu
 }
 
@@ -102,7 +107,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_ecr" {
 resource "aws_security_group" "mongobetween-security-group" {
   name        = "mongobetween-security-group"
   description = "Security Group for mongobetween ECS"
-  vpc_id      = data.aws_vpc.my_vpc.id
+  vpc_id      = local.vpc_id
   provider    = aws.deployment-eu
 
   # Allow incoming traffic on port 27017 from the CIDR block of your choice
@@ -187,8 +192,21 @@ resource "aws_ecs_task_definition" "mongobetween-task-definition" {
 }
 
 
+# Subnet data sources - always available
 data "aws_ssm_parameter" "subnet_id" {
   name = "SUBNET_ID"
+  provider = aws.deployment-eu
+}
+
+data "aws_subnets" "private" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.default.id]
+  }
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["false"]
+  }
   provider = aws.deployment-eu
 }
 
@@ -198,12 +216,18 @@ data "aws_ecs_cluster" "ecs" {
   provider = aws.deployment-eu
 }
 
+# Locals to resolve VPC and subnet IDs based on stage
+locals {
+  vpc_id = contains(["prod"], var.STAGE) ? data.aws_vpc.default.id : data.aws_vpc.my_vpc.id
+  subnet_ids = contains(["prod"], var.STAGE) ? data.aws_subnets.private.ids : [data.aws_ssm_parameter.subnet_id.value]
+}
+
 resource "aws_lb" "mongobetween_nlb" {
   name               = "mongobetween-nlb"
   internal           = true # Set to true for internal NLB
   load_balancer_type = "network"
   enable_deletion_protection = true
-  subnets            = [data.aws_ssm_parameter.subnet_id.value]
+  subnets            = local.subnet_ids
   provider           = aws.deployment-eu
 }
 
@@ -211,7 +235,7 @@ resource "aws_lb_target_group" "mongobetween_tg" {
   name        = "mongobetween-tg"
   port        = 27016
   protocol    = "TCP"
-  vpc_id      = data.aws_vpc.my_vpc.id
+  vpc_id      = local.vpc_id
   target_type = "ip"
   provider    = aws.deployment-eu
 }
@@ -236,7 +260,7 @@ resource "aws_ecs_service" "ecs_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [data.aws_ssm_parameter.subnet_id.value]
+    subnets         = local.subnet_ids
     security_groups = [aws_security_group.mongobetween-security-group.id]
     assign_public_ip = true # Do not assign public IP
   }

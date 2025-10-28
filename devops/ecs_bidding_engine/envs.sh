@@ -19,6 +19,7 @@ parameter_names=(
     "ADMIN_COGNITO_USERPOOL_ID"
     "SELLER_COGNITO_USERPOOL_ID"
     "REDIS_DELETE_ALERTS_TOPIC_ARN"
+    "UNIFIED_AUCTION_PROCESSOR_ARN"
 )
 
 # Loop through each parameter
