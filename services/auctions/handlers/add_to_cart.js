@@ -47,6 +47,24 @@ module.exports.handler = async (event) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
+        
+        // Check auction data first for All Lots handling
+        const auctionData = await mongodbHelper.getAuction(event, Auction)
+        
+        if (auctionData.extension_type === 'All Lots') {
+            // Check if auction already processed
+            if (auctionData.status === 'Completed') {
+                console.log('Auction already processed, skipping')
+                return true
+            }
+            
+            // Only lot #1 should process
+            if (event.lot_number !== 1) {
+                console.log('Not lot #1, skipping processing for All Lots auction')
+                return true
+            }
+        }
+        
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
@@ -57,7 +75,6 @@ module.exports.handler = async (event) => {
         }
 
         const getTotalActiveSales = await mongodbHelper.getTotalActiveSales(query, Lot)
-        const auctionData = await mongodbHelper.getAuction(event, Auction)
         const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
 
         // Check if auction should be completed

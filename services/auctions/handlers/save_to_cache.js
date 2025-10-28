@@ -65,7 +65,7 @@ module.exports.handler = async (event, context, callback) => {
 
         // Calculate delay_seconds = (lot_number - 1) * 10
         const lot_number = data.lot_number || 1 // Default to 1 if lot_number is missing
-        const delay_seconds = (lot_number - 1) * 10
+        const delay_seconds = (lot_number - 1) * 2
         data.delay_seconds = delay_seconds
 
         return { ...data }
