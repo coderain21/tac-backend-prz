@@ -701,7 +701,8 @@ functions:
   update_auction:
       handler: handlers/update_auction.update_auction
       runtime: python3.9
-      memorySize: 2048
+      timeout: 30
+      memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
