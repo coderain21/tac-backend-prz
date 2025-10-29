@@ -208,26 +208,31 @@ module.exports.sqsTriggerFunction = async (event) => {
         const get_lot = getAllLots.map((item) => JSON.parse(item))
 
         // Process winning lots and add them to cart BEFORE sending emails
-        console.log('Processing winning lots and adding to cart...')
-        for (const lot of get_lot) {
-            const rediskey = `lot:${lot._id}`
-            const getLotInfo = await lotDetails(rediskey, client)
-            const singleLot = []
-            for (let i = 0; i < getLotInfo.length; i++) {
-                singleLot.push(JSON.parse(getLotInfo[i]))
-            }
+        // Only for 'All Lots' - Individual/Cascade lots are already added immediately
+        if (auctionData.extension_type === 'All Lots') {
+            console.log('Processing winning lots and adding to cart for All Lots auction...')
+            for (const lot of get_lot) {
+                const rediskey = `lot:${lot._id}`
+                const getLotInfo = await lotDetails(rediskey, client)
+                const singleLot = []
+                for (let i = 0; i < getLotInfo.length; i++) {
+                    singleLot.push(JSON.parse(getLotInfo[i]))
+                }
 
-            const lotInformation = singleLot[0]
+                const lotInformation = singleLot[0]
 
-            // Only add to cart if there's a winning user
-            if (lotInformation && lotInformation.winning_user) {
-                console.log(`Processing winning lot ${lot.lot_number} for user ${lotInformation.winning_user}`)
-                const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+                // Only add to cart if there's a winning user
+                if (lotInformation && lotInformation.winning_user) {
+                    console.log(`Processing winning lot ${lot.lot_number} for user ${lotInformation.winning_user}`)
+                    const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
 
-                if (getBuyerData && Object.keys(getBuyerData).length > 0) {
-                    await addWinningLotToCart(lotInformation, auctionData, getBuyerData)
+                    if (getBuyerData && Object.keys(getBuyerData).length > 0) {
+                        await addWinningLotToCart(lotInformation, auctionData, getBuyerData)
+                    }
                 }
             }
+        } else {
+            console.log('Skipping cart addition - Individual/Cascade lots already added immediately')
         }
 
         if (getBidders.length > 0) {
