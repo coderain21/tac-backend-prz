@@ -223,7 +223,7 @@ def accept_buyer(event, context):
                     "body": json.dumps({})
                 }
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             "statusCode": 500,
             'headers': headers,
