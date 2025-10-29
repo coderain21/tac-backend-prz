@@ -112,7 +112,10 @@ def accept_buyer(event, context):
             tz = pytz.utc  # Default to UTC if timezone is unknown
 
 
-        start_date_time_in_milliseconds = registration_type.get('start_date', datetime.utcnow().timestamp() * 1000)
+        start_date_time_in_milliseconds = registration_type.get('start_date')
+        if start_date_time_in_milliseconds is None:
+            print('Warning: start_date is None, using current timestamp as default')
+            start_date_time_in_milliseconds = datetime.utcnow().timestamp() * 1000
         start_date_time_utc = datetime.utcfromtimestamp(start_date_time_in_milliseconds / 1000)
         start_date_time_local = start_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
         start_date = start_date_time_local.date()
@@ -120,15 +123,17 @@ def accept_buyer(event, context):
 
         print('Start date:', start_date, 'Start time:', start_time)
 
-
-
-        end_date_time_in_milliseconds = registration_type.get('end_date', datetime.utcnow().timestamp() * 1000)
+        # Check if end_date exists and is not None
+        end_date_time_in_milliseconds = registration_type.get('end_date')
+        if end_date_time_in_milliseconds is None:
+            print('Warning: end_date is None, using current timestamp as default')
+            end_date_time_in_milliseconds = datetime.utcnow().timestamp() * 1000
         end_date_time_utc = datetime.utcfromtimestamp(end_date_time_in_milliseconds / 1000)
         end_date_time_local = end_date_time_utc.replace(tzinfo=pytz.utc).astimezone(tz)
         end_date = end_date_time_local.date()
         end_time = end_date_time_local.time().strftime('%H:%M:%S')
 
-        print('Start date:', start_date, 'Start time:', start_time)
+        print('End date:', end_date, 'End time:', end_time)
 
         if status == 'Approved':
             #so the counter is getting created here itself for the first time when they approve the bidder.
