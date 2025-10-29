@@ -178,13 +178,27 @@ def accept_buyer(event, context):
             # Checking mailchimp for template existence
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": str(seller['_id']) + '-PADDLE-GENERATION'})
-                print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
-                print(response)
-                template_name = str(seller['_id']) + '-PADDLE-GENERATION'
+                print('mailchimp client initialized')
+
+                response = mailchimp.templates.info({"name": f"{seller['_id']}-PADDLE-GENERATION"})
+                print('response', response)
+
+                if response.get('name') == f"{seller['_id']}-PADDLE-GENERATION":
+                    template_name = f"{seller['_id']}-PADDLE-GENERATION"
+                else:
+                    template_name = 'buyer_default_paddle_template'
+
+
             except ApiClientError as error:
+                # This will catch both "Unknown_Template" and any API-related failure
+                print(f"Mailchimp API Error: {error.text}")
                 template_name = 'buyer_default_paddle_template'
-                print("An exception occurred: {}".format(error.text))
+
+
+            except Exception as e:
+                # This ensures we catch network or unexpected errors too
+                print(f"Unexpected Mailchimp error: {e}")
+                template_name = 'buyer_default_paddle_template'
 
             print('template_name', template_name)
             send_mailchimp_email(email_address, template_name, template_data, os.environ['MAILCHIMP_ADDRESS'])
