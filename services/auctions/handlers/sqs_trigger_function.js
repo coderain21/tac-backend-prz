@@ -402,7 +402,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             console.log(`Skipping email for auction ${event.auction_id} - seller ${event.seller_email} has disabled automated auction completion emails`)
                             continue
                         }
-                        promiseList.push(sendTemplateEmails(user.email_address, template_data))
+                        promiseList.push(sendTemplateEmails(user.email_address, template_data, auctionData.currency))
                     }
                 } else {
                     // Handle users who didn't win any lots
@@ -431,7 +431,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             console.log(`Skipping email for auction ${event.auction_id} - seller ${event.seller_email} has disabled automated auction completion emails`)
                             continue
                         }
-                        promiseList.push(sendTemplateEmails(user.email_address, template_data))
+                        promiseList.push(sendTemplateEmails(user.email_address, template_data, auctionData.currency))
                     }
                 }
             }
