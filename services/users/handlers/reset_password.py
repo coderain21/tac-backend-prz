@@ -123,7 +123,7 @@ def password_reset(event, context):
             raise
 
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,
@@ -155,7 +155,7 @@ def reset_password(client, username, password):
         # print(response)
 
     except BaseException as err:
-        print(f"Unexpected {err=}, {type(err)=}")
+        print(f"Error {err=}, {type(err)=}")
         raise
     print("password updated!")
     return response, None

@@ -204,7 +204,7 @@ module.exports.handler = async (event) => {
             }),
         }
     } catch (error) {
-        console.log(error)
+        console.log('Error', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

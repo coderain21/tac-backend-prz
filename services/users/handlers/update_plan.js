@@ -96,7 +96,7 @@ module.exports.updatePlan = async (event) => {
             body,
         }
     } catch (error) {
-        console.log(error)
+        console.log('Error', error)
         body = JSON.stringify({
             message: 'Failed to update information',
         })

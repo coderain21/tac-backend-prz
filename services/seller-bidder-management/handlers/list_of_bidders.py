@@ -192,7 +192,7 @@ def list_bidders(event, context):
         }
 
     except Exception as e:
-        print('ee', str(e))
+        print('Error', str(e))
         return {
             "statusCode": 500,
             "headers": headers,
