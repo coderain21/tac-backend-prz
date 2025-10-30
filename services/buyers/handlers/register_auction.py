@@ -258,13 +258,28 @@ def register_auction(event, context):
             # template = template_collection.find_one({"seller_email": seller_email, 'type': 'paddle'})
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": str(seller['_id']) + '-PADDLE-GENERATION'})
-                print('name of the templatee', str(seller['_id']) + '-PADDLE-GENERATION')
-                print(response)
-                template_name = str(seller['_id']) + '-PADDLE-GENERATION'
+                print('mailchimp client initialized')
+
+                response = mailchimp.templates.info({"name": f"{seller['_id']}-PADDLE-GENERATION"})
+                print('response', response)
+
+                if response.get('name') == f"{seller['_id']}-PADDLE-GENERATION":
+                    template_name = f"{seller['_id']}-PADDLE-GENERATION"
+                else:
+                    template_name = 'buyer_default_paddle_template'
+
+
             except ApiClientError as error:
+                # This will catch both "Unknown_Template" and any API-related failure
+                print(f"Mailchimp API Error: {error.text}")
                 template_name = 'buyer_default_paddle_template'
-                print("An exception occurred: {}".format(error.text))
+
+
+            except Exception as e:
+                # This ensures we catch network or unexpected errors too
+                print(f"Unexpected Mailchimp error: {e}")
+                template_name = 'buyer_default_paddle_template'
+
 
             if os.environ['STAGE'] in ['pre-production', 'beta'] and email_address.startswith('indyauctiontestops+k6'):
                 print('Skipping sending email', email_address)
@@ -299,15 +314,31 @@ def register_auction(event, context):
                             "domainURL": domain_url
             }
 
+
             try:
                 mailchimp = MailchimpTransactional.Client(os.environ['MAILCHIMP_SECRET_KEY'])
-                response = mailchimp.templates.info({"name": str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL'})
-                print('name of the templatee', str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL')
-                print(response)
-                template_name = str(seller['_id']) + '-BUYER-PENDING-APPROVAL-EMAIL'
+                print('mailchimp client initialized')
+
+                response = mailchimp.templates.info({"name": f"{seller['_id']}-BUYER-PENDING-APPROVAL-EMAIL"})
+                print('response', response)
+
+                if response.get('name') == f"{seller['_id']}-BUYER-PENDING-APPROVAL-EMAIL":
+                    template_name = f"{seller['_id']}-BUYER-PENDING-APPROVAL-EMAIL"
+                else:
+                    template_name = 'buyer_default_paddle_template'
+
             except ApiClientError as error:
+                # This will catch both "Unknown_Template" and any API-related failure
+                print(f"Mailchimp API Error: {error.text}")
                 template_name = 'default_buyer_pending_approval_email'
-                print("An exception occurred: {}".format(error.text))
+
+
+            except Exception as e:
+                # This ensures we catch network or unexpected errors too
+                print(f"Unexpected Mailchimp error: {e}")
+                template_name = 'default_buyer_pending_approval_email'
+
+
 
             print('template_name', template_name)
             if os.environ['STAGE'] in ['pre-production', 'beta'] and email_address.startswith('indyauctiontestops+k6'):
@@ -343,7 +374,7 @@ def register_auction(event, context):
                     "body": json.dumps({})
                 }
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             "statusCode": 500,
             'headers': headers,

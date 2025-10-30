@@ -575,6 +575,69 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
   provider            = aws.deployment-eu
 }
 
+resource "aws_cloudwatch_log_metric_filter" "throttling_exception_filter" {
+  name           = "ThrottlingExceptionFilter"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-unpublish_auction" # Change this
+
+  pattern = "\"ThrottlingException\""
+
+  metric_transformation {
+    name      = "ThrottlingExceptionCount"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+  provider  = aws.deployment-eu
+
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-ThrottlingException-Unpublish-Auction"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].namespace
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alarm when ThrottlingException appears in logs"
+  treat_missing_data  = "notBreaching"
+  # Optional: SNS topic for notifications
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn] # Define this if needed
+  provider  = aws.deployment-eu
+}
+
+
+# ECS ERROR LOG FILTER FOR TypeError
+resource "aws_cloudwatch_log_metric_filter" "ecs_type_error_filter" {
+  name           = "ECS-TypeError-Filter"
+  log_group_name = "/ecs/task"  # ECS log group name
+
+  pattern = "TypeError Cannot read properties of undefined reading url"
+
+  metric_transformation {
+    name      = "ECSTypeErrorCount"
+    namespace = "ECS/Errors"
+    value     = "1"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Redis-Data-Miss-Email-Fails"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.ecs_type_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.ecs_type_error_filter.metric_transformation[0].namespace
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alert when Redis data is missing or email sending fails"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider            = aws.deployment-eu
+}
+
 resource "aws_cloudwatch_metric_alarm" "ecs_task_count_p1" {
   alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
   comparison_operator = "LessThanThreshold"
@@ -610,6 +673,23 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed_p1" {
   provider            = aws.deployment-eu
 }
 
+resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-StepFunction-ExecutionsTimedOut"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ExecutionsTimedOut"
+  namespace           = "AWS/States"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  dimensions = {
+    StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
+  }
+  alarm_description   = "Timed out executions in Step Function"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
 # SNS subscriptions are managed outside Terraform
 
 # === SLO Configurations ===
@@ -627,8 +707,8 @@ resource "awscc_applicationsignals_service_level_objective" "p1_critical_availab
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P1Critical5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -657,8 +737,8 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P2Medium5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -687,8 +767,8 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P3Low5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -1128,5 +1208,170 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
     expression  = "MAX([buyer_search_lots, buyer_add_wishlist, buyer_remove_wishlist, buyer_view_wishlist, seller_export_data, seller_newsletter_get])"
     label       = "Max 5XX Errors P3 Part1"
     return_data = true
+  }
+}
+
+
+
+# Create CloudWatch Alarms for DocuementDB maximum connections metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-Max-Connection"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DatabaseConnectionsMax"
+  namespace           = "AWS/DocDB"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 70% for db.r6g.xlarge )
+  threshold = 1400
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+# Create CloudWatch Alarms for DocuementDB CPU utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-CPU"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/DocDB"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+
+# Create CloudWatch Alarms for DocuementDB Memory utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_memory" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-Memory"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "FreeLocalStorage"
+  namespace           = "AWS/DocDB"
+  period              = 3600  # 1 h (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 3221225472
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+
+
+# Create CloudWatch Alarms for Redis  CPU utilization metrics for primary node
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Redis-CPU-Primary"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
+  }
+}
+
+# Create CloudWatch Alarms for Redis  CPU utilization metrics for replica node
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Redis-CPU-Replica"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId = "0001"
+  }
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
+  provider             = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-NetworkPacketsAllowanceExceeded"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "NetworkPacketsPerSecondAllowanceExceeded"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 0  # Alert when allowance is exceeded
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
+  }
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
+  provider             = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-MemoryEvictions"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Evictions"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Sum"
+  threshold           = 1  # Trigger if more than 10 evictions occur
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
+  provider             = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-MemoryUsage"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DatabaseMemoryUsagePercentage"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 70  # Alert if memory usage exceeds 80%
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
   }
 }
