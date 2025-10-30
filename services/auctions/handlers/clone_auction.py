@@ -4,6 +4,8 @@ import json
 from bson import ObjectId
 from pymongo import MongoClient
 import datetime
+import boto3
+import uuid
 
 headers = {
     'Content-Type': 'application/json',
@@ -22,6 +24,40 @@ auction_collection = db[os.environ["AUCTION_MONGODB_COLLECTION_NAME"]]
 counter_collection = db[os.environ["COUNTER_LOT"]]
 
 
+
+def clone_auction_image(original_image_key):
+    if not original_image_key:
+        return ''
+
+    # Add public prefix if not already present
+    if not original_image_key.startswith('public/'):
+        original_image_key = 'public/' + original_image_key
+
+    try:
+        s3_client = boto3.client('s3')
+        bucket = os.environ['S3_BUCKET']
+
+        # Download image from original location
+        response = s3_client.get_object(Bucket=bucket, Key=original_image_key)
+        image_data = response['Body'].read()
+
+        # Extract original filename and generate new key
+        original_filename = original_image_key.split('/')[-1]
+        new_key_without_public = f"DomainName/Auctions/images/{uuid.uuid4()}/{original_filename}"
+        new_key_with_public = f"public/{new_key_without_public}"
+
+        # Upload to new location
+        s3_client.put_object(
+            Bucket=bucket,
+            Key=new_key_with_public,
+            Body=image_data,
+            ContentType=response['ContentType']
+        )
+
+        return new_key_without_public
+    except Exception as error:
+        print(f'Error cloning image: {error}')
+        return ''
 
 
 def clone_auction(event, context):
@@ -93,6 +129,16 @@ def clone_auction(event, context):
         if auction['template_name'] == 'Single Lot':
             print('here')
             auction['auction_image'] = ''
+        else:
+            auction['auction_image'] = clone_auction_image(auction['auction_image'])
+            if auction.get('logo_image'):
+                auction['logo_image'] = clone_auction_image(auction['logo_image'])
+
+            event_display = auction.get('event_display')
+            if event_display:
+                for image_key in ['background_image', 'left_logo_image', 'right_logo_image']:
+                    if event_display.get(image_key):
+                        event_display[image_key] = clone_auction_image(event_display[image_key])
 
         # Insert the lot data into the MongoDB collection
         auction_collection.insert_one(auction)
