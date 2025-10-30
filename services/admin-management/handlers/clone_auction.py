@@ -116,6 +116,7 @@ def clone_auction(event, context):
             "body": json.dumps({"message": "Auction has been cloned successfully"})
         }
     except Exception as e:
+        print('Error', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

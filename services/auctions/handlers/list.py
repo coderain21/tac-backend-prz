@@ -252,7 +252,7 @@ def list_auction(event, context):
             "body": json.dumps(body, cls=Encoder)
         }
     except Exception as err:
-        print(err)
+        print('Error:', str(err))
         return {
             "headers": headers,
             "statusCode": 500,

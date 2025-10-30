@@ -152,7 +152,7 @@ def view_list_lots(event, context):
             "body": json.dumps({'data': lots_list, 'page': page, 'total_pages': total_pages, 'total_records': total_lots}, cls=Encoder)
         }
     except Exception as e:
-        print(str(e))
+        print('Error',str(e))
         return {
             "statusCode": 500,
             "headers": headers,

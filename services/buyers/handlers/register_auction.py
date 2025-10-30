@@ -338,7 +338,7 @@ def register_auction(event, context):
                     "body": json.dumps({})
                 }
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             "statusCode": 500,
             'headers': headers,

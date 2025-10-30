@@ -133,7 +133,7 @@ module.exports.cancel_auction = async (event) => {
             }
         }
     } catch (error) {
-        console.log('Unexpected error:', error)
+        console.log('Error:', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

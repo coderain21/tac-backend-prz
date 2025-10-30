@@ -348,7 +348,7 @@ def update(event, context):
             'body': json.dumps({})
         }
     except Exception as err:
-        print(err)
+        print('Error', err)
         return {
             "statusCode": 500,
             "headers": headers,

@@ -154,7 +154,7 @@ def list_orders(event, context):
                                     "total_orders": total_orders},cls = Encoder)
             }
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,
