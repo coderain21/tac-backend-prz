@@ -575,6 +575,69 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
   provider            = aws.deployment-eu
 }
 
+resource "aws_cloudwatch_log_metric_filter" "throttling_exception_filter" {
+  name           = "ThrottlingExceptionFilter"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-unpublish_auction" # Change this
+
+  pattern = "\"ThrottlingException\""
+
+  metric_transformation {
+    name      = "ThrottlingExceptionCount"
+    namespace = "LogMetrics"
+    value     = "1"
+  }
+  provider  = aws.deployment-eu
+
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-ThrottlingException-Unpublish-Auction"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.throttling_exception_filter.metric_transformation[0].namespace
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alarm when ThrottlingException appears in logs"
+  treat_missing_data  = "notBreaching"
+  # Optional: SNS topic for notifications
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn] # Define this if needed
+  provider  = aws.deployment-eu
+}
+
+
+# ECS ERROR LOG FILTER FOR TypeError
+resource "aws_cloudwatch_log_metric_filter" "ecs_type_error_filter" {
+  name           = "ECS-TypeError-Filter"
+  log_group_name = "/ecs/task"  # ECS log group name
+
+  pattern = "TypeError Cannot read properties of undefined reading url"
+
+  metric_transformation {
+    name      = "ECSTypeErrorCount"
+    namespace = "ECS/Errors"
+    value     = "1"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Redis-Data-Miss-Email-Fails"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.ecs_type_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.ecs_type_error_filter.metric_transformation[0].namespace
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Alert when Redis data is missing or email sending fails"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider            = aws.deployment-eu
+}
+
 resource "aws_cloudwatch_metric_alarm" "ecs_task_count_p1" {
   alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
   comparison_operator = "LessThanThreshold"
