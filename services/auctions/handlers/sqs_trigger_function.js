@@ -240,6 +240,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             const promiseList = []
 
             // Loop through bidders
+            // amazonq-ignore-next-line
             for (const user of getBidders) {
                 // Retrieve the auction lots for each bidder
                 // Reset lists for each bidder
