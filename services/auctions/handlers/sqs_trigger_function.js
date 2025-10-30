@@ -468,13 +468,17 @@ module.exports.sqsTriggerFunction = async (event) => {
         // Remove from processed set after successful completion
         processedAuctions.delete(auctionKey)
         console.log(`Completed processing auction ${auctionKey}`)
+        // client.disconnect()
 
         return true
     } catch (err) {
         console.log('err', err)
+        client.disconnect()
         // Remove from processed set on error so it can be retried
         const auctionKey = `${event.auction_id}_${event.seller_email}`
         processedAuctions.delete(auctionKey)
         return err
+    } finally {
+        client.disconnect()
     }
 }
