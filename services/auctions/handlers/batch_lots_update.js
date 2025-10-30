@@ -251,7 +251,7 @@ async function updateRedisData(lotInformation, client) {
  * @param {Object} auctionDetails - Auction details object
  * @param {Number} extend_time - Extension time
  */
-async function findAndUpdateTime(auctionLots, client, extend_time) {
+async function findAndUpdateTime(auctionLots, extend_time, client) {
     try {
         const redisDataUpdate = []
         // Loop through each auction lot
@@ -309,7 +309,7 @@ module.exports.handler = async (event, context, callback) => {
         const auctionLots = JSON.parse(lotsString)
         const auctionDetails = JSON.parse(auctionString)
         // Create a Redis client
-        const client = await redisHelper.createRedisClient()
+        const client = await redisHelper.getClient()
         // Calculate the extension time in ms
         const extend_time = parseInt(auctionDetails.extension_time.replace('m', ''), 10) * 60 * 1000
 
@@ -317,7 +317,7 @@ module.exports.handler = async (event, context, callback) => {
         if (type === 'update') {
             const redisUpdate = []
             // Find and update the time of the lots in Redis
-            redisUpdate.push(findAndUpdateTime(auctionLots, client, extend_time))
+            redisUpdate.push(findAndUpdateTime(auctionLots, extend_time, client))
 
             // Get all the execution ARNs for the lots and stop the executions
             const stopExecutionsPromise = []

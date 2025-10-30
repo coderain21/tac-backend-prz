@@ -182,7 +182,7 @@ def update_payment_data(payment_intent_id,update_data):
                     seller_name = 'Seller'
 
                 template_data = {
-                    "auction_title":payment_details['auction_title'],
+                    "auction_title":payment_details.get('auction_title', ''),
                     "logo_image": logo_img,
                     "auction_end_date": end_date,
                     'account_name': ' '.join(filter(None, [payment_details['billing_address']['first_name'], payment_details['billing_address']['last_name']])),    

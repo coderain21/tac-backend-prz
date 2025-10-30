@@ -29,6 +29,7 @@ const Cart = require('../entities/Cart')
 const { sendTemplateEmails } = require('../lib/mailchimp_helper')
 
 let connection = null
+let client
 
 // Add a Set to track processed auctions to prevent duplicates
 const processedAuctions = new Set()
@@ -181,7 +182,7 @@ module.exports.sqsTriggerFunction = async (event) => {
         const getBidders = await mongodbHelper.getBidders(event, BidInformation)
 
         // Connect to Redis and retrieve the auction lots
-        const client = await redisHelper.createRedisClient()
+        client = await redisHelper.getClient()
 
         const auctionData = await mongodbHelper.getAuction(event, Auction)
 
@@ -207,26 +208,31 @@ module.exports.sqsTriggerFunction = async (event) => {
         const get_lot = getAllLots.map((item) => JSON.parse(item))
 
         // Process winning lots and add them to cart BEFORE sending emails
-        console.log('Processing winning lots and adding to cart...')
-        for (const lot of get_lot) {
-            const rediskey = `lot:${lot._id}`
-            const getLotInfo = await lotDetails(rediskey, client)
-            const singleLot = []
-            for (let i = 0; i < getLotInfo.length; i++) {
-                singleLot.push(JSON.parse(getLotInfo[i]))
-            }
+        // Only for 'All Lots' - Individual/Cascade lots are already added immediately
+        if (auctionData.extension_type === 'All Lots') {
+            console.log('Processing winning lots and adding to cart for All Lots auction...')
+            for (const lot of get_lot) {
+                const rediskey = `lot:${lot._id}`
+                const getLotInfo = await lotDetails(rediskey, client)
+                const singleLot = []
+                for (let i = 0; i < getLotInfo.length; i++) {
+                    singleLot.push(JSON.parse(getLotInfo[i]))
+                }
 
-            const lotInformation = singleLot[0]
+                const lotInformation = singleLot[0]
 
-            // Only add to cart if there's a winning user
-            if (lotInformation && lotInformation.winning_user) {
-                console.log(`Processing winning lot ${lot.lot_number} for user ${lotInformation.winning_user}`)
-                const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+                // Only add to cart if there's a winning user
+                if (lotInformation && lotInformation.winning_user) {
+                    console.log(`Processing winning lot ${lot.lot_number} for user ${lotInformation.winning_user}`)
+                    const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
 
-                if (getBuyerData && Object.keys(getBuyerData).length > 0) {
-                    await addWinningLotToCart(lotInformation, auctionData, getBuyerData)
+                    if (getBuyerData && Object.keys(getBuyerData).length > 0) {
+                        await addWinningLotToCart(lotInformation, auctionData, getBuyerData)
+                    }
                 }
             }
+        } else {
+            console.log('Skipping cart addition - Individual/Cascade lots already added immediately')
         }
 
         if (getBidders.length > 0) {
@@ -234,6 +240,7 @@ module.exports.sqsTriggerFunction = async (event) => {
             const promiseList = []
 
             // Loop through bidders
+            // amazonq-ignore-next-line
             for (const user of getBidders) {
                 // Retrieve the auction lots for each bidder
                 // Reset lists for each bidder
@@ -269,7 +276,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                     if (lot.winning_user === user.buyer_id) {
                         event.lot_number = lot.lot_number
                         event.email_address = user.email_address
-                        lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
+                        const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
+                        lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                         winningLot.push(lot)
                     } else {
                         event.lot_number = lot.lot_number
@@ -277,7 +285,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                         const getAmount = await mongodbHelper.getBidAmount(event, BidInformation)
                         if (getAmount !== null) {
                             console.log('not null')
-                            lot.bid_amount = formatCurrency(singleLot[0].bid_amount, auctionData.currency)
+                            lot.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
                             notWinning.push(lot)
                         }
                     }
