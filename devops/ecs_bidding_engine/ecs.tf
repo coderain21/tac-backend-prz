@@ -560,7 +560,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_out" {
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Maximum"
-  threshold           = "50"
+  threshold           = "70"
   alarm_description   = "Scale out when CPU > 60% for 1 minute"
   alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
@@ -580,8 +580,8 @@ resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_in" {
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = "30"
-  alarm_description   = "Scale in when CPU < 30% for 15 minutes"
+  threshold           = "50"
+  alarm_description   = "Scale in when CPU < 50% for 15 minutes"
   alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
   dimensions = {
@@ -600,7 +600,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_out" {
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Maximum"
-  threshold           = "60"
+  threshold           = "70"
   alarm_description   = "Scale out when Memory > 70% for 1 minute"
   alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
@@ -620,7 +620,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_in" {
   namespace           = "AWS/ECS"
   period              = "60"
   statistic           = "Average"
-  threshold           = "40"
+  threshold           = "50"
   alarm_description   = "Scale in when Memory < 40% for 15 minutes"
   alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
@@ -660,7 +660,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_requests_scale_in" {
   namespace           = "AWS/ApplicationELB"
   period              = "60"
   statistic           = "Average"
-  threshold           = "50"
+  threshold           = "90"
   alarm_description   = "Scale in when requests < 100 for 5 periods (25 minutes)"
   alarm_actions       = [aws_appautoscaling_policy.ecs_request_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
