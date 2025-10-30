@@ -610,6 +610,23 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed_p1" {
   provider            = aws.deployment-eu
 }
 
+resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-StepFunction-ExecutionsTimedOut"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "ExecutionsTimedOut"
+  namespace           = "AWS/States"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  dimensions = {
+    StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
+  }
+  alarm_description   = "Timed out executions in Step Function"
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  provider             = aws.deployment-eu
+}
+
 # SNS subscriptions are managed outside Terraform
 
 # === SLO Configurations ===
@@ -1128,5 +1145,170 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
     expression  = "MAX([buyer_search_lots, buyer_add_wishlist, buyer_remove_wishlist, buyer_view_wishlist, seller_export_data, seller_newsletter_get])"
     label       = "Max 5XX Errors P3 Part1"
     return_data = true
+  }
+}
+
+
+
+# Create CloudWatch Alarms for DocuementDB maximum connections metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-Max-Connection"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DatabaseConnectionsMax"
+  namespace           = "AWS/DocDB"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 70% for db.r6g.xlarge )
+  threshold = 1400
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+# Create CloudWatch Alarms for DocuementDB CPU utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-CPU"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/DocDB"
+  period              = 60  # 1 min (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+
+# Create CloudWatch Alarms for DocuementDB Memory utilization metrics
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_memory" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-DocumentDB-Memory"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "FreeLocalStorage"
+  namespace           = "AWS/DocDB"
+  period              = 3600  # 1 h (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 3221225472
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    DBClusterIdentifier = "docdb-mongodb-instance"
+  }
+}
+
+
+# Create CloudWatch Alarms for Redis  CPU utilization metrics for primary node
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Redis-CPU-Primary"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
+  }
+}
+
+# Create CloudWatch Alarms for Redis  CPU utilization metrics for replica node
+resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
+  provider = aws.deployment-eu
+  alarm_name     = "P2-IndyAuction-${var.STAGE}-Redis-CPU-Replica"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5m (adjust based on your desired granularity)
+  statistic           = "Maximum"
+  
+  # Set your desired reputation threshold (e.g., 90 for 90%)
+  threshold = 70
+
+  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+   
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId = "0001"
+  }
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
+  provider             = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-NetworkPacketsAllowanceExceeded"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "NetworkPacketsPerSecondAllowanceExceeded"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 0  # Alert when allowance is exceeded
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
+    CacheNodeId = "0001"
+  }
+}
+
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
+  provider             = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-MemoryEvictions"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Evictions"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Sum"
+  threshold           = 1  # Trigger if more than 10 evictions occur
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
+  provider             = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Redis-MemoryUsage"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "DatabaseMemoryUsagePercentage"
+  namespace           = "AWS/ElastiCache"
+  period              = 300  # 5 minutes
+  statistic           = "Maximum"
+  threshold           = 70  # Alert if memory usage exceeds 80%
+  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  
+  dimensions = {
+    CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
+    CacheNodeId    = "0001"
   }
 }
