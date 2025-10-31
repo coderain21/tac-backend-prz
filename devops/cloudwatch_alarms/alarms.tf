@@ -1108,6 +1108,120 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
   }
 }
 
+# P2 Medium - Part 3 (Admin & Additional Services)
+resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_admin" {
+  provider            = aws.deployment-eu
+  alarm_name          = "p2-medium-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Admin"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  threshold           = 5
+  alarm_description   = "P2 Medium alarm for 5XX errors - Admin & Additional Services"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+
+  metric_query {
+    id = "admin_buyer_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-admin-buyer-management"
+        Resource = "/admin/buyers"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "admin_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-admin-management"
+        Resource = "/admin"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "seller_bidder_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-seller-bidder-management"
+        Resource = "/bidders"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "lot_bid_history"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-lot-bid-history"
+        Resource = "/history"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "order_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-order-management"
+        Resource = "/orders"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "site_banner"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-site-banner"
+        Resource = "/banner"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id          = "max5xx_p2_part3"
+    expression  = "MAX([admin_buyer_management, admin_management, seller_bidder_management, lot_bid_history, order_management, site_banner])"
+    label       = "Max 5XX Errors P2 Part3"
+    return_data = true
+  }
+}
+
 # P3 Low - Part 1 (Search & Wishlist)
 resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
   provider            = aws.deployment-eu
