@@ -1,14 +1,15 @@
+"""CloudWatch alarm handler for enhanced email notifications with log streams."""
 import json
+import re
+from datetime import datetime, timedelta
 import boto3
 import os
 
 def lambda_handler(event, context):
     """Enhanced CloudWatch alert handler for all alarm types"""
-    
     print(f"DEBUG: Raw event received: {json.dumps(event, indent=2, default=str)}")
-    
     sns = boto3.client('sns')
-    
+
     # Handle different event formats
     if 'Records' in event:
         # SNS trigger
@@ -25,40 +26,33 @@ def lambda_handler(event, context):
     else:
         # Direct CloudWatch alarm invocation or unknown format
         process_alarm(event, sns)
-    
-    return {'statusCode': 200}
 
+    return {'statusCode': 200}
 def process_cloudwatch_event(event, sns):
     """Process CloudWatch Events alarm state change"""
-    
+
     print(f"DEBUG: Processing CloudWatch event: {json.dumps(event, indent=2, default=str)}")
-    
     # Extract alarm data from the CloudWatch event
     alarm_data = event.get('alarmData', {})
     alarm_name = alarm_data.get('alarmName', 'Unknown Alarm')
-    
     # Extract state information
     state = alarm_data.get('state', {})
     reason = state.get('reason', 'No reason provided')
-    
     # Extract configuration
     configuration = alarm_data.get('configuration', {})
     alarm_description = configuration.get('description', 'No description available')
     metrics = configuration.get('metrics', [])
-    
     # Extract failed API from metrics configuration
     failed_api = extract_failed_api_from_metrics(metrics, alarm_name, reason)
-    
+
     # If we couldn't determine the specific API, try to query CloudWatch for recent errors
     if not failed_api or 'APIs' in failed_api:
         failed_api = query_recent_api_errors(metrics, alarm_name, reason)
-    
     print(f"DEBUG: Extracted from CloudWatch - Name: {alarm_name}, Reason: {reason}, Failed API: {failed_api}")
-    
     # Process the alarm
     alert_type, service_name, log_link = parse_alarm_details(alarm_name, reason, failed_api)
-    enhanced_msg = create_alert_message(alert_type, service_name, alarm_name, reason, alarm_description, log_link, failed_api)
-    
+    enhanced_msg = create_alert_message(alert_type, service_name, alarm_name, reason, alarm_description, failed_api)
+
     # Send notification
     destination_topic = os.environ.get('SNS_TOPIC_ARN')
     if destination_topic:
@@ -72,44 +66,44 @@ def process_cloudwatch_event(event, sns):
 
 def process_alarm(message, sns):
     """Process alarm message and send notification"""
-    
+
     # Debug: Log the entire message
     print(f"DEBUG: Processing alarm message: {json.dumps(message, indent=2, default=str)}")
-    
+
     # Try multiple ways to extract alarm information
     alarm_name = (
-        message.get('AlarmName') or 
-        message.get('alarm_name') or 
-        message.get('name') or 
+        message.get('AlarmName') or
+        message.get('alarm_name') or
+        message.get('name') or
         message.get('detail', {}).get('alarmName') or
         'Unknown Alarm'
     )
-    
+
     reason = (
-        message.get('NewStateReason') or 
-        message.get('reason') or 
+        message.get('NewStateReason') or
+        message.get('reason') or
         message.get('detail', {}).get('state', {}).get('reason') or
         'No reason provided'
     )
-    
+
     alarm_description = (
-        message.get('AlarmDescription') or 
-        message.get('description') or 
+        message.get('AlarmDescription') or
+        message.get('description') or
         message.get('detail', {}).get('configuration', {}).get('description') or
         'No description available'
     )
-    
+
     print(f"DEBUG: Extracted - Name: {alarm_name}, Reason: {reason}, Description: {alarm_description}")
-    
+
     # Extract failed API from alarm name and reason
     failed_api = extract_failed_api_from_alarm_name(alarm_name, reason)
-    
+
     # Determine alarm type and create appropriate message
     alert_type, service_name, log_link = parse_alarm_details(alarm_name, reason, failed_api)
-    
+
     # Create enhanced message based on alarm type
-    enhanced_msg = create_alert_message(alert_type, service_name, alarm_name, reason, alarm_description, log_link, failed_api)
-    
+    enhanced_msg = create_alert_message(alert_type, service_name, alarm_name, reason, alarm_description, failed_api)
+
     # Send enhanced notification to destination topic
     destination_topic = os.environ.get('SNS_TOPIC_ARN')
     if destination_topic:
@@ -123,13 +117,13 @@ def process_alarm(message, sns):
 
 def extract_failed_api_from_metrics(metrics, alarm_name, reason):
     """Extract the specific failed API from CloudWatch metrics configuration"""
-    
+
     print(f"DEBUG: Extracting API from metrics and reason: {reason}")
-    
+
     # First, try to identify from the reason text which specific metric triggered
     # CloudWatch composite alarms don't tell us which specific metric failed,
     # so we need to infer from context or use a different approach
-    
+
     # For now, since we can't determine the exact failing metric from a composite alarm,
     # let's use the alarm name to categorize and provide a general API category
     if 'auth' in alarm_name.lower():
@@ -146,7 +140,7 @@ def extract_failed_api_from_metrics(metrics, alarm_name, reason):
         return 'Auction Management APIs'
     elif 'search' in alarm_name.lower():
         return 'Search & Wishlist APIs'
-    
+
     # Fallback: try to extract from reason text
     api_keywords = {
         'subdomain': 'Subdomain API',
@@ -158,18 +152,18 @@ def extract_failed_api_from_metrics(metrics, alarm_name, reason):
         'stripe': 'Stripe API',
         'paypal': 'PayPal API'
     }
-    
+
     for keyword, name in api_keywords.items():
         if keyword in reason.lower():
             return name
-    
+
     return None
 
 def extract_failed_api_from_alarm_name(alarm_name, reason):
     """Extract the specific failed API from alarm name and reason"""
-    
+
     print(f"DEBUG: Extracting API from alarm: {alarm_name}, reason: {reason}")
-    
+
     # First check for specific API paths in the reason
     if '/forgot_password' in reason or 'forgot_password' in reason.lower():
         if 'buyer' in alarm_name.lower() or 'profile' in alarm_name.lower():
@@ -182,7 +176,7 @@ def extract_failed_api_from_alarm_name(alarm_name, reason):
         return 'API: /lot-details'
     elif '/subdomain' in reason or 'subdomain' in reason.lower():
         return 'API: /subdomain'
-    
+
     # Parse from alarm name patterns
     if 'auth' in alarm_name.lower():
         return 'Authentication API'
@@ -196,7 +190,7 @@ def extract_failed_api_from_alarm_name(alarm_name, reason):
         return 'Management API'
     elif 'search' in alarm_name.lower():
         return 'Search API'
-    
+
     # Parse from reason text for specific APIs
     api_keywords = {
         'subdomain_api': 'Subdomain API',
@@ -209,24 +203,22 @@ def extract_failed_api_from_alarm_name(alarm_name, reason):
         'stripe_checkout': 'Stripe Checkout API',
         'paypal_order': 'PayPal Order API'
     }
-    
+
     for keyword, name in api_keywords.items():
         if keyword in reason.lower():
             return name
-    
+
     return None
 
 def query_recent_api_errors(metrics, alarm_name, reason=''):
     """Query CloudWatch to find which specific API had recent errors"""
-    
+
     try:
         # Extract timestamp from reason if available
-        import re
-        from datetime import datetime, timedelta
-        
+
         # Parse timestamp from reason like "1.0 (31/10/25 08:45:00)"
         timestamp_match = re.search(r'\((\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\)', reason)
-        
+
         if timestamp_match:
             # Parse the timestamp
             timestamp_str = timestamp_match.group(1)
@@ -246,25 +238,25 @@ def query_recent_api_errors(metrics, alarm_name, reason=''):
             end_time = datetime.utcnow()
             start_time = end_time - timedelta(minutes=15)
             print(f"DEBUG: No timestamp in reason, using recent time range")
-        
+
         cloudwatch = boto3.client('cloudwatch', region_name='eu-west-2')
-        
+
         # Check each individual metric for errors at the alarm time
         error_apis = []
         for metric in metrics:
             metric_id = metric.get('id', '')
-            
+
             # Skip expression metrics
             if 'max5xx' in metric_id.lower() or 'expression' in metric:
                 continue
-                
+
             metric_stat = metric.get('metricStat', {})
             metric_info = metric_stat.get('metric', {})
             dimensions = metric_info.get('dimensions', {})
-            
+
             if not dimensions:
                 continue
-                
+
             # Query this specific metric
             try:
                 response = cloudwatch.get_metric_statistics(
@@ -278,7 +270,7 @@ def query_recent_api_errors(metrics, alarm_name, reason=''):
                     Period=300,
                     Statistics=['Sum']
                 )
-                
+
                 # Check if this metric has any errors
                 datapoints = response.get('Datapoints', [])
                 for datapoint in datapoints:
@@ -288,7 +280,7 @@ def query_recent_api_errors(metrics, alarm_name, reason=''):
                         api_gateway = dimensions.get('ApiName', '')
                         error_count = datapoint.get('Sum', 0)
                         timestamp = datapoint.get('Timestamp', '')
-                        
+
                         print(f"DEBUG: Found {error_count} errors in {metric_id} at {timestamp} - {api_name} ({resource} on {api_gateway})")
                         error_apis.append({
                             'api_name': api_name or f"API: {resource}",
@@ -297,20 +289,20 @@ def query_recent_api_errors(metrics, alarm_name, reason=''):
                             'timestamp': timestamp,
                             'metric_id': metric_id
                         })
-                        
+
             except Exception as e:
                 print(f"DEBUG: Error querying metric {metric_id}: {str(e)}")
                 continue
-        
+
         # Return the API with the most recent or highest error count
         if error_apis:
             # Sort by timestamp (most recent first)
             error_apis.sort(key=lambda x: x['timestamp'], reverse=True)
             return error_apis[0]['api_name']
-                
+
     except Exception as e:
         print(f"DEBUG: Error querying CloudWatch: {str(e)}")
-    
+
     # Fallback to alarm name pattern
     if 'auth' in alarm_name.lower():
         return 'Authentication API (check CloudWatch for specific endpoint)'
@@ -318,19 +310,18 @@ def query_recent_api_errors(metrics, alarm_name, reason=''):
         return 'Payments API (check CloudWatch for specific endpoint)'
     elif 'viewing' in alarm_name.lower():
         return 'Viewing API (check CloudWatch for specific endpoint)'
-    
+
     return 'Unknown API'
 
 def query_specific_failing_api(alarm_name, reason):
     """Query CloudWatch to find the specific API that failed"""
-    
+
     try:
-        import re
-        from datetime import datetime, timedelta
-        
+        # Parse timestamp from reason
+
         # Extract timestamp from reason like "12.0 (31/10/25 09:35:00)"
         timestamp_match = re.search(r'\((\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\)', reason)
-        
+
         if timestamp_match:
             timestamp_str = timestamp_match.group(1)
             try:
@@ -344,16 +335,16 @@ def query_specific_failing_api(alarm_name, reason):
         else:
             end_time = datetime.utcnow()
             start_time = end_time - timedelta(minutes=15)
-        
+
         cloudwatch = boto3.client('cloudwatch', region_name='eu-west-2')
-        
+
         # Define the API Gateway resources to check based on alarm type
         resources_to_check = []
-        
+
         if 'profile' in alarm_name.lower():
             resources_to_check = [
                 '/forgot_password',
-                '/reset_password', 
+                '/reset_password',
                 '/update_password',
                 '/profile',
                 '/address'
@@ -380,9 +371,9 @@ def query_specific_failing_api(alarm_name, reason):
                 '/cart',
                 '/bids'
             ]
-        
+
         print(f"DEBUG: Checking resources: {resources_to_check}")
-        
+
         # Query each resource for 5XX errors
         for resource in resources_to_check:
             try:
@@ -399,7 +390,7 @@ def query_specific_failing_api(alarm_name, reason):
                     Period=300,
                     Statistics=['Sum']
                 )
-                
+
                 datapoints = response.get('Datapoints', [])
                 print(f"DEBUG: Checking {resource}: found {len(datapoints)} datapoints")
                 for datapoint in datapoints:
@@ -409,21 +400,21 @@ def query_specific_failing_api(alarm_name, reason):
                         return f"API: {resource}"
                     else:
                         print(f"DEBUG: No errors in datapoint for {resource}")
-                        
+
             except Exception as e:
                 print(f"DEBUG: Error querying {resource}: {str(e)}")
                 continue
-                
+
     except Exception as e:
         print(f"DEBUG: Error in query_specific_failing_api: {str(e)}")
-    
+
     return None
 
 def extract_priority_from_alarm_name(alarm_name):
     """Extract priority level from alarm name"""
-    
+
     alarm_lower = alarm_name.lower()
-    
+
     if alarm_lower.startswith('p1-') or 'p1-' in alarm_lower:
         return 'P1 CRITICAL'
     elif alarm_lower.startswith('p2-') or 'p2-' in alarm_lower:
@@ -435,7 +426,7 @@ def extract_priority_from_alarm_name(alarm_name):
 
 def get_api_name_from_query_id(query_id):
     """Convert CloudWatch metric query ID to readable API name"""
-    
+
     api_map = {
         'subdomain_api': 'Subdomain API',
         'buyer_verify_captcha': 'Buyer Verify Captcha API',
@@ -461,14 +452,14 @@ def get_api_name_from_query_id(query_id):
         'seller_auctions_view': 'Seller Auctions View API',
         'seller_unpublish_auction': 'Seller Unpublish Auction API'
     }
-    
+
     return api_map.get(query_id, None)
 
 def parse_alarm_details(alarm_name, reason, failed_api):
     """Parse alarm details to determine type and service"""
-    
+
     print(f"DEBUG: Parsing alarm - Name: {alarm_name}, Reason: {reason}, Failed API: {failed_api}")
-    
+
     # Determine alarm type based on alarm name
     if '5xx' in alarm_name.lower():
         api_name = failed_api or "Unknown API"
@@ -493,12 +484,12 @@ def parse_alarm_details(alarm_name, reason, failed_api):
     else:
         return "System Alert", f"Unknown Service (Alarm: {alarm_name})", ""
 
-def create_alert_message(alert_type, service_name, alarm_name, reason, description, log_link, failed_api):
+def create_alert_message(alert_type, service_name, alarm_name, reason, description, failed_api):
     """Create formatted alert message based on alarm type"""
-    
+
     # Extract priority from alarm name
     priority = extract_priority_from_alarm_name(alarm_name)
-    
+
     # For composite alarms, query CloudWatch to find the specific failing API
     if '5xx' in alarm_name.lower():
         print(f"DEBUG: Querying specific failing API for alarm: {alarm_name}")
@@ -508,7 +499,7 @@ def create_alert_message(alert_type, service_name, alarm_name, reason, descripti
             failed_api = specific_api
         else:
             print(f"DEBUG: No specific API found, using: {failed_api}")
-    
+
     # If we still don't have a specific API, use a fallback based on alarm name
     if not failed_api or failed_api in ['Profile API', 'Authentication API', 'Viewing API']:
         if 'profile' in alarm_name.lower():
@@ -517,7 +508,7 @@ def create_alert_message(alert_type, service_name, alarm_name, reason, descripti
             failed_api = 'API: /subdomain'  # Most common auth API error
         elif 'viewing' in alarm_name.lower():
             failed_api = 'API: /lot-details'  # Most common viewing API error
-    
+
     base_msg = f"""🚨 {alert_type.upper()} - {priority}
 
 Failed API: {failed_api or service_name}
@@ -526,7 +517,7 @@ Description: {description}
 
 Reason: {reason}
 """
-    
+
     # Always try to get the exact log stream
     print(f"DEBUG: Attempting to get log stream for API: {failed_api or service_name}")
     log_stream_link = get_recent_log_stream(failed_api or service_name, reason)
@@ -542,7 +533,7 @@ Reason: {reason}
             base_msg += f"\nLog Group: {log_group_link}"
         else:
             print(f"DEBUG: No log group link found either")
-    
+
     return base_msg
 
 def get_lambda_console_link():
@@ -568,7 +559,7 @@ def get_lambda_logs_link(function_type):
         'save-to-cache': f'/aws/lambda/auctions-{stage}-save-to-cache',
         'unpublish-auction': f'/aws/lambda/auctions-{stage}-unpublish_auction'
     }
-    
+
     log_group = log_groups.get(function_type, '')
     if log_group:
         return f"https://console.aws.amazon.com/cloudwatch/home?region=eu-west-2#logsV2:log-groups/log-group/{log_group.replace('/', '$252F')}"
@@ -576,28 +567,28 @@ def get_lambda_logs_link(function_type):
 
 def get_recent_log_stream(api_name, reason):
     """Get the most recent log stream for the failed API"""
-    
+
     try:
         # Get the log group name for this API
         stage = os.environ.get('STAGE', 'dev')
         log_group_name = get_log_group_name_by_api(api_name, stage)
-        
+
         if not log_group_name:
             print(f"DEBUG: No log group found for {api_name}")
             return None
-            
+
         print(f"DEBUG: Found log group {log_group_name} for {api_name}")
-        
+
         # Query CloudWatch Logs to find recent log streams
         logs_client = boto3.client('logs', region_name='eu-west-2')
-        
+
         response = logs_client.describe_log_streams(
             logGroupName=log_group_name,
             orderBy='LastEventTime',
             descending=True,
             limit=3  # Get the 3 most recent streams
         )
-        
+
         # Get the most recent stream
         log_streams = response.get('logStreams', [])
         if log_streams:
@@ -608,15 +599,15 @@ def get_recent_log_stream(api_name, reason):
                 log_stream_url = f"https://console.aws.amazon.com/cloudwatch/home?region=eu-west-2#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
                 print(f"DEBUG: Generated log stream URL: {log_stream_url}")
                 return log_stream_url
-                
+
     except Exception as e:
         print(f"DEBUG: Error getting log stream for {api_name}: {str(e)}")
-        
+
     return None
 
 def get_log_group_name_by_api(api_name, stage):
     """Get just the log group name (without URL) for an API"""
-    
+
     api_to_log_group = {
         # Authentication & Registration APIs
         'Subdomain API': f'/aws/lambda/subdomain-{stage}-sub-domain',
@@ -629,7 +620,7 @@ def get_log_group_name_by_api(api_name, stage):
         'Seller Request OTP API': f'/aws/lambda/users-management-{stage}-request-otp',
         'Buyer Auction Register API': f'/aws/lambda/buyers-{stage}-auction_register',
         'Buyer Verify Card API': f'/aws/lambda/buyers-{stage}-credit_card',
-        
+
         # Payments & Bidding APIs
         'Update Bid API': f'/aws/lambda/bids-{stage}-add-to-group',
         'Stripe Checkout API': f'/aws/lambda/payments-{stage}-create_intent',
@@ -639,7 +630,7 @@ def get_log_group_name_by_api(api_name, stage):
         'Create Auction API': f'/aws/lambda/auctions-{stage}-create',
         'Create Lot API': f'/aws/lambda/auctions-{stage}-create_lots',
         'Publish Auction API': f'/aws/lambda/auctions-{stage}-update_auction',
-        
+
         # Viewing & Management APIs
         'Buyers View API': f'/aws/lambda/buyers-{stage}-view',
         'Buyer View Lots API': f'/aws/lambda/buyers-{stage}-view_lots',
@@ -648,7 +639,7 @@ def get_log_group_name_by_api(api_name, stage):
         'Buyer Paddle API': f'/aws/lambda/buyers-{stage}-paddle_number',
         'Seller Auctions View API': f'/aws/lambda/auctions-{stage}-view',
         'Seller Unpublish Auction API': f'/aws/lambda/auctions-{stage}-unpublish_auction',
-        
+
         # Profile Management APIs
         'API: /forgot_password': f'/aws/lambda/buyers-{stage}-send-reset-link',
         'API: /reset_password': f'/aws/lambda/buyers-{stage}-update-new-password',
@@ -660,19 +651,19 @@ def get_log_group_name_by_api(api_name, stage):
         'Buyer Profile API': f'/aws/lambda/buyers-{stage}-view_profile',
         'Buyer Address Post API': f'/aws/lambda/address-management-{stage}-add_shipping_address',
         'Buyer Address Get API': f'/aws/lambda/address-management-{stage}-view_address',
-        
+
         # Lambda Functions
         'Process Cart Lambda': f'/aws/lambda/auctions-{stage}-process-cart',
         'Save to Cache Lambda': f'/aws/lambda/auctions-{stage}-save-to-cache'
     }
-    
+
     return api_to_log_group.get(api_name, '')
 
 def get_log_group_link_by_api_name(api_name):
     """Get CloudWatch logs link by API name"""
-    
+
     stage = os.environ.get('STAGE', 'dev')
-    
+
     # Comprehensive map of API names to actual Lambda function log groups
     api_to_log_group = {
         # Authentication & Registration APIs
@@ -686,7 +677,7 @@ def get_log_group_link_by_api_name(api_name):
         'Seller Request OTP API': f'/aws/lambda/users-management-{stage}-request-otp',
         'Buyer Auction Register API': f'/aws/lambda/buyers-{stage}-auction_register',
         'Buyer Verify Card API': f'/aws/lambda/buyers-{stage}-credit_card',
-        
+
         # Payments & Bidding APIs
         'Update Bid API': f'/aws/lambda/bids-{stage}-add-to-group',
         'Stripe Checkout API': f'/aws/lambda/payments-{stage}-create_intent',
@@ -696,7 +687,7 @@ def get_log_group_link_by_api_name(api_name):
         'Create Auction API': f'/aws/lambda/auctions-{stage}-create',
         'Create Lot API': f'/aws/lambda/auctions-{stage}-create_lots',
         'Publish Auction API': f'/aws/lambda/auctions-{stage}-update_auction',
-        
+
         # Viewing & Management APIs
         'Buyers View API': f'/aws/lambda/buyers-{stage}-view',
         'Buyer View Lots API': f'/aws/lambda/buyers-{stage}-view_lots',
@@ -705,7 +696,7 @@ def get_log_group_link_by_api_name(api_name):
         'Buyer Paddle API': f'/aws/lambda/buyers-{stage}-paddle_number',
         'Seller Auctions View API': f'/aws/lambda/auctions-{stage}-view',
         'Seller Unpublish Auction API': f'/aws/lambda/auctions-{stage}-unpublish_auction',
-        
+
         # Profile Management APIs
         'API: /forgot_password': f'/aws/lambda/buyers-{stage}-send-reset-link',
         'API: /reset_password': f'/aws/lambda/buyers-{stage}-update-new-password',
@@ -717,7 +708,7 @@ def get_log_group_link_by_api_name(api_name):
         'Buyer Profile API': f'/aws/lambda/buyers-{stage}-view_profile',
         'Buyer Address Post API': f'/aws/lambda/address-management-{stage}-add_shipping_address',
         'Buyer Address Get API': f'/aws/lambda/address-management-{stage}-view_address',
-        
+
         # Auction Management APIs
         'Seller Clone Auction API': f'/aws/lambda/auctions-{stage}-clone_auction',
         'Seller View Bidders API': f'/aws/lambda/bids-{stage}-view',
@@ -725,7 +716,7 @@ def get_log_group_link_by_api_name(api_name):
         'Seller Update Lot API': f'/aws/lambda/auctions-{stage}-update_lot',
         'Seller Delete Lot API': f'/aws/lambda/auctions-{stage}-delete_lot',
         'Seller Import Lots API': f'/aws/lambda/auctions-{stage}-import_lots',
-        
+
         # Search & Wishlist APIs
         'Buyer Search Lots API': f'/aws/lambda/buyers-{stage}-search_lots',
         'Buyer Add Wishlist API': f'/aws/lambda/buyer-wishlist-{stage}-create',
@@ -733,12 +724,12 @@ def get_log_group_link_by_api_name(api_name):
         'Buyer View Wishlist API': f'/aws/lambda/buyer-wishlist-{stage}-wishlist-listing',
         'Seller Export Data API': f'/aws/lambda/orders-{stage}-seller_list_orders',
         'Seller Newsletter Get API': f'/aws/lambda/newsletter-{stage}-update',
-        
+
         # Lambda Functions
         'Process Cart Lambda': f'/aws/lambda/auctions-{stage}-process-cart',
         'Save to Cache Lambda': f'/aws/lambda/auctions-{stage}-save-to-cache'
     }
-    
+
     log_group = api_to_log_group.get(api_name, '')
     if log_group:
         return f"https://console.aws.amazon.com/cloudwatch/home?region=eu-west-2#logsV2:log-groups/log-group/{log_group.replace('/', '$252F')}"
@@ -746,9 +737,9 @@ def get_log_group_link_by_api_name(api_name):
 
 def parse_failed_api(alarm_name, reason):
     """Parse which API failed from alarm name and reason"""
-    
+
     print(f"DEBUG: Parsing failed API - Alarm: {alarm_name}, Reason: {reason}")
-    
+
     # Map alarm names to API categories
     if 'auth' in alarm_name.lower():
         # P1 Critical - Auth & Registration alarm
@@ -772,7 +763,7 @@ def parse_failed_api(alarm_name, reason):
             return 'Buyer Verify Card API', get_log_group_link('buyer_verify_card')
         else:
             return 'Authentication/Registration API (Unknown specific endpoint)', ''
-    
+
     elif 'payments' in alarm_name.lower():
         # P1 Critical - Payments & Bidding alarm
         if 'buyer_bids_update' in reason.lower():
@@ -793,7 +784,7 @@ def parse_failed_api(alarm_name, reason):
             return 'Publish Auction API', get_log_group_link('seller_publish_auction')
         else:
             return 'Payments/Bidding API (Unknown specific endpoint)', ''
-    
+
     elif 'viewing' in alarm_name.lower():
         # P1 Critical - Viewing & Management alarm
         if 'buyer_view' in reason.lower() and 'buyer_view_lots' not in reason.lower():
@@ -810,7 +801,7 @@ def parse_failed_api(alarm_name, reason):
             return 'Seller Unpublish Auction API', get_log_group_link('seller_unpublish_auction')
         else:
             return 'Viewing/Management API (Unknown specific endpoint)', ''
-    
+
     elif 'profile' in alarm_name.lower():
         # P2 Medium - Profile Management
         if 'buyer_update_password' in reason.lower():
@@ -831,7 +822,7 @@ def parse_failed_api(alarm_name, reason):
             return 'Buyer Address Get API', get_log_group_link('buyer_address_get')
         else:
             return 'Profile Management API (Unknown specific endpoint)', ''
-    
+
     elif 'management' in alarm_name.lower():
         # P2 Medium - Auction Management
         if 'seller_clone_auction' in reason.lower():
@@ -848,7 +839,7 @@ def parse_failed_api(alarm_name, reason):
             return 'Seller Import Lots API', get_log_group_link('seller_import_lots')
         else:
             return 'Auction Management API (Unknown specific endpoint)', ''
-    
+
     elif 'search' in alarm_name.lower():
         # P3 Low - Search & Wishlist
         if 'buyer_search_lots' in reason.lower():
@@ -865,11 +856,11 @@ def parse_failed_api(alarm_name, reason):
             return 'Seller Newsletter Get API', get_log_group_link('seller_newsletter_get')
         else:
             return 'Search/Wishlist API (Unknown specific endpoint)', ''
-    
+
     # Fallback: try to parse from reason text directly
     api_map = {
         'buyer_verify_captcha': 'Buyer Verify Captcha API',
-        'buyer_otp_validation': 'Buyer OTP Validation API', 
+        'buyer_otp_validation': 'Buyer OTP Validation API',
         'buyer_auth_login': 'Buyer Auth Login API',
         'seller_verify_captcha': 'Seller Verify Captcha API',
         'seller_otp_validation': 'Seller OTP Validation API',
@@ -878,7 +869,7 @@ def parse_failed_api(alarm_name, reason):
         'buyer_verify_card': 'Buyer Verify Card API',
         'buyer_bids_update': 'Update Bid API',
         'stripe_checkout': 'Stripe Checkout API',
-        'paypal_order': 'PayPal Order API', 
+        'paypal_order': 'PayPal Order API',
         'paypal_capture': 'PayPal Capture API',
         'cart_management': 'Cart Management API',
         'seller_create_auction': 'Create Auction API',
@@ -892,19 +883,19 @@ def parse_failed_api(alarm_name, reason):
         'seller_unpublish_auction': 'Seller Unpublish Auction API',
         'subdomain_api': 'Subdomain API'
     }
-    
+
     # Find which specific API failed from the reason
     for api_id, name in api_map.items():
         if api_id in reason.lower():
             return name, get_log_group_link(api_id)
-    
+
     return f"Unknown API (Alarm: {alarm_name})", ""
 
 def get_log_group_link(api_id):
     """Get direct CloudWatch log group link for specific Lambda function"""
-    
+
     stage = os.environ.get('STAGE', 'prod')
-    
+
     # Map API IDs to Lambda function log groups
     log_group_map = {
         # P1 Critical - Auth & Registration
@@ -916,7 +907,7 @@ def get_log_group_link(api_id):
         'seller_request_otp': f'/aws/lambda/users-management-{stage}-request-otp',
         'buyer_auction_register': f'/aws/lambda/buyers-{stage}-auction-register',
         'buyer_verify_card': f'/aws/lambda/buyers-{stage}-verify-card',
-        
+
         # P1 Critical - Payments & Bidding
         'buyer_bids_update': f'/aws/lambda/bids-{stage}-update',
         'stripe_checkout': f'/aws/lambda/payments-{stage}-stripe',
@@ -926,7 +917,7 @@ def get_log_group_link(api_id):
         'seller_create_auction': f'/aws/lambda/auctions-{stage}-create',
         'seller_create_lot': f'/aws/lambda/auctions-{stage}-create-lot',
         'seller_publish_auction': f'/aws/lambda/auctions-{stage}-update-auction',
-        
+
         # P1 Critical - Viewing & Management
         'buyer_view': f'/aws/lambda/buyers-{stage}-view',
         'buyer_view_lots': f'/aws/lambda/buyers-{stage}-view-lots',
@@ -934,7 +925,7 @@ def get_log_group_link(api_id):
         'buyer_paddle': f'/aws/lambda/buyers-{stage}-paddle',
         'seller_auctions_view': f'/aws/lambda/auctions-{stage}-view',
         'seller_unpublish_auction': f'/aws/lambda/auctions-{stage}-unpublish',
-        
+
         # P2 Medium - Profile Management
         'buyer_update_password': f'/aws/lambda/buyers-{stage}-update-password',
         'buyer_forgot_password': f'/aws/lambda/buyers-{stage}-forgot-password',
@@ -944,7 +935,7 @@ def get_log_group_link(api_id):
         'buyer_profile': f'/aws/lambda/buyers-{stage}-profile',
         'buyer_address_post': f'/aws/lambda/address-management-{stage}-address-post',
         'buyer_address_get': f'/aws/lambda/address-management-{stage}-address-get',
-        
+
         # P2 Medium - Auction Management
         'seller_clone_auction': f'/aws/lambda/auctions-{stage}-clone',
         'seller_view_bidders': f'/aws/lambda/bids-{stage}-view',
@@ -952,7 +943,7 @@ def get_log_group_link(api_id):
         'seller_update_lot': f'/aws/lambda/auctions-{stage}-update-lot',
         'seller_delete_lot': f'/aws/lambda/auctions-{stage}-delete-lot',
         'seller_import_lots': f'/aws/lambda/auctions-{stage}-import',
-        
+
         # P3 Low - Search & Wishlist
         'buyer_search_lots': f'/aws/lambda/buyers-{stage}-search-lots',
         'buyer_add_wishlist': f'/aws/lambda/buyer-wishlist-{stage}-add',
@@ -962,9 +953,8 @@ def get_log_group_link(api_id):
         'seller_newsletter_get': f'/aws/lambda/newsletter-{stage}-get',
         'subdomain_api': f'/aws/lambda/subdomain-{stage}-subdomain'
     }
-    
+
     log_group = log_group_map.get(api_id, '')
     if log_group:
         return f"https://console.aws.amazon.com/cloudwatch/home?region=eu-west-2#logsV2:log-groups/log-group/{log_group.replace('/', '$252F')}"
     return ""
-
