@@ -28,10 +28,20 @@ exports.handler = async (event) => {
 
         if (state) {
             try {
-                const url = new URL(state)
-                loginRedirect = `${url.origin}/login`
+                // Try parsing as JSON first (federated login)
+                const stateData = JSON.parse(decodeURIComponent(state))
+                if (stateData.redirect_url) {
+                    const url = new URL(stateData.redirect_url)
+                    loginRedirect = `${url.origin}/login`
+                }
             } catch (err) {
-                console.log('Invalid state URL, falling back to default login.')
+                // Fallback: treat as URL (normal login)
+                try {
+                    const url = new URL(state)
+                    loginRedirect = `${url.origin}/login`
+                } catch (urlErr) {
+                    console.log('Invalid state format, falling back to default login.')
+                }
             }
         }
 
@@ -49,20 +59,13 @@ exports.handler = async (event) => {
             }
         }
 
-        // Validate state URL format again (safe)
-        let validatedUrl
+        // Parse state to get redirect URL
+        let redirectUrl = state
         try {
-            validatedUrl = new URL(state)
+            const stateData = JSON.parse(decodeURIComponent(state))
+            redirectUrl = stateData.redirect_url || state
         } catch (err) {
-            console.log('Error validating state URL:', err)
-            return {
-                statusCode: 302,
-                headers: {
-                    Location: `${loginRedirect}/pageNotFound`,
-                    'Cache-Control': 'no-cache',
-                },
-                body: '',
-            }
+            // Use state as-is if not JSON
         }
 
         const secretKey = process.env.SUB_ENC_KEY
@@ -79,7 +82,7 @@ exports.handler = async (event) => {
         }
 
         const encryptedCode = CryptoJS.AES.encrypt(code, secretKey).toString()
-        const frontendRedirectUrl = `${state}?code=${encodeURIComponent(encryptedCode)}`
+        const frontendRedirectUrl = `${redirectUrl}?code=${encodeURIComponent(encryptedCode)}`
         console.log('Redirecting to:', frontendRedirectUrl)
 
         return {

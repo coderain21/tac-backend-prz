@@ -208,6 +208,20 @@ functions:
           trigger: PreSignUp
           existing: true
 
+  pre-auth-buyer:
+    handler: handlers/pre_auth.handler
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+    events:
+      - cognitoUserPool:
+          pool: ${self:provider.stage}-indyauction-buyers
+          trigger: PreAuthentication
+          existing: true
   
 
 resources:
