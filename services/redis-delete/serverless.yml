@@ -49,6 +49,10 @@ provider:
             - ses:*
             - s3:*
             - lambda:*
+            - cloudwatch:GetMetricStatistics
+            - cloudwatch:ListMetrics
+            - logs:DescribeLogStreams
+            - logs:DescribeLogGroups
           Resource: "*"
 
 package:
@@ -95,19 +99,12 @@ resources:
       Properties:
         TopicName: redis-delete-alerts
     
-    RedisDeleteAlertsSubscription1:
+    RedisDeleteAlertsLambdaSubscription:
       Type: AWS::SNS::Subscription
       Properties:
         TopicArn: !Ref RedisDeleteAlertsTopic
-        Protocol: email
-        Endpoint: ${ssm:INTERNAL_ADMIN_USERNAME}
-
-    RedisDeleteAlertsSubscription2:
-      Type: AWS::SNS::Subscription
-      Properties:
-        TopicArn: !Ref RedisDeleteAlertsTopic
-        Protocol: email
-        Endpoint: ${ssm:EXTERNAL_ADMIN_USERNAME}
+        Protocol: lambda
+        Endpoint: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
     
     RedisDeleteAlertsParameter:
       Type: AWS::SSM::Parameter
@@ -118,6 +115,22 @@ resources:
         Value: !Sub
           - arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${TopicName}
           - TopicName: redis-delete-alerts
+    
+    Api5xxAlertHandlerParameter:
+      Type: AWS::SSM::Parameter
+      Properties:
+        Name: API_5XX_ALERT_HANDLER_ARN
+        Description: 'ARN of the API 5XX Alert Handler Lambda'
+        Type: 'String'
+        Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
+    
+    Api5xxAlertHandlerInvokePermission:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
+        Action: lambda:InvokeFunction
+        Principal: lambda.alarms.cloudwatch.amazonaws.com
+        SourceAccount: ${aws:accountId}
 
 
 functions:
@@ -135,6 +148,22 @@ functions:
       - schedule:
           rate: cron(0 0 * * ? *)  # Run daily at midnight UTC
           enabled: true
+
+  api-5xx-alert-handler:
+    handler: handler/api_5xx_alert_handler.lambda_handler
+    timeout: 30
+    environment:
+      SNS_TOPIC_ARN:
+        Ref: RedisDeleteAlertsTopic
+      STAGE: ${opt:stage, self:provider.stage}
+    layers:
+      -  ${ssm:PythonLayerARN}
+      -  ${ssm:PythonLayer2ARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
 
 plugins:
   - serverless-offline
