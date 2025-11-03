@@ -29,6 +29,30 @@ resource "aws_sns_topic" "cloudwatch_alarm_topic" {
   provider = aws.deployment-eu
 }
 
+# Get Lambda function ARN from SSM parameter
+data "aws_ssm_parameter" "api_5xx_handler_arn" {
+  name = "API_5XX_ALERT_HANDLER_ARN"
+  provider = aws.deployment-eu
+}
+
+# Subscribe Lambda to CloudWatchAlarmTopic
+resource "aws_sns_topic_subscription" "lambda_subscription" {
+  topic_arn = aws_sns_topic.cloudwatch_alarm_topic.arn
+  protocol  = "lambda"
+  endpoint  = data.aws_ssm_parameter.api_5xx_handler_arn.value
+  provider  = aws.deployment-eu
+}
+
+# Allow SNS to invoke Lambda
+resource "aws_lambda_permission" "allow_sns_invoke" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = data.aws_ssm_parameter.api_5xx_handler_arn.value
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.cloudwatch_alarm_topic.arn
+  provider      = aws.deployment-eu
+}
+
 # Create an IAM role for CloudWatch Alarms to use
 resource "aws_iam_role" "cloudwatch_alarm_role" {
   name = "CloudWatchAlarmRole"
@@ -85,7 +109,7 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       metric_name = "5XXError"
       dimensions = {
         ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/otp-validation"
+        Resource = "/otp-validation"
         Stage    = var.STAGE
         Method   = "POST"
       }
@@ -191,8 +215,39 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
   }
 
   metric_query {
+    id = "subdomain_api"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-subdomain"
+        Resource = "/subdomain"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+    metric_query {
+    id = "subdomain_api_patch"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-subdomain"
+        Resource = "/subdomain"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
     id          = "max5xx_p1_part1"
-    expression  = "MAX([buyer_verify_captcha, buyer_otp_validation, buyer_auth_login, seller_verify_captcha, seller_otp_validation, seller_request_otp, buyer_auction_register, buyer_verify_card])"
+    expression  = "MAX([buyer_verify_captcha, buyer_otp_validation, buyer_auth_login, seller_verify_captcha, seller_otp_validation, seller_request_otp, buyer_auction_register, buyer_verify_card, subdomain_api])"
     label       = "Max 5XX Errors P1 Part1"
     return_data = true
   }
@@ -222,7 +277,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -239,7 +293,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -256,7 +309,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -273,7 +325,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -290,7 +341,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -307,7 +357,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -324,7 +373,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -375,7 +423,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -392,7 +439,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -409,7 +455,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -426,7 +471,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -443,7 +487,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -603,7 +646,7 @@ resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
   alarm_description   = "Alarm when ThrottlingException appears in logs"
   treat_missing_data  = "notBreaching"
   # Optional: SNS topic for notifications
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn] # Define this if needed
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn] # Define this if needed
   provider  = aws.deployment-eu
 }
 
@@ -634,7 +677,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
   threshold           = 1
   alarm_description   = "Alert when Redis data is missing or email sending fails"
   treat_missing_data  = "notBreaching"
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider            = aws.deployment-eu
 }
 
@@ -686,7 +729,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
     StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
   }
   alarm_description   = "Timed out executions in Step Function"
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider             = aws.deployment-eu
 }
 
@@ -707,8 +750,8 @@ resource "awscc_applicationsignals_service_level_objective" "p1_critical_availab
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P1Critical5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -737,8 +780,8 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P2Medium5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -748,8 +791,8 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
     interval        = { rolling_interval = { duration = 7, duration_unit = "DAY" } }
   }
   burn_rate_configurations = [
+    { look_back_window_minutes = 10 },
     { look_back_window_minutes = 180 },
-    { look_back_window_minutes = 720 },
   ]
   tags = [{ key = "Priority", value = "P2" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }
@@ -767,8 +810,8 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P3Low5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -778,8 +821,8 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
     interval        = { rolling_interval = { duration = 7, duration_unit = "DAY" } }
   }
   burn_rate_configurations = [
+    { look_back_window_minutes = 30 },
     { look_back_window_minutes = 360 },
-    { look_back_window_minutes = 1440 },
   ]
   tags = [{ key = "Priority", value = "P3" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }
@@ -844,7 +887,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -861,7 +903,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -878,7 +919,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -895,7 +935,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -912,7 +951,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -929,7 +967,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -946,7 +983,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -997,7 +1033,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1014,7 +1049,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1031,7 +1065,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1048,7 +1081,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1065,7 +1097,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1088,6 +1119,120 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
     id          = "max5xx_p2_part2"
     expression  = "MAX([seller_clone_auction, seller_view_bidders, seller_buyer_approval, seller_update_lot, seller_delete_lot, seller_import_lots])"
     label       = "Max 5XX Errors P2 Part2"
+    return_data = true
+  }
+}
+
+# P2 Medium - Part 3 (Admin & Additional Services)
+resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_admin" {
+  provider            = aws.deployment-eu
+  alarm_name          = "p2-medium-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Admin"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  threshold           = 5
+  alarm_description   = "P2 Medium alarm for 5XX errors - Admin & Additional Services"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+
+  metric_query {
+    id = "admin_buyer_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-admin-buyer-management"
+        Resource = "/admin/buyers"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "admin_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-admin-management"
+        Resource = "/admin"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "seller_bidder_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-seller-bidder-management"
+        Resource = "/bidders"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "lot_bid_history"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-lot-bid-history"
+        Resource = "/history"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "order_management"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-order-management"
+        Resource = "/orders"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id = "site_banner"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-site-banner"
+        Resource = "/banner"
+        Stage    = var.STAGE
+        Method   = "GET"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
+
+  metric_query {
+    id          = "max5xx_p2_part3"
+    expression  = "MAX([admin_buyer_management, admin_management, seller_bidder_management, lot_bid_history, order_management, site_banner])"
+    label       = "Max 5XX Errors P2 Part3"
     return_data = true
   }
 }
@@ -1116,7 +1261,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1133,7 +1277,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1150,7 +1293,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1167,7 +1309,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1184,7 +1325,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1227,7 +1367,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
   # Set your desired reputation threshold (e.g., 70% for db.r6g.xlarge )
   threshold = 1400
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -1247,7 +1387,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_cpu" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -1268,7 +1408,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_memory" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 3221225472
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -1290,7 +1430,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
    
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
@@ -1312,7 +1452,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
    
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -1331,7 +1471,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   period              = 300  # 5 minutes
   statistic           = "Maximum"
   threshold           = 0  # Alert when allowance is exceeded
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
@@ -1350,7 +1490,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
   period              = 300  # 5 minutes
   statistic           = "Sum"
   threshold           = 1  # Trigger if more than 10 evictions occur
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -1368,7 +1508,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
   period              = 300  # 5 minutes
   statistic           = "Maximum"
   threshold           = 70  # Alert if memory usage exceeds 80%
-  alarm_actions       = [aws_sns_topic.cloudwatch_rum_topic.arn]
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
