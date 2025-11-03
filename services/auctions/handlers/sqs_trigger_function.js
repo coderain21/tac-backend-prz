@@ -319,12 +319,12 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                         if (buyerInformation.length > 0) {
                             const template_data = {
-                                winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                                winning_lot: [...winningLot].sort((a, b) => a.lot_number - b.lot_number),
                                 winning_lot_count: winningLot.length,
                                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                                 title: auctionData.title,
                                 logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                                not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                                not_winning_lot: [...notWinning].sort((a, b) => a.lot_number - b.lot_number),
                                 not_winning_lot_count: notWinning.length,
                                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
                                 seller_email: auctionData.seller_email,
@@ -425,12 +425,12 @@ module.exports.sqsTriggerFunction = async (event) => {
                         // Create the email data
                         if (buyerInformation.length > 0) {
                             const template_data = {
-                                winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                                winning_lot: [...winningLot].sort((a, b) => a.lot_number - b.lot_number),
                                 winning_lot_count: winningLot.length,
                                 buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                                 title: auctionData.title,
                                 logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                                not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                                not_winning_lot: [...notWinning].sort((a, b) => a.lot_number - b.lot_number),
                                 not_winning_lot_count: notWinning.length,
                                 seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
                                 seller_email: auctionData.seller_email,
@@ -460,7 +460,7 @@ module.exports.sqsTriggerFunction = async (event) => {
                             buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
                             title: auctionData.title,
                             logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                            not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                            not_winning_lot: [...notWinning].sort((a, b) => a.lot_number - b.lot_number),
                             not_winning_lot_count: notWinning.length,
                             seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
                             seller_email: auctionData.seller_email,
