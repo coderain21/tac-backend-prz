@@ -300,11 +300,45 @@ module.exports.sqsTriggerFunction = async (event) => {
                     totalBidAmount = winningLot.reduce((total, lot) => {
                         // Replace the currency symbol with an empty string and parse the amount to float
                         const bidAmount = parseFloat(lot.bid_amount.replace(new RegExp('[^0-9.]+', 'g'), ''))
+                        console.log(`Lot ${lot.lot_number}: bid_amount = ${lot.bid_amount}, parsed = ${bidAmount}`)
                         return total + bidAmount
                     }, 0)
                     // Store raw number in orderAmount before formatting
                     orderAmount = Number(totalBidAmount.toFixed(2))
+                    console.log(`User ${user.email_address}: Total calculated = ${totalBidAmount}, Final orderAmount = ${orderAmount}`)
                     totalBidAmount = formatCurrency(totalBidAmount, auctionData.currency)
+
+                    // FOR ALL LOTS: Send email BEFORE order creation
+                    if (auctionData.extension_type === 'All Lots') {
+                        const subdomainQuery = {
+                            seller_email: auctionData.seller_email,
+                        }
+                        const auctionRedirectionURL = await mongodbHelper.getSubdomain(subdomainQuery, SubDomain)
+                        const auctionId = auctionData._id.toString()
+                        const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
+
+                        if (buyerInformation.length > 0) {
+                            const template_data = {
+                                winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                                winning_lot_count: winningLot.length,
+                                buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
+                                title: auctionData.title,
+                                logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
+                                not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                                not_winning_lot_count: notWinning.length,
+                                seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                                seller_email: auctionData.seller_email,
+                                subject: subjectDescription,
+                                paymentContent,
+                                seller_id: sellerInformation[0]._id,
+                                total_amount: orderAmount,
+                                checkout_url: checkoutURL,
+                            }
+                            if (sellerInformation[0].send_automated_auction_complete_email) {
+                                promiseList.push(sendTemplateEmails(user.email_address, template_data))
+                            }
+                        }
+                    }
 
                     try {
                         // Get the first winning lot number to generate order number
@@ -332,6 +366,8 @@ module.exports.sqsTriggerFunction = async (event) => {
 
                         console.log('Final Auction Image:', auctionImage)
 
+                        console.log(`Creating order for ${user.email_address} with amount: ${orderAmount}`)
+                        
                         const orderData = {
                             order_number: orderNumber,
                             seller_email: auctionData.seller_email,
@@ -384,30 +420,33 @@ module.exports.sqsTriggerFunction = async (event) => {
                     const auctionId = auctionData._id.toString()
                     const checkoutURL = `https://${auctionRedirectionURL.subdomain}.${process.env.AMPLIFY_DOMAIN_NAME}/auctions/${auctionId}/checkout`
 
-                    // Create the email data
-                    if (buyerInformation.length > 0) {
-                        const template_data = {
-                            winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
-                            winning_lot_count: winningLot.length,
-                            buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
-                            title: auctionData.title,
-                            logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
-                            not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
-                            not_winning_lot_count: notWinning.length,
-                            seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
-                            seller_email: auctionData.seller_email,
-                            subject: subjectDescription,
-                            paymentContent,
-                            seller_id: sellerInformation[0]._id,
-                            total_amount: orderAmount,
-                            checkout_url: checkoutURL,
+                    // FOR NON-ALL LOTS: Send email AFTER order creation (existing behavior)
+                    if (auctionData.extension_type !== 'All Lots') {
+                        // Create the email data
+                        if (buyerInformation.length > 0) {
+                            const template_data = {
+                                winning_lot: winningLot.sort((a, b) => a.lot_number - b.lot_number),
+                                winning_lot_count: winningLot.length,
+                                buyer: buyerInformation[0].first_name === '' ? 'Customer' : `${buyerInformation[0].first_name} ${buyerInformation[0].last_name}`,
+                                title: auctionData.title,
+                                logo_url: auctionData.logo_image === '' ? `${process.env.S3_BUCKET_URL}Logo.png` : `${process.env.S3_BUCKET_URL}${auctionData.logo_image}`,
+                                not_winning_lot: notWinning.sort((a, b) => a.lot_number - b.lot_number),
+                                not_winning_lot_count: notWinning.length,
+                                seller_name: sellerInformation[0].first_name === '' ? 'User' : `${sellerInformation[0].first_name} ${sellerInformation[0].last_name}`,
+                                seller_email: auctionData.seller_email,
+                                subject: subjectDescription,
+                                paymentContent,
+                                seller_id: sellerInformation[0]._id,
+                                total_amount: orderAmount,
+                                checkout_url: checkoutURL,
+                            }
+                            // Check if seller has enabled automated auction completion emails
+                            if (!sellerInformation[0].send_automated_auction_complete_email) {
+                                console.log(`Skipping email for auction ${event.auction_id} - seller ${event.seller_email} has disabled automated auction completion emails`)
+                                continue
+                            }
+                            promiseList.push(sendTemplateEmails(user.email_address, template_data))
                         }
-                        // Check if seller has enabled automated auction completion emails
-                        if (!sellerInformation[0].send_automated_auction_complete_email) {
-                            console.log(`Skipping email for auction ${event.auction_id} - seller ${event.seller_email} has disabled automated auction completion emails`)
-                            continue
-                        }
-                        promiseList.push(sendTemplateEmails(user.email_address, template_data))
                     }
                 } else {
                     // Handle users who didn't win any lots
