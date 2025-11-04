@@ -291,8 +291,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                         event.buyer_id = user.buyer_id
                         const getAmount = await mongodbHelper.getBid(event, UniqueBid)
                         if (getAmount !== null) {
-                            console.log('not null')
-                            lotForThisBidder.bid_amount = formatCurrency(getAmount.bid_amount, auctionData.currency)
+                            console.log('getAmount is not null')
+                            lotForThisBidder.bid_amount = formatCurrency(getAmount.max_bid, auctionData.currency)
                             notWinning.push(lotForThisBidder)
                         }
                     }
