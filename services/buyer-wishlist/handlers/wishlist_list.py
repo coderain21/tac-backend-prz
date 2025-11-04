@@ -136,7 +136,7 @@ def wishlist_list(event, context):
             "body": response_body
         }
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             "statusCode": 500,
             "headers": headers,

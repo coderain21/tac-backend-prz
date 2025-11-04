@@ -45,7 +45,7 @@ def send_reset_link(event, context):
             "body": json.dumps({"message": "Invalid or Unregistered email_address"})
         }
     except BaseException as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,

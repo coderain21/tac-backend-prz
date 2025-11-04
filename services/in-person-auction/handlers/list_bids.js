@@ -353,7 +353,7 @@ module.exports.list_bids = async (event) => {
         }
     } catch (error) {
         /** Log and handle errors */
-        console.error(error)
+        console.error('Error', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

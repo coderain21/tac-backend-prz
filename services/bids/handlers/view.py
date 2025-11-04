@@ -104,7 +104,7 @@ def view_bidder(event, context):
                 "body": json.dumps({"message": "Bidder not found"})
             }
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "statusCode": 500,
             "headers": headers,

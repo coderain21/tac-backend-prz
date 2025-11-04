@@ -105,7 +105,7 @@ def deactivate(event, context):
                 'body': json.dumps({"message": "Auction with associated auction_id doesn't exists"})
             }
     except Exception as err:
-        print(err)
+        print('Error:', str(err))
         return {
             "statusCode": 500,
             'headers': headers,

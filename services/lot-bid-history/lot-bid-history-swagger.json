@@ -249,6 +249,147 @@
           ]
         }
       }
+      ,
+      "/auction/{auction_id}": {
+        "get": {
+          "summary": "List Buyer Auction Bids",
+          "description": "Fetch buyer's bid history for all lots in an auction, grouped by lot ID. Returns latest bid per lot for the specified buyer.",
+          "tags": [
+            "Bid History Management"
+          ],
+          "parameters": [
+            {
+              "name": "auction_id",
+              "in": "path",
+              "required": true,
+              "example": "65f3ed878bf1f8cf32cab3d2",
+              "description": "MongoDB ObjectId of the auction",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "buyer_id",
+              "in": "query",
+              "required": true,
+              "example": "68c9405febdee924d9d6b4e2",
+              "description": "Unique identifier of the buyer",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page number for pagination",
+              "schema": {
+                "type": "integer"
+              },
+              "example": 1
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of items per page",
+              "schema": {
+                "type": "integer"
+              },
+              "example": 10
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Successful response with buyer's bids grouped by lot ID.",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "data": {
+                      "68e8cd91156158d2a82b41f4": [
+                        {
+                          "_id": "68e8ce29c0093123e2cc1126",
+                          "is_greyed_out": false,
+                          "location": "India",
+                          "buyer_id": "68c9405febdee924d9d6b4e2",
+                          "paddle_number": 1,
+                          "bid_amount": 3200,
+                          "name": "Buyer 1",
+                          "time_stamp": 1760087591201,
+                          "updated_at": "2025-10-10T09:13:11.443Z",
+                          "created_at": "2025-10-10T09:13:13.332Z",
+                          "lot_id": "68e8cd91156158d2a82b41f4"
+                        }
+                      ],
+                      "68e8cd91156158d2a82b41f5": []
+                    },
+                    "pagination": {
+                      "total_pages": 1,
+                      "limit": 10,
+                      "total_records": 1,
+                      "next_page": null,
+                      "page": 1,
+                      "total_lots": 2
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request - buyer_id is required.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "buyer_id is required"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Auction or lots not found.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "enum": ["Auction not found", "No lots found"]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "message": {
+                        "type": "string",
+                        "example": "Error listing auction bids"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "security": [
+            {
+              "BearerAuth": []
+            }
+          ]
+        }
+}
+
     },
     "components": {
       "securitySchemes": {

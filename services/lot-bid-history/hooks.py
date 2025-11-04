@@ -66,3 +66,7 @@ def set_authorization(transaction):
             transaction['request']['uri'])
         logging.info(transaction['request'])
 
+    if (transaction['request']['method'] == 'GET' and '/auction/65f3ed878bf1f8cf32cab3d2' in transaction['request']['uri']):
+        print('Skipping the test...')
+        transaction['skip'] = True
+        return

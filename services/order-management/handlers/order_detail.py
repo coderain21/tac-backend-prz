@@ -108,7 +108,7 @@ def order_detail(event, context):
                 "body": json.dumps({"data":order_data},cls = Encoder)
             }
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,
