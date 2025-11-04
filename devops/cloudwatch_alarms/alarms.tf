@@ -229,10 +229,25 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth" {
       stat   = "Sum"
     }
   }
+    metric_query {
+    id = "subdomain_api_patch"
+    metric {
+      namespace   = "AWS/ApiGateway"
+      metric_name = "5XXError"
+      dimensions = {
+        ApiName  = "${var.STAGE}-subdomain"
+        Resource = "/subdomain"
+        Stage    = var.STAGE
+        Method   = "PATCH"
+      }
+      period = 300
+      stat   = "Sum"
+    }
+  }
 
   metric_query {
     id          = "max5xx_p1_part1"
-    expression  = "MAX([buyer_verify_captcha, buyer_otp_validation, buyer_auth_login, seller_verify_captcha, seller_otp_validation, seller_request_otp, buyer_auction_register, buyer_verify_card, subdomain_api])"
+    expression  = "MAX([buyer_verify_captcha, buyer_otp_validation, buyer_auth_login, seller_verify_captcha, seller_otp_validation, seller_request_otp, buyer_auction_register, buyer_verify_card, subdomain_api, subdomain_api_patch])"
     label       = "Max 5XX Errors P1 Part1"
     return_data = true
   }
@@ -735,8 +750,8 @@ resource "awscc_applicationsignals_service_level_objective" "p1_critical_availab
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P1Critical5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -765,8 +780,8 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P2Medium5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -776,8 +791,8 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
     interval        = { rolling_interval = { duration = 7, duration_unit = "DAY" } }
   }
   burn_rate_configurations = [
+    { look_back_window_minutes = 10 },
     { look_back_window_minutes = 180 },
-    { look_back_window_minutes = 720 },
   ]
   tags = [{ key = "Priority", value = "P2" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }
@@ -795,8 +810,8 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P3Low5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -806,8 +821,8 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
     interval        = { rolling_interval = { duration = 7, duration_unit = "DAY" } }
   }
   burn_rate_configurations = [
+    { look_back_window_minutes = 30 },
     { look_back_window_minutes = 360 },
-    { look_back_window_minutes = 1440 },
   ]
   tags = [{ key = "Priority", value = "P3" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }

@@ -127,10 +127,10 @@ resources:
     Api5xxAlertHandlerInvokePermission:
       Type: AWS::Lambda::Permission
       Properties:
-        FunctionName: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
+        FunctionName: ${self:service}-${self:provider.stage}-api-5xx-alert-handler
         Action: lambda:InvokeFunction
-        Principal: lambda.alarms.cloudwatch.amazonaws.com
-        SourceAccount: ${aws:accountId}
+        Principal: sns.amazonaws.com
+        SourceArn: !Ref RedisDeleteAlertsTopic
 
 
 functions:
