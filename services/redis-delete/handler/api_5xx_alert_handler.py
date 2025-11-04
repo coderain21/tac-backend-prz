@@ -51,7 +51,15 @@ def process_cloudwatch_event(event, sns):
     print(f"DEBUG: Extracted from CloudWatch - Name: {alarm_name}, Reason: {reason}, Failed API: {failed_api}")
     # Process the alarm
     alert_type, service_name, log_link = parse_alarm_details(alarm_name, reason, failed_api)
-    enhanced_msg = create_alert_message(alert_type, service_name, alarm_name, reason, alarm_description, failed_api)
+    alert_details = {
+        'alert_type': alert_type,
+        'service_name': service_name,
+        'alarm_name': alarm_name,
+        'reason': reason,
+        'description': alarm_description,
+        'failed_api': failed_api
+    }
+    enhanced_msg = create_alert_message(alert_details)
 
     # Send notification
     destination_topic = os.environ.get('SNS_TOPIC_ARN')
@@ -107,7 +115,15 @@ def process_alarm(message, sns):
     alert_type, service_name, log_link = parse_alarm_details(alarm_name, reason, failed_api)
 
     # Create enhanced message based on alarm type
-    enhanced_msg = create_alert_message(alert_type, service_name, alarm_name, reason, alarm_description, failed_api)
+    alert_details = {
+        'alert_type': alert_type,
+        'service_name': service_name,
+        'alarm_name': alarm_name,
+        'reason': reason,
+        'description': alarm_description,
+        'failed_api': failed_api
+    }
+    enhanced_msg = create_alert_message(alert_details)
 
     # Send enhanced notification to destination topic
     destination_topic = os.environ.get('SNS_TOPIC_ARN')
@@ -278,7 +294,7 @@ def query_recent_api_errors(metrics, alarm_name, reason=''):
             timestamp_str = timestamp_match.group(1)
             try:
                 # Convert to datetime (assuming format DD/MM/YY HH:MM:SS)
-                alarm_time = datetime.strptime(f"20{timestamp_str}", "%Y%d/%m/%y %H:%M:%S")
+                alarm_time = datetime.strptime(f"20{timestamp_str}", "%Y%m/%d/%y %H:%M:%S")
                 start_time = alarm_time - timedelta(minutes=5)
                 end_time = alarm_time + timedelta(minutes=5)
                 print(f"DEBUG: Using alarm timestamp {alarm_time}, querying from {start_time} to {end_time}")
@@ -466,7 +482,7 @@ def query_specific_failing_api(alarm_name, reason):
             timestamp_str = timestamp_match.group(1)
             try:
                 # Convert to datetime (assuming format DD/MM/YY HH:MM:SS)
-                alarm_time = datetime.strptime(f"20{timestamp_str}", "%Y%d/%m/%y %H:%M:%S")
+                alarm_time = datetime.strptime(f"20{timestamp_str}", "%Y%m/%d/%y %H:%M:%S")
                 start_time = alarm_time - timedelta(minutes=5)
                 end_time = alarm_time + timedelta(minutes=5)
             except:
@@ -616,17 +632,24 @@ def parse_alarm_details(alarm_name, reason, failed_api):
         return "DocumentDB Alert", "DocumentDB Cluster", get_documentdb_console_link()
     elif 'redis' in alarm_name.lower():
         return "Redis Alert", "Redis Cluster", get_redis_console_link()
-    elif 'process-cart' in alarm_name.lower():
+    elif 'process-cart' in alarm_name.lower() or 'process cart' in alarm_name.lower():
         return "Lambda Error", "Process Cart Lambda", get_lambda_logs_link('process-cart')
-    elif 'save-to-cache' in alarm_name.lower():
+    elif 'save-to-cache' in alarm_name.lower() or 'save to cache' in alarm_name.lower():
         return "Lambda Error", "Save to Cache Lambda", get_lambda_logs_link('save-to-cache')
     elif 'throttlingexception' in alarm_name.lower():
         return "Lambda Throttling", "Unpublish Auction Lambda", get_lambda_logs_link('unpublish-auction')
     else:
         return "System Alert", f"Unknown Service (Alarm: {alarm_name})", ""
 
-def create_alert_message(alert_type, service_name, alarm_name, reason, description, failed_api):
+def create_alert_message(alert_details):
     """Create formatted alert message based on alarm type"""
+    # Extract values from alert_details dict
+    alert_type = alert_details['alert_type']
+    service_name = alert_details['service_name']
+    alarm_name = alert_details['alarm_name']
+    reason = alert_details['reason']
+    description = alert_details['description']
+    failed_api = alert_details['failed_api']
 
     # Extract priority from alarm name
     priority = extract_priority_from_alarm_name(alarm_name)
@@ -664,17 +687,18 @@ Reason: {reason}
 """
 
     # Always try to get the exact log stream
-    print(f"DEBUG: Attempting to get log stream for API: {failed_api or service_name}")
+    print(f"DEBUG: Attempting to get log stream for API: '{failed_api or service_name}'")
+    print(f"DEBUG: Alarm reason: '{reason}'")
     log_stream_link = get_recent_log_stream(failed_api or service_name, reason)
     if log_stream_link:
-        print(f"DEBUG: Successfully got log stream link")
+        print(f"DEBUG: Successfully got log stream link: {log_stream_link}")
         base_msg += f"\nExact Log Stream: {log_stream_link}"
     else:
         print(f"DEBUG: No log stream found, trying log group link")
         # Fallback to log group link
         log_group_link = get_log_group_link_by_api_name(failed_api or service_name)
         if log_group_link:
-            print(f"DEBUG: Successfully got log group link")
+            print(f"DEBUG: Successfully got log group link: {log_group_link}")
             base_msg += f"\nLog Group: {log_group_link}"
         else:
             print(f"DEBUG: No log group link found either")
@@ -711,7 +735,7 @@ def get_lambda_logs_link(function_type):
     return ""
 
 def get_recent_log_stream(api_name, reason):
-    """Get the most recent log stream for the failed API"""
+    """Get the exact log stream containing errors at the alarm timestamp"""
 
     try:
         # Get the log group name for this API
@@ -724,25 +748,100 @@ def get_recent_log_stream(api_name, reason):
 
         print(f"DEBUG: Found log group {log_group_name} for {api_name}")
 
-        # Query CloudWatch Logs to find recent log streams
+        # Parse timestamp from alarm reason
+        timestamp_match = re.search(r'\((\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\)', reason)
+
+        if timestamp_match:
+            timestamp_str = timestamp_match.group(1)
+            try:
+                # Convert to datetime (format DD/MM/YY HH:MM:SS)
+                alarm_time = datetime.strptime(f"20{timestamp_str}", "%Y%d/%m/%y %H:%M:%S")
+                # Convert to milliseconds since epoch for CloudWatch
+                alarm_timestamp_ms = int(alarm_time.timestamp() * 1000)
+                print(f"DEBUG: Parsed alarm timestamp: {alarm_time} ({alarm_timestamp_ms}ms)")
+            except Exception as e:
+                print(f"DEBUG: Could not parse timestamp {timestamp_str}: {e}")
+                return None
+        else:
+            print(f"DEBUG: No timestamp found in reason: {reason}")
+            return None
+
+        # Query CloudWatch Logs to find log streams active at alarm time
         logs_client = boto3.client('logs', region_name='eu-west-2')
+
+        # Get log streams that were active around the alarm time
+        start_time = alarm_timestamp_ms - (5 * 60 * 1000)  # 5 minutes before
+        end_time = alarm_timestamp_ms + (5 * 60 * 1000)    # 5 minutes after
 
         response = logs_client.describe_log_streams(
             logGroupName=log_group_name,
             orderBy='LastEventTime',
             descending=True,
-            limit=3  # Get the 3 most recent streams
+            limit=10  # Check more streams to find the right one
         )
 
-        # Get the most recent stream
         log_streams = response.get('logStreams', [])
+        print(f"DEBUG: Found {len(log_streams)} log streams")
+
+        # Find the stream that contains events at the alarm time
+        for stream in log_streams:
+            stream_name = stream.get('logStreamName', '')
+            first_event_time = stream.get('firstEventTime', 0)
+            last_event_time = stream.get('lastEventTime', 0)
+
+            print(f"DEBUG: Checking stream {stream_name}: {first_event_time} - {last_event_time}")
+
+            # Check if this stream was active during the alarm time
+            if first_event_time <= alarm_timestamp_ms <= last_event_time:
+                print(f"DEBUG: Found matching stream: {stream_name}")
+
+                # Verify this stream actually contains error logs
+                try:
+                    # Try multiple error patterns for different Lambda functions
+                    error_patterns = ['ERROR']
+
+                    # Add specific patterns for Save to Cache Lambda
+                    if 'save-to-cache' in log_group_name or 'Save to Cache' in api_name:
+                        error_patterns.extend([
+                            'ClusterAllFailedError',
+                            'Redis connection',
+                            'ECONNREFUSED',
+                            'ETIMEDOUT',
+                            'Cannot read properties'
+                        ])
+
+                    # Try each error pattern
+                    for pattern in error_patterns:
+                        events_response = logs_client.filter_log_events(
+                            logGroupName=log_group_name,
+                            logStreamNames=[stream_name],
+                            startTime=start_time,
+                            endTime=end_time,
+                            filterPattern=pattern
+                        )
+
+                        events = events_response.get('events', [])
+                        if events:
+                            print(f"DEBUG: Found {len(events)} '{pattern}' events in stream {stream_name}")
+                            encoded_log_group = log_group_name.replace('/', '$252F')
+                            encoded_stream_name = stream_name.replace('/', '$252F')
+                            log_stream_url = f"https://console.aws.amazon.com/cloudwatch/home?region=eu-west-2#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
+                            return log_stream_url
+
+                    print(f"DEBUG: No error events found in stream {stream_name} with any pattern")
+
+                except Exception as e:
+                    print(f"DEBUG: Error checking events in stream {stream_name}: {e}")
+                    continue
+
+        # Fallback: return the most recent stream if no exact match
         if log_streams:
             stream_name = log_streams[0].get('logStreamName', '')
             if stream_name:
+                print(f"DEBUG: Using fallback stream: {stream_name}")
                 encoded_log_group = log_group_name.replace('/', '$252F')
                 encoded_stream_name = stream_name.replace('/', '$252F')
                 log_stream_url = f"https://console.aws.amazon.com/cloudwatch/home?region=eu-west-2#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
-                print(f"DEBUG: Generated log stream URL: {log_stream_url}")
                 return log_stream_url
 
     except Exception as e:
