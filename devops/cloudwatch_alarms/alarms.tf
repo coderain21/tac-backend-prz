@@ -576,6 +576,66 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
   provider             = aws.deployment-eu
 }
 
+# Batch Lots Publish Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "batch_lots_publish_lambda_error_filter" {
+  name           = "Batch Lots Publish All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-batchLotsPublish"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "BatchLotsPublishErrorCount"
+    namespace = "BatchLotsPublishError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "batch_lots_publish_lambda_error_alarm" {
+  alarm_name          = "p1-IndyAuction-${var.STAGE}-Batch-Lots-Publish-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.batch_lots_publish_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.batch_lots_publish_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Batch Lots Publish Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Batch Lots Update Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "batch_lots_update_lambda_error_filter" {
+  name           = "Batch Lots Update All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-batchLotsUpdate"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "BatchLotsUpdateErrorCount"
+    namespace = "BatchLotsUpdateError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "batch_lots_update_lambda_error_alarm" {
+  alarm_name          = "p1-IndyAuction-${var.STAGE}-Batch-Lots-Update-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.batch_lots_update_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.batch_lots_update_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Batch Lots Update Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
 
 
 
