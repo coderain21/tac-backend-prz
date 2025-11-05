@@ -89,7 +89,7 @@ module.exports.handler = async (event) => {
             body: JSON.stringify({ message: 'There is an error while creating sitebanner notification' }),
         }
     } catch (err) {
-        console.log('error', err)
+        console.log('Error', err)
     } finally {
         // Disconnect from the MongoDB database
         if (connection) {

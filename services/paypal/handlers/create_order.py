@@ -501,7 +501,7 @@ def create_paypal_order(event, context):
         }
 
     except Exception as err:
-        print(f"Unexpected error: {err}")
+        print(f"Unexpected Error: {err}")
         return {
             "statusCode": 500,
             "headers": headers,

@@ -139,8 +139,7 @@ def buyer_list_auction(event, context):
             "body": json.dumps({"data":result_list,"page_number":page_number,"page_size":page_size,"total_records": total_count},cls=Encoder)
         }
     except Exception as err:
-        print('error:', str(err))
-        print('error:', str(err))
+        print('Error:', str(err))
         return {
             "headers": headers,
             "statusCode": 500,

@@ -69,7 +69,7 @@ def disconnect_account(event, context):
         }
 
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,

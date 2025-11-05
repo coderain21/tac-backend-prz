@@ -112,7 +112,7 @@ def add_shipping_address(event, context):
             "body": json.dumps({'message': "Address added successfully!"})
         }
     except Exception as err:
-        print(err)
+        print("Error",str(err))
         return {
             "statusCode": 500,
             "headers": headers,

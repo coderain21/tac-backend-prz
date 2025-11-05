@@ -72,7 +72,7 @@ def view_customer(event, context):
             'body': body
         }
     except Exception as error:
-        print(error)
+        print('Error', error)
         return {
             'success_status': False,
             'message': str(error)

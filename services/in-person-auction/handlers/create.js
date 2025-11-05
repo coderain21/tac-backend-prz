@@ -82,7 +82,7 @@ module.exports.create_auction = async (event) => {
             message: 'Something went wrong. Please try again!',
         }
     } catch (error) {
-        console.log('err', error)
+        console.log('Error', error)
         return {
             headers: await helpers.getHeaders(),
             statusCode: 500,

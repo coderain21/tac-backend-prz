@@ -82,7 +82,7 @@ def view(event, context):
                 "body": json.dumps({"data":list(cart_details),"plan_type":plan_type, "seller_payment_status": seller_payment_status},cls = Encoder)
             }
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,

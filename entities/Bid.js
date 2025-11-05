@@ -24,7 +24,7 @@ const UniqueBidSchema = new Schema({
         type: String, trim: true,
     },
     paddle_number: {
-        type: Number
+        type: Number,
     },
     bid_amount: {
         type: Number,

@@ -143,7 +143,7 @@ def update_seller_settings(event, context):
                     })
                 }
         except Exception as update_error:
-            print(f"Update error: {str(update_error)}")
+            print(f"Update Error: {str(update_error)}")
             return {
                 "statusCode": 500,
                 "headers": headers,
