@@ -23,24 +23,50 @@ exports.handler = async (event) => {
 
         let auction_id
         if (isFederatedLogin) {
-            // Federated login: get auction_id from temp storage
-            const tempAuth = await mongoHelper.getOrder(
+            // For federated login, try to find by email first, then by any available record
+            let tempAuth = await mongoHelper.getOrder(
                 process.env.MONGO_CLIENT,
                 process.env.DATABASE,
                 'temp_federated_auth',
-                { email_address: email }
+                { email_address: email },
             )
+
+            // If not found by email, try to find any recent record and update it
+            if (!tempAuth) {
+                tempAuth = await mongoHelper.getOrder(
+                    process.env.MONGO_CLIENT,
+                    process.env.DATABASE,
+                    'temp_federated_auth',
+                    {},
+                    { created_at: -1 }, // Get most recent
+                )
+
+                if (tempAuth) {
+                    // Update with email for future reference
+                    await mongoHelper.updateCart(
+                        process.env.MONGO_CLIENT,
+                        process.env.DATABASE,
+                        'temp_federated_auth',
+                        // eslint-disable-next-line no-underscore-dangle
+                        { _id: tempAuth._id },
+                        { email_address: email },
+                    )
+                }
+            }
+
             auction_id = tempAuth?.auction_id
+            if (!auction_id) {
+                console.log('No auction_id found for federated login, allowing login to proceed')
+                return event
+            }
         } else {
-            // Normal login: get auction_id from validationData
             auction_id = event.request.validationData?.auction_id
+            if (!auction_id) {
+                throw new Error('Missing auction_id')
+            }
         }
 
-        if (!auction_id) {
-            throw new Error('Missing auction_id')
-        }
-
-        // Fetch seller email from auction
+        // Rest of your existing logic...
         const auction = await mongoHelper.getOrder(
             process.env.MONGO_CLIENT,
             process.env.DATABASE,
@@ -61,7 +87,6 @@ exports.handler = async (event) => {
         )
 
         if (!existingBuyer) {
-            // Check if user has existing record without seller_email
             const buyerWithoutSeller = await mongoHelper.getOrder(
                 process.env.MONGO_CLIENT,
                 process.env.DATABASE,
@@ -70,17 +95,14 @@ exports.handler = async (event) => {
             )
 
             if (buyerWithoutSeller && !buyerWithoutSeller.seller_email) {
-                // Update existing record with seller_email
                 await mongoHelper.updateCart(
                     process.env.MONGO_CLIENT,
                     process.env.DATABASE,
                     process.env.BUYER_COLLECTION,
-                    // eslint-disable-next-line no-underscore-dangle
                     { _id: buyerWithoutSeller._id },
                     { seller_email: auction.seller_email, registered_through: '' },
                 )
             } else if (!buyerWithoutSeller) {
-                // Create new buyer record
                 await mongoHelper.createOrder(
                     process.env.MONGO_CLIENT,
                     process.env.DATABASE,

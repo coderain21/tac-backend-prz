@@ -12,95 +12,93 @@
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable no-console */
 const CryptoJS = require('crypto-js')
-const uuid = require('uuid')
-const AWS = require('aws-sdk')
-
-const cognito = new AWS.CognitoIdentityServiceProvider()
-const Subdomain = require('../entities/SubDomain')
 const mongoConnection = require('../lib/mongodb_helper')
 
-/* eslint-disable no-console */
 exports.handler = async (event) => {
     let loginRedirect = `https://${process.env.DEFAULT_SUB_DOMAIN}.${process.env.AMPLIFY_DOMAIN_NAME}`
     try {
         const queryParams = event.queryStringParameters || {}
-        const { state, code } = queryParams // Capture state (frontend URL) and auth code
+        const { state, code, error } = queryParams
 
+        // Handle OAuth errors first
+        if (error) {
+            console.log('OAuth error:', error, queryParams.error_description)
+            return {
+                statusCode: 302,
+                headers: { Location: `${loginRedirect}/pageNotFound` },
+                body: '',
+            }
+        }
+
+        let stateData = null
         if (state) {
             try {
-                // Try parsing as JSON first (federated login)
-                const stateData = JSON.parse(decodeURIComponent(state))
-                if (stateData.redirect_url) {
-                    const url = new URL(stateData.redirect_url)
-                    loginRedirect = `${url.origin}/login`
+                // Handle double-encoded JSON by unescaping
+                let decodedState = decodeURIComponent(state)
+                decodedState = decodedState.replace(/\\\"/g, '"') // Fix escaped quotes
+
+                if (decodedState.startsWith('{') || decodedState.startsWith('[')) {
+                    stateData = JSON.parse(decodedState)
+                    if (stateData.redirect_url) {
+                        const url = new URL(stateData.redirect_url)
+                        loginRedirect = `${url.origin}/login`
+                    }
                 }
             } catch (err) {
-                // Fallback: treat as URL (normal login)
+                console.log('Failed to parse state:', err.message)
+                // Treat as plain URL if JSON parsing fails
                 try {
-                    const url = new URL(state)
+                    const url = new URL(decodeURIComponent(state))
                     loginRedirect = `${url.origin}/login`
                 } catch (urlErr) {
-                    console.log('Invalid state format, falling back to default login.')
+                    console.log('Invalid state format')
+                }
+            }
+
+            // Store auction context using auth code as key
+            if (stateData?.auction_id && code) {
+                try {
+                    await mongoConnection.createOrder(
+                        process.env.MONGO_CLIENT,
+                        process.env.DATABASE,
+                        'temp_federated_auth',
+                        {
+                            auth_code: code,
+                            auction_id: stateData.auction_id,
+                            email_address: stateData.email_address,
+                            created_at: new Date(),
+                            expires_at: new Date(Date.now() + 10 * 60 * 1000),
+                        },
+                    )
+                    console.log('Stored auction context for code:', code)
+                } catch (err) {
+                    console.error('Failed to store auction context:', err)
                 }
             }
         }
 
-        // Redirect if state or code is missing
-        if (!state || !code || typeof code !== 'string' || code.length === 0) {
-            console.log('Missing or invalid state/code, redirecting to login.')
-            console.log(`${loginRedirect}/pageNotFound`)
+        if (!state || !code) {
             return {
                 statusCode: 302,
-                headers: {
-                    Location: `${loginRedirect}/pageNotFound`,
-                    'Cache-Control': 'no-cache',
-                },
+                headers: { Location: `${loginRedirect}/pageNotFound` },
                 body: '',
             }
         }
 
-        // Parse state to get redirect URL
-        let redirectUrl = state
-        try {
-            const stateData = JSON.parse(decodeURIComponent(state))
-            redirectUrl = stateData.redirect_url || state
-        } catch (err) {
-            // Use state as-is if not JSON
-        }
-
-        const secretKey = process.env.SUB_ENC_KEY
-        if (!secretKey) {
-            console.log('Missing env variable')
-            return {
-                statusCode: 302,
-                headers: {
-                    Location: loginRedirect,
-                    'Cache-Control': 'no-cache',
-                },
-                body: '',
-            }
-        }
-
-        const encryptedCode = CryptoJS.AES.encrypt(code, secretKey).toString()
+        const redirectUrl = stateData?.redirect_url || state
+        const encryptedCode = CryptoJS.AES.encrypt(code, process.env.SUB_ENC_KEY).toString()
         const frontendRedirectUrl = `${redirectUrl}?code=${encodeURIComponent(encryptedCode)}`
-        console.log('Redirecting to:', frontendRedirectUrl)
 
         return {
             statusCode: 302,
-            headers: {
-                Location: frontendRedirectUrl,
-                'Cache-Control': 'no-cache',
-            },
+            headers: { Location: frontendRedirectUrl },
             body: '',
         }
     } catch (err) {
-        console.error('Unexpected error:', err)
+        console.error('Handler error:', err)
         return {
             statusCode: 302,
-            headers: {
-                Location: `${loginRedirect}/pageNotFound`,
-                'Cache-Control': 'no-cache',
-            },
+            headers: { Location: `${loginRedirect}/pageNotFound` },
             body: '',
         }
     }
