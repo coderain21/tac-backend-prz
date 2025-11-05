@@ -75,7 +75,7 @@ def update_address(event, context):
             "body": json.dumps({})
         }
     except Exception as err:
-        print(err)
+        print("Error:", str(err))
         return {
             "statusCode": 500,
             "headers": headers,

@@ -145,7 +145,7 @@ def view_profile(event, context):
             "body": json.dumps({'data':result},cls=Encoder)
             }
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             "statusCode": 500,
             "headers": headers,

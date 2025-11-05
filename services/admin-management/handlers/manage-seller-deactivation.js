@@ -38,7 +38,7 @@ module.exports.handler = async (event) => {
         // await mongodbHelper.save(event, AccessLogs)
         return true
     } catch (err) {
-        console.log('error', err)
+        console.log('Error', err)
     } finally {
         // Disconnect from the MongoDB database
         if (connection) {

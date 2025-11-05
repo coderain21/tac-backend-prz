@@ -201,7 +201,7 @@ def lambda_handler(event, context):
             "body": json.dumps({"message": "Lot added successfully."})
         }
     except Exception as e:
-        print(e)
+        print('Error:', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

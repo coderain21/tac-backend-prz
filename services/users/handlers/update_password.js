@@ -102,7 +102,7 @@ module.exports.updatePassword = async (event) => {
             body: JSON.stringify({ message: 'Password not updated.Please try again.' }),
         }
     } catch (error) {
-        console.log(error)
+        console.log('Error', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

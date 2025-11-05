@@ -70,7 +70,7 @@ def remove(event, context):
             'body': json.dumps({'message': 'Lot removed from wishlist'})
         }
     except Exception as e:
-        print(str(e))
+        print('Error', str(e))
         return {
             'statusCode': 500,
             'headers': headers,

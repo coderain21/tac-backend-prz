@@ -112,6 +112,7 @@ def list_sellers(event, context):
         }
 
     except Exception as e:
+        print('Error:', str(e))
         return {
             "statusCode": 500,
             "headers": headers,

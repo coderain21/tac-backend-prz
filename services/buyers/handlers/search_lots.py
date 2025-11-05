@@ -89,6 +89,7 @@ def lot_search(event, context):
         }
 
     except Exception as e:
+        print('Error', str(e))
         return {
             "statusCode": 500,
             "headers": headers,
