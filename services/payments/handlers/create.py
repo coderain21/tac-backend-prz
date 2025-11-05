@@ -35,20 +35,7 @@ PAYPAL_API_URL = os.environ["PAYPAL_URL"]
 def generate_order_code(number):
     if not isinstance(number, int) or number < 1:
         raise ValueError("Input must be a positive integer greater than 0.")
-
-    # Define the prefix for the code
-    prefix = "OD"
-
-    # Determine the number of digits in the input number
-    num_digits = len(str(number))
-
-    # Calculate the padding needed for the code
-    padding = max(0, 3 - num_digits)
-
-    # Generate the formatted code
-    formatted_code = f"{prefix}{padding*'0'}{number}"
-
-    return formatted_code
+    return f"OD{str(number).zfill(4)}"
 
 def get_data_from_cart(auction_id,seller_email,buyer_email):
     try:

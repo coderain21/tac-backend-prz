@@ -395,13 +395,22 @@ module.exports.sqsTriggerFunction = async (event) => {
                             updated_at: Math.floor(Date.now() / 1000),
                         }
 
-                        // Insert order into orders collection
-                        await mongodbHelper.createOrder(
+                        const orderExists = await mongodbHelper.getOrder(
                             process.env.MONGO_CLIENT,
                             process.env.DATABASE,
                             process.env.ORDERS_COLLECTION,
                             orderData,
                         )
+
+                        if (!orderExists) {
+                            // Insert order into orders collection
+                            await mongodbHelper.createOrder(
+                                process.env.MONGO_CLIENT,
+                                process.env.DATABASE,
+                                process.env.ORDERS_COLLECTION,
+                                orderData,
+                            )
+                        }
 
                         const cartUpdateCondition = {
                             seller_email: auctionData.seller_email,
