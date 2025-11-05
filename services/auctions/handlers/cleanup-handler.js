@@ -14,6 +14,7 @@ const mongoConnection = require('../lib/mongodb_helper')
 const StepFunctionArn = require('../entities/stepFunctionArn')
 const Auction = require('../entities/Auction')
 const Lot = require('../entities/Lot')
+const redisHelper = require('../lib/redis_helper')
 
 config.update({ region: 'eu-west-2' })
 
@@ -23,6 +24,39 @@ let connection = null
 function sleep(ms) {
     // eslint-disable-next-line no-promise-executor-return
     return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function deleteLotsFromRedis(auction_id) {
+    let redisClient = null
+    try {
+        const lots = await mongoConnection.view(Lot, { auction_id })
+        if (!lots || lots.length === 0) return { deleted: 0 }
+
+        redisClient = await redisHelper.createRedisClient()
+        const lotKeys = lots.map((lot) => `lot:${lot._id.toString()}`)
+        let deletedCount = 0
+
+        await Promise.all(lotKeys.map(async (lotKey) => {
+            try {
+                if (await redisClient.hdel('lot', lotKey) > 0) {
+                    deletedCount++
+                }
+            } catch (error) {
+                console.error(`Failed to delete Redis key ${lotKey}:`, error)
+            }
+        }))
+
+        return { deleted: deletedCount }
+    } catch (error) {
+        console.error('Redis cleanup failed:', error)
+        return { deleted: 0 }
+    } finally {
+        if (redisClient) {
+            try {
+                await redisClient.disconnect()
+            } catch (e) { /* ignore */ }
+        }
+    }
 }
 
 // eslint-disable-next-line consistent-return
@@ -179,34 +213,11 @@ module.exports.handler = async (event) => {
         // Update ARN statuses to ABORTED
         const { updateResults, updateErrors } = await updateArnStatusToAborted(arnRecords)
 
-        // Update lot statuses based on operation type
-        // if (operation_type === 'UNPUBLISH') {
-        //     const runningLots = await mongoConnection.view(Lot, { auction_id, status: 'RUNNING' })
-        //     // Replace for...of with Promise.all
-        //     await Promise.all(runningLots.map(async (lot) => {
-        //         try {
-        //             await mongoConnection.update(Lot, lot._id.toString(), { status: 'ABORTED' })
-        //         } catch (error) {
-        //             console.error(`Failed to update lot ${lot._id} status:`, error.message)
-        //         }
-        //     }))
-        // } else if (operation_type === 'CANCEL') {
-        //     const runningLots = await mongoConnection.view(Lot, { auction_id, status: { $in: ['RUNNING', 'PENDING'] } })
-        //     // Replace for...of with Promise.all
-        //     await Promise.all(runningLots.map(async (lot) => {
-        //         try {
-        //             await mongoConnection.update(Lot, lot._id.toString(), { status: 'ABORTED' })
-        //         } catch (error) {
-        //             console.error(`Failed to update lot ${lot._id} status:`, error.message)
-        //         }
-        //     }))
-        // }
-
-        // // Update auction with completion status
-        // await mongoConnection.update(Auction, auction_id, {
-        //     step_functions_stopped_at: Math.floor(Date.now() / 1000),
-        //     background_cleanup_completed: true,
-        // })
+        // Delete lots from Redis
+        if (auction_id) {
+            const redisCleanup = await deleteLotsFromRedis(auction_id)
+            console.log(`Redis cleanup: ${redisCleanup.deleted} lots deleted`)
+        }
 
         console.log(`✅ Cleanup completed: ${updateResults.length} ARNs updated, operation: ${operation_type}`)
     } catch (error) {

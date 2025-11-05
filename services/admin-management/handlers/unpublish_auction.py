@@ -83,7 +83,7 @@ def handler(event, context):
                 "body": json.dumps({"message": "Auction not found"})
             }
     except Exception as e:
-        print('Error',e)
+        print('Error',str(e))
         return {
             "statusCode": 500,
             "headers": {

@@ -177,6 +177,7 @@ def list_lots(event, context):
             "body": json.dumps(body,cls= Encoder)
         }
     except Exception as e:
+        print('Error:', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

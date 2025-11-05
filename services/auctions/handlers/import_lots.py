@@ -363,7 +363,7 @@ def import_lots(event, context):
             }
 
     except Exception as e:
-        print(e)
+        print('Error:', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

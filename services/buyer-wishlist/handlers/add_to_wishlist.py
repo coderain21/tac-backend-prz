@@ -88,7 +88,7 @@ def create(event, context):
         }
 
     except Exception as e:
-        print(str(e))
+        print('Error', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

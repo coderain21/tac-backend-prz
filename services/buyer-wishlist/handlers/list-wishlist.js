@@ -62,7 +62,7 @@ module.exports.list = async (event) => {
             }),
         }
     } catch (error) {
-        console.error(error)
+        console.error('Error', error)
         return {
             success_status: false,
             message: error.message,

@@ -90,6 +90,7 @@ def paddle_number(event, context):
             "body": json.dumps({'data':{'paddle':result}})
         }
     except Exception as e:
+        print('Error', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

@@ -185,7 +185,7 @@ def capture_order(event, context):
 
     except Exception as e:
         # Catch any other exceptions
-        print(f"Unexpected error: {str(e)}")
+        print(f"Unexpected Error: {str(e)}")
         return {
             "statusCode": 500,
             "headers": HEADERS,

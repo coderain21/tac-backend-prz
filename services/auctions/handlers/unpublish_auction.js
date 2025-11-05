@@ -192,6 +192,26 @@ module.exports.handler = async (event) => {
                 }
             }
 
+            const payload = { auction: { _id: getAuctionDetails._id } }
+            const headersList = {
+                Accept: '*/*',
+                'User-Agent': 'API TEST',
+                'Content-Type': 'application/json',
+            }
+            const reqUrl = `${process.env.SOCKET_URL}/cancelled`
+            try {
+                const options = await axios({
+                    method: 'POST',
+                    url: reqUrl,
+                    headers: headersList,
+                    data: payload,
+                })
+                console.log('✅ Notification sent successfully. Response:', options.status)
+            } catch (notificationError) {
+                console.error('❌ Failed to send notification:', notificationError.message)
+                // Don't fail the entire operation if notification fails
+            }
+
             // await mongoConnection.update(Auction, getAuctionDetails[0]._id.toString(), updatePayload)
             return {
                 statusCode: 204,
@@ -328,7 +348,7 @@ module.exports.handler = async (event) => {
             }),
         }
     } catch (error) {
-        console.log('Handler error:', error)
+        console.log('Error:', error)
         return {
             statusCode: 500,
             headers: helpers.getHeaders(),

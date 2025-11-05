@@ -820,7 +820,7 @@ def update_auction(event, context):
             })
         }
     except Exception as err:
-        print('errr', err)
+        print('Error:', str(err))
         return {
             "statusCode": 500,
             "headers": headers,
