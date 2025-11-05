@@ -5,12 +5,12 @@ import boto3
 import os
 from datetime import datetime, timedelta
 
+
 def lambda_handler(event, context):
     """Main handler for CloudWatch alarms"""
     print(f"Event: {json.dumps(event, indent=2, default=str)}")
-    
     sns = boto3.client('sns')
-    
+
     # Handle SNS trigger
     if 'Records' in event:
         for record in event['Records']:
@@ -19,31 +19,38 @@ def lambda_handler(event, context):
                 process_alarm(message, sns)
     else:
         process_alarm(event, sns)
-    
+
     return {'statusCode': 200}
+
 
 def process_alarm(message, sns):
     """Process alarm and send enhanced notification"""
-    
+
     alarm_name = message.get('AlarmName', 'Unknown')
     reason = message.get('NewStateReason', '')
     description = message.get('AlarmDescription', '')
-    
+
     print(f"Processing alarm: {alarm_name}")
     print(f"Reason: {reason}")
-    
+
     # Determine if it's API or Lambda alarm
     if '5xx' in alarm_name.lower():
         # API Gateway alarm - find specific failing endpoint
         failed_endpoint = find_failing_api_endpoint(alarm_name, reason)
         log_link = get_api_log_stream(failed_endpoint, reason)
-        alert_msg = create_api_alert(alarm_name, failed_endpoint, reason, description, log_link)
+        alert_msg = create_api_alert(
+            alarm_name,
+            failed_endpoint,
+            reason,
+            description,
+            log_link)
     else:
         # Lambda function alarm
         lambda_name = extract_lambda_name(alarm_name)
         log_link = get_lambda_log_group(lambda_name)
-        alert_msg = create_lambda_alert(alarm_name, lambda_name, reason, description, log_link)
-    
+        alert_msg = create_lambda_alert(
+            alarm_name, lambda_name, reason, description, log_link)
+
     # Send notification
     destination_topic = os.environ.get('SNS_TOPIC_ARN')
     if destination_topic:
@@ -53,27 +60,30 @@ def process_alarm(message, sns):
             Subject=f"Alert: {alarm_name}"
         )
 
+
 def find_failing_api_endpoint(alarm_name, reason):
     """Find the specific API endpoint that failed by querying CloudWatch"""
-    
+
     # Parse timestamp from reason
-    timestamp_match = re.search(r'\((\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\)', reason)
+    timestamp_match = re.search(
+        r'\((\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\)', reason)
     if not timestamp_match:
         return get_fallback_endpoint(alarm_name)
-    
+
     timestamp_str = timestamp_match.group(1)
     try:
-        alarm_time = datetime.strptime(f"20{timestamp_str}", "%Y%d/%m/%y %H:%M:%S")
-    except:
+        alarm_time = datetime.strptime(
+            f"20{timestamp_str}", "%Y%d/%m/%y %H:%M:%S")
+    except BaseException:
         return get_fallback_endpoint(alarm_name)
-    
+
     # Query CloudWatch for specific failing endpoint
     cloudwatch = boto3.client('cloudwatch', region_name='eu-west-2')
     stage = os.environ.get('STAGE', 'dev')
-    
+
     # Define endpoints to check based on alarm type
     endpoints_to_check = get_endpoints_for_alarm(alarm_name, stage)
-    
+
     # Check each endpoint for errors at alarm time
     for api_name, resource, method in endpoints_to_check:
         try:
@@ -91,20 +101,21 @@ def find_failing_api_endpoint(alarm_name, reason):
                 Period=60,
                 Statistics=['Sum']
             )
-            
+
             for datapoint in response.get('Datapoints', []):
                 if datapoint.get('Sum', 0) > 0:
                     return resource
-                    
+
         except Exception as e:
             print(f"Error checking {resource}: {e}")
             continue
-    
+
     return get_fallback_endpoint(alarm_name)
+
 
 def get_endpoints_for_alarm(alarm_name, stage):
     """Get list of endpoints to check based on alarm name"""
-    
+
     if 'auth' in alarm_name.lower():
         return [
             (f'{stage}-subdomain', '/subdomain', 'GET'),
@@ -167,12 +178,13 @@ def get_endpoints_for_alarm(alarm_name, stage):
             (f'{stage}-orders', '/seller', 'GET'),
             (f'{stage}-newsletter', '/', 'GET')
         ]
-    
+
     return []
+
 
 def get_fallback_endpoint(alarm_name):
     """Get fallback endpoint based on alarm name"""
-    
+
     if 'auth' in alarm_name.lower():
         return '/subdomain'
     elif 'payments' in alarm_name.lower():
@@ -185,14 +197,15 @@ def get_fallback_endpoint(alarm_name):
         return '/clone'
     elif 'search' in alarm_name.lower():
         return '/search-lots'
-    
+
     return '/unknown'
+
 
 def get_api_log_stream(endpoint, reason):
     """Get specific log stream link for API endpoint."""
     stage = os.environ.get('STAGE', 'dev')
     region = os.environ.get('AWS_REGION', 'eu-west-2')
-    
+
     endpoint_to_lambda = {
         '/subdomain': f'/aws/lambda/subdomain-{stage}-sub-domain',
         '/otp-validation': f'/aws/lambda/buyers-{stage}-otp-validation',
@@ -219,19 +232,26 @@ def get_api_log_stream(endpoint, reason):
         '/clone': f'/aws/lambda/auctions-{stage}-clone_auction',
         '/approval': f'/aws/lambda/buyers-{stage}-acceting_buyer',
         '/import': f'/aws/lambda/auctions-{stage}-import_lots',
-        '/search-lots': f'/aws/lambda/buyers-{stage}-search_lots'
-    }
+        '/search-lots': f'/aws/lambda/buyers-{stage}-search_lots'}
 
     log_group = endpoint_to_lambda.get(endpoint)
     if not log_group:
         return None
 
     # Try to extract timestamp from the alarm reason
-    timestamp_match = re.search(r'\((\d{2})/(\d{2})/(\d{2}) (\d{2}):(\d{2}):(\d{2})\)', reason)
+    timestamp_match = re.search(
+        r'\((\d{2})/(\d{2})/(\d{2}) (\d{2}):(\d{2}):(\d{2})\)', reason)
     if timestamp_match:
         try:
-            day, month, year, hour, minute, second = map(int, timestamp_match.groups())
-            alarm_time = datetime(year=2000+year, month=month, day=day, hour=hour, minute=minute, second=second)
+            day, month, year, hour, minute, second = map(
+                int, timestamp_match.groups())
+            alarm_time = datetime(
+                year=2000 + year,
+                month=month,
+                day=day,
+                hour=hour,
+                minute=minute,
+                second=second)
             return get_log_stream_at_time(log_group, alarm_time, region)
         except Exception as e:
             print(f"Timestamp parse failed: {e}")
@@ -243,7 +263,7 @@ def get_api_log_stream(endpoint, reason):
 def get_log_stream_at_time(log_group, alarm_time=None, region='eu-west-2'):
     """Get specific log stream link for Lambda function near alarm time"""
     logs_client = boto3.client('logs', region_name=region)
-    
+
     try:
         response = logs_client.describe_log_streams(
             logGroupName=log_group,
@@ -277,7 +297,13 @@ def get_log_stream_at_time(log_group, alarm_time=None, region='eu-west-2'):
             stream_name = response['logStreams'][0]['logStreamName']
 
         encoded_log_group = log_group.replace('/', '$252F')
-        encoded_stream_name = stream_name.replace('/', '$252F').replace('[', '$255B').replace(']', '$255D')
+        encoded_stream_name = stream_name.replace(
+            '/',
+            '$252F').replace(
+            '[',
+            '$255B').replace(
+            ']',
+            '$255D')
 
         return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
 
@@ -286,9 +312,10 @@ def get_log_stream_at_time(log_group, alarm_time=None, region='eu-west-2'):
         encoded_log_group = log_group.replace('/', '$252F')
         return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}"
 
+
 def extract_lambda_name(alarm_name):
     """Extract Lambda function name from alarm"""
-    
+
     if 'process-cart' in alarm_name.lower() or 'process cart' in alarm_name.lower():
         return 'Process Cart Lambda'
     elif 'save-to-cache' in alarm_name.lower() or 'save to cache' in alarm_name.lower():
@@ -299,29 +326,29 @@ def extract_lambda_name(alarm_name):
         return 'Batch Lots Update Lambda'
     elif 'throttling' in alarm_name.lower():
         return 'Unpublish Auction Lambda'
-    
+
     return 'Unknown Lambda'
+
 
 def get_lambda_log_group(lambda_name):
     """Get log group or specific log stream link for a Lambda function"""
     stage = os.environ.get('STAGE', 'dev')
     region = os.environ.get('AWS_REGION', 'eu-west-2')
-    
+
     lambda_to_log_group = {
         'Process Cart Lambda': f'/aws/lambda/auctions-{stage}-process-cart',
         'Save to Cache Lambda': f'/aws/lambda/auctions-{stage}-save-to-cache',
         'Batch Lots Publish Lambda': f'/aws/lambda/auctions-{stage}-batchLotsPublish',
         'Batch Lots Update Lambda': f'/aws/lambda/auctions-{stage}-batchLotsUpdate',
-        'Unpublish Auction Lambda': f'/aws/lambda/auctions-{stage}-unpublish_auction'
-    }
-    
+        'Unpublish Auction Lambda': f'/aws/lambda/auctions-{stage}-unpublish_auction'}
+
     log_group = lambda_to_log_group.get(lambda_name, '')
     if not log_group:
         return ""
 
     try:
         logs_client = boto3.client('logs', region_name=region)
-        
+
         # Fetch the 3 most recent log streams by last event time
         response = logs_client.describe_log_streams(
             logGroupName=log_group,
@@ -329,17 +356,23 @@ def get_lambda_log_group(lambda_name):
             descending=True,
             limit=3
         )
-        
+
         # Use the most recent stream (if exists)
         if response.get('logStreams'):
             stream_name = response['logStreams'][0]['logStreamName']
-            
+
             # Encode for URL format
             encoded_log_group = log_group.replace('/', '$252F')
-            encoded_stream_name = stream_name.replace('/', '$252F').replace('[', '$255B').replace(']', '$255D')
-            
+            encoded_stream_name = stream_name.replace(
+                '/',
+                '$252F').replace(
+                '[',
+                '$255B').replace(
+                ']',
+                '$255D')
+
             return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
-        
+
     except Exception as e:
         print(f"Error fetching log stream for {lambda_name}: {e}")
 
@@ -347,23 +380,25 @@ def get_lambda_log_group(lambda_name):
     encoded_log_group = log_group.replace('/', '$252F')
     return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}"
 
+
 def get_priority(alarm_name):
     """Extract priority from alarm name"""
-    
+
     if alarm_name.lower().startswith('p1-'):
         return 'P1 CRITICAL'
     elif alarm_name.lower().startswith('p2-'):
         return 'P2 MEDIUM'
     elif alarm_name.lower().startswith('p3-'):
         return 'P3 LOW'
-    
+
     return 'UNKNOWN'
+
 
 def create_api_alert(alarm_name, endpoint, reason, description, log_link):
     """Create API alert message"""
-    
+
     priority = get_priority(alarm_name)
-    
+
     msg = f"""🚨 API 5XX ERROR - {priority}
 
 Failed Endpoint: {endpoint}
@@ -372,20 +407,26 @@ Description: {description}
 
 Reason: {reason}
 """
-    
+
     if log_link:
         if 'log-events' in log_link:
             msg += f"\nExact Log Stream: {log_link}"
         else:
             msg += f"\nLog Group: {log_link}"
-    
+
     return msg
 
-def create_lambda_alert(alarm_name, lambda_name, reason, description, log_link):
+
+def create_lambda_alert(
+        alarm_name,
+        lambda_name,
+        reason,
+        description,
+        log_link):
     """Create Lambda alert message"""
-    
+
     priority = get_priority(alarm_name)
-    
+
     msg = f"""🚨 LAMBDA ERROR - {priority}
 
 Failed Function: {lambda_name}
@@ -394,8 +435,8 @@ Description: {description}
 
 Reason: {reason}
 """
-    
+
     if log_link:
         msg += f"\nLog Group: {log_link}"
-    
+
     return msg
