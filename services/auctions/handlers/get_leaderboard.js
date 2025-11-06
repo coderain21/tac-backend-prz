@@ -107,7 +107,7 @@ module.exports.get_leaderboard = async (event) => {
             body: JSON.stringify(auctionData),
         }
     } catch (error) {
-        console.log('err', error)
+        console.log('Error', error)
         return {
             headers: await helpers.getHeaders(),
             statusCode: 500,

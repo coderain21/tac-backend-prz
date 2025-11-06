@@ -98,7 +98,7 @@ def admin_set_password(userData, userpool_id):
             }
 
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             'success_status': False,
             'message': str(e)
@@ -207,6 +207,7 @@ def update_password(event, context):
                 "body": json.dumps({"message": "Password updated successfully"})
             }
     except Exception as e:
+        print('Error', e)
         return {
             "statusCode": 500,
             'headers': headers,

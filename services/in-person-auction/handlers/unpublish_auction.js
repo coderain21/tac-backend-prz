@@ -118,7 +118,7 @@ module.exports.unpublish_auction = async (event) => {
             }),
         }
     } catch (error) {
-        console.log(error)
+        console.log('Error', error)
         return {
             statusCode: 500,
             headers: helpers.getHeaders(),

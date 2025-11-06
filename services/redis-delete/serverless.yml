@@ -101,10 +101,11 @@ resources:
     
     RedisDeleteAlertsLambdaSubscription:
       Type: AWS::SNS::Subscription
+      DependsOn: EnhancedDashalertDashhandlerLambdaFunction
       Properties:
         TopicArn: !Ref RedisDeleteAlertsTopic
         Protocol: lambda
-        Endpoint: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
+        Endpoint: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-enhanced-alert-handler
     
     RedisDeleteAlertsParameter:
       Type: AWS::SSM::Parameter
@@ -122,15 +123,16 @@ resources:
         Name: API_5XX_ALERT_HANDLER_ARN
         Description: 'ARN of the API 5XX Alert Handler Lambda'
         Type: 'String'
-        Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
+        Value: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-enhanced-alert-handler
     
     Api5xxAlertHandlerInvokePermission:
       Type: AWS::Lambda::Permission
+      DependsOn: EnhancedDashalertDashhandlerLambdaFunction
       Properties:
-        FunctionName: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-api-5xx-alert-handler
+        FunctionName: ${self:service}-${self:provider.stage}-enhanced-alert-handler
         Action: lambda:InvokeFunction
-        Principal: lambda.alarms.cloudwatch.amazonaws.com
-        SourceAccount: ${aws:accountId}
+        Principal: sns.amazonaws.com
+        SourceArn: !Ref RedisDeleteAlertsTopic
 
 
 functions:
@@ -149,8 +151,8 @@ functions:
           rate: cron(0 0 * * ? *)  # Run daily at midnight UTC
           enabled: true
 
-  api-5xx-alert-handler:
-    handler: handler/api_5xx_alert_handler.lambda_handler
+  enhanced-alert-handler:
+    handler: handler/enhanced_alert_handler.lambda_handler
     timeout: 30
     environment:
       SNS_TOPIC_ARN:

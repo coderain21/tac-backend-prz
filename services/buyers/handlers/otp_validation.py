@@ -248,7 +248,7 @@ def validate(event, context):
             }
 
     except Exception as e:
-        print(e)
+        print('Error',e)
         return {
             'statusCode': 500,
             'headers': headers,

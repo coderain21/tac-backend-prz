@@ -115,6 +115,7 @@ def credit_card(event, context):
             'body': json.dumps({'message': 'Card verification failed: ' + str(e)})
         }
     except Exception as e:
+        print('error', str(e))
         return{
             'statusCode': 500,
             'headers': headers,

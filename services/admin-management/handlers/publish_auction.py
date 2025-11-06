@@ -340,7 +340,7 @@ def publish_auction(event, context):
             })
         }
     except Exception as err:
-        print('errr', err)
+        print('Error', err)
         return {
             "statusCode": 500,
             "headers": headers,

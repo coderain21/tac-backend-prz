@@ -412,6 +412,7 @@ def create_intent(event, context):
             "body": json.dumps(body_data, cls=Encoder)
         }
     except Exception as err:
+        print('Error', str(err))
         return {
             "statusCode": 500,
             "headers": headers,
