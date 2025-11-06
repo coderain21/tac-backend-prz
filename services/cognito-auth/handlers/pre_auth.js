@@ -26,6 +26,12 @@ exports.handler = async (event) => {
             return event
         }
 
+        // Skip password update operations
+        const isPasswordUpdate = event.request.validationData?.is_password_update
+        if (isPasswordUpdate) {
+            return event
+        }
+
         const auction_id = event.request.validationData?.auction_id
         if (!auction_id) {
             throw new Error('Missing auction_id')
