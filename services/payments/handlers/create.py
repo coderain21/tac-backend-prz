@@ -379,7 +379,7 @@ def create_intent(event, context):
         # cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["updated_at"] = time_stamp
         insert_data["auction_title"] = auction_title
-        # insert_data["auction_image"] = auction_image
+        insert_data["auction_image"] = auction_image
         insert_data["purchases"] = cart_data
         # insert_data["lots"] = res
         insert_data["auction_id"] = auction_id
@@ -412,23 +412,33 @@ def create_intent(event, context):
 
 def paypal_order_status(order_id):
     '''Get order status'''
-    access_token = get_paypal_access_token()
-    print('access', access_token)
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {access_token}"
-    }
+    try:
+        access_token = get_paypal_access_token()
+        print('access', access_token)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
 
-    response = requests.get(
-        f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
-        headers=headers
-    )
+        response = requests.get(
+            f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
+            headers=headers
+        )
 
-    print('response in order capture', response)
+        print('response in order capture', response)
 
-    if response.status_code == 200:
-        print("Order status:", response.json())
-    else:
-        print("Failed to get order status:", response.json())
-
-    return response.json()
+        if response.status_code == 200:
+            print("Order status:", response.json())
+            return response.json()
+        else:
+            print("Failed to get order status:", response.text)
+            return {"error": "Failed to get order status", "status_code": response.status_code}
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+        return {"error": "Network error occurred"}
+    except ValueError as e:
+        print(f"JSON parsing error: {e}")
+        return {"error": "Invalid response format"}
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return {"error": "An unexpected error occurred"}

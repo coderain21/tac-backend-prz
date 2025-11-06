@@ -380,7 +380,6 @@ module.exports.sqsTriggerFunction = async (event) => {
                         console.log(`Creating order for ${user.email_address} with amount: ${orderAmount}`)
 
                         const orderData = {
-                            order_number: orderNumber,
                             seller_email: auctionData.seller_email,
                             email_address: user.email_address,
                             name: user.name,
@@ -399,8 +398,15 @@ module.exports.sqsTriggerFunction = async (event) => {
                             process.env.MONGO_CLIENT,
                             process.env.DATABASE,
                             process.env.ORDERS_COLLECTION,
-                            orderData,
+                            {
+                                seller_email: auctionData.seller_email,
+                                email_address: user.email_address,
+                                auction_id: auctionData._id.toString(),
+                            },
                         )
+
+                        // Update order number
+                        orderData.order_number = orderNumber
 
                         if (!orderExists) {
                             // Insert order into orders collection
