@@ -1,442 +1,182 @@
-"""Enhanced CloudWatch alarm handler for API and Lambda alerts."""
-import json
-import re
 import boto3
 import os
-from datetime import datetime, timedelta
+import json
+import re
+
+# --- route mapping templates ---
+route_to_lambda = {
+        # Users Management
+        ('users-management', '/password-update/{email}'): 'users-management-{stage}-update_password',
+        ('users-management', '/verify-captcha'): 'users-management-{stage}-verify-recaptha',
+        ('users-management', '/otp-validation'): 'users-management-{stage}-otp-validation',
+        ('users-management', '/forgot_password'): 'users-management-{stage}-send-reset-link',
+        ('users-management', '/reset_password'): 'users-management-{stage}-update-new-password',
+        ('users-management', '/auth/login'): 'users-management-{stage}-generate_token',
+        ('users-management', '/request-otp'): 'users-management-{stage}-request-otp',
+        ('users-management', '/{email}'): 'users-management-{stage}-view-profile',
+        
+        # Buyers
+        ('buyers', '/verify-captcha'): 'buyers-{stage}-verify-recaptha',
+        ('buyers', '/otp-validation'): 'buyers-{stage}-otp-validation',
+        ('buyers', '/update-password'): 'buyers-{stage}-update_password',
+        ('buyers', '/forgot_password'): 'buyers-{stage}-send-reset-link',
+        ('buyers', '/reset_password'): 'buyers-{stage}-update-new-password',
+        ('buyers', '/profile'): 'buyers-{stage}-view_profile',
+        ('buyers', '/view-lots'): 'buyers-{stage}-view_lots',
+        ('buyers', '/lot-details'): 'buyers-{stage}-view_lot_details',
+        ('buyers', '/auction-register'): 'buyers-{stage}-auction_register',
+        ('buyers', '/view'): 'buyers-{stage}-view',
+        ('buyers', '/paddle'): 'buyers-{stage}-paddle_number',
+        ('buyers', '/search-lots'): 'buyers-{stage}-search_lots',
+        ('buyers', '/approval'): 'buyers-{stage}-acceting_buyer',
+        ('buyers', '/verify-card'): 'buyers-{stage}-credit_card',
+        
+        # Subdomain
+        ('subdomain', '/subdomain'): 'subdomain-{stage}-sub-domain',
+        
+        # Bids
+        ('bids', '/update'): 'bids-{stage}-add-to-group',
+        ('bids', '/'): 'bids-{stage}-view',
+        
+        # Payments
+        ('payments', '/stripe'): 'payments-{stage}-create_intent',
+        
+        # PayPal
+        ('paypal', '/paypal-order'): 'paypal-{stage}-create-order',
+        ('paypal', '/capture-order'): 'paypal-{stage}-paypal-capture-order',
+        
+        # Cart Management
+        ('cart-management', '/cart'): 'cart-management-{stage}-view_cart',
+        
+        # Auctions
+        ('auctions', '/'): 'auctions-{stage}-create',
+        ('auctions', '/lots'): 'auctions-{stage}-create_lots',
+        ('auctions', '/view'): 'auctions-{stage}-view',
+        ('auctions', '/{auction_id}'): 'auctions-{stage}-unpublish_auction',
+        ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
+        ('auctions', '/clone'): 'auctions-{stage}-clone_auction',
+        ('auctions', '/import'): 'auctions-{stage}-import_lots',
+        ('auctions', '/process-cart'): 'auctions-{stage}-process-cart',
+        ('auctions', '/save-to-cache'): 'auctions-{stage}-save-to-cache',
+        
+        # Address Management
+        ('address-management', '/address'): 'address-management-{stage}-add_shipping_address',
+        
+        # Buyer Wishlist
+        ('buyer-wishlist', '/'): 'buyer-wishlist-{stage}-create',
+        ('buyer-wishlist', '/remove'): 'buyer-wishlist-{stage}-remove_wishlist',
+        ('buyer-wishlist', '/wishlist'): 'buyer-wishlist-{stage}-wishlist-listing',
+        
+        # Orders
+        ('orders', '/'): 'orders-{stage}-view_orders',
+        ('orders', '/details'): 'orders-{stage}-order_details',
+        ('orders', '/update'): 'orders-{stage}-update_order',
+        ('orders', '/sales'): 'orders-{stage}-sales',
+        ('orders', '/seller'): 'orders-{stage}-seller_list_orders'
+    }
+
+# --- supported environment names ---
+STAGES = ['dev', 'qa', 'prod', 'pre-production', 'bidding-engine']
+
+
+def parse_alarm_name(alarm_name):
+    """
+    Parse CloudWatch alarm name to extract service, stage, and resource.
+    Example:
+        P1-IndyAuction-users-management-dev-password-update-email
+    """
+    parts = alarm_name.split('-')
+    stage = next((p for p in parts if p in STAGES), None)
+    if not stage:
+        raise ValueError(f"No valid stage found in alarm name: {alarm_name}")
+
+    try:
+        start_index = parts.index("IndyAuction") + 1
+        stage_index = parts.index(stage)
+        service = '-'.join(parts[start_index:stage_index])
+    except ValueError:
+        raise ValueError(f"Unexpected format for alarm name: {alarm_name}")
+
+    resource_parts = parts[stage_index + 1:]
+    resource = '/' + '-'.join(resource_parts)
+
+    if resource.endswith('-email'):
+        resource = resource.replace('-email', '/{email}')
+
+    return service, stage, resource
+
+
+def get_lambda_name(service, stage, resource):
+    key = (service, resource)
+    if key in route_to_lambda:
+        return route_to_lambda[key].format(stage=stage)
+
+    # fallback partial match
+    for (svc, path), name in route_to_lambda.items():
+        if svc == service and path.replace('{email}', 'email').replace('-', '') in resource.replace('-', ''):
+            return name.format(stage=stage)
+    return None
+
+
+def get_latest_log_stream_link(lambda_name):
+    region = os.environ.get("AWS_REGION", "eu-west-2")
+    client = boto3.client("logs", region_name=region)
+    log_group = f"/aws/lambda/{lambda_name}"
+
+    try:
+        response = client.describe_log_streams(
+            logGroupName=log_group,
+            orderBy="LastEventTime",
+            descending=True,
+            limit=1
+        )
+        streams = response.get("logStreams", [])
+        if not streams:
+            return f"No logs found for {lambda_name}"
+        latest_stream = streams[0]["logStreamName"]
+        encoded_group = log_group.replace('/', '$252F')
+        return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_group}/log-events/{latest_stream}"
+    except Exception as e:
+        return str(e)
+
+
+def get_log_stream_from_alarm(alarm_name):
+    try:
+        service, stage, resource = parse_alarm_name(alarm_name)
+        lambda_name = get_lambda_name(service, stage, resource)
+        
+        if not lambda_name:
+            return f"No matching Lambda found for alarm: {alarm_name}"
+        return get_latest_log_stream_link(lambda_name)
+    except Exception as e:
+        return str(e)
 
 
 def lambda_handler(event, context):
-    """Main handler for CloudWatch alarms"""
-    print(f"Event: {json.dumps(event, indent=2, default=str)}")
-    sns = boto3.client('sns')
+    """
+    Lambda triggered by SNS when a CloudWatch Alarm fires.
+    SNS message contains the alarm name.
+    """
+    print("Incoming event:", json.dumps(event))
 
-    # Handle SNS trigger
-    if 'Records' in event:
+    try:
+        # SNS sends a 'Records' array
         for record in event['Records']:
-            if 'Sns' in record:
-                message = json.loads(record['Sns']['Message'])
-                process_alarm(message, sns)
-    else:
-        process_alarm(event, sns)
+            sns_message = record['Sns']['Message']
+            message_data = json.loads(sns_message) if sns_message.strip().startswith('{') else {'AlarmName': sns_message}
 
-    return {'statusCode': 200}
+            alarm_name = message_data.get('AlarmName')
+            if not alarm_name:
+                print("Could not find AlarmName in SNS message.")
+                continue
 
+            print(f"Processing alarm: {alarm_name}")
+            log_link = get_log_stream_from_alarm(alarm_name)
+            print(f"Latest Log Stream: {log_link}")
 
-def process_alarm(message, sns):
-    """Process alarm and send enhanced notification"""
-
-    alarm_name = message.get('AlarmName', 'Unknown')
-    reason = message.get('NewStateReason', '')
-    description = message.get('AlarmDescription', '')
-
-    print(f"Processing alarm: {alarm_name}")
-    print(f"Reason: {reason}")
-
-    # Determine if it's API or Lambda alarm
-    if '5xx' in alarm_name.lower():
-        # API Gateway alarm - find specific failing endpoint
-        failed_endpoint = find_failing_api_endpoint(alarm_name, reason)
-        log_link = get_api_log_stream(failed_endpoint, reason)
-        alert_msg = create_api_alert(
-            alarm_name,
-            failed_endpoint,
-            reason,
-            description,
-            log_link)
-    else:
-        # Lambda function alarm
-        lambda_name = extract_lambda_name(alarm_name)
-        log_link = get_lambda_log_group(lambda_name)
-        alert_msg = create_lambda_alert(
-            alarm_name, lambda_name, reason, description, log_link)
-
-    # Send notification
-    destination_topic = os.environ.get('SNS_TOPIC_ARN')
-    if destination_topic:
-        sns.publish(
-            TopicArn=destination_topic,
-            Message=alert_msg,
-            Subject=f"Alert: {alarm_name}"
-        )
-
-
-def find_failing_api_endpoint(alarm_name, reason):
-    """Find the specific API endpoint that failed by querying CloudWatch"""
-
-    # Parse timestamp from reason
-    timestamp_match = re.search(
-        r'\((\d{2}/\d{2}/\d{2} \d{2}:\d{2}:\d{2})\)', reason)
-    if not timestamp_match:
-        return get_fallback_endpoint(alarm_name)
-
-    timestamp_str = timestamp_match.group(1)
-    try:
-        alarm_time = datetime.strptime(
-            f"20{timestamp_str}", "%Y%d/%m/%y %H:%M:%S")
-    except BaseException:
-        return get_fallback_endpoint(alarm_name)
-
-    # Query CloudWatch for specific failing endpoint
-    cloudwatch = boto3.client('cloudwatch', region_name='eu-west-2')
-    stage = os.environ.get('STAGE', 'dev')
-
-    # Define endpoints to check based on alarm type
-    endpoints_to_check = get_endpoints_for_alarm(alarm_name, stage)
-
-    # Check each endpoint for errors at alarm time
-    for api_name, resource, method in endpoints_to_check:
-        try:
-            response = cloudwatch.get_metric_statistics(
-                Namespace='AWS/ApiGateway',
-                MetricName='5XXError',
-                Dimensions=[
-                    {'Name': 'ApiName', 'Value': api_name},
-                    {'Name': 'Resource', 'Value': resource},
-                    {'Name': 'Stage', 'Value': stage},
-                    {'Name': 'Method', 'Value': method}
-                ],
-                StartTime=alarm_time - timedelta(minutes=2),
-                EndTime=alarm_time + timedelta(minutes=2),
-                Period=60,
-                Statistics=['Sum']
-            )
-
-            for datapoint in response.get('Datapoints', []):
-                if datapoint.get('Sum', 0) > 0:
-                    return resource
-
-        except Exception as e:
-            print(f"Error checking {resource}: {e}")
-            continue
-
-    return get_fallback_endpoint(alarm_name)
-
-
-def get_endpoints_for_alarm(alarm_name, stage):
-    """Get list of endpoints to check based on alarm name"""
-
-    if 'auth' in alarm_name.lower():
-        return [
-            (f'{stage}-subdomain', '/subdomain', 'GET'),
-            (f'{stage}-subdomain', '/subdomain', 'PATCH'),
-            (f'{stage}-buyers', '/otp-validation', 'POST'),
-            (f'{stage}-users-management', '/otp-validation', 'POST'),
-            (f'{stage}-buyers', '/verify-captcha', 'POST'),
-            (f'{stage}-users-management', '/verify-captcha', 'POST'),
-            (f'{stage}-users-management', '/auth/login', 'GET'),
-            (f'{stage}-users-management', '/request-otp', 'POST'),
-            (f'{stage}-buyers', '/auction-register', 'GET'),
-            (f'{stage}-buyers', '/verify-card', 'POST')
-        ]
-    elif 'payments' in alarm_name.lower():
-        return [
-            (f'{stage}-bids', '/update', 'PATCH'),
-            (f'{stage}-payments', '/stripe', 'GET'),
-            (f'{stage}-paypal', '/paypal-order', 'POST'),
-            (f'{stage}-paypal', '/capture-order', 'GET'),
-            (f'{stage}-cart-management', '/cart', 'GET'),
-            (f'{stage}-auctions', '/', 'POST'),
-            (f'{stage}-auctions', '/lots', 'POST'),
-            (f'{stage}-auctions', '/update/{auction_id}', 'PATCH')
-        ]
-    elif 'viewing' in alarm_name.lower():
-        return [
-            (f'{stage}-buyers', '/view', 'GET'),
-            (f'{stage}-buyers', '/view-lots', 'GET'),
-            (f'{stage}-buyers', '/lot-details', 'GET'),
-            (f'{stage}-buyers', '/paddle', 'GET'),
-            (f'{stage}-auctions', '/view', 'GET'),
-            (f'{stage}-auctions', '/{auction_id}', 'PATCH')
-        ]
-    elif 'profile' in alarm_name.lower():
-        return [
-            (f'{stage}-buyers', '/update-password', 'POST'),
-            (f'{stage}-buyers', '/forgot_password', 'POST'),
-            (f'{stage}-buyers', '/reset_password', 'POST'),
-            (f'{stage}-users-management', '/forgot_password', 'POST'),
-            (f'{stage}-users-management', '/reset_password', 'POST'),
-            (f'{stage}-buyers', '/profile', 'PATCH'),
-            (f'{stage}-address-management', '/address', 'POST'),
-            (f'{stage}-address-management', '/address', 'GET')
-        ]
-    elif 'management' in alarm_name.lower():
-        return [
-            (f'{stage}-auctions', '/clone', 'POST'),
-            (f'{stage}-bids', '/', 'GET'),
-            (f'{stage}-buyers', '/approval', 'PATCH'),
-            (f'{stage}-auctions', '/lots', 'PATCH'),
-            (f'{stage}-auctions', '/lots', 'DELETE'),
-            (f'{stage}-auctions', '/import', 'POST')
-        ]
-    elif 'search' in alarm_name.lower():
-        return [
-            (f'{stage}-buyers', '/search-lots', 'GET'),
-            (f'{stage}-buyer-wishlist', '/', 'POST'),
-            (f'{stage}-buyer-wishlist', '/remove', 'DELETE'),
-            (f'{stage}-buyer-wishlist', '/wishlist', 'GET'),
-            (f'{stage}-orders', '/seller', 'GET'),
-            (f'{stage}-newsletter', '/', 'GET')
-        ]
-
-    return []
-
-
-def get_fallback_endpoint(alarm_name):
-    """Get fallback endpoint based on alarm name"""
-
-    if 'auth' in alarm_name.lower():
-        return '/subdomain'
-    elif 'payments' in alarm_name.lower():
-        return '/stripe'
-    elif 'viewing' in alarm_name.lower():
-        return '/lot-details'
-    elif 'profile' in alarm_name.lower():
-        return '/forgot_password'
-    elif 'management' in alarm_name.lower():
-        return '/clone'
-    elif 'search' in alarm_name.lower():
-        return '/search-lots'
-
-    return '/unknown'
-
-
-def get_api_log_stream(endpoint, reason):
-    """Get specific log stream link for API endpoint."""
-    stage = os.environ.get('STAGE', 'dev')
-    region = os.environ.get('AWS_REGION', 'eu-west-2')
-
-    endpoint_to_lambda = {
-        '/subdomain': f'/aws/lambda/subdomain-{stage}-sub-domain',
-        '/otp-validation': f'/aws/lambda/buyers-{stage}-otp-validation',
-        '/verify-captcha': f'/aws/lambda/buyers-{stage}-verify-recaptha',
-        '/auth/login': f'/aws/lambda/users-management-{stage}-generate_token',
-        '/request-otp': f'/aws/lambda/users-management-{stage}-request-otp',
-        '/auction-register': f'/aws/lambda/buyers-{stage}-auction_register',
-        '/verify-card': f'/aws/lambda/buyers-{stage}-credit_card',
-        '/update': f'/aws/lambda/bids-{stage}-add-to-group',
-        '/stripe': f'/aws/lambda/payments-{stage}-create_intent',
-        '/paypal-order': f'/aws/lambda/paypal-{stage}-create-order',
-        '/capture-order': f'/aws/lambda/paypal-{stage}-paypal-capture-order',
-        '/cart': f'/aws/lambda/cart-management-{stage}-view_cart',
-        '/': f'/aws/lambda/auctions-{stage}-create',
-        '/lots': f'/aws/lambda/auctions-{stage}-create_lots',
-        '/view': f'/aws/lambda/buyers-{stage}-view',
-        '/view-lots': f'/aws/lambda/buyers-{stage}-view_lots',
-        '/lot-details': f'/aws/lambda/buyers-{stage}-view_lot_details',
-        '/paddle': f'/aws/lambda/buyers-{stage}-paddle_number',
-        '/forgot_password': f'/aws/lambda/buyers-{stage}-send-reset-link',
-        '/reset_password': f'/aws/lambda/buyers-{stage}-update-new-password',
-        '/profile': f'/aws/lambda/buyers-{stage}-view_profile',
-        '/address': f'/aws/lambda/address-management-{stage}-add_shipping_address',
-        '/clone': f'/aws/lambda/auctions-{stage}-clone_auction',
-        '/approval': f'/aws/lambda/buyers-{stage}-acceting_buyer',
-        '/import': f'/aws/lambda/auctions-{stage}-import_lots',
-        '/search-lots': f'/aws/lambda/buyers-{stage}-search_lots'}
-
-    log_group = endpoint_to_lambda.get(endpoint)
-    if not log_group:
-        return None
-
-    # Try to extract timestamp from the alarm reason
-    timestamp_match = re.search(
-        r'\((\d{2})/(\d{2})/(\d{2}) (\d{2}):(\d{2}):(\d{2})\)', reason)
-    if timestamp_match:
-        try:
-            day, month, year, hour, minute, second = map(
-                int, timestamp_match.groups())
-            alarm_time = datetime(
-                year=2000 + year,
-                month=month,
-                day=day,
-                hour=hour,
-                minute=minute,
-                second=second)
-            return get_log_stream_at_time(log_group, alarm_time, region)
-        except Exception as e:
-            print(f"Timestamp parse failed: {e}")
-
-    # fallback to latest stream if timestamp not found
-    return get_log_stream_at_time(log_group, None, region)
-
-
-def get_log_stream_at_time(log_group, alarm_time=None, region='eu-west-2'):
-    """Get specific log stream link for Lambda function near alarm time"""
-    logs_client = boto3.client('logs', region_name=region)
-
-    try:
-        response = logs_client.describe_log_streams(
-            logGroupName=log_group,
-            orderBy='LastEventTime',
-            descending=True,
-            limit=5
-        )
-
-        if not response.get('logStreams'):
-            raise ValueError("No log streams found")
-
-        # If alarm_time is available, pick the stream closest to it
-        if alarm_time:
-            alarm_timestamp_ms = int(alarm_time.timestamp() * 1000)
-            closest_stream = None
-            closest_diff = float('inf')
-            for stream in response['logStreams']:
-                start = stream.get('firstEventTime', 0)
-                end = stream.get('lastEventTime', 0)
-                if start <= alarm_timestamp_ms <= end:
-                    closest_stream = stream
-                    break
-                # else find closest by time difference
-                diff = abs(alarm_timestamp_ms - end)
-                if diff < closest_diff:
-                    closest_diff = diff
-                    closest_stream = stream
-            stream_name = closest_stream['logStreamName']
-        else:
-            # fallback to latest stream
-            stream_name = response['logStreams'][0]['logStreamName']
-
-        encoded_log_group = log_group.replace('/', '$252F')
-        encoded_stream_name = stream_name.replace(
-            '/',
-            '$252F').replace(
-            '[',
-            '$255B').replace(
-            ']',
-            '$255D')
-
-        return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
-
+            # Optionally, you could send this link via SNS, Slack, or email.
+            # For now, just returning/printing.
+        return {"status": "success"}
     except Exception as e:
-        print(f"Error fetching log stream for {log_group}: {e}")
-        encoded_log_group = log_group.replace('/', '$252F')
-        return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}"
-
-
-def extract_lambda_name(alarm_name):
-    """Extract Lambda function name from alarm"""
-
-    if 'process-cart' in alarm_name.lower() or 'process cart' in alarm_name.lower():
-        return 'Process Cart Lambda'
-    elif 'save-to-cache' in alarm_name.lower() or 'save to cache' in alarm_name.lower():
-        return 'Save to Cache Lambda'
-    elif 'batch-lots-publish' in alarm_name.lower() or 'batch lots publish' in alarm_name.lower():
-        return 'Batch Lots Publish Lambda'
-    elif 'batch-lots-update' in alarm_name.lower() or 'batch lots update' in alarm_name.lower():
-        return 'Batch Lots Update Lambda'
-    elif 'throttling' in alarm_name.lower():
-        return 'Unpublish Auction Lambda'
-
-    return 'Unknown Lambda'
-
-
-def get_lambda_log_group(lambda_name):
-    """Get log group or specific log stream link for a Lambda function"""
-    stage = os.environ.get('STAGE', 'dev')
-    region = os.environ.get('AWS_REGION', 'eu-west-2')
-
-    lambda_to_log_group = {
-        'Process Cart Lambda': f'/aws/lambda/auctions-{stage}-process-cart',
-        'Save to Cache Lambda': f'/aws/lambda/auctions-{stage}-save-to-cache',
-        'Batch Lots Publish Lambda': f'/aws/lambda/auctions-{stage}-batchLotsPublish',
-        'Batch Lots Update Lambda': f'/aws/lambda/auctions-{stage}-batchLotsUpdate',
-        'Unpublish Auction Lambda': f'/aws/lambda/auctions-{stage}-unpublish_auction'}
-
-    log_group = lambda_to_log_group.get(lambda_name, '')
-    if not log_group:
-        return ""
-
-    try:
-        logs_client = boto3.client('logs', region_name=region)
-
-        # Fetch the 3 most recent log streams by last event time
-        response = logs_client.describe_log_streams(
-            logGroupName=log_group,
-            orderBy='LastEventTime',
-            descending=True,
-            limit=3
-        )
-
-        # Use the most recent stream (if exists)
-        if response.get('logStreams'):
-            stream_name = response['logStreams'][0]['logStreamName']
-
-            # Encode for URL format
-            encoded_log_group = log_group.replace('/', '$252F')
-            encoded_stream_name = stream_name.replace(
-                '/',
-                '$252F').replace(
-                '[',
-                '$255B').replace(
-                ']',
-                '$255D')
-
-            return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}/log-events/{encoded_stream_name}"
-
-    except Exception as e:
-        print(f"Error fetching log stream for {lambda_name}: {e}")
-
-    # fallback to log group if no stream found
-    encoded_log_group = log_group.replace('/', '$252F')
-    return f"https://console.aws.amazon.com/cloudwatch/home?region={region}#logsV2:log-groups/log-group/{encoded_log_group}"
-
-
-def get_priority(alarm_name):
-    """Extract priority from alarm name"""
-
-    if alarm_name.lower().startswith('p1-'):
-        return 'P1 CRITICAL'
-    elif alarm_name.lower().startswith('p2-'):
-        return 'P2 MEDIUM'
-    elif alarm_name.lower().startswith('p3-'):
-        return 'P3 LOW'
-
-    return 'UNKNOWN'
-
-
-def create_api_alert(alarm_name, endpoint, reason, description, log_link):
-    """Create API alert message"""
-
-    priority = get_priority(alarm_name)
-
-    msg = f"""🚨 API 5XX ERROR - {priority}
-
-Failed Endpoint: {endpoint}
-Alarm: {alarm_name}
-Description: {description}
-
-Reason: {reason}
-"""
-
-    if log_link:
-        if 'log-events' in log_link:
-            msg += f"\nExact Log Stream: {log_link}"
-        else:
-            msg += f"\nLog Group: {log_link}"
-
-    return msg
-
-
-def create_lambda_alert(
-        alarm_name,
-        lambda_name,
-        reason,
-        description,
-        log_link):
-    """Create Lambda alert message"""
-
-    priority = get_priority(alarm_name)
-
-    msg = f"""🚨 LAMBDA ERROR - {priority}
-
-Failed Function: {lambda_name}
-Alarm: {alarm_name}
-Description: {description}
-
-Reason: {reason}
-"""
-
-    if log_link:
-        msg += f"\nLog Group: {log_link}"
-
-    return msg
+        print(f"Error processing SNS event: {e}")
+        return {"status": "error", "details": str(e)}
