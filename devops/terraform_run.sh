@@ -111,6 +111,9 @@ if [ "${STAGE}" = "prod" ]; then
 fi
 run_command terraform -chdir=devops/assets init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/assets/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/assets apply -auto-approve
+
+# Upload static image to assets bucket
+run_command aws s3 cp devops/images/dog.jpg s3://indyauction-assets-$STAGE-v1/public/static_image/ --profile $PROFILE_ENV
 run_command terraform -chdir=devops/ses init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/ses/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
 run_command terraform -chdir=devops/ses apply -auto-approve
 run_command terraform -chdir=devops/admin_web_application init -backend-config="bucket=${log_bucket}" -backend-config="key=$STAGE/devops/admin_web_application/terraform.tfstate" -backend-config="profile=${PROFILE_MAIN}"
