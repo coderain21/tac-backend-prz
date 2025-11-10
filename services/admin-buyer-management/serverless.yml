@@ -20,6 +20,8 @@ provider:
   region: eu-west-2
   versionFunctions: false
   layers:  ${ssm:NodeLayerARN}
+  apiGateway:
+    metrics: true 
   environment:
     TABLE_NAME: ${opt:stage, self:provider.stage}-${self:service}
     COGNITO_USER_POOL_ID: ${ssm:ADMIN_COGNITO_USERPOOL_ID}
@@ -239,6 +241,7 @@ resources:
         ResourceArn:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGatewayRestApi}/stages/${self:provider.stage}
         WebACLArn: ${ssm:SECURE_API_WEB_ACL_ARN, "arn:aws:wafv2:eu-west-2:123456789012:regional/webacl/dummy/dummy"}
+    
 
   
 plugins:

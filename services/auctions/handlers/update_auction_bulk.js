@@ -154,7 +154,7 @@ async function startExecutionWithRetry(stateMachineArn, lot, maxRetries = 3) {
 /**
  * Stop executions in controlled batches (following unpublish pattern)
  */
-async function stopExecutionsInBatches(arnRecords, batchSize = 5) {
+async function stopExecutionsInBatches(arnRecords, batchSize = 30) {
     console.log(`Starting to stop ${arnRecords.length} step functions in batches of ${batchSize}`)
 
     // Helper function to process batches recursively (avoiding for loops)
@@ -193,11 +193,11 @@ async function stopExecutionsInBatches(arnRecords, batchSize = 5) {
         const newResults = [...allResults, ...processedResults]
 
         // Add delay between batches if there are more records
-        if (remainingRecords.length > 0) {
-            const delay = failed > batchSize * 0.3 ? 2000 : 1000
-            console.log(`Waiting ${delay}ms before next stop batch...`)
-            await sleep(delay)
-        }
+        // if (remainingRecords.length > 0) {
+        //     const delay = failed > batchSize * 0.3 ? 2000 : 1000
+        //     console.log(`Waiting ${delay}ms before next stop batch...`)
+        //     await sleep(delay)
+        // }
 
         return processBatch(remainingRecords, batchIndex + 1, newResults)
     }
@@ -208,7 +208,7 @@ async function stopExecutionsInBatches(arnRecords, batchSize = 5) {
 /**
  * Start executions in controlled batches (following publish pattern)
  */
-async function startExecutionsInBatches(lots, stateMachineArn, batchSize = 3) {
+async function startExecutionsInBatches(lots, stateMachineArn, batchSize = 30) {
     console.log(`Starting ${lots.length} new executions in batches of ${batchSize}`)
 
     // Helper function to process batches recursively (avoiding for loops)
@@ -234,10 +234,10 @@ async function startExecutionsInBatches(lots, stateMachineArn, batchSize = 3) {
         const newResults = [...allResults, ...batchResults]
 
         // Longer delay between start batches
-        if (remainingLots.length > 0) {
-            console.log('Waiting 1500ms before next start batch...')
-            await sleep(1500)
-        }
+        // if (remainingLots.length > 0) {
+        //     console.log('Waiting 1500ms before next start batch...')
+        //     await sleep(1500)
+        // }
 
         return processBatch(remainingLots, batchIndex + 1, newResults)
     }
@@ -442,6 +442,43 @@ async function handleEndedLots(endedLots) {
     }
 }
 
+
+
+/**
+ * Bulk update ARN statuses to COMPLETED for ended lots
+ */
+async function bulkUpdateEndedLotsArnStatuses(stopResults) {
+    const successfulStops = stopResults.filter((r) => r.success && r.wasRunning)
+
+    if (successfulStops.length === 0) {
+        console.log('No ended lot ARN statuses to update')
+        return { modifiedCount: 0 }
+    }
+
+    console.log(`[BULK] Updating ${successfulStops.length} ended lot ARN statuses to COMPLETED...`)
+
+    try {
+        const bulkOps = successfulStops.map((stop) => ({
+            updateOne: {
+                filter: { arn: stop.executionArn },
+                update: {
+                    $set: {
+                        status: 'COMPLETED', // Use COMPLETED for ended lots
+                        updated_at: new Date().toISOString(),
+                    },
+                },
+            },
+        }))
+
+        const result = await StepFunctionArn.bulkWrite(bulkOps, { ordered: false })
+        console.log(`[BULK] Updated ${result.modifiedCount} ended lot ARN statuses to COMPLETED`)
+        return result
+    } catch (error) {
+        console.error('[BULK] Error updating ended lot ARN statuses:', error)
+        throw error
+    }
+}
+
 /**
  * Main optimized update handler following publish/unpublish patterns
  */
@@ -485,15 +522,24 @@ module.exports.updateHandler = async (event, context) => {
         const redisResults = await updateAllRedisData(auctionLots, client, extend_time)
 
         // PHASE 2: Separate active and ended lots
-        const activeLots = auctionLots.filter((item) => {
-            item.lot_end_time = item.end_date + extend_time
-            return item.end_date > currentTimeEpoch
+        // PHASE 2: Separate active and ended lots with better logic
+        console.log('===== PHASE 2: SEPARATING ACTIVE AND ENDED LOTS =====')
+
+        const processedLots = auctionLots.map((item) => {
+            const extendedEndTime = item.end_date + extend_time
+            return {
+                ...item,
+                lot_end_time: extendedEndTime,
+                // A lot is ended if its ORIGINAL end_date has passed
+                isEnded: item.end_date <= currentTimeEpoch,
+                // A lot is active if extended time hasn't passed AND original time hasn't passed
+                isActive: extendedEndTime > currentTimeEpoch && item.end_date > currentTimeEpoch,
+            }
         })
 
-        const endedLots = auctionLots.filter((item) => {
-            item.lot_end_time = item.end_date + extend_time
-            return item.end_date <= currentTimeEpoch
-        })
+        const activeLots = processedLots.filter((lot) => lot.isActive)
+        const endedLots = processedLots.filter((lot) => lot.isEnded)
+
 
         console.log(`Found ${activeLots.length} active lots and ${endedLots.length} ended lots`)
 
@@ -519,29 +565,49 @@ module.exports.updateHandler = async (event, context) => {
             }
         }
 
-        // PHASE 3: Get ALL execution ARNs upfront (following unpublish pattern)
-        console.log('===== PHASE 3: RETRIEVING ALL EXECUTION ARNS UPFRONT =====')
+        // PHASE 3: Get ARNs and separate by lot status
+        console.log('===== PHASE 3: RETRIEVING AND CATEGORIZING EXECUTION ARNS =====')
 
-        // Get all ARN records for this auction in one query
         const arnRecords = await StepFunctionArn.find({
             auction_id: auctionDetails.auction_id,
             seller_email: auctionDetails.seller_email,
             status: 'RUNNING',
         })
 
-        console.log(`Found ${arnRecords.length} ARN records in database`)
+        console.log(`Found ${arnRecords.length} RUNNING ARN records in database`)
 
-        // Create a map for quick lookup
-        const arnMap = new Map()
-        arnRecords.forEach((record) => {
-            arnMap.set(record.lot_id.toString(), record)
-        })
+        // Create sets for different lot categories
+        const activeLotIds = new Set(activeLots.map((lot) => lot._id.toString()))
+        const endedLotIds = new Set(endedLots.map((lot) => lot._id.toString()))
 
-        // Match active lots with their ARN records
-        const lotsWithArns = activeLots.filter((lot) => arnMap.has(lot._id.toString()))
-        const lotsWithoutArns = activeLots.filter((lot) => !arnMap.has(lot._id.toString()))
+        // Separate ARN records by lot status
+        const arnsForActiveLots = arnRecords.filter((arn) => activeLotIds.has(arn.lot_id.toString()))
+        const arnsForEndedLots = arnRecords.filter((arn) => endedLotIds.has(arn.lot_id.toString()))
 
-        console.log(`ARN Matching: ${lotsWithArns.length} lots with ARNs, ${lotsWithoutArns.length} without ARNs`)
+        console.log(`ARN breakdown: ${arnsForActiveLots.length} for active lots, ${arnsForEndedLots.length} for ended lots`)
+
+        // Match ONLY active lots with their ARN records
+        const lotsWithArns = activeLots.filter((lot) => arnsForActiveLots.some((arn) => arn.lot_id.toString() === lot._id.toString()))
+        const lotsWithoutArns = activeLots.filter((lot) => !arnsForActiveLots.some((arn) => arn.lot_id.toString() === lot._id.toString()))
+
+        console.log(`Active lots: ${lotsWithArns.length} with ARNs, ${lotsWithoutArns.length} without ARNs`)
+
+        // PHASE 3.5: Handle ended lots first (stop their executions)
+        console.log('===== PHASE 3.5: STOPPING EXECUTIONS FOR ENDED LOTS =====')
+
+        let endedLotsStopResults = []
+        if (arnsForEndedLots.length > 0) {
+            console.log(`Stopping ${arnsForEndedLots.length} executions for ended lots`)
+            endedLotsStopResults = await stopExecutionsInBatches(arnsForEndedLots, 5)
+
+            // Update ARN statuses for ended lots to COMPLETED (not ABORTED)
+            await bulkUpdateEndedLotsArnStatuses(endedLotsStopResults)
+        }
+
+        // Handle ended lots metadata in parallel with above
+        if (endedLots.length > 0) {
+            endedLotsResult = await handleEndedLots(endedLots)
+        }
 
         if (lotsWithArns.length === 0) {
             return {
@@ -562,7 +628,8 @@ module.exports.updateHandler = async (event, context) => {
         }
 
         // Get the ARN records we need to process
-        const arnRecordsToProcess = lotsWithArns.map((lot) => arnMap.get(lot._id.toString()))
+        // Get ONLY ARN records for active lots that need to be restarted
+        const arnRecordsToProcess = arnsForActiveLots.filter((arn) => lotsWithArns.some((lot) => lot._id.toString() === arn.lot_id.toString()))
 
         // PHASE 4: Stop all executions in controlled batches
         console.log('===== PHASE 4: STOPPING ALL EXECUTIONS =====')
@@ -624,8 +691,9 @@ module.exports.updateHandler = async (event, context) => {
                 active_lots: activeLots.length,
                 ended_lots: endedLots.length,
                 ended_lots_processed: endedLotsResult,
-                lots_with_arns: lotsWithArns.length,
-                lots_without_arns: lotsWithoutArns.length,
+                ended_lots_arns_stopped: endedLotsStopResults.filter((r) => r.success).length,
+                active_lots_with_arns: lotsWithArns.length,
+                active_lots_without_arns: lotsWithoutArns.length,
                 stop_successful: stopSuccessful,
                 stop_failed: stopFailed,
                 start_successful: startSuccessful,
