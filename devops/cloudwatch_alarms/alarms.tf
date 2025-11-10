@@ -965,9 +965,12 @@ locals {
     { service = "auctions", resource = "/lots", method = "PATCH", priority = "P2" },
     { service = "auctions", resource = "/lots", method = "DELETE", priority = "P2" },
     { service = "auctions", resource = "/import", method = "POST", priority = "P2" },
+
     
     # P3 Low - Search & Other
-    { service = "order-management", resource = "/orders", method = "GET", priority = "P3" }
+    { service = "order-management", resource = "/orders", method = "GET", priority = "P3" },
+    { service = "auctions", resource = "/policy/{auction_id}", method = "POST", priority = "P3" }
+
   ]
   
   # Threshold mapping by priority
