@@ -405,7 +405,7 @@ def update_auction(event, context):
                        value in request_body.items() if key in updatable_fields}
         documents = []
         extension_time_str = auction_record.get('extension_time_between_lots', 2)
-        if extension_time_str != '':
+        if extension_time_str:
             extension_time = int(extension_time_str[:1])
         else:
             extension_time=2
