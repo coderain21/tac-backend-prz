@@ -270,7 +270,7 @@ def import_lots(event, context):
 
                 dict1.update(additional_fields)
                 if email_address == "namratha.shettigar+stripe@7edge.com" or email_address == "sthuthi+test3@7edge.com" and os.environ.get("STAGE") in {"dev","bidding-engine","pre-production", "qa"}:
-                    static_image_url = "static_image/sea.jpg"
+                    static_image_url = "static_image/dog.jpg"
                     static_image_data = {"url": static_image_url, "featured": True}
                     dict1['images']=[static_image_data]
                 documents.append(dict1)
