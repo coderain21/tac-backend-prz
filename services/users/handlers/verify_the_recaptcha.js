@@ -182,7 +182,7 @@ module.exports.verifyReCaptcha = async (event) => {
             body: JSON.stringify({ encrypted_token: encryptedData }),
         }
     } catch (error) {
-        console.log(error)
+        console.log('Error', error)
         return {
             statusCode: 500,
             headers: await helpers.getHeaders(),

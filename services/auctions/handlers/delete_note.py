@@ -87,6 +87,7 @@ def delete_note(event, context):
                 }
 
     except Exception as e:
+        print('Error:', str(e))
         return {
             "headers": headers,
             "statusCode": 500,

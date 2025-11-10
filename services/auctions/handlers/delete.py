@@ -173,7 +173,7 @@ def delete_auction(event, context):
         }
 
     except Exception as err:
-        print(f"Critical error in delete_auction: {str(err)}")
+        print('Error:', str(e))
         return {
             "statusCode": 500,
             'headers': headers,

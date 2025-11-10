@@ -52,7 +52,7 @@ def get_link(event, context):
             "body": json.dumps(seller_links, cls=Encoder)
         }
     except Exception as e:
-        print('error', e)
+        print('Error', e)
         return {
             "statusCode": 500,
             "headers": headers,

@@ -168,7 +168,7 @@ def list_orders(event, context):
                 "body": json.dumps(body,cls = Encoder)
             }
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,

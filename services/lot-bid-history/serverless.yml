@@ -135,6 +135,32 @@ functions:
           path: /buyer/{lot_id}
           method: GET
           authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}      #arn:aws:lambda:${aws:region}:${aws:accountId}:function:lambda-authorizer-${self:provider.stage}-lambda-authorizer
+
+  auction-bid-list:
+    handler: handlers/auction_bids.handler
+    layers:
+      -  ${ssm:NodeLayerARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          path: /auction/{auction_id}
+          method: GET
+          authorizer: ${ssm:BUYER_COGNITO_AUTH_ARN}
             
   bid-listing:
     handler: handlers/bid_list.list_bids

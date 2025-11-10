@@ -13,6 +13,7 @@ const mongodbHelper = require('../lib/mongodb_helper')
 const Lot = require('../entities/Lot')
 
 let connection
+let client
 /**
  * Function to save the lot to cache after auction publish
  * Retrieves auction details from Redis based on the provided lot ID.
@@ -30,7 +31,7 @@ module.exports.handler = async (event, context, callback) => {
         console.log('connection', connection)
 
         const data = typeof event === 'string' ? JSON.parse(event) : event
-        const client = await redisHelper.createRedisClient()
+        client = await redisHelper.getClient()
         const redisKey = `lot:${data._id}`
         let endDateISO
 
@@ -65,7 +66,7 @@ module.exports.handler = async (event, context, callback) => {
 
         // Calculate delay_seconds = (lot_number - 1) * 10
         const lot_number = data.lot_number || 1 // Default to 1 if lot_number is missing
-        const delay_seconds = (lot_number - 1) * 10
+        const delay_seconds = (lot_number - 1) * 2
         data.delay_seconds = delay_seconds
 
         return { ...data }

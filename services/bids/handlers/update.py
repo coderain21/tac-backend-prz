@@ -200,7 +200,7 @@ def update_user(event, context):
                 "body": json.dumps({"message": "User does not exist"})
             }
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "statusCode": 500,
             'headers': headers,

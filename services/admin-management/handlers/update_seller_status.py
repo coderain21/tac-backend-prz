@@ -96,7 +96,7 @@ def update_seller_status(event, context):
                 "body": json.dumps({"message":"Update failed, there was an error during update"})
             }
     except Exception as e:
-        print(e)
+        print('Error', str(e))
         return {
             "statusCode": 500,
             "headers": headers,

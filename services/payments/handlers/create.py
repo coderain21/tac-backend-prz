@@ -35,20 +35,7 @@ PAYPAL_API_URL = os.environ["PAYPAL_URL"]
 def generate_order_code(number):
     if not isinstance(number, int) or number < 1:
         raise ValueError("Input must be a positive integer greater than 0.")
-
-    # Define the prefix for the code
-    prefix = "OD"
-
-    # Determine the number of digits in the input number
-    num_digits = len(str(number))
-
-    # Calculate the padding needed for the code
-    padding = max(0, 3 - num_digits)
-
-    # Generate the formatted code
-    formatted_code = f"{prefix}{padding*'0'}{number}"
-
-    return formatted_code
+    return f"OD{str(number).zfill(4)}"
 
 def get_data_from_cart(auction_id,seller_email,buyer_email):
     try:
@@ -338,7 +325,7 @@ def create_intent(event, context):
             }
 
 
-        # counter_collection = db[os.environ['COUNTER_LOT']]
+        counter_collection = db[os.environ['COUNTER_LOT']]
         address_collection = db[os.environ["ADDRESS_COLLECTION"]]
         orders_collection = db[os.environ["ORDERS_COLLECTION"]]
 
@@ -349,28 +336,40 @@ def create_intent(event, context):
         insert_data["billing_address"] = billing_address
 
 
-        # existing_orders_count = orders_collection.count_documents(
-        #     {"seller_email": seller_email,"email_address": email_address, "auction_id": auction_id})
-        # counter_record = counter_collection.find_one({"auction_id": auction_id,
-        #                                               "email_address": email_address,
-        #                                               "seller_email": seller_email,
-        #                                               'record_type': 'Orders'}
-        #                                              )
-        # if counter_record is None:
-        #     last_order_number = 0
-        #     counter_record = {
-        #         "auction_id": auction_id,
-        #         "seller_email": seller_email,
-        #         "email_address": email_address,
-        #         "record_type": "Orders",
-        #         "starting_sequence": last_order_number
-        #     }
-        #     result = counter_collection.insert_one(counter_record)
-        # last_order_number = counter_record["starting_sequence"]+1
-        # update_data = {
-        #     "starting_sequence": last_order_number
-        # }
-        insert_data["order_number"] = data["order_number"]
+
+        #checking whether order is present or not 
+        orders_collection = db[os.environ['ORDERS_COLLECTION']]
+        orders_data = orders_collection.find_one({"seller_email": seller_email, "email_address": email_address, "auction_id": auction_id})
+        if not orders_data:
+            counter_record = counter_collection.find_one({"auction_id": auction_id,
+                                                        "email_address": email_address,
+                                                        "seller_email": seller_email,
+                                                        'record_type': 'Orders'}
+                                                        )
+            if counter_record is None:
+                last_order_number = 0
+                counter_record = {
+                    "auction_id": auction_id,
+                    "seller_email": seller_email,
+                    "email_address": email_address,
+                    "record_type": "Orders",
+                    "starting_sequence": last_order_number
+                }
+                result = counter_collection.insert_one(counter_record)
+            last_order_number = counter_record["starting_sequence"]+1
+            update_data = {
+                "starting_sequence": last_order_number
+            }
+            counter_collection.update_one({"auction_id": auction_id,
+                                        "seller_email": seller_email,
+                                        "email_address": email_address,
+                                        "record_type": "Orders"}, {
+                "$set": update_data})
+            insert_data["order_number"] = generate_order_code(last_order_number)
+            insert_data["created_at"] = time_stamp
+        else:
+            insert_data["order_number"] = orders_data["order_number"]
+
         buyer_data = fetch_buyer_data(seller_email,email_address)
         name = ""
         if buyer_data is not None:
@@ -379,8 +378,8 @@ def create_intent(event, context):
             name = f_name+' '+l_name
         # cart_data,res = get_data_from_cart(auction_id,seller_email,email_address)
         insert_data["updated_at"] = time_stamp
-        # insert_data["auction_title"] = auction_title
-        # insert_data["auction_image"] = auction_image
+        insert_data["auction_title"] = auction_title
+        insert_data["auction_image"] = auction_image
         insert_data["purchases"] = cart_data
         # insert_data["lots"] = res
         insert_data["auction_id"] = auction_id
@@ -400,6 +399,7 @@ def create_intent(event, context):
             "body": json.dumps(body_data, cls=Encoder)
         }
     except Exception as err:
+        print('Error', str(err))
         return {
             "statusCode": 500,
             "headers": headers,
@@ -412,23 +412,33 @@ def create_intent(event, context):
 
 def paypal_order_status(order_id):
     '''Get order status'''
-    access_token = get_paypal_access_token()
-    print('access', access_token)
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Bearer {access_token}"
-    }
+    try:
+        access_token = get_paypal_access_token()
+        print('access', access_token)
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {access_token}"
+        }
 
-    response = requests.get(
-        f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
-        headers=headers
-    )
+        response = requests.get(
+            f"{PAYPAL_API_URL}/v2/checkout/orders/{order_id}",
+            headers=headers
+        )
 
-    print('response in order capture', response)
+        print('response in order capture', response)
 
-    if response.status_code == 200:
-        print("Order status:", response.json())
-    else:
-        print("Failed to get order status:", response.json())
-
-    return response.json()
+        if response.status_code == 200:
+            print("Order status:", response.json())
+            return response.json()
+        else:
+            print("Failed to get order status:", response.text)
+            return {"error": "Failed to get order status", "status_code": response.status_code}
+    except requests.exceptions.RequestException as e:
+        print(f"Request error: {e}")
+        return {"error": "Network error occurred"}
+    except ValueError as e:
+        print(f"JSON parsing error: {e}")
+        return {"error": "Invalid response format"}
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        return {"error": "An unexpected error occurred"}
