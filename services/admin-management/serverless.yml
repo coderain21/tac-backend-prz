@@ -840,88 +840,88 @@ functions:
       -  ${ssm:NodeLayerARN}
 
 
-  sqs-lot-update_1:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    timeout: 60
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+  # sqs-lot-update_1:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   timeout: 60
+  #   layers:
+  #     -  ${ssm:NodeLayerARN}
+  #   events:
+  #     - sqs:
+  #         arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
-  sqs-lot-update_2:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    timeout: 60
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+  # sqs-lot-update_2:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   timeout: 60
+  #   layers:
+  #     -  ${ssm:NodeLayerARN}
+  #   events:
+  #     - sqs:
+  #         arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
-  sqs-lot-update_3:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    timeout: 60
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+  # sqs-lot-update_3:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   timeout: 60
+  #   layers:
+  #     -  ${ssm:NodeLayerARN}
+  #   events:
+  #     - sqs:
+  #         arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
-  sqs-lot-update_4:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    timeout: 60
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+  # sqs-lot-update_4:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   timeout: 60
+  #   layers:
+  #     -  ${ssm:NodeLayerARN}
+  #   events:
+  #     - sqs:
+  #         arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
 
 
           
-  sqs-lot-update_5:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    vpc:
-      securityGroupIds:
-        - ${ssm:SECURITY_GROUP_ID}
-      subnetIds:
-        - ${ssm:SUBNET_ID}
-    timeout: 60
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
+  # sqs-lot-update_5:
+  #   handler: handlers/batch_lots_update.handler
+  #   memorySize: ${ssm:LAMBDA_MEMORY}
+  #   maximumRetryAttempts: 0
+  #   vpc:
+  #     securityGroupIds:
+  #       - ${ssm:SECURITY_GROUP_ID}
+  #     subnetIds:
+  #       - ${ssm:SUBNET_ID}
+  #   timeout: 60
+  #   layers:
+  #     -  ${ssm:NodeLayerARN}
+  #   events:
+  #     - sqs:
+  #         arn: arn:aws:sqs:${aws:region}:${aws:accountId}:${self:provider.stage}-bulk-lots-update
 
 resources:
   Conditions:
