@@ -35,7 +35,7 @@ data "aws_ssm_parameter" "api_5xx_handler_arn" {
   provider = aws.deployment-eu
 }
 data "aws_ssm_parameter" "resource_sns" {
-  name = "SNS_TOPIC"
+  name = "REDIS_DELETE_ALERTS_TOPIC_ARN"
   provider = aws.deployment-eu
 }
 
