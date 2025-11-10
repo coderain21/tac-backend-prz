@@ -82,6 +82,7 @@ def add_address(event, context):
             "body": json.dumps({'data':result},cls=Encoder)
             }
     except Exception as e:
+        print('Error', str(e))
         return {
             "statusCode": 500,
             "headers": headers,

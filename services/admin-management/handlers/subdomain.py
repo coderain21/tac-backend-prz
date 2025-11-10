@@ -70,7 +70,7 @@ def subdomain(event, context):
             'body': json.dumps({'subdomain':subdomain})
             }
     except Exception as err:
-        print(err)
+        print('Error',str(err))
         return {
                     'statusCode': 500,
                     'headers': headers,

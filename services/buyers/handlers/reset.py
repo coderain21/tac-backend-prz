@@ -193,7 +193,7 @@ def password_reset(event, context):
             raise
 
     except Exception as err:
-        print(err)
+        print('Error',err)
         return {
             "headers": headers,
             "statusCode": 500,

@@ -105,7 +105,7 @@ def view_address(event, context):
                         "body": json.dumps({"result":list(result)},cls=Encoder)
                     }
     except Exception as err:
-        print(err)
+        print("Error", str(err))
         return {
             "statusCode": 500,
             "headers": headers,

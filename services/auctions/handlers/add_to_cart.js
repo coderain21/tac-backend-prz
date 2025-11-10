@@ -13,6 +13,8 @@ const BidInformation = require('../entities/BidInformation')
 const redisHelper = require('../lib/redis_helper')
 const Lot = require('../entities/Lot')
 const Auction = require('../entities/Auction')
+const Buyers = require('../entities/Buyers')
+const Cart = require('../entities/Cart')
 
 let connection = null
 
@@ -34,8 +36,9 @@ async function getLot(rediskey, client) {
 }
 
 /**
- * Retrieves lot details from Redis and triggers SQS only when conditions are met.
- * No longer adds items to cart - this is handled in the SQS trigger function.
+ * Retrieves lot details from Redis and triggers SQS when conditions are met.
+ * For Individual/Cascade lots: adds winning items to cart immediately when lot ends.
+ * For All Lots: cart addition is handled in the SQS trigger function.
  *
  * @param {string} lot_id - The ID of the lot to retrieve.
  * @param {object} client - The Redis client for database interaction.
@@ -47,6 +50,24 @@ module.exports.handler = async (event) => {
         if (connection === null || !connection.readyState) {
             connection = await mongodbHelper.connect()
         }
+
+        // Check auction data first for All Lots handling
+        const auctionData = await mongodbHelper.getAuction(event, Auction)
+
+        if (auctionData.extension_type === 'All Lots') {
+            // Check if auction already processed
+            if (auctionData.status === 'Completed') {
+                console.log('Auction already processed, skipping')
+                return true
+            }
+
+            // Only lot #1 should process
+            if (event.lot_number !== 1) {
+                console.log('Not lot #1, skipping processing for All Lots auction')
+                return true
+            }
+        }
+
         const currentTimestamp = new Date(Date.now()).getTime()
         const rediskey = `lot:${event._id}`
         const client = await redisHelper.createRedisClient()
@@ -57,7 +78,6 @@ module.exports.handler = async (event) => {
         }
 
         const getTotalActiveSales = await mongodbHelper.getTotalActiveSales(query, Lot)
-        const auctionData = await mongodbHelper.getAuction(event, Auction)
         const getLots = await mongodbHelper.getAuctionsLots(event, currentTimestamp, Lot)
 
         // Check if auction should be completed
@@ -83,6 +103,21 @@ module.exports.handler = async (event) => {
             if (lotInformation.end_date < currentTimestamp && get_lot.length > 0) {
                 // Update latest bid record regardless of winner
                 await mongodbHelper.getLatestRecord(lotInformation, BidInformation)
+
+                // Add to cart immediately for Individual/Cascade lots
+                if ((auctionData.extension_type === 'Cascade' || auctionData.extension_type === 'Individual Lots') && lotInformation.winning_user) {
+                    try {
+                        const getBuyerData = await mongodbHelper.getBuyer(lotInformation.winning_user, Buyers)
+                        if (getBuyerData && Object.keys(getBuyerData).length > 0) {
+                            lotInformation.email_address = getBuyerData.email_address || null
+                            lotInformation.name = getBuyerData.first_name || null
+                            await mongodbHelper.lotToCart(lotInformation, auctionData, Cart)
+                            console.log(`Added lot ${event.lot_number} to cart immediately for winner ${lotInformation.winning_user}`)
+                        }
+                    } catch (cartError) {
+                        console.error('Error adding lot to cart immediately:', cartError)
+                    }
+                }
 
                 // Check conditions for triggering SQS (with or without winner)
                 if (auctionData.extension_type === 'All Lots' && event.lot_number === 1) {

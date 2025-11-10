@@ -222,7 +222,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -239,7 +238,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -256,7 +254,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -273,7 +270,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -290,7 +286,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -307,7 +302,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -324,7 +318,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -375,7 +368,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -392,7 +384,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -409,7 +400,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -426,7 +416,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -443,7 +432,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -764,7 +752,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -781,7 +768,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -798,7 +784,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -815,7 +800,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -832,7 +816,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -849,7 +832,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -866,7 +848,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -917,7 +898,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -934,7 +914,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -951,7 +930,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -968,7 +946,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -985,7 +962,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1036,7 +1012,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1053,7 +1028,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1070,7 +1044,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1087,7 +1060,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
@@ -1104,7 +1076,6 @@ resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
       period = 300
       stat   = "Sum"
     }
-    return_data = true
   }
 
   metric_query {
