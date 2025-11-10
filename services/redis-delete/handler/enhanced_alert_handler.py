@@ -262,7 +262,6 @@ def normalize_resource(resource):
 def get_lambda_name(api_service, api_path=None, method=None, stage=None):
     if stage is None:
         stage = os.environ.get('STAGE', 'dev')
-        
      # ✅ normalize before matching
     api_path = normalize_resource(api_path)
 
