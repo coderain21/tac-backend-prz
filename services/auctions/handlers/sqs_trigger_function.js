@@ -517,6 +517,8 @@ module.exports.sqsTriggerFunction = async (event) => {
                         lot_key: redisKeys,
                         lot_history_key: `lot-history:${lot._id}`,
                         auction_history_key: `auction:${auctionData.auction_id}#${lot._id}`,
+                        seller_email: auctionData.seller_email,
+                        auction_idq: auctionData.auction_id,
                     }
                     // Use the new helper function that utilizes the Mongoose model
                     const savedDataKeys = await mongodbHelper.saveRedisDataKeys(redisDataKeys)
