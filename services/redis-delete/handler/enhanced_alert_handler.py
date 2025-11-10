@@ -56,7 +56,6 @@ route_to_lambda = {
     ('admin-management', '/view-seller'): 'admin-management-{stage}-seller-view',
     ('admin-management', '/update-seller-status'): 'admin-management-{stage}-update-seller-status',
     ('admin-management', '/unpublish-auction'): 'admin-management-{stage}-unpublish_auction',
-    ('admin-management', '/edit-auction/{auction_id}'): 'admin-management-{stage}-update',
     ('admin-management', '/publish-auction/{auction_id}'): 'admin-management-{stage}-publish_auction',
     ('admin-management', '/admin-subdomain'): 'admin-management-{stage}-admin-sub-domain',
     ('admin-management', '/edit-auction/{auction_id}'): 'admin-management-{stage}-update_auction',
@@ -72,7 +71,7 @@ route_to_lambda = {
     ('auctions', 'GET', '/'): 'auctions-{stage}-list_auction',
     ('auctions', '/lots'): 'auctions-{stage}-create_lots',
     ('auctions', '/view'): 'auctions-{stage}-view',
-    ('auctions', '/{auction_id}'): 'auctions-{stage}-unpublish_auction',
+    ('auctions', 'PATCH', '/{auction_id}'): 'auctions-{stage}-unpublish_auction',
     ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
     ('auctions', '/clone'): 'auctions-{stage}-clone_auction',
     ('auctions', '/import'): 'auctions-{stage}-import_lots',
@@ -83,7 +82,7 @@ route_to_lambda = {
     ('auctions', 'DELETE', '/lots'): 'auctions-{stage}-delete_lot',
     ('auctions', 'PATCH', '/lots'): 'auctions-{stage}-update_lot',
     ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
-    ('auctions', '/{auction_id}'): 'auctions-{stage}-delete_auction',
+    ('auctions', 'DELETE', '/{auction_id}'): 'auctions-{stage}-delete_auction',
     ('auctions', '/deactivate'): 'auctions-{stage}-deactivate',
     ('auctions', '/leaderboard/{auction_id}'): 'auctions-{stage}-get-leaderboard',
     ('auctions', '/image'): 'auctions-{stage}-delete-image',
@@ -253,14 +252,24 @@ def parse_alarm_name(alarm_name):
     return service, stage, resource
 
 
+def normalize_resource(resource):
+    # Fix routes like /update-auction_id → /update/{auction_id}
+    if resource and re.search(r'-[a-zA-Z0-9_]+_id', resource):
+        resource = re.sub(r'/([a-zA-Z_-]+)-([a-zA-Z0-9_]+_id)', r'/\1/{\2}', resource)
+    return resource
+
+
 def get_lambda_name(api_service, api_path=None, method=None, stage=None):
     if stage is None:
         stage = os.environ.get('STAGE', 'dev')
+     # ✅ normalize before matching
+    api_path = normalize_resource(api_path)
+
     # Handle old-style calls that pass (service, stage, resource)
     if api_path == stage and method is None:
-        # probably called like get_lambda_name(service, stage, resource)
-        api_path = method  # swap meaning if args were shifted
+        api_path = method
         method = None
+
 
     # Try exact 3-key match first
     key_with_method = (api_service, method, api_path)
