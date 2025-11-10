@@ -420,7 +420,7 @@ resource "aws_appautoscaling_policy" "request_count" {
       predefined_metric_type = "ALBRequestCountPerTarget"
       resource_label = "${aws_lb.load-balancer.arn_suffix}/${aws_lb_target_group.target_group.arn_suffix}"
     }
-    target_value = 1000
+    target_value = 25
     scale_out_cooldown = 300
     scale_in_cooldown = 300
   }
@@ -526,7 +526,7 @@ resource "aws_appautoscaling_policy" "ecs_request_scaling" {
   step_scaling_policy_configuration {
     adjustment_type         = "ChangeInCapacity"
     cooldown               = 60
-    metric_aggregation_type = "Average"
+    metric_aggregation_type = "Maximum"
 
     step_adjustment {
       metric_interval_lower_bound = 0
@@ -590,7 +590,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_out" {
   evaluation_periods  = 1
   metric_name         = "MemoryUtilization"
   namespace           = "AWS/ECS"
-  period              = 30
+  period              = 60
   statistic           = "Maximum"
   threshold           = 65
   alarm_description   = "Scale out quickly when Memory > 65% for 30s"
@@ -632,9 +632,9 @@ resource "aws_cloudwatch_metric_alarm" "ecs_requests_scale_out" {
   evaluation_periods  = "1"
   metric_name         = "RequestCountPerTarget"
   namespace           = "AWS/ApplicationELB"
-  period              = "30"
-  statistic           = "Maximum"
-  threshold           = "100"
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = "25"
   alarm_description   = "Scale out when requests > 100 for 1 periods"
   alarm_actions       = [aws_appautoscaling_policy.ecs_request_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
   
