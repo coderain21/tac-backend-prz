@@ -34,6 +34,10 @@ data "aws_ssm_parameter" "api_5xx_handler_arn" {
   name = "API_5XX_ALERT_HANDLER_ARN"
   provider = aws.deployment-eu
 }
+data "aws_ssm_parameter" "resource_sns" {
+  name = "SNS_TOPIC"
+  provider = aws.deployment-eu
+}
 
 # Subscribe Lambda to CloudWatchAlarmTopic
 resource "aws_sns_topic_subscription" "lambda_subscription" {
@@ -76,477 +80,6 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_rum_policy_attachment" {
   provider = aws.deployment-eu
 }
 
-# P1 Critical - Authentication & Registration (Part 1)
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth_1" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Auth-1"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Authentication & Registration Part 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "buyer_verify_captcha"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "buyers/verify-captcha"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_otp_validation"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/otp-validation"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_auth_login"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/auth/login"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_verify_captcha"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/verify-captcha"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_otp_validation"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/otp-validation"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_request_otp"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/request-otp"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_auction_register"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/auction-register"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_verify_card"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/verify-card"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "subdomain_api"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-subdomain"
-        Resource = "/subdomain"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_auth_1"
-    expression  = "MAX([buyer_verify_captcha, buyer_otp_validation, buyer_auth_login, seller_verify_captcha, seller_otp_validation, seller_request_otp, buyer_auction_register, buyer_verify_card, subdomain_api])"
-    label       = "Max 5XX Errors P1 Auth 1"
-    return_data = true
-  }
-}
-
-# P1 Critical - Authentication & Registration (Part 2)
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_auth_2" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Auth-2"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Authentication & Registration Part 2"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "subdomain_api_patch"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-subdomain"
-        Resource = "/subdomain"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "password_update"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/password-update/{email}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_auth_2"
-    expression  = "MAX([subdomain_api_patch, password_update])"
-    label       = "Max 5XX Errors P1 Auth 2"
-    return_data = true
-  }
-}
-
-# P1 Critical - Bidding & Payments
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_payments" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Payments"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Bidding & Payments"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "buyer_bids_update"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-bids"
-        Resource = "/update"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "stripe_checkout"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-payments"
-        Resource = "/stripe"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "paypal_order"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-paypal"
-        Resource = "/paypal-order"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "paypal_capture"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-paypal"
-        Resource = "/capture-order"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "cart_management"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-cart-management"
-        Resource = "/cart"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_create_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_create_lot"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/lots"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_publish_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/update/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_part2"
-    expression  = "MAX([buyer_bids_update, stripe_checkout, paypal_order, paypal_capture, cart_management, seller_create_auction, seller_create_lot, seller_publish_auction])"
-    label       = "Max 5XX Errors P1 Part2"
-    return_data = true
-  }
-}
-
-# P1 Critical - Viewing & Management
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_viewing" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Viewing"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Viewing & Management"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "buyer_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/view"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_view_lots"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/view-lots"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_lot_details"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/lot-details"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_paddle"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/paddle"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_auctions_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/view"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_unpublish_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_part3"
-    expression  = "MAX([buyer_view, buyer_view_lots, buyer_lot_details, buyer_paddle, seller_auctions_view, seller_unpublish_auction])"
-    label       = "Max 5XX Errors P1 Part3"
-    return_data = true
-  }
-}
 
 
 # Create CloudWatch Log Metric Filter
@@ -565,7 +98,7 @@ resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
 
 # Create CloudWatch Alarm for process cart logs
 resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Process Cart Logs Error Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Process Cart Logs Error Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].name
@@ -596,7 +129,7 @@ resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_f
 }
 
 resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 3
   datapoints_to_alarm = 2
@@ -627,7 +160,7 @@ resource "aws_cloudwatch_log_metric_filter" "batch_lots_publish_lambda_error_fil
 }
 
 resource "aws_cloudwatch_metric_alarm" "batch_lots_publish_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Batch-Lots-Publish-Error-Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Batch-Lots-Publish-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.batch_lots_publish_lambda_error_filter.metric_transformation[0].name
@@ -657,7 +190,7 @@ resource "aws_cloudwatch_log_metric_filter" "batch_lots_update_lambda_error_filt
 }
 
 resource "aws_cloudwatch_metric_alarm" "batch_lots_update_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Batch-Lots-Update-Error-Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Batch-Lots-Update-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.batch_lots_update_lambda_error_filter.metric_transformation[0].name
@@ -680,7 +213,7 @@ resource "aws_cloudwatch_metric_alarm" "batch_lots_update_lambda_error_alarm" {
 
 # Other service alarms
 resource "aws_cloudwatch_metric_alarm" "lambda_throttles_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Lambda-AllFunctions-Throttles"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Lambda-AllFunctions-Throttles"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Throttles"
@@ -689,14 +222,14 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles_p1" {
   statistic           = "Sum"
   threshold           = 900
   alarm_description   = "P1 Total Lambda throttles across all functions > 900"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
 
 
 resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "TaskLaunchFailures"
@@ -709,7 +242,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
     ServiceName = "websocket-ecs-service"
   }
   alarm_description   = "P1 ECS task launch failures > 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
@@ -741,7 +274,7 @@ resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
   alarm_description   = "Alarm when ThrottlingException appears in logs"
   treat_missing_data  = "notBreaching"
   # Optional: SNS topic for notifications
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn] # Define this if needed
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value] # Define this if needed
   provider  = aws.deployment-eu
 }
 
@@ -772,12 +305,162 @@ resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
   threshold           = 1
   alarm_description   = "Alert when Redis data is missing or email sending fails"
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
+  provider            = aws.deployment-eu
+}
+
+# Auction Cleanup Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "auction_cleanup_lambda_error_filter" {
+  name           = "Auction Cleanup All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-auction-cleanup"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "AuctionCleanupErrorCount"
+    namespace = "AuctionCleanupError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "auction_cleanup_lambda_error_alarm" {
+  alarm_name          = "P3-IndyAuction-${var.STAGE}-Auction-Cleanup-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.auction_cleanup_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.auction_cleanup_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Auction Cleanup Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider            = aws.deployment-eu
 }
 
-resource "aws_cloudwatch_metric_alarm" "ecs_task_count_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
+# Cleanup Step Functions Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cleanup_step_functions_lambda_error_filter" {
+  name           = "Cleanup Step Functions All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-cleanupStepFunctions"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "CleanupStepFunctionsErrorCount"
+    namespace = "CleanupStepFunctionsError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cleanup_step_functions_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cleanup-Step-Functions-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cleanup_step_functions_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cleanup_step_functions_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cleanup Step Functions Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Cognito Pre Auth Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_pre_auth_lambda_error_filter" {
+  name           = "Cognito Pre Auth All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-pre-auth"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "CognitoPreAuthErrorCount"
+    namespace = "CognitoPreAuthError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_pre_auth_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cognito-Pre-Auth-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_pre_auth_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_pre_auth_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cognito Pre Auth Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Cognito Post Auth Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_post_auth_lambda_error_filter" {
+  name           = "Cognito Post Auth All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-post-auth"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "CognitoPostAuthErrorCount"
+    namespace = "CognitoPostAuthError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_post_auth_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cognito-Post-Auth-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_post_auth_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_post_auth_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cognito Post Auth Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Admin Pre Signup Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "admin_pre_signup_lambda_error_filter" {
+  name           = "Admin Pre Signup All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-admin-pre-signup"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "AdminPreSignupErrorCount"
+    namespace = "AdminPreSignupError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "admin_pre_signup_lambda_error_alarm" {
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Admin-Pre-Signup-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.admin_pre_signup_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.admin_pre_signup_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Admin Pre Signup Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_task_count_P1" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 1
   metric_name         = "RunningTaskCount"
@@ -790,12 +473,12 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_count_p1" {
     ServiceName = "websocket-ecs-service"
   }
   alarm_description   = "P1 ECS running task count < 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
 resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-StepFunction-ExecutionsFailed"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-StepFunction-ExecutionsFailed"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "ExecutionsFailed"
@@ -807,7 +490,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed_p1" {
     StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
   }
   alarm_description   = "P1 Failed executions in Step Function"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
@@ -824,7 +507,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
     StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
   }
   alarm_description   = "Timed out executions in Step Function"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider             = aws.deployment-eu
 }
 
@@ -832,7 +515,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
 
 # === SLO Configurations ===
 
-# P1 Critical - System Availability (>= 99.9%)
+# P1 Critical - System Availability (>= 99.9%) - Service Specific
 resource "awscc_applicationsignals_service_level_objective" "p1_critical_availability" {
   provider    = awscc.deployment-eu-cc
   name        = "IndyAuction-${var.STAGE}-P1-Critical-Availability-999pc-7d"
@@ -845,8 +528,8 @@ resource "awscc_applicationsignals_service_level_objective" "p1_critical_availab
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P1Critical5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -862,7 +545,7 @@ resource "awscc_applicationsignals_service_level_objective" "p1_critical_availab
   tags = [{ key = "Priority", value = "P1" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }
 
-# P2 Medium - System Availability (>= 99.5%)
+# P2 Medium - System Availability (>= 99.5%) - Service Specific
 resource "awscc_applicationsignals_service_level_objective" "p2_medium_availability" {
   provider    = awscc.deployment-eu-cc
   name        = "IndyAuction-${var.STAGE}-P2-Medium-Availability-995pc-7d"
@@ -875,8 +558,8 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P2Medium5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -892,7 +575,7 @@ resource "awscc_applicationsignals_service_level_objective" "p2_medium_availabil
   tags = [{ key = "Priority", value = "P2" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }
 
-# P3 Low - System Availability (>= 99.0%)
+# P3 Low - System Availability (>= 99.0%) - Service Specific
 resource "awscc_applicationsignals_service_level_objective" "p3_low_availability" {
   provider    = awscc.deployment-eu-cc
   name        = "IndyAuction-${var.STAGE}-P3-Low-Availability-99pc-7d"
@@ -905,8 +588,8 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
     sli_metric = {
       metric_data_queries = [
         { id = "errorRate", expression = "FILL(m5xx, 0) / FILL(mTotal, 1)", return_data = true, label = "P3Low5xxErrorRate" },
-        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false },
-        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count", dimensions = [{ name = "Stage", value = var.STAGE }] }, period = 300, stat = "Sum" }, return_data = false }
+        { id = "m5xx", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "5XXError" }, period = 300, stat = "Sum" }, return_data = false },
+        { id = "mTotal", metric_stat = { metric = { namespace = "AWS/ApiGateway", metric_name = "Count" }, period = 300, stat = "Sum" }, return_data = false }
       ]
     }
   }
@@ -922,7 +605,7 @@ resource "awscc_applicationsignals_service_level_objective" "p3_low_availability
   tags = [{ key = "Priority", value = "P3" }, { key = "SLOType", value = "Availability" }, { key = "Stage", value = var.STAGE }]
 }
 
-# API Latency SLO - P90 <= 3 seconds
+# API Latency SLO - P90 <= 3 seconds - Service Specific
 resource "awscc_applicationsignals_service_level_objective" "api_latency" {
   provider    = awscc.deployment-eu-cc
   name        = "IndyAuction-${var.STAGE}-APIGateway-Latency-P90-Under3s-7d"
@@ -938,7 +621,6 @@ resource "awscc_applicationsignals_service_level_objective" "api_latency" {
           metric = {
             namespace   = "AWS/ApiGateway"
             metric_name = "Latency"
-            dimensions  = [{ name = "Stage", value = var.STAGE }]
           }
           period = 300
           stat   = "p90"
@@ -958,1856 +640,6 @@ resource "awscc_applicationsignals_service_level_objective" "api_latency" {
   tags = [{ key = "Application", value = "APIGateway" }, { key = "SLOType", value = "Latency" }, { key = "Stage", value = var.STAGE }]
 }
 
-# P2 Medium - Part 1 (Password & Profile Management)
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_profile" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p2-medium-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Profile"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 5
-  alarm_description   = "P2 Medium alarm for 5XX errors - Password & Profile Management"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "buyer_update_password"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/update-password"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_forgot_password"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/forgot_password"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_reset_password"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/reset_password"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_forgot_password"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/forgot_password"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_reset_password"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/reset_password"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_profile"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/profile"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_address_post"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-address-management"
-        Resource = "/address"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-
-
-  metric_query {
-    id          = "max5xx_p2_part1"
-    expression  = "MAX([buyer_update_password, buyer_forgot_password, buyer_reset_password, seller_forgot_password, seller_reset_password, buyer_profile, buyer_address_post])"
-    label       = "Max 5XX Errors P2 Part1"
-    return_data = true
-  }
-}
-
-# P2 Medium - Part 2 (Auction Management)
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p2_medium_management" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p2-medium-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Management"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 5
-  alarm_description   = "P2 Medium alarm for 5XX errors - Auction Management"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "seller_clone_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/clone"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-
-
-  metric_query {
-    id = "seller_buyer_approval"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/approval"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_update_lot"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/lots"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_delete_lot"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/lots"
-        Stage    = var.STAGE
-        Method   = "DELETE"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_import_lots"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/import"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p2_part2"
-    expression  = "MAX([seller_clone_auction, seller_buyer_approval, seller_update_lot, seller_delete_lot, seller_import_lots])"
-    label       = "Max 5XX Errors P2 Part2"
-    return_data = true
-  }
-}
-
-
-
-
-
-# P1 Critical - Additional Routes 1
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_1" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-1"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "auctions_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_delete_note"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_list_lots"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/lots"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_admin_list_lots"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/admin/lots"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_reorder_lots"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/reorder-lots"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_delete_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "DELETE"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_deactivate"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/deactivate"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "auctions_leaderboard"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/leaderboard/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_1"
-    expression  = "MAX([auctions_list, auctions_list_lots, auctions_admin_list_lots, auctions_reorder_lots, auctions_delete_auction, auctions_deactivate, auctions_leaderboard])"
-    label       = "Max 5XX Errors P1 Add 1"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 2
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_2" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-2"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 2"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "auctions_delete_image"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-auctions"
-        Resource = "/image"
-        Stage    = var.STAGE
-        Method   = "DELETE"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyers_create_userpools"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyers_add_address"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/add-address"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyers_links"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/links"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyers_signin_logger"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/buyer-logs"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyers_privacy_policy"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/policy/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_search_lots"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyers"
-        Resource = "/search-lots"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_add_wishlist"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyer-wishlist"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "buyer_remove_wishlist"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyer-wishlist"
-        Resource = "/remove"
-        Stage    = var.STAGE
-        Method   = "DELETE"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_2"
-    expression  = "MAX([auctions_delete_image, buyers_create_userpools, buyers_add_address, buyers_links, buyers_signin_logger, buyers_privacy_policy, buyer_search_lots, buyer_add_wishlist, buyer_remove_wishlist])"
-    label       = "Max 5XX Errors P1 Add 2"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 3
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_3" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-3"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 3"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "buyer_view_wishlist"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-buyer-wishlist"
-        Resource = "/wishlist"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-
-  metric_query {
-    id = "address_get"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-address-management"
-        Resource = "/address"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "address_update"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-address-management"
-        Resource = "/address"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "bids_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-bids"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "bids_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-bids"
-        Resource = "/{id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "bids_admin_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-bids"
-        Resource = "/admin/{id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "payments_webhook"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-payments"
-        Resource = "/payments_webhook"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "paypal_connect"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-paypal"
-        Resource = "/paypal-connect"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_3"
-    expression  = "MAX([buyer_view_wishlist, address_get, address_update, bids_list, bids_view, bids_admin_view, payments_webhook, paypal_connect])"
-    label       = "Max 5XX Errors P1 Add 3"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 4
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_4" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-4"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 4"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "paypal_connect_webhook"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-paypal"
-        Resource = "/paypal-connect-webhook"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "paypal_disconnect"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-paypal"
-        Resource = "/paypal-disconnect"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "paypal_order_webhook"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-paypal"
-        Resource = "/paypal-order-webhook"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_view_profile"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/{email}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_update_profile"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/{email}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_generate_token"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/generate"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-
-  metric_query {
-    id = "users_update_plan"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/update-plan/{email}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-
-  metric_query {
-    id          = "max5xx_p1_add_4"
-    expression  = "MAX([paypal_connect_webhook, paypal_disconnect, paypal_order_webhook, users_view_profile, users_update_profile, users_generate_token, users_update_plan])"
-    label       = "Max 5XX Errors P1 Add 4"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 5
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_5" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-5"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 5"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "users_payment_intent"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/payment-intent"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_seller_subdomain"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/seller-sub-domain"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_stripe_disconnect"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/stripe"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_stripe_connect"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/stripe"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_stripe_webhook"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/stripe_webhook_trigger"
-        Stage    = var.STAGE
-        Method   = "ANY"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_get_template"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/get-template/{template_name}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "users_create_template"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-users-management"
-        Resource = "/create-template"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_buyer_update"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-buyer-bid-history"
-        Resource = "/admin/{buyer_id}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_buyer_list_bids"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-buyer-bid-history"
-        Resource = "/admin/buyer/{email_address}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_5"
-    expression  = "MAX([users_payment_intent, users_seller_subdomain, users_stripe_disconnect, users_stripe_connect, users_stripe_webhook, users_get_template, users_create_template, admin_buyer_update, admin_buyer_list_bids])"
-    label       = "Max 5XX Errors P1 Add 5"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 6
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_6" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-6"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 6"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "admin_buyer_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-buyer-bid-history"
-        Resource = "/list/{seller_email}/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_buyer_bids"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-buyer-bid-history"
-        Resource = "/bids"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_buyer_delete"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-buyer-bid-history"
-        Resource = "/delete-buyer"
-        Stage    = var.STAGE
-        Method   = "DELETE"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_bidder_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-seller-bidder-management"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_orders"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-seller-bidder-management"
-        Resource = "/seller-orders"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "lot_bid_history_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-lot-bid-history"
-        Resource = "/{lot_id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "lot_bid_history_buyer"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-lot-bid-history"
-        Resource = "/buyer/{lot_id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "lot_bid_history_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-lot-bid-history"
-        Resource = "/auction/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "lot_bid_history_seller_bids"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-lot-bid-history"
-        Resource = "/seller/bids"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_6"
-    expression  = "MAX([admin_buyer_list, admin_buyer_bids, admin_buyer_delete, seller_bidder_list, seller_orders, lot_bid_history_list, lot_bid_history_buyer, lot_bid_history_auction, lot_bid_history_seller_bids])"
-    label       = "Max 5XX Errors P1 Add 6"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 7
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_7" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-7"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 7"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "orders_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-orders"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "orders_details"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-orders"
-        Resource = "/details"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "orders_update"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-orders"
-        Resource = "/update"
-        Stage    = var.STAGE
-        Method   = "PUT"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "orders_sales"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-orders"
-        Resource = "/sales"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "seller_export_data"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-orders"
-        Resource = "/seller"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "site_banner_create"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-site-banner"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "site_banner_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-site-banner"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "site_banner_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-site-banner"
-        Resource = "/{audience}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "site_banner_delete"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-site-banner"
-        Resource = "/delete/{notification_id}"
-        Stage    = var.STAGE
-        Method   = "DELETE"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_7"
-    expression  = "MAX([orders_list, orders_details, orders_update, orders_sales, seller_export_data, site_banner_create, site_banner_list, site_banner_view, site_banner_delete])"
-    label       = "Max 5XX Errors P1 Add 7"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 8
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_8" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-8"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 8"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "admin_list_auctions"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/auctions"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_list_buyers"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/buyers"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_buyer_details"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/buyer-details"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_buyer_auctions"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/buyer-auctions"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_purchase_list"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/{id}"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_clone_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/clone-auction"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_order_details"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/order-details"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_auction_purchases"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/auction-purchases"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_auction_details"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/auction-details"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_8"
-    expression  = "MAX([admin_list_auctions, admin_list_buyers, admin_buyer_details, admin_buyer_auctions, admin_purchase_list, admin_clone_auction, admin_order_details, admin_auction_purchases, admin_auction_details])"
-    label       = "Max 5XX Errors P1 Add 8"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 9
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_9" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-9"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 9"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "admin_all_purchases"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/accountings"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_seller_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/view-seller"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_update_seller_status"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/update-seller-status"
-        Stage    = var.STAGE
-        Method   = "POST"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_unpublish_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/unpublish-auction"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_bdd_update"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/admin_bdd-update/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_publish_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/publish-auction/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_subdomain"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/admin-subdomain"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_update_auction"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/edit-auction/{auction_id}"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_update_lot"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/update-lot"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_9"
-    expression  = "MAX([admin_all_purchases, admin_seller_view, admin_update_seller_status, admin_unpublish_auction, admin_bdd_update, admin_publish_auction, admin_subdomain, admin_update_auction, admin_update_lot])"
-    label       = "Max 5XX Errors P1 Add 9"
-    return_data = true
-  }
-}
-
-# P1 Critical - Additional Routes 10
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_additional_10" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Additional-10"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Additional Routes 10"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "admin_all_sellers"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/all-sellers"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_update_password"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/admin-update-password"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_enable_disable_seller"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/enable-disable-seller"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "admin_update_seller_settings"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-admin-management"
-        Resource = "/update-seller-settings"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "newsletter_patch"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-newsletter"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "PATCH"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_add_10"
-    expression  = "MAX([admin_all_sellers, admin_update_password, admin_enable_disable_seller, admin_update_seller_settings, newsletter_patch])"
-    label       = "Max 5XX Errors P1 Add 10"
-    return_data = true
-  }
-}
-
-# P1 Critical - Missing Services 1
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p1_critical_missing_1" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p1-critical-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Missing-1"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 1
-  threshold           = 1
-  alarm_description   = "P1 Critical alarm for 5XX errors - Missing Services 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  # Quicksight-dashboards service routes (4 routes)
-  metric_query {
-    id = "quicksight_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-quicksight-dashboards"
-        Resource = "/"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "quicksight_auction_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-quicksight-dashboards"
-        Resource = "/auction-view"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "quicksight_admin_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-quicksight-dashboards"
-        Resource = "/admin-view"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id = "quicksight_admin_auction_view"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-quicksight-dashboards"
-        Resource = "/admin-auction-view"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p1_missing_1"
-    expression  = "MAX([quicksight_view, quicksight_auction_view, quicksight_admin_view, quicksight_admin_auction_view])"
-    label       = "Max 5XX Errors P1 Missing 1"
-    return_data = true
-  }
-}
-
-
-# P3 Low - Part 1 (Search & Wishlist)
-resource "aws_cloudwatch_metric_alarm" "api_5xx_p3_low_search" {
-  provider            = aws.deployment-eu
-  alarm_name          = "p3-low-IndyAuction-${var.STAGE}-web-ApiGw-5xx-Search"
-  comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
-  threshold           = 5
-  alarm_description   = "P3 Low alarm for 5XX errors - Search & Wishlist"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
-
-  metric_query {
-    id = "orders_management_get"
-    metric {
-      namespace   = "AWS/ApiGateway"
-      metric_name = "5XXError"
-      dimensions = {
-        ApiName  = "${var.STAGE}-order-management"
-        Resource = "/orders"
-        Stage    = var.STAGE
-        Method   = "GET"
-      }
-      period = 300
-      stat   = "Sum"
-    }
-  }
-
-  metric_query {
-    id          = "max5xx_p3_part1"
-    expression  = "MAX([orders_management_get])"
-    label       = "Max 5XX Errors P3 Part1"
-    return_data = true
-  }
-}
-
-
 
 # Create CloudWatch Alarms for DocuementDB maximum connections metrics
 resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
@@ -2823,7 +655,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
   # Set your desired reputation threshold (e.g., 70% for db.r6g.xlarge )
   threshold = 1400
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -2843,7 +675,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_cpu" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -2864,7 +696,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_memory" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 3221225472
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -2886,7 +718,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
@@ -2908,7 +740,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -2927,7 +759,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   period              = 300  # 5 minutes
   statistic           = "Maximum"
   threshold           = 0  # Alert when allowance is exceeded
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
@@ -2946,7 +778,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
   period              = 300  # 5 minutes
   statistic           = "Sum"
   threshold           = 1  # Trigger if more than 10 evictions occur
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -2964,10 +796,290 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
   period              = 300  # 5 minutes
   statistic           = "Maximum"
   threshold           = 70  # Alert if memory usage exceeds 80%
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
     CacheNodeId    = "0001"
   }
 }
+
+
+
+locals {
+  # ALL 124 routes extracted from your current alarms.tf
+  all_routes = [
+    # P1 Critical - Authentication & Registration
+    { service = "buyers", resource = "/verify-captcha", method = "POST", priority = "P1" },
+    { service = "buyers", resource = "/otp-validation", method = "POST", priority = "P1" },
+    { service = "users-management", resource = "/auth/login", method = "GET", priority = "P1" },
+    { service = "users-management", resource = "/verify-captcha", method = "POST", priority = "P1" },
+    { service = "users-management", resource = "/otp-validation", method = "POST", priority = "P1" },
+    { service = "users-management", resource = "/request-otp", method = "POST", priority = "P1" },
+    { service = "buyers", resource = "/auction-register", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/verify-card", method = "POST", priority = "P1" },
+    { service = "subdomain", resource = "/subdomain", method = "GET", priority = "P1" },
+    { service = "subdomain", resource = "/subdomain", method = "PATCH", priority = "P1" },
+    { service = "users-management", resource = "/password-update/{email}", method = "PATCH", priority = "P1" },
+    
+    # P1 Critical - Payments & Bidding
+    { service = "bids", resource = "/update", method = "PATCH", priority = "P1" },
+    { service = "payments", resource = "/stripe", method = "GET", priority = "P1" },
+    { service = "paypal", resource = "/paypal-order", method = "POST", priority = "P1" },
+    { service = "paypal", resource = "/capture-order", method = "GET", priority = "P1" },
+    { service = "cart-management", resource = "/cart", method = "GET", priority = "P1" },
+    { service = "auctions", resource = "/", method = "POST", priority = "P1" },
+    { service = "auctions", resource = "/lots", method = "POST", priority = "P1" },
+    { service = "auctions", resource = "/update/{auction_id}", method = "PATCH", priority = "P1" },
+    
+    # P1 Critical - Viewing & Management
+    { service = "buyers", resource = "/view", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/view-lots", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/lot-details", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/paddle", method = "GET", priority = "P1" },
+    { service = "auctions", resource = "/view", method = "GET", priority = "P1" },
+    { service = "auctions", resource = "/{auction_id}", method = "PATCH", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 1
+    { service = "auctions", resource = "/", method = "GET", priority = "P1" },
+    { service = "auctions", resource = "/", method = "PATCH", priority = "P1" },
+    { service = "auctions", resource = "/lots", method = "GET", priority = "P1" },
+    { service = "auctions", resource = "/admin/lots", method = "GET", priority = "P1" },
+    { service = "auctions", resource = "/reorder-lots", method = "POST", priority = "P1" },
+    { service = "auctions", resource = "/{auction_id}", method = "DELETE", priority = "P1" },
+    { service = "auctions", resource = "/deactivate", method = "POST", priority = "P1" },
+    { service = "auctions", resource = "/leaderboard/{auction_id}", method = "GET", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 2
+    { service = "auctions", resource = "/image", method = "DELETE", priority = "P1" },
+    { service = "buyers", resource = "/", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/add-address", method = "PATCH", priority = "P1" },
+    { service = "buyers", resource = "/links", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/buyer-logs", method = "POST", priority = "P1" },
+    { service = "buyers", resource = "/policy/{auction_id}", method = "GET", priority = "P1" },
+    { service = "buyers", resource = "/search-lots", method = "GET", priority = "P1" },
+    { service = "buyer-wishlist", resource = "/", method = "POST", priority = "P1" },
+    { service = "buyer-wishlist", resource = "/remove", method = "DELETE", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 3
+    { service = "buyer-wishlist", resource = "/wishlist", method = "GET", priority = "P1" },
+    { service = "address-management", resource = "/address", method = "GET", priority = "P1" },
+    { service = "address-management", resource = "/address", method = "PATCH", priority = "P1" },
+    { service = "bids", resource = "/", method = "GET", priority = "P1" },
+    { service = "bids", resource = "/{id}", method = "GET", priority = "P1" },
+    { service = "bids", resource = "/admin/{id}", method = "GET", priority = "P1" },
+    { service = "payments", resource = "/payments_webhook", method = "POST", priority = "P1" },
+    { service = "paypal", resource = "/paypal-connect", method = "GET", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 4
+    { service = "paypal", resource = "/paypal-connect-webhook", method = "POST", priority = "P1" },
+    { service = "paypal", resource = "/paypal-disconnect", method = "PATCH", priority = "P1" },
+    { service = "paypal", resource = "/paypal-order-webhook", method = "POST", priority = "P1" },
+    { service = "users-management", resource = "/{email}", method = "GET", priority = "P1" },
+    { service = "users-management", resource = "/{email}", method = "PATCH", priority = "P1" },
+    { service = "users-management", resource = "/generate", method = "GET", priority = "P1" },
+    { service = "users-management", resource = "/update-plan/{email}", method = "PATCH", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 5
+    { service = "users-management", resource = "/payment-intent", method = "GET", priority = "P1" },
+    { service = "users-management", resource = "/seller-sub-domain", method = "POST", priority = "P1" },
+    { service = "users-management", resource = "/stripe", method = "PATCH", priority = "P1" },
+    { service = "users-management", resource = "/stripe", method = "GET", priority = "P1" },
+    { service = "users-management", resource = "/stripe_webhook_trigger", method = "ANY", priority = "P1" },
+    { service = "users-management", resource = "/get-template/{template_name}", method = "GET", priority = "P1" },
+    { service = "users-management", resource = "/create-template", method = "POST", priority = "P1" },
+    { service = "admin-buyer-bid-history", resource = "/admin/{buyer_id}", method = "PATCH", priority = "P1" },
+    { service = "admin-buyer-bid-history", resource = "/admin/buyer/{email_address}", method = "GET", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 6
+    { service = "admin-buyer-bid-history", resource = "/list/{seller_email}/{auction_id}", method = "GET", priority = "P1" },
+    { service = "admin-buyer-bid-history", resource = "/bids", method = "GET", priority = "P1" },
+    { service = "admin-buyer-bid-history", resource = "/delete-buyer", method = "DELETE", priority = "P1" },
+    { service = "seller-bidder-management", resource = "/", method = "GET", priority = "P1" },
+    { service = "seller-bidder-management", resource = "/seller-orders", method = "GET", priority = "P1" },
+    { service = "lot-bid-history", resource = "/{lot_id}", method = "GET", priority = "P1" },
+    { service = "lot-bid-history", resource = "/buyer/{lot_id}", method = "GET", priority = "P1" },
+    { service = "lot-bid-history", resource = "/auction/{auction_id}", method = "GET", priority = "P1" },
+    { service = "lot-bid-history", resource = "/seller/bids", method = "GET", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 7
+    { service = "orders", resource = "/", method = "GET", priority = "P1" },
+    { service = "orders", resource = "/details", method = "GET", priority = "P1" },
+    { service = "orders", resource = "/update", method = "PUT", priority = "P1" },
+    { service = "orders", resource = "/sales", method = "GET", priority = "P1" },
+    { service = "orders", resource = "/seller", method = "GET", priority = "P1" },
+    { service = "site-banner", resource = "/", method = "POST", priority = "P1" },
+    { service = "site-banner", resource = "/", method = "GET", priority = "P1" },
+    { service = "site-banner", resource = "/{audience}", method = "GET", priority = "P1" },
+    { service = "site-banner", resource = "/delete/{notification_id}", method = "DELETE", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 8
+    { service = "admin-management", resource = "/auctions", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/buyers", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/buyer-details", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/buyer-auctions", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/{id}", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/clone-auction", method = "POST", priority = "P1" },
+    { service = "admin-management", resource = "/order-details", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/auction-purchases", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/auction-details", method = "GET", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 9
+    { service = "admin-management", resource = "/accountings", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/view-seller", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/update-seller-status", method = "POST", priority = "P1" },
+    { service = "admin-management", resource = "/unpublish-auction", method = "PATCH", priority = "P1" },
+    { service = "admin-management", resource = "/admin_bdd-update/{auction_id}", method = "PATCH", priority = "P1" },
+    { service = "admin-management", resource = "/publish-auction/{auction_id}", method = "PATCH", priority = "P1" },
+    { service = "admin-management", resource = "/admin-subdomain", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/edit-auction/{auction_id}", method = "PATCH", priority = "P1" },
+    { service = "admin-management", resource = "/update-lot", method = "PATCH", priority = "P1" },
+    
+    # P1 Critical - Additional Routes 10
+    { service = "admin-management", resource = "/all-sellers", method = "GET", priority = "P1" },
+    { service = "admin-management", resource = "/admin-update-password", method = "PATCH", priority = "P1" },
+    { service = "admin-management", resource = "/enable-disable-seller", method = "PATCH", priority = "P1" },
+    { service = "admin-management", resource = "/update-seller-settings", method = "PATCH", priority = "P1" },
+    { service = "newsletter", resource = "/", method = "PATCH", priority = "P1" },
+    
+    # P1 Critical - Missing Services
+    { service = "quicksight-dashboards", resource = "/", method = "GET", priority = "P1" },
+    { service = "quicksight-dashboards", resource = "/auction-view", method = "GET", priority = "P1" },
+    { service = "quicksight-dashboards", resource = "/admin-view", method = "GET", priority = "P1" },
+    { service = "quicksight-dashboards", resource = "/admin-auction-view", method = "GET", priority = "P1" },
+    
+    # P2 Medium - Profile Management
+    { service = "buyers", resource = "/update-password", method = "POST", priority = "P2" },
+    { service = "buyers", resource = "/forgot_password", method = "POST", priority = "P2" },
+    { service = "buyers", resource = "/reset_password", method = "POST", priority = "P2" },
+    { service = "buyers", resource = "/verify-captcha", method = "POST", priority = "P2" },
+    { service = "users-management", resource = "/verify-captcha", method = "POST", priority = "P2" },
+    { service = "users-management", resource = "/forgot_password", method = "POST", priority = "P2" },
+    { service = "users-management", resource = "/reset_password", method = "POST", priority = "P2" },
+    { service = "buyers", resource = "/profile", method = "PATCH", priority = "P2" },
+    { service = "address-management", resource = "/address", method = "POST", priority = "P2" },
+    
+    # P2 Medium - Auction Management
+    { service = "auctions", resource = "/clone", method = "POST", priority = "P2" },
+    { service = "buyers", resource = "/approval", method = "PATCH", priority = "P2" },
+    { service = "auctions", resource = "/lots", method = "PATCH", priority = "P2" },
+    { service = "auctions", resource = "/lots", method = "DELETE", priority = "P2" },
+    { service = "auctions", resource = "/import", method = "POST", priority = "P2" },
+    
+    # P3 Low - Search & Other
+    { service = "order-management", resource = "/orders", method = "GET", priority = "P3" }
+  ]
+  
+  # Threshold mapping by priority
+  thresholds = {
+    P1 = 1  # Immediate alert for critical routes
+    P2 = 3  # Alert after 3 errors for medium priority
+    P3 = 5  # Alert after 5 errors for low priority
+  }
+  
+  # P1 Critical routes
+  P1_routes = [for route in local.all_routes : route if route.priority == "P1"]
+  
+  # P2 Medium routes
+  P2_routes = [for route in local.all_routes : route if route.priority == "P2"]
+  
+  # P3 Low routes
+  P3_routes = [for route in local.all_routes : route if route.priority == "P3"]
+}
+
+# P1 Critical alarms
+resource "aws_cloudwatch_metric_alarm" "p1_alarms" {
+  for_each = { for route in local.P1_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
+  
+  provider            = aws.deployment-eu
+  alarm_name          = "P1-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "5XXError"
+  namespace           = "AWS/ApiGateway"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 1
+  alarm_description   = "P1 alarm for ${each.value.service} ${each.value.method} ${each.value.resource} - 5XX errors"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  treat_missing_data  = "notBreaching"
+  
+  dimensions = {
+    ApiName  = "${var.STAGE}-${each.value.service}"
+    Resource = each.value.resource
+    Method   = each.value.method
+    Stage    = var.STAGE
+  }
+  
+  tags = {
+    Priority = "P1"
+    Service  = each.value.service
+    Route    = replace(replace(each.value.resource, "{", ""), "}", "")
+    Method   = each.value.method
+  }
+}
+
+# P2 Medium alarms
+resource "aws_cloudwatch_metric_alarm" "p2_alarms" {
+  for_each = { for route in local.P2_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
+  
+  provider            = aws.deployment-eu
+  alarm_name          = "P2-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "5XXError"
+  namespace           = "AWS/ApiGateway"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 3
+  alarm_description   = "P2 alarm for ${each.value.service} ${each.value.method} ${each.value.resource} - 5XX errors"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  treat_missing_data  = "notBreaching"
+  
+  dimensions = {
+    ApiName  = "${var.STAGE}-${each.value.service}"
+    Resource = each.value.resource
+    Method   = each.value.method
+    Stage    = var.STAGE
+  }
+  
+  tags = {
+    Priority = "P2"
+    Service  = each.value.service
+    Route    = replace(replace(each.value.resource, "{", ""), "}", "")
+    Method   = each.value.method
+  }
+}
+
+# P3 Low alarms
+resource "aws_cloudwatch_metric_alarm" "p3_alarms" {
+  for_each = { for route in local.P3_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
+  
+  provider            = aws.deployment-eu
+  alarm_name          = "P3-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "5XXError"
+  namespace           = "AWS/ApiGateway"
+  period              = 300
+  statistic           = "Maximum"
+  threshold           = 5
+  alarm_description   = "P3 alarm for ${each.value.service} ${each.value.method} ${each.value.resource} - 5XX errors"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  treat_missing_data  = "notBreaching"
+  
+  dimensions = {
+    ApiName  = "${var.STAGE}-${each.value.service}"
+    Resource = each.value.resource
+    Method   = each.value.method
+    Stage    = var.STAGE
+  }
+  
+  tags = {
+    Priority = "P3"
+    Service  = each.value.service
+    Route    = replace(replace(each.value.resource, "{", ""), "}", "")
+    Method   = each.value.method
+  }
+}
+
