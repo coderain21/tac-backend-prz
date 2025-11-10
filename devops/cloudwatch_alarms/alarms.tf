@@ -34,6 +34,10 @@ data "aws_ssm_parameter" "api_5xx_handler_arn" {
   name = "API_5XX_ALERT_HANDLER_ARN"
   provider = aws.deployment-eu
 }
+data "aws_ssm_parameter" "resource_sns" {
+  name = "SNS_TOPIC"
+  provider = aws.deployment-eu
+}
 
 # Subscribe Lambda to CloudWatchAlarmTopic
 resource "aws_sns_topic_subscription" "lambda_subscription" {
@@ -94,7 +98,7 @@ resource "aws_cloudwatch_log_metric_filter" "process_cart_lambda_error_alarm" {
 
 # Create CloudWatch Alarm for process cart logs
 resource "aws_cloudwatch_metric_alarm" "process_cart_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Process Cart Logs Error Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Process Cart Logs Error Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.process_cart_lambda_error_alarm.metric_transformation[0].name
@@ -125,7 +129,7 @@ resource "aws_cloudwatch_log_metric_filter" "save_to_cache_lambda_error_metric_f
 }
 
 resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Save-To-Cache-Logs-Error-Alarm"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 3
   datapoints_to_alarm = 2
@@ -156,7 +160,7 @@ resource "aws_cloudwatch_log_metric_filter" "batch_lots_publish_lambda_error_fil
 }
 
 resource "aws_cloudwatch_metric_alarm" "batch_lots_publish_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Batch-Lots-Publish-Error-Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Batch-Lots-Publish-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.batch_lots_publish_lambda_error_filter.metric_transformation[0].name
@@ -186,7 +190,7 @@ resource "aws_cloudwatch_log_metric_filter" "batch_lots_update_lambda_error_filt
 }
 
 resource "aws_cloudwatch_metric_alarm" "batch_lots_update_lambda_error_alarm" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Batch-Lots-Update-Error-Alarm"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Batch-Lots-Update-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = aws_cloudwatch_log_metric_filter.batch_lots_update_lambda_error_filter.metric_transformation[0].name
@@ -209,7 +213,7 @@ resource "aws_cloudwatch_metric_alarm" "batch_lots_update_lambda_error_alarm" {
 
 # Other service alarms
 resource "aws_cloudwatch_metric_alarm" "lambda_throttles_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-Lambda-AllFunctions-Throttles"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Lambda-AllFunctions-Throttles"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "Throttles"
@@ -218,14 +222,14 @@ resource "aws_cloudwatch_metric_alarm" "lambda_throttles_p1" {
   statistic           = "Sum"
   threshold           = 900
   alarm_description   = "P1 Total Lambda throttles across all functions > 900"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
 
 
 resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-ECS-TaskLaunchFailures"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "TaskLaunchFailures"
@@ -238,7 +242,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_launch_failures_p1" {
     ServiceName = "websocket-ecs-service"
   }
   alarm_description   = "P1 ECS task launch failures > 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
@@ -270,7 +274,7 @@ resource "aws_cloudwatch_metric_alarm" "throttling_exception_alarm" {
   alarm_description   = "Alarm when ThrottlingException appears in logs"
   treat_missing_data  = "notBreaching"
   # Optional: SNS topic for notifications
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn] # Define this if needed
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value] # Define this if needed
   provider  = aws.deployment-eu
 }
 
@@ -301,12 +305,162 @@ resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
   threshold           = 1
   alarm_description   = "Alert when Redis data is missing or email sending fails"
   treat_missing_data  = "notBreaching"
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
+  provider            = aws.deployment-eu
+}
+
+# Auction Cleanup Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "auction_cleanup_lambda_error_filter" {
+  name           = "Auction Cleanup All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-auction-cleanup"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "AuctionCleanupErrorCount"
+    namespace = "AuctionCleanupError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "auction_cleanup_lambda_error_alarm" {
+  alarm_name          = "P3-IndyAuction-${var.STAGE}-Auction-Cleanup-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.auction_cleanup_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.auction_cleanup_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Auction Cleanup Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider            = aws.deployment-eu
 }
 
-resource "aws_cloudwatch_metric_alarm" "ecs_task_count_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
+# Cleanup Step Functions Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cleanup_step_functions_lambda_error_filter" {
+  name           = "Cleanup Step Functions All Errors"
+  log_group_name = "/aws/lambda/auctions-${var.STAGE}-cleanupStepFunctions"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "CleanupStepFunctionsErrorCount"
+    namespace = "CleanupStepFunctionsError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cleanup_step_functions_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cleanup-Step-Functions-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cleanup_step_functions_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cleanup_step_functions_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cleanup Step Functions Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Cognito Pre Auth Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_pre_auth_lambda_error_filter" {
+  name           = "Cognito Pre Auth All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-pre-auth"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "CognitoPreAuthErrorCount"
+    namespace = "CognitoPreAuthError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_pre_auth_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cognito-Pre-Auth-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_pre_auth_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_pre_auth_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cognito Pre Auth Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Cognito Post Auth Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_post_auth_lambda_error_filter" {
+  name           = "Cognito Post Auth All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-post-auth"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "CognitoPostAuthErrorCount"
+    namespace = "CognitoPostAuthError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_post_auth_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cognito-Post-Auth-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_post_auth_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_post_auth_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cognito Post Auth Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Admin Pre Signup Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "admin_pre_signup_lambda_error_filter" {
+  name           = "Admin Pre Signup All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-admin-pre-signup"
+  pattern        = "ERROR"
+
+  metric_transformation {
+    name      = "AdminPreSignupErrorCount"
+    namespace = "AdminPreSignupError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "admin_pre_signup_lambda_error_alarm" {
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Admin-Pre-Signup-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.admin_pre_signup_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.admin_pre_signup_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Admin Pre Signup Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_task_count_P1" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-ECS-TaskCountExceeded"
   comparison_operator = "LessThanThreshold"
   evaluation_periods  = 1
   metric_name         = "RunningTaskCount"
@@ -319,12 +473,12 @@ resource "aws_cloudwatch_metric_alarm" "ecs_task_count_p1" {
     ServiceName = "websocket-ecs-service"
   }
   alarm_description   = "P1 ECS running task count < 1"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
 resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed_p1" {
-  alarm_name          = "p1-IndyAuction-${var.STAGE}-StepFunction-ExecutionsFailed"
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-StepFunction-ExecutionsFailed"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "ExecutionsFailed"
@@ -336,7 +490,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_failed_p1" {
     StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
   }
   alarm_description   = "P1 Failed executions in Step Function"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider            = aws.deployment-eu
 }
 
@@ -353,7 +507,7 @@ resource "aws_cloudwatch_metric_alarm" "stepfunction_executions_timed_out" {
     StateMachineArn = "arn:aws:states:${var.REGION}:${var.ACCOUNT_ID}:stateMachine:${var.STAGE}-lot-published"
   }
   alarm_description   = "Timed out executions in Step Function"
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   provider             = aws.deployment-eu
 }
 
@@ -501,7 +655,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_connections" {
   # Set your desired reputation threshold (e.g., 70% for db.r6g.xlarge )
   threshold = 1400
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -521,7 +675,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_cpu" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -542,7 +696,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_documentdb_memory" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 3221225472
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     DBClusterIdentifier = "docdb-mongodb-instance"
@@ -564,7 +718,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
@@ -586,7 +740,7 @@ resource "aws_cloudwatch_metric_alarm" "cloudwatch_redis_cpu_node_replica" {
   # Set your desired reputation threshold (e.g., 90 for 90%)
   threshold = 70
 
-  alarm_actions = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions = [data.aws_ssm_parameter.resource_sns.value]
    
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -605,7 +759,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_network_packets_exceeded" {
   period              = 300  # 5 minutes
   statistic           = "Maximum"
   threshold           = 0  # Alert when allowance is exceeded
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-002"
@@ -624,7 +778,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_evictions" {
   period              = 300  # 5 minutes
   statistic           = "Sum"
   threshold           = 1  # Trigger if more than 10 evictions occur
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -642,7 +796,7 @@ resource "aws_cloudwatch_metric_alarm" "redis_memory_usage" {
   period              = 300  # 5 minutes
   statistic           = "Maximum"
   threshold           = 70  # Alert if memory usage exceeds 80%
-  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  alarm_actions       = [data.aws_ssm_parameter.resource_sns.value]
   
   dimensions = {
     CacheClusterId = "websocket-redis-cluster-enabled-0001-001"
@@ -824,18 +978,18 @@ locals {
   }
   
   # P1 Critical routes
-  p1_routes = [for route in local.all_routes : route if route.priority == "P1"]
+  P1_routes = [for route in local.all_routes : route if route.priority == "P1"]
   
   # P2 Medium routes
-  p2_routes = [for route in local.all_routes : route if route.priority == "P2"]
+  P2_routes = [for route in local.all_routes : route if route.priority == "P2"]
   
   # P3 Low routes
-  p3_routes = [for route in local.all_routes : route if route.priority == "P3"]
+  P3_routes = [for route in local.all_routes : route if route.priority == "P3"]
 }
 
 # P1 Critical alarms
 resource "aws_cloudwatch_metric_alarm" "p1_alarms" {
-  for_each = { for route in local.p1_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
+  for_each = { for route in local.P1_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
   
   provider            = aws.deployment-eu
   alarm_name          = "P1-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
@@ -867,7 +1021,7 @@ resource "aws_cloudwatch_metric_alarm" "p1_alarms" {
 
 # P2 Medium alarms
 resource "aws_cloudwatch_metric_alarm" "p2_alarms" {
-  for_each = { for route in local.p2_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
+  for_each = { for route in local.P2_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
   
   provider            = aws.deployment-eu
   alarm_name          = "P2-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
@@ -899,7 +1053,7 @@ resource "aws_cloudwatch_metric_alarm" "p2_alarms" {
 
 # P3 Low alarms
 resource "aws_cloudwatch_metric_alarm" "p3_alarms" {
-  for_each = { for route in local.p3_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
+  for_each = { for route in local.P3_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
   
   provider            = aws.deployment-eu
   alarm_name          = "P3-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
