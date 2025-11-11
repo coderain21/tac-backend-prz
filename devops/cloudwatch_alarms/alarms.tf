@@ -148,7 +148,7 @@ resource "aws_cloudwatch_metric_alarm" "save_to_cache_lambda_error_alarm" {
 resource "aws_cloudwatch_log_metric_filter" "batch_lots_publish_lambda_error_filter" {
   name           = "Batch Lots Publish All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-batchLotsPublish"
-  pattern        = "ERROR"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*startExecutionAfterPublish error*\" || message=\"*Step function returned status false*\" || message=\"*Failed to start execution*\" || message=\"*ThrottlingException*\" || message=\"*MongoDB*\" || message=\"*STATE_MACHINE_LOT_ARN*\" || message=\"*timeout*\"]"
 
   metric_transformation {
     name      = "BatchLotsPublishErrorCount"
@@ -178,7 +178,7 @@ resource "aws_cloudwatch_metric_alarm" "batch_lots_publish_lambda_error_alarm" {
 resource "aws_cloudwatch_log_metric_filter" "batch_lots_update_lambda_error_filter" {
   name           = "Batch Lots Update All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-batchLotsUpdate"
-  pattern        = "ERROR"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*ThrottlingException*\" || message=\"*TooManyRequestsException*\" || message=\"*MongoDB*\" || message=\"*Redis*\" || message=\"*StepFunctions*\" || message=\"*timeout*\" || message=\"*ECONNREFUSED*\"]"
 
   metric_transformation {
     name      = "BatchLotsUpdateErrorCount"
@@ -313,7 +313,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_type_error_alarm" {
 resource "aws_cloudwatch_log_metric_filter" "auction_cleanup_lambda_error_filter" {
   name           = "Auction Cleanup All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-auction-cleanup"
-  pattern        = "ERROR"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*ClientError*\" || message=\"*Failed to delete*\" || message=\"*S3*\" || message=\"*MongoDB*\" || message=\"*Error in cleanup*\" || message=\"*Exception*\"]"
 
   metric_transformation {
     name      = "AuctionCleanupErrorCount"
@@ -343,7 +343,7 @@ resource "aws_cloudwatch_metric_alarm" "auction_cleanup_lambda_error_alarm" {
 resource "aws_cloudwatch_log_metric_filter" "cleanup_step_functions_lambda_error_filter" {
   name           = "Cleanup Step Functions All Errors"
   log_group_name = "/aws/lambda/auctions-${var.STAGE}-cleanupStepFunctions"
-  pattern        = "ERROR"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*ThrottlingException*\" || message=\"*TooManyRequestsException*\" || message=\"*StepFunctions*\" || message=\"*MongoDB*\" || message=\"*Redis*\" || message=\"*Failed to stop*\" || message=\"*Cleanup lambda failed*\"]"
 
   metric_transformation {
     name      = "CleanupStepFunctionsErrorCount"
@@ -373,7 +373,7 @@ resource "aws_cloudwatch_metric_alarm" "cleanup_step_functions_lambda_error_alar
 resource "aws_cloudwatch_log_metric_filter" "cognito_pre_auth_lambda_error_filter" {
   name           = "Cognito Pre Auth All Errors"
   log_group_name = "/aws/lambda/cognito-${var.STAGE}-pre-auth"
-  pattern        = "ERROR"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*Missing auction_id*\" || message=\"*Auction not found*\" || message=\"*Authentication failed*\" || message=\"*MongoDB*\" || message=\"*Database*\"]"
 
   metric_transformation {
     name      = "CognitoPreAuthErrorCount"
@@ -399,14 +399,44 @@ resource "aws_cloudwatch_metric_alarm" "cognito_pre_auth_lambda_error_alarm" {
   provider            = aws.deployment-eu
 }
 
-# Cognito Post Auth Lambda Error Alarm
-resource "aws_cloudwatch_log_metric_filter" "cognito_post_auth_lambda_error_filter" {
-  name           = "Cognito Post Auth All Errors"
-  log_group_name = "/aws/lambda/cognito-${var.STAGE}-post-auth"
-  pattern        = "ERROR"
+# Cognito Pre Signup Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_pre_signup_lambda_error_filter" {
+  name           = "Cognito Pre Signup All Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-pre-auth"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*Error checking for existing users*\" || message=\"*Error encountered whilst linking users*\" || message=\"*MongoDB*\" || message=\"*Cognito*\" || message=\"*errrrrrrrr*\"]"
 
   metric_transformation {
-    name      = "CognitoPostAuthErrorCount"
+    name      = "CognitoPreSignupErrorCount"
+    namespace = "CognitoPreSignupError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_pre_signup_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-Cognito-Pre-Signup-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_pre_signup_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_pre_signup_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "Cognito Pre Signup Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Cognito Post Auth Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_post_auth_enhanced_error_filter" {
+  name           = "Cognito Post Auth Enhanced Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-post-auth"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*Buyer not found*\" || message=\"*Error in handler*\" || message=\"*MongoDB*\" || message=\"*Database*\"]"
+
+  metric_transformation {
+    name      = "CognitoPostAuthEnhancedErrorCount"
     namespace = "CognitoPostAuthError"
     value     = "1"
     default_value = "0"
@@ -414,20 +444,112 @@ resource "aws_cloudwatch_log_metric_filter" "cognito_post_auth_lambda_error_filt
   provider = aws.deployment-eu
 }
 
-resource "aws_cloudwatch_metric_alarm" "cognito_post_auth_lambda_error_alarm" {
+resource "aws_cloudwatch_metric_alarm" "cognito_post_auth_enhanced_error_alarm" {
   alarm_name          = "P1-IndyAuction-${var.STAGE}-Cognito-Post-Auth-Error-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
-  metric_name         = aws_cloudwatch_log_metric_filter.cognito_post_auth_lambda_error_filter.metric_transformation[0].name
-  namespace           = aws_cloudwatch_log_metric_filter.cognito_post_auth_lambda_error_filter.metric_transformation[0].namespace
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_post_auth_enhanced_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_post_auth_enhanced_error_filter.metric_transformation[0].namespace
   period              = 300
   statistic           = "Sum"
   threshold           = 1
-  alarm_description   = "Cognito Post Auth Lambda errors >= 1"
+  alarm_description   = "Cognito Post Auth enhanced errors >= 1"
   treat_missing_data  = "notBreaching"
   alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
   provider            = aws.deployment-eu
 }
+
+# Cognito Create Auth Challenge Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_create_auth_challenge_error_filter" {
+  name           = "Cognito Create Auth Challenge Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-cognito-create-auth-challenge"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*Failed to send email*\" || message=\"*Something went wrong*\" || message=\"*Pinpoint*\" || message=\"*Template*\"]"
+
+  metric_transformation {
+    name      = "CognitoCreateAuthChallengeErrorCount"
+    namespace = "CognitoCreateAuthChallengeError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_create_auth_challenge_error_alarm" {
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Cognito-Create-Auth-Challenge-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_create_auth_challenge_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_create_auth_challenge_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 3
+  alarm_description   = "Cognito Create Auth Challenge errors >= 3"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Cognito Define Auth Challenge Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "cognito_define_auth_challenge_error_filter" {
+  name           = "Cognito Define Auth Challenge Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-cognito-define-auth-challenge"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*User does not exist*\" || message=\"*User is not confirmed*\" || message=\"*User is deactivated*\" || message=\"*Cognito*\"]"
+
+  metric_transformation {
+    name      = "CognitoDefineAuthChallengeErrorCount"
+    namespace = "CognitoDefineAuthChallengeError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "cognito_define_auth_challenge_error_alarm" {
+  alarm_name          = "P2-IndyAuction-${var.STAGE}-Cognito-Define-Auth-Challenge-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.cognito_define_auth_challenge_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.cognito_define_auth_challenge_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 5
+  alarm_description   = "Cognito Define Auth Challenge errors >= 5"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+# Add Callback Logout URLs Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "add_callback_logout_urls_error_filter" {
+  name           = "Add Callback Logout URLs Errors"
+  log_group_name = "/aws/lambda/cognito-${var.STAGE}-add_callback_logout_urls"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*Exception*\" || message=\"*Failed*\" || message=\"*Cognito*\" || message=\"*ClientError*\"]"
+
+  metric_transformation {
+    name      = "AddCallbackLogoutUrlsErrorCount"
+    namespace = "AddCallbackLogoutUrlsError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "add_callback_logout_urls_error_alarm" {
+  alarm_name          = "P3-IndyAuction-${var.STAGE}-Add-Callback-Logout-URLs-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.add_callback_logout_urls_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.add_callback_logout_urls_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 2
+  alarm_description   = "Add Callback Logout URLs errors >= 2"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
+
 
 # Admin Pre Signup Lambda Error Alarm
 resource "aws_cloudwatch_log_metric_filter" "admin_pre_signup_lambda_error_filter" {
