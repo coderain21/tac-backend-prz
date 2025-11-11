@@ -81,7 +81,6 @@ route_to_lambda = {
     ('auctions', '/admin/lots'): 'auctions-{stage}-admin_list_lots',
     ('auctions', 'DELETE', '/lots'): 'auctions-{stage}-delete_lot',
     ('auctions', 'PATCH', '/lots'): 'auctions-{stage}-update_lot',
-    ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
     ('auctions', 'DELETE', '/{auction_id}'): 'auctions-{stage}-delete_auction',
     ('auctions', '/deactivate'): 'auctions-{stage}-deactivate',
     ('auctions', '/leaderboard/{auction_id}'): 'auctions-{stage}-get-leaderboard',

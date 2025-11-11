@@ -978,7 +978,6 @@ locals {
     { service = "buyers", resource = "/add-address", method = "PATCH", priority = "P1" },
     { service = "buyers", resource = "/links", method = "GET", priority = "P1" },
     { service = "buyers", resource = "/buyer-logs", method = "POST", priority = "P1" },
-    { service = "buyers", resource = "/policy/{auction_id}", method = "GET", priority = "P1" },
     { service = "buyers", resource = "/search-lots", method = "GET", priority = "P1" },
     { service = "buyer-wishlist", resource = "/", method = "POST", priority = "P1" },
     { service = "buyer-wishlist", resource = "/remove", method = "DELETE", priority = "P1" },
@@ -1091,7 +1090,7 @@ locals {
     
     # P3 Low - Search & Other
     { service = "order-management", resource = "/orders", method = "GET", priority = "P3" },
-    { service = "auctions", resource = "/policy/{auction_id}", method = "POST", priority = "P3" }
+    { service = "buyers", resource = "/policy/{auction_id}", method = "GET", priority = "P3" }
 
   ]
   
