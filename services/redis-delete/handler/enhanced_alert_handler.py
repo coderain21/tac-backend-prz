@@ -197,10 +197,14 @@ LAMBDA_ALARM_MAP = {
     "P1-IndyAuction-{stage}-Batch-Lots-Publish-Error-Alarm": "auctions-{stage}-batchLotsPublish",
     "P1-IndyAuction-{stage}-Batch-Lots-Update-Error-Alarm": "auctions-{stage}-batchLotsUpdate",
     "P3-IndyAuction-{stage}-Auction-Cleanup-Error-Alarm": "auctions-{stage}-auction-cleanup",
-    "P1-IndyAuction-{stage}-Cleanup-Step-Functions-Error-Alarm": "auctions{stage}-cleanupStepFunctions",
-    "P1-IndyAuction{stage}-Cognito-Pre-Auth-Error-Alarm": "cognito{stage}-pre-auth",
-    "P1-IndyAuction{stage}-Cognito-Post-Auth-Error-Alarm": "cognito{stage}-post-auth",
-    "P2-IndyAuction{stage}-Admin-Pre-Signup-Error-Alarm": "cognito{stage}-admin-pre-signup"}
+    "P1-IndyAuction-{stage}-Cleanup-Step-Functions-Error-Alarm": "auctions-{stage}-cleanupStepFunctions",
+    "P1-IndyAuction-{stage}-Cognito-Pre-Auth-Error-Alarm": "cognito-{stage}-pre-auth",
+    "P1-IndyAuction-{stage}-Cognito-Post-Auth-Error-Alarm": "cognito-{stage}-post-auth",
+    "P2-IndyAuction-{stage}-Admin-Pre-Signup-Error-Alarm": "cognito-{stage}-admin-pre-signup",
+    "P3-IndyAuction-{stage}-Add-Callback-Logout-URLs-Error-Alarm":"cognito-{stage}-add_callback_logout_urls",
+    "P2-IndyAuction-{stage}-Cognito-Define-Auth-Challenge-Error-Alarm":"cognito-{stage}-cognito-define-auth-challenge",
+    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm":"cognito-{stage}-cognito-create-auth-challenge" }
+
 
 # --- supported environment names ---
 STAGES = ['dev', 'qa', 'prod', 'pre-production', 'bidding-engine']
