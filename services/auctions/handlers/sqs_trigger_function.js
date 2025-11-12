@@ -17,6 +17,7 @@
 /* eslint-disable no-continue */
 
 const { ObjectId } = require('mongodb')
+const axios = require('axios')
 const Auction = require('../entities/Auction')
 const mongodbHelper = require('../lib/mongodb_helper')
 const redisHelper = require('../lib/redis_helper')
@@ -535,7 +536,35 @@ module.exports.sqsTriggerFunction = async (event) => {
         processedAuctions.delete(auctionKey)
         console.log(`Completed processing auction ${auctionKey}`)
         // client.disconnect()
-
+        // Send notification
+        if (process.env.SOCKET_URL) {
+            try {
+                const payload = { auction_id: event._id, seller_email: event.seller_email }
+                const response = await axios({
+                    method: 'POST',
+                    url: `${process.env.SOCKET_URL}/completed`,
+                    headers: {
+                        Accept: '*/*',
+                        'User-Agent': 'API TEST',
+                        'Content-Type': 'application/json',
+                    },
+                    data: payload,
+                })
+                console.log(`Updated and notified for lot ${event.seller_email} and auction ${event.auction_id}`)
+                return {
+                    success: true,
+                    auction_id: event.auction_id,
+                    seller_email: event.seller_email,
+                    response: response.status,
+                }
+            } catch (err) {
+                console.log('err', err)
+                client.disconnect()
+                // Remove from processed set on error so it can be retried
+                processedAuctions.delete(auctionKey)
+                return err
+            }
+        }
         return true
     } catch (err) {
         console.log('err', err)
