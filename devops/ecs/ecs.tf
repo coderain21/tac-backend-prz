@@ -480,37 +480,7 @@ resource "aws_appautoscaling_target" "target" {
   provider = aws.deployment-eu
 }
 
-resource "aws_appautoscaling_policy" "cpu" {
-  name = "cpu"
-  policy_type = "TargetTrackingScaling"
-  resource_id = aws_appautoscaling_target.target.resource_id
-  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
-  service_namespace = aws_appautoscaling_target.target.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
-    }
-    target_value = data.aws_ssm_parameter.ecs_cpu.value
-  }
-  provider = aws.deployment-eu
-}
-
-resource "aws_appautoscaling_policy" "memory" {
-  name = "memory"
-  policy_type = "TargetTrackingScaling"
-  resource_id = aws_appautoscaling_target.target.resource_id
-  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
-  service_namespace = aws_appautoscaling_target.target.service_namespace
-
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
-    }
-    target_value = data.aws_ssm_parameter.ecs_memory.value
-  }
-  provider = aws.deployment-eu
-}
 
 # Request Count Policy (only for bidding engine)
 resource "aws_appautoscaling_policy" "request_count" {
@@ -615,7 +585,7 @@ resource "aws_appautoscaling_policy" "ecs_cpu_scaling" {
 }
 
 resource "aws_appautoscaling_policy" "ecs_memory_target_scaling" {
-  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}memory-scaling-${var.STAGE}"
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}memory-target-scaling-${var.STAGE}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.target.resource_id
   scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
@@ -634,7 +604,7 @@ resource "aws_appautoscaling_policy" "ecs_memory_target_scaling" {
   provider = aws.deployment-eu
 }
 resource "aws_appautoscaling_policy" "ecs_cpu_target_scaling" {
-  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}memory-scaling-${var.STAGE}"
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}cpu-target-scaling-${var.STAGE}"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.target.resource_id
   scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
@@ -642,7 +612,7 @@ resource "aws_appautoscaling_policy" "ecs_cpu_target_scaling" {
 
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
     }
 
     target_value       = 50               # keep average memory usage ~65%
