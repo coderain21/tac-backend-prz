@@ -267,6 +267,34 @@ functions:
           authorizer:
               arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
+  send_payment_request:
+    handler: handlers/send_payment_request.send_payment_request
+    runtime: nodejs18.x
+    layers:
+      -  ${ssm:NodeLayerARN}
+    vpc:
+      securityGroupIds:
+        - ${ssm:SECURITY_GROUP_ID}
+      subnetIds:
+        - ${ssm:SUBNET_ID}
+    events:
+      - http:
+          path: /send-payment-request
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Requested-With
+              - Accept
+              - Access-Control-Allow-Headers
+          authorizer:
+              arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
+
 resources:
   Conditions:
     IsProd:
