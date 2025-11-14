@@ -940,7 +940,6 @@ locals {
     { service = "users-management", resource = "/request-otp", method = "POST", priority = "P1" },
     { service = "buyers", resource = "/auction-register", method = "GET", priority = "P1" },
     { service = "buyers", resource = "/verify-card", method = "POST", priority = "P1" },
-    { service = "subdomain", resource = "/subdomain", method = "GET", priority = "P1" },
     { service = "subdomain", resource = "/subdomain", method = "PATCH", priority = "P1" },
     { service = "users-management", resource = "/password-update/{email}", method = "PATCH", priority = "P1" },
     
@@ -967,7 +966,6 @@ locals {
     { service = "auctions", resource = "/", method = "PATCH", priority = "P1" },
     { service = "auctions", resource = "/lots", method = "GET", priority = "P1" },
     { service = "auctions", resource = "/admin/lots", method = "GET", priority = "P1" },
-    { service = "auctions", resource = "/reorder-lots", method = "POST", priority = "P1" },
     { service = "auctions", resource = "/{auction_id}", method = "DELETE", priority = "P1" },
     { service = "auctions", resource = "/deactivate", method = "POST", priority = "P1" },
     { service = "auctions", resource = "/leaderboard/{auction_id}", method = "GET", priority = "P1" },
@@ -1016,6 +1014,7 @@ locals {
     { service = "admin-buyer-bid-history", resource = "/list/{seller_email}/{auction_id}", method = "GET", priority = "P1" },
     { service = "admin-buyer-bid-history", resource = "/bids", method = "GET", priority = "P1" },
     { service = "admin-buyer-bid-history", resource = "/delete-buyer", method = "DELETE", priority = "P1" },
+    { service = "admin-buyer-bid-history", resource = "/admin/lots", method = "GET", priority = "P2" },
     { service = "seller-bidder-management", resource = "/", method = "GET", priority = "P1" },
     { service = "seller-bidder-management", resource = "/seller-orders", method = "GET", priority = "P1" },
     { service = "lot-bid-history", resource = "/{lot_id}", method = "GET", priority = "P1" },
@@ -1050,7 +1049,6 @@ locals {
     { service = "admin-management", resource = "/view-seller", method = "GET", priority = "P1" },
     { service = "admin-management", resource = "/update-seller-status", method = "POST", priority = "P1" },
     { service = "admin-management", resource = "/unpublish-auction", method = "PATCH", priority = "P1" },
-    { service = "admin-management", resource = "/admin_bdd-update/{auction_id}", method = "PATCH", priority = "P1" },
     { service = "admin-management", resource = "/publish-auction/{auction_id}", method = "PATCH", priority = "P1" },
     { service = "admin-management", resource = "/admin-subdomain", method = "GET", priority = "P1" },
     { service = "admin-management", resource = "/edit-auction/{auction_id}", method = "PATCH", priority = "P1" },
@@ -1073,8 +1071,6 @@ locals {
     { service = "buyers", resource = "/update-password", method = "POST", priority = "P2" },
     { service = "buyers", resource = "/forgot_password", method = "POST", priority = "P2" },
     { service = "buyers", resource = "/reset_password", method = "POST", priority = "P2" },
-    { service = "buyers", resource = "/verify-captcha", method = "POST", priority = "P2" },
-    { service = "users-management", resource = "/verify-captcha", method = "POST", priority = "P2" },
     { service = "users-management", resource = "/forgot_password", method = "POST", priority = "P2" },
     { service = "users-management", resource = "/reset_password", method = "POST", priority = "P2" },
     { service = "buyers", resource = "/profile", method = "PATCH", priority = "P2" },
@@ -1089,7 +1085,6 @@ locals {
 
     
     # P3 Low - Search & Other
-    { service = "order-management", resource = "/orders", method = "GET", priority = "P3" },
     { service = "buyers", resource = "/policy/{auction_id}", method = "GET", priority = "P3" }
 
   ]
@@ -1116,7 +1111,7 @@ resource "aws_cloudwatch_metric_alarm" "p1_alarms" {
   for_each = { for route in local.P1_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
   
   provider            = aws.deployment-eu
-  alarm_name          = "P1-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
+  alarm_name          = "P1-IndyAuction-${each.value.service}-${var.STAGE}-${lower(each.value.method)}-${trimprefix(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), "-")}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "5XXError"
@@ -1148,7 +1143,7 @@ resource "aws_cloudwatch_metric_alarm" "p2_alarms" {
   for_each = { for route in local.P2_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
   
   provider            = aws.deployment-eu
-  alarm_name          = "P2-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
+  alarm_name          = "P2-IndyAuction-${each.value.service}-${var.STAGE}-${lower(each.value.method)}-${trimprefix(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), "-")}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "5XXError"
@@ -1180,7 +1175,7 @@ resource "aws_cloudwatch_metric_alarm" "p3_alarms" {
   for_each = { for route in local.P3_routes : "${route.service}-${replace(route.resource, "/", "_")}-${route.method}" => route }
   
   provider            = aws.deployment-eu
-  alarm_name          = "P3-IndyAuction-${each.value.service}-${var.STAGE}-${substr(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), 1, -1)}"
+  alarm_name          = "P3-IndyAuction-${each.value.service}-${var.STAGE}-${lower(each.value.method)}-${trimprefix(replace(replace(replace(each.value.resource, "/", "-"), "{", ""), "}", ""), "-")}"
   comparison_operator = "GreaterThanOrEqualToThreshold"
   evaluation_periods  = 1
   metric_name         = "5XXError"

@@ -69,7 +69,6 @@ route_to_lambda = {
     # Auctions
     ('auctions', 'POST', '/'): 'auctions-{stage}-create',
     ('auctions', 'GET', '/'): 'auctions-{stage}-list_auction',
-    ('auctions', '/lots'): 'auctions-{stage}-create_lots',
     ('auctions', '/view'): 'auctions-{stage}-view',
     ('auctions', 'PATCH', '/{auction_id}'): 'auctions-{stage}-unpublish_auction',
     ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
@@ -172,10 +171,10 @@ route_to_lambda = {
 
     # Users Management
     ('users-management', '/password-update/{email}'): 'users-management-{stage}-update-password',
-    ('users-management', '/verify-captcha'): 'users-management-{stage}-verify-recaptha',
+    ('users-management', '/verify-captcha'): 'users-management-{stage}-verify-recaptha', #
     ('users-management', '/otp-validation'): 'users-management-{stage}-otp-validation',
-    ('users-management', '/forgot_password'): 'users-management-{stage}-send-reset-link',
-    ('users-management', '/reset_password'): 'users-management-{stage}-update-new-password',
+    ('users-management', '/forgot_password'): 'users-management-{stage}-send-reset-link', #
+    ('users-management', '/reset_password'): 'users-management-{stage}-update-new-password', #
     ('users-management', '/request-otp'): 'users-management-{stage}-request-otp',
     ('users-management', 'GET', '/{email}'): 'users-management-{stage}-view-profile',
     ('users-management', 'PATCH', '/{email}'): 'users-management-{stage}-update-profile',
@@ -187,7 +186,7 @@ route_to_lambda = {
     ('users-management', '/stripe_webhook_trigger'): 'users-management-{stage}-stripe-webhook',
     ('users-management', '/create-template'): 'users-management-{stage}-users-management-{stage}-create-mailchimp-template',
     ('users-management', '/generate'): 'users-management-{stage}-users-management-{stage}-generate_token',
-    ('users-management', '/auth/login'): 'users-management-{stage}-users-management-{stage}-subdomain-callback',
+    ('users-management', '/auth/login'): 'users-management-{stage}-users-management-{stage}-subdomain-callback', #
     ('users-management', '/get-template/{template_name}'): 'users-management-{stage}-users-management-{stage}-get-mailchimp-template',
 }
 LAMBDA_ALARM_MAP = {
@@ -249,10 +248,20 @@ def parse_alarm_name(alarm_name):
     start_index = parts.index("IndyAuction") + 1
     stage_index = parts.index(stage)
     service = '-'.join(parts[start_index:stage_index])
-    resource = '/' + '-'.join(parts[stage_index + 1:])
+    
+    # Extract method and resource from parts after stage
+    remaining_parts = parts[stage_index + 1:]
+    if remaining_parts:
+        method = remaining_parts[0].upper()  # First part after stage is method
+        resource_parts = remaining_parts[1:] if len(remaining_parts) > 1 else []
+        resource = '/' + '-'.join(resource_parts) if resource_parts else '/'
+    else:
+        method = None
+        resource = '/'
+    
     if resource.endswith('-email'):
         resource = resource.replace('-email', '/{email}')
-    return service, stage, resource
+    return service, stage, resource, method
 
 
 def normalize_resource(resource):
@@ -340,18 +349,32 @@ def lambda_handler(event, context):
 
             print(f"Processing alarm: {alarm_name}")
 
-            # 1️⃣ Direct mapping first
-            if alarm_name in LAMBDA_ALARM_MAP:
-                lambda_name = LAMBDA_ALARM_MAP[alarm_name]
+            # 1️⃣ Direct mapping first - format keys with stage
+            lambda_name = None
+            route = "N/A"
+            
+            # Extract stage for LAMBDA_ALARM_MAP lookup
+            stage_for_lookup = next((p for p in alarm_name.split('-') if p in STAGES), 'dev')
+            
+            # Check LAMBDA_ALARM_MAP with formatted keys
+            for map_key_template, lambda_template in LAMBDA_ALARM_MAP.items():
+                formatted_key = map_key_template.format(stage=stage_for_lookup)
+                if alarm_name == formatted_key:
+                    lambda_name = lambda_template.format(stage=stage_for_lookup)
+                    break
+            
+            if lambda_name:
                 route = "N/A"
-            else:
+            
+            if not lambda_name:
                 # 2️⃣ Parse and map from route
-                service, stage, resource = parse_alarm_name(alarm_name)
+                service, stage, resource, method = parse_alarm_name(alarm_name)
                 lambda_name = get_lambda_name(
-                    service, resource, method=None, stage=stage)
+                    service, resource, method=method, stage=stage)
                 print(
-                    lambda_name,
-                    "lambda_namelambda_namelambda_namelambda_name")
+                    f"Parsed: service={service}, stage={stage}, resource={resource}, method={method}")
+                print(
+                    f"Lambda name: {lambda_name}")
                 route = resource
 
             if not lambda_name:
