@@ -199,9 +199,9 @@ LAMBDA_ALARM_MAP = {
     "P1-IndyAuction-{stage}-Cognito-Pre-Auth-Error-Alarm": "cognito-{stage}-pre-auth",
     "P1-IndyAuction-{stage}-Cognito-Post-Auth-Error-Alarm": "cognito-{stage}-post-auth",
     "P2-IndyAuction-{stage}-Admin-Pre-Signup-Error-Alarm": "cognito-{stage}-admin-pre-signup",
-    "P3-IndyAuction-{stage}-Add-Callback-Logout-URLs-Error-Alarm":"cognito-{stage}-add_callback_logout_urls",
-    "P2-IndyAuction-{stage}-Cognito-Define-Auth-Challenge-Error-Alarm":"cognito-{stage}-cognito-define-auth-challenge",
-    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm":"cognito-{stage}-cognito-create-auth-challenge" }
+    "P3-IndyAuction-{stage}-Add-Callback-Logout-URLs-Error-Alarm": "cognito-{stage}-add_callback_logout_urls",
+    "P2-IndyAuction-{stage}-Cognito-Define-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-define-auth-challenge",
+    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-create-auth-challenge"}
 
 
 # --- supported environment names ---
@@ -248,25 +248,29 @@ def parse_alarm_name(alarm_name):
     start_index = parts.index("IndyAuction") + 1
     stage_index = parts.index(stage)
     service = '-'.join(parts[start_index:stage_index])
-    
+
     # Extract method and resource from parts after stage
     remaining_parts = parts[stage_index + 1:]
     if remaining_parts:
         method = remaining_parts[0].upper()  # First part after stage is method
-        resource_parts = remaining_parts[1:] if len(remaining_parts) > 1 else []
+        resource_parts = remaining_parts[1:] if len(
+            remaining_parts) > 1 else []
         resource = '/' + '-'.join(resource_parts) if resource_parts else '/'
     else:
         method = None
         resource = '/'
-    
+
     if resource.endswith('-email'):
         resource = resource.replace('-email', '/{email}')
     return service, stage, resource, method
 
 
 def normalize_resource(resource):
-    # Fix routes like /update-auction_id → /update/{auction_id}
-    if resource and re.search(r'-[a-zA-Z0-9_]+_id', resource):
+    # Fix routes like /auction_id → /{auction_id} and /update-auction_id → /update/{auction_id}
+    if resource:
+        # Handle direct _id patterns like /auction_id → /{auction_id}
+        resource = re.sub(r'/([a-zA-Z0-9_]+_id)$', r'/{\1}', resource)
+        # Handle compound patterns like /update-auction_id → /update/{auction_id}
         resource = re.sub(r'/([a-zA-Z_-]+)-([a-zA-Z0-9_]+_id)', r'/\1/{\2}', resource)
     return resource
 
@@ -281,7 +285,6 @@ def get_lambda_name(api_service, api_path=None, method=None, stage=None):
     if api_path == stage and method is None:
         api_path = method
         method = None
-
 
     # Try exact 3-key match first
     key_with_method = (api_service, method, api_path)
@@ -352,27 +355,29 @@ def lambda_handler(event, context):
             # 1️⃣ Direct mapping first - format keys with stage
             lambda_name = None
             route = "N/A"
-            
+
             # Extract stage for LAMBDA_ALARM_MAP lookup
-            stage_for_lookup = next((p for p in alarm_name.split('-') if p in STAGES), 'dev')
-            
+            stage_for_lookup = next(
+                (p for p in alarm_name.split('-') if p in STAGES), 'dev')
+
             # Check LAMBDA_ALARM_MAP with formatted keys
             for map_key_template, lambda_template in LAMBDA_ALARM_MAP.items():
                 formatted_key = map_key_template.format(stage=stage_for_lookup)
                 if alarm_name == formatted_key:
-                    lambda_name = lambda_template.format(stage=stage_for_lookup)
+                    lambda_name = lambda_template.format(
+                        stage=stage_for_lookup)
                     break
-            
+
             if lambda_name:
                 route = "N/A"
-            
+
             if not lambda_name:
                 # 2️⃣ Parse and map from route
                 service, stage, resource, method = parse_alarm_name(alarm_name)
                 lambda_name = get_lambda_name(
                     service, resource, method=method, stage=stage)
-                print(
-                    f"Parsed: service={service}, stage={stage}, resource={resource}, method={method}")
+                print(f"Parsed: service={service}, stage={
+                    stage}, resource={resource}, method={method}")
                 print(
                     f"Lambda name: {lambda_name}")
                 route = resource
