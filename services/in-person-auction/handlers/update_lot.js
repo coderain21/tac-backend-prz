@@ -10,6 +10,7 @@
 const mongoConnection = require('../lib/mongodb_helper')
 const Users = require('../entities/Users')
 const Lot = require('../entities/Lot')
+const liveBids = require('../entities/LiveBid')
 const helpers = require('../lib/helper')
 
 
@@ -97,6 +98,16 @@ module.exports.update_lot = async (event) => {
             const query = { seller_email: email, auction_id: auctionId, lot_number: request_body.lot_number }
             const lot = await mongoConnection.updateLot(Lot, query, request_body)
             // console.log('result', result)
+
+            if (request_body.title1 || request_body.reserve) {
+                const bid_update_query = { auction_id: auctionId, seller_email: email, lot_number: request_body.lot_number }
+                const bid_update_data = await liveBids.updateMany(bid_update_query, {
+                    $set: {
+                        lot_title: request_body.title1 ?? lotRecord.title1,
+                        reserve: request_body.reserve ?? lotRecord.reserve,
+                    },
+                })
+            }
 
             console.log('lot', lot)
             if (lot) {

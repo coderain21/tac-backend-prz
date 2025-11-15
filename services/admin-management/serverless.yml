@@ -660,8 +660,8 @@ functions:
           method: patch
           authorizer:
               arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
-  update_auction:
-      handler: handlers/publish_auction.update_auction
+  publish_auction:
+      handler: handlers/publish_auction.publish_auction
       runtime: python3.9
       memorySize: 128
       vpc:
@@ -698,10 +698,11 @@ functions:
           authorizer:
               arn: ${ssm:ADMIN_COGNITO_AUTH_ARN}
   
-  edit_auction:
+  update_auction:
       handler: handlers/update_auction.update_auction
       runtime: python3.9
-      memorySize: 2048
+      timeout: 30
+      memorySize: ${ssm:UPDATE_AUCTION_MEMORY}
       vpc:
         securityGroupIds:
           - ${ssm:SECURITY_GROUP_ID}
@@ -845,6 +846,22 @@ functions:
           - ${ssm:SECURITY_GROUP_ID}
         subnetIds:
           - ${ssm:SUBNET_ID}
+    layers:
+      -  ${ssm:NodeLayerARN}
+
+  batchLotsPublish:
+    handler: handlers/publish_helper.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    timeout: 90
+    layers:
+      -  ${ssm:NodeLayerARN}
+
+  
+  batchLotsUpdate:  
+    handler: handlers/update_auction_bulk.handler
+    memorySize: ${ssm:LAMBDA_MEMORY}
+    maximumRetryAttempts: 0
+    timeout: 300
     layers:
       -  ${ssm:NodeLayerARN}
 
