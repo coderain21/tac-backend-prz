@@ -69,7 +69,6 @@ route_to_lambda = {
     # Auctions
     ('auctions', 'POST', '/'): 'auctions-{stage}-create',
     ('auctions', 'GET', '/'): 'auctions-{stage}-list_auction',
-    ('auctions', '/lots'): 'auctions-{stage}-create_lots',
     ('auctions', '/view'): 'auctions-{stage}-view',
     ('auctions', 'PATCH', '/{auction_id}'): 'auctions-{stage}-unpublish_auction',
     ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
@@ -78,10 +77,9 @@ route_to_lambda = {
     ('auctions', 'PATCH', '/'): 'auctions-{stage}-delete_note',
     ('auctions', 'POST', '/lots'): 'auctions-{stage}-create_lots',
     ('auctions', 'GET', '/lots'): 'auctions-{stage}-list_lots',
-    ('auctions', '/admin/lots'): 'auctions-{stage}-admin_list_lots',
+    ('auctions', '/admin-lots'): 'auctions-{stage}-admin_list_lots',
     ('auctions', 'DELETE', '/lots'): 'auctions-{stage}-delete_lot',
     ('auctions', 'PATCH', '/lots'): 'auctions-{stage}-update_lot',
-    ('auctions', '/update/{auction_id}'): 'auctions-{stage}-update_auction',
     ('auctions', 'DELETE', '/{auction_id}'): 'auctions-{stage}-delete_auction',
     ('auctions', '/deactivate'): 'auctions-{stage}-deactivate',
     ('auctions', '/leaderboard/{auction_id}'): 'auctions-{stage}-get-leaderboard',
@@ -92,7 +90,7 @@ route_to_lambda = {
     ('bids', '/update'): 'bids-{stage}-add-to-group',
     ('bids', '/{id}'): 'bids-{stage}-view',
     ('bids', 'GET', '/'): 'bids-{stage}-list',
-    ('bids', '/admin/{id}'): 'bids-{stage}-admin-view',
+    ('bids', '/admin-id'): 'bids-{stage}-admin-view',
 
     # Buyer Wishlist
     ('buyer-wishlist', '/'): 'buyer-wishlist-{stage}-create',
@@ -127,7 +125,7 @@ route_to_lambda = {
     ('lot-bid-history', '/{lot_id}'): 'lot-bid-history-{stage}-list-bids',
     ('lot-bid-history', '/buyer/{lot_id}'): 'lot-bid-history-{stage}-buyer-list-bids',
     ('lot-bid-history', '/auction/{auction_id}'): 'lot-bid-history-{stage}-auction-bid-list',
-    ('lot-bid-history', '/seller/bids'): 'lot-bid-history-{stage}-bid-listing',
+    ('lot-bid-history', '/seller-bids'): 'lot-bid-history-{stage}-bid-listing',
 
     # newsletter
     ('newsletter', '/'): 'newsletter-{stage}-update',
@@ -186,10 +184,10 @@ route_to_lambda = {
     ('users-management', 'PATCH', '/stripe'): 'users-management-{stage}-disconnect_account',
     ('users-management', 'GET', '/stripe'): 'users-management-{stage}-stripe-connect',
     ('users-management', '/stripe_webhook_trigger'): 'users-management-{stage}-stripe-webhook',
-    ('users-management', '/create-template'): 'users-management-{stage}-users-management-{stage}-create-mailchimp-template',
-    ('users-management', '/generate'): 'users-management-{stage}-users-management-{stage}-generate_token',
-    ('users-management', '/auth/login'): 'users-management-{stage}-users-management-{stage}-subdomain-callback',
-    ('users-management', '/get-template/{template_name}'): 'users-management-{stage}-users-management-{stage}-get-mailchimp-template',
+    ('users-management', '/create-template'): 'users-management-{stage}-create-mailchimp-template',
+    ('users-management', '/generate'): 'users-management-{stage}-generate_token',
+    ('users-management', '/auth-login'): 'users-management-{stage}-subdomain-callback',
+    ('users-management', '/get-template-template_name'): 'users-management-{stage}-get-mailchimp-template',
 }
 LAMBDA_ALARM_MAP = {
     "P1-IndyAuction-{stage}-Process Cart Logs Error Alarm": "auctions-{stage}-process-cart",
@@ -201,9 +199,9 @@ LAMBDA_ALARM_MAP = {
     "P1-IndyAuction-{stage}-Cognito-Pre-Auth-Error-Alarm": "cognito-{stage}-pre-auth",
     "P1-IndyAuction-{stage}-Cognito-Post-Auth-Error-Alarm": "cognito-{stage}-post-auth",
     "P2-IndyAuction-{stage}-Admin-Pre-Signup-Error-Alarm": "cognito-{stage}-admin-pre-signup",
-    "P3-IndyAuction-{stage}-Add-Callback-Logout-URLs-Error-Alarm":"cognito-{stage}-add_callback_logout_urls",
-    "P2-IndyAuction-{stage}-Cognito-Define-Auth-Challenge-Error-Alarm":"cognito-{stage}-cognito-define-auth-challenge",
-    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm":"cognito-{stage}-cognito-create-auth-challenge" }
+    "P3-IndyAuction-{stage}-Add-Callback-Logout-URLs-Error-Alarm": "cognito-{stage}-add_callback_logout_urls",
+    "P2-IndyAuction-{stage}-Cognito-Define-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-define-auth-challenge",
+    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-create-auth-challenge"}
 
 
 # --- supported environment names ---
@@ -250,16 +248,32 @@ def parse_alarm_name(alarm_name):
     start_index = parts.index("IndyAuction") + 1
     stage_index = parts.index(stage)
     service = '-'.join(parts[start_index:stage_index])
-    resource = '/' + '-'.join(parts[stage_index + 1:])
+
+    # Extract method and resource from parts after stage
+    remaining_parts = parts[stage_index + 1:]
+    if remaining_parts:
+        method = remaining_parts[0].upper()  # First part after stage is method
+        resource_parts = remaining_parts[1:] if len(
+            remaining_parts) > 1 else []
+        resource = '/' + '-'.join(resource_parts) if resource_parts else '/'
+    else:
+        method = None
+        resource = '/'
+
     if resource.endswith('-email'):
         resource = resource.replace('-email', '/{email}')
-    return service, stage, resource
+    return service, stage, resource, method
 
 
 def normalize_resource(resource):
-    # Fix routes like /update-auction_id → /update/{auction_id}
-    if resource and re.search(r'-[a-zA-Z0-9_]+_id', resource):
+    # Fix routes like /auction_id → /{auction_id} and /update-auction_id → /update/{auction_id}
+    if resource:
+        # Handle direct _id patterns like /auction_id → /{auction_id}
+        resource = re.sub(r'/([a-zA-Z0-9_]+_id)$', r'/{\1}', resource)
+        # Handle compound patterns like /update-auction_id → /update/{auction_id}
         resource = re.sub(r'/([a-zA-Z_-]+)-([a-zA-Z0-9_]+_id)', r'/\1/{\2}', resource)
+        # Handle template_name patterns like /get-template-template_name → /get-template-template_name
+        resource = re.sub(r'/get-template-([a-zA-Z0-9_]+)', r'/get-template-\1', resource)
     return resource
 
 
@@ -273,7 +287,6 @@ def get_lambda_name(api_service, api_path=None, method=None, stage=None):
     if api_path == stage and method is None:
         api_path = method
         method = None
-
 
     # Try exact 3-key match first
     key_with_method = (api_service, method, api_path)
@@ -341,18 +354,33 @@ def lambda_handler(event, context):
 
             print(f"Processing alarm: {alarm_name}")
 
-            # 1️⃣ Direct mapping first
-            if alarm_name in LAMBDA_ALARM_MAP:
-                lambda_name = LAMBDA_ALARM_MAP[alarm_name]
+            # 1️⃣ Direct mapping first - format keys with stage
+            lambda_name = None
+            route = "N/A"
+
+            # Extract stage for LAMBDA_ALARM_MAP lookup
+            stage_for_lookup = next(
+                (p for p in alarm_name.split('-') if p in STAGES), 'dev')
+
+            # Check LAMBDA_ALARM_MAP with formatted keys
+            for map_key_template, lambda_template in LAMBDA_ALARM_MAP.items():
+                formatted_key = map_key_template.format(stage=stage_for_lookup)
+                if alarm_name == formatted_key:
+                    lambda_name = lambda_template.format(
+                        stage=stage_for_lookup)
+                    break
+
+            if lambda_name:
                 route = "N/A"
-            else:
+
+            if not lambda_name:
                 # 2️⃣ Parse and map from route
-                service, stage, resource = parse_alarm_name(alarm_name)
+                service, stage, resource, method = parse_alarm_name(alarm_name)
                 lambda_name = get_lambda_name(
-                    service, resource, method=None, stage=stage)
+                    service, resource, method=method, stage=stage)
+                print(f"Parsed: service={service}, stage={stage}, resource={resource}, method={method}")
                 print(
-                    lambda_name,
-                    "lambda_namelambda_namelambda_namelambda_name")
+                    f"Lambda name: {lambda_name}")
                 route = resource
 
             if not lambda_name:
