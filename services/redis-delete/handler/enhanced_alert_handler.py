@@ -77,7 +77,7 @@ route_to_lambda = {
     ('auctions', 'PATCH', '/'): 'auctions-{stage}-delete_note',
     ('auctions', 'POST', '/lots'): 'auctions-{stage}-create_lots',
     ('auctions', 'GET', '/lots'): 'auctions-{stage}-list_lots',
-    ('auctions', '/admin/lots'): 'auctions-{stage}-admin_list_lots',
+    ('auctions', '/admin-lots'): 'auctions-{stage}-admin_list_lots',
     ('auctions', 'DELETE', '/lots'): 'auctions-{stage}-delete_lot',
     ('auctions', 'PATCH', '/lots'): 'auctions-{stage}-update_lot',
     ('auctions', 'DELETE', '/{auction_id}'): 'auctions-{stage}-delete_auction',
@@ -90,7 +90,7 @@ route_to_lambda = {
     ('bids', '/update'): 'bids-{stage}-add-to-group',
     ('bids', '/{id}'): 'bids-{stage}-view',
     ('bids', 'GET', '/'): 'bids-{stage}-list',
-    ('bids', '/admin/{id}'): 'bids-{stage}-admin-view',
+    ('bids', '/admin-id'): 'bids-{stage}-admin-view',
 
     # Buyer Wishlist
     ('buyer-wishlist', '/'): 'buyer-wishlist-{stage}-create',
@@ -125,7 +125,7 @@ route_to_lambda = {
     ('lot-bid-history', '/{lot_id}'): 'lot-bid-history-{stage}-list-bids',
     ('lot-bid-history', '/buyer/{lot_id}'): 'lot-bid-history-{stage}-buyer-list-bids',
     ('lot-bid-history', '/auction/{auction_id}'): 'lot-bid-history-{stage}-auction-bid-list',
-    ('lot-bid-history', '/seller/bids'): 'lot-bid-history-{stage}-bid-listing',
+    ('lot-bid-history', '/seller-bids'): 'lot-bid-history-{stage}-bid-listing',
 
     # newsletter
     ('newsletter', '/'): 'newsletter-{stage}-update',
@@ -171,10 +171,10 @@ route_to_lambda = {
 
     # Users Management
     ('users-management', '/password-update/{email}'): 'users-management-{stage}-update-password',
-    ('users-management', '/verify-captcha'): 'users-management-{stage}-verify-recaptha', #
+    ('users-management', '/verify-captcha'): 'users-management-{stage}-verify-recaptha',
     ('users-management', '/otp-validation'): 'users-management-{stage}-otp-validation',
-    ('users-management', '/forgot_password'): 'users-management-{stage}-send-reset-link', #
-    ('users-management', '/reset_password'): 'users-management-{stage}-update-new-password', #
+    ('users-management', '/forgot_password'): 'users-management-{stage}-send-reset-link',
+    ('users-management', '/reset_password'): 'users-management-{stage}-update-new-password',
     ('users-management', '/request-otp'): 'users-management-{stage}-request-otp',
     ('users-management', 'GET', '/{email}'): 'users-management-{stage}-view-profile',
     ('users-management', 'PATCH', '/{email}'): 'users-management-{stage}-update-profile',
@@ -184,10 +184,10 @@ route_to_lambda = {
     ('users-management', 'PATCH', '/stripe'): 'users-management-{stage}-disconnect_account',
     ('users-management', 'GET', '/stripe'): 'users-management-{stage}-stripe-connect',
     ('users-management', '/stripe_webhook_trigger'): 'users-management-{stage}-stripe-webhook',
-    ('users-management', '/create-template'): 'users-management-{stage}-users-management-{stage}-create-mailchimp-template',
-    ('users-management', '/generate'): 'users-management-{stage}-users-management-{stage}-generate_token',
-    ('users-management', '/auth/login'): 'users-management-{stage}-users-management-{stage}-subdomain-callback', #
-    ('users-management', '/get-template/{template_name}'): 'users-management-{stage}-users-management-{stage}-get-mailchimp-template',
+    ('users-management', '/create-template'): 'users-management-{stage}-create-mailchimp-template',
+    ('users-management', '/generate'): 'users-management-{stage}-generate_token',
+    ('users-management', '/auth-login'): 'users-management-{stage}-subdomain-callback',
+    ('users-management', '/get-template-template_name'): 'users-management-{stage}-get-mailchimp-template',
 }
 LAMBDA_ALARM_MAP = {
     "P1-IndyAuction-{stage}-Process Cart Logs Error Alarm": "auctions-{stage}-process-cart",
@@ -272,6 +272,8 @@ def normalize_resource(resource):
         resource = re.sub(r'/([a-zA-Z0-9_]+_id)$', r'/{\1}', resource)
         # Handle compound patterns like /update-auction_id → /update/{auction_id}
         resource = re.sub(r'/([a-zA-Z_-]+)-([a-zA-Z0-9_]+_id)', r'/\1/{\2}', resource)
+        # Handle template_name patterns like /get-template-template_name → /get-template-template_name
+        resource = re.sub(r'/get-template-([a-zA-Z0-9_]+)', r'/get-template-\1', resource)
     return resource
 
 
@@ -376,8 +378,7 @@ def lambda_handler(event, context):
                 service, stage, resource, method = parse_alarm_name(alarm_name)
                 lambda_name = get_lambda_name(
                     service, resource, method=method, stage=stage)
-                print(f"Parsed: service={service}, stage={
-                    stage}, resource={resource}, method={method}")
+                print(f"Parsed: service={service}, stage={stage}, resource={resource}, method={method}")
                 print(
                     f"Lambda name: {lambda_name}")
                 route = resource
