@@ -242,15 +242,45 @@ def publish_to_sns(lambda_name, route, log_link, alarm_name=""):
 
 def parse_alarm_name(alarm_name):
     parts = alarm_name.split('-')
-    stage = next((p for p in parts if p in STAGES), None)
+    
+    # Sort stages by length (longest first) to match compound stages before simple ones
+    sorted_stages = sorted(STAGES, key=len, reverse=True)
+    
+    stage = None
+    stage_index = -1
+    
+    for s in sorted_stages:
+        if '-' in s:
+            # Compound stage like 'pre-production'
+            stage_parts = s.split('-')
+            for i in range(len(parts) - len(stage_parts) + 1):
+                if parts[i:i+len(stage_parts)] == stage_parts:
+                    stage = s
+                    stage_index = i
+                    break
+        else:
+            # Single word stage
+            if s in parts:
+                stage = s
+                stage_index = parts.index(s)
+        
+        if stage:
+            break
+    
     if not stage:
         raise ValueError(f"No valid stage found in alarm name: {alarm_name}")
+    
     start_index = parts.index("IndyAuction") + 1
-    stage_index = parts.index(stage)
     service = '-'.join(parts[start_index:stage_index])
 
     # Extract method and resource from parts after stage
-    remaining_parts = parts[stage_index + 1:]
+    # For compound stages like 'pre-production', we need to skip the stage parts
+    if '-' in stage:
+        stage_parts_count = len(stage.split('-'))
+        remaining_parts = parts[stage_index + stage_parts_count:]
+    else:
+        remaining_parts = parts[stage_index + 1:]
+    
     if remaining_parts:
         method = remaining_parts[0].upper()  # First part after stage is method
         resource_parts = remaining_parts[1:] if len(
@@ -359,8 +389,12 @@ def lambda_handler(event, context):
             route = "N/A"
 
             # Extract stage for LAMBDA_ALARM_MAP lookup
-            stage_for_lookup = next(
-                (p for p in alarm_name.split('-') if p in STAGES), 'dev')
+            stage_for_lookup = 'dev'  # default
+            sorted_stages = sorted(STAGES, key=len, reverse=True)
+            for s in sorted_stages:
+                if s in alarm_name:
+                    stage_for_lookup = s
+                    break
 
             # Check LAMBDA_ALARM_MAP with formatted keys
             for map_key_template, lambda_template in LAMBDA_ALARM_MAP.items():
