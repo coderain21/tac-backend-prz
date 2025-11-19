@@ -243,13 +243,10 @@ def publish_to_sns(lambda_name, route, log_link, alarm_name=""):
 
 def parse_alarm_name(alarm_name):
     parts = alarm_name.split('-')
-    
     # Sort stages by length (longest first) to match compound stages before simple ones
     sorted_stages = sorted(STAGES, key=len, reverse=True)
-    
     stage = None
     stage_index = -1
-    
     for s in sorted_stages:
         if '-' in s:
             # Compound stage like 'pre-production'
@@ -264,13 +261,10 @@ def parse_alarm_name(alarm_name):
             if s in parts:
                 stage = s
                 stage_index = parts.index(s)
-        
         if stage:
             break
-    
     if not stage:
         raise ValueError(f"No valid stage found in alarm name: {alarm_name}")
-    
     start_index = parts.index("IndyAuction") + 1
     service = '-'.join(parts[start_index:stage_index])
 
@@ -281,7 +275,6 @@ def parse_alarm_name(alarm_name):
         remaining_parts = parts[stage_index + stage_parts_count:]
     else:
         remaining_parts = parts[stage_index + 1:]
-    
     if remaining_parts:
         method = remaining_parts[0].upper()  # First part after stage is method
         resource_parts = remaining_parts[1:] if len(
