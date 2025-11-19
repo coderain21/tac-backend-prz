@@ -201,7 +201,8 @@ LAMBDA_ALARM_MAP = {
     "P2-IndyAuction-{stage}-Admin-Pre-Signup-Error-Alarm": "cognito-{stage}-admin-pre-signup",
     "P3-IndyAuction-{stage}-Add-Callback-Logout-URLs-Error-Alarm": "cognito-{stage}-add_callback_logout_urls",
     "P2-IndyAuction-{stage}-Cognito-Define-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-define-auth-challenge",
-    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-create-auth-challenge"}
+    "P2-IndyAuction-{stage}-Cognito-Create-Auth-Challenge-Error-Alarm": "cognito-{stage}-cognito-create-auth-challenge",
+    "P1-IndyAuction-{stage}-PayPal-Connect-Webhook-Error-Alarm": "paypal-{stage}-paypal_connect_webhook"}
 
 
 # --- supported environment names ---
