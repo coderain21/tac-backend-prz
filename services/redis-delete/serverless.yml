@@ -99,13 +99,8 @@ resources:
       Properties:
         TopicName: redis-delete-alerts
     
-    RedisDeleteAlertsLambdaSubscription:
-      Type: AWS::SNS::Subscription
-      DependsOn: EnhancedDashalertDashhandlerLambdaFunction
-      Properties:
-        TopicArn: !Ref RedisDeleteAlertsTopic
-        Protocol: lambda
-        Endpoint: arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-enhanced-alert-handler
+    # This subscription will be handled by the CloudWatch alarms terraform
+    # The enhanced-alert-handler will be subscribed to CloudWatchAlarmTopic via terraform
     
     RedisDeleteAlertsParameter:
       Type: AWS::SSM::Parameter
@@ -132,7 +127,22 @@ resources:
         FunctionName: ${self:service}-${self:provider.stage}-enhanced-alert-handler
         Action: lambda:InvokeFunction
         Principal: sns.amazonaws.com
-        SourceArn: !Ref RedisDeleteAlertsTopic
+        # Allow invocation from any SNS topic (CloudWatchAlarmTopic will be created by terraform)
+        SourceArn: arn:aws:sns:${aws:region}:${aws:accountId}:*
+    
+    InternalAdminEmailSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref RedisDeleteAlertsTopic
+        Protocol: email
+        Endpoint: ${ssm:INTERNAL_ADMIN_USERNAME}
+    
+    ExternalAdminEmailSubscription:
+      Type: AWS::SNS::Subscription
+      Properties:
+        TopicArn: !Ref RedisDeleteAlertsTopic
+        Protocol: email
+        Endpoint: ${ssm:EXTERNAL_ADMIN_USERNAME}
 
 
 functions:
