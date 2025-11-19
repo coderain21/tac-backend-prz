@@ -478,24 +478,6 @@ functions:
               # authorizer:
               #   arn: ${ssm:SELLER_COGNITO_AUTH_ARN}
 
-  # save-logs:
-  #     handler: handlers/login_log.handler
-  #     layers:
-  #       -  ${ssm:NodeLayerARN}
-  #     vpc:
-  #       securityGroupIds:
-  #         - ${ssm:SECURITY_GROUP_ID}
-  #       subnetIds:
-  #         - ${ssm:SUBNET_ID}
-    
-  #     events:
-  #         - http:
-  #             cors: true
-  #             path: /save-log
-  #             method: POST
-  #             authorizer:
-  #               type: COGNITO_USER_POOLS
-  #               authorizerId: { Ref: MyApiGatewayAuthorizer }
   
   subdomain-callback:
     handler: handlers/cognito_callback.handler

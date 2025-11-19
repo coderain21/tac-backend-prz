@@ -53,6 +53,9 @@ def cognitoCheck(email_address, encrypt_password):
             AuthParameters={
                 'USERNAME': email_address,
                 'PASSWORD': encrypt_password
+            },
+            ClientMetadata={
+                'is_password_update': 'true'
             }
         )
         return {

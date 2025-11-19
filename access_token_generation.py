@@ -14,6 +14,7 @@ load_dotenv()
 session = Session(profile_name=os.environ['PROFILE_ENV'])
 print(session)
 client = session.client('cognito-idp', region_name='eu-west-2')
+auction_id = '682db060580c7afdcd0e79f7'
 
 def generate_token(user_type):
     try:
@@ -44,8 +45,13 @@ def generate_token(user_type):
             AuthParameters={
                 'USERNAME': username,
                 'PASSWORD': password
-            }
+            },
+            ClientMetadata={
+                'auction_id': auction_id
+            } if user_type == 'BUYERS' and auction_id else {}
         )
+
+
 
         token = response['AuthenticationResult']['IdToken']
         os.environ['TOKEN'] = token

@@ -337,7 +337,7 @@ def create_intent(event, context):
 
 
 
-        #checking whether order is present or not 
+        #checking whether order is present or not
         orders_collection = db[os.environ['ORDERS_COLLECTION']]
         orders_data = orders_collection.find_one({"seller_email": seller_email, "email_address": email_address, "auction_id": auction_id})
         if not orders_data:

@@ -1,4 +1,3 @@
-
 data "external" "env" {
   program = ["./envs.sh"]
 }
@@ -26,6 +25,18 @@ terraform {
 
 locals {
   sub_domain = var.STAGE == "prod" ? var.DOMAIN : "${var.STAGE}.${var.DOMAIN}"
+  is_dev_preprod = contains(["dev", "pre-production"], var.STAGE)
+  is_bidding = var.STAGE == "bidding-engine"
+  
+  # Resource name suffixes based on stage
+  role_suffix = local.is_dev_preprod ? "-new" : ""
+  cluster_name = "websocket-cluster"
+  ecr_repo_name = local.is_dev_preprod ? "websocket-repo-new" : "websocket-repo"
+  lb_name = local.is_dev_preprod ? "web-soc-load-balancer-new" : "web-socket-load-balancer"
+  sg_name = local.is_dev_preprod ? "new-websocket-security-group" : "websocket-security-group"
+  tg_name = local.is_dev_preprod ? "new-target-group-websocket" : "target-group-websocket"
+  service_name = local.is_dev_preprod ? "websocket-ecs-service-new" : "websocket-ecs-service"
+  task_def_name = local.is_dev_preprod ? "new-websocket-task-definition" : "websocket-task-definition"
 }
 
 data "aws_vpc" "default" {
@@ -33,7 +44,67 @@ data "aws_vpc" "default" {
   provider = aws.deployment-eu
 }
 
+data "aws_vpc" "custom" {
+  count = local.is_dev_preprod ? 1 : 0
+  filter {
+    name   = "tag:Name"
+    values = ["new-vpc"]
+  }
+  provider = aws.deployment-eu
+}
+
+# Subnet Data Sources
+data "aws_subnet" "custom_subnet" {
+  count = local.is_dev_preprod ? 1 : 0
+  filter {
+    name   = "availability-zone"
+    values = ["eu-west-2c"]
+  }
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.custom[0].id]
+  }
+  filter {
+    name   = "tag:Name"
+    values = ["public-subnet-c"]
+  }
+  provider = aws.deployment-eu
+}
+
+data "aws_subnets" "public" {
+  filter {
+    name   = "vpc-id"
+    values = [local.is_dev_preprod ? data.aws_vpc.custom[0].id : data.aws_vpc.default.id]
+  }
+  filter {
+    name   = "map-public-ip-on-launch"
+    values = ["true"]
+  }
+  provider = aws.deployment-eu
+}
+
+# SSM Parameters for bidding engine
+data "aws_ssm_parameter" "subnet" {
+  count = local.is_bidding ? 1 : 0
+  name = "SUBNET_ID_PUBLIC"
+  provider = aws.deployment-eu
+}
+
+data "aws_ssm_parameter" "security_group" {
+  count = local.is_bidding ? 1 : 0
+  name = "SECURITY_GROUP_ID"
+  provider = aws.deployment-eu
+}
+
+# Default Subnets
+resource "aws_default_subnet" "default_az1" {
+  availability_zone = local.is_bidding ? "eu-west-2a" : "eu-west-2c"
+  provider = aws.deployment-eu
+}
+
+# Security Groups
 resource "aws_default_security_group" "default" {
+  count = !local.is_dev_preprod ? 1 : 0
   vpc_id = data.aws_vpc.default.id
   provider = aws.deployment-eu
 
@@ -58,30 +129,59 @@ resource "aws_default_security_group" "default" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-data "aws_subnets" "default" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+
+resource "aws_security_group" "ecs_security_group" {
+  count = local.is_dev_preprod ? 1 : 0
+  name        = "ecs-security-group-new"
+  description = "Security Group for ECS"
+  vpc_id = data.aws_vpc.custom[0].id
+  provider = aws.deployment-eu
+
+  ingress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow MongoDB access from anywhere"
   }
-  provider = aws.deployment-eu
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all ingress traffic from anywhere"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
 }
 
-resource "aws_default_subnet" "default_az1" {
-  availability_zone = "eu-west-2c"
+resource "aws_security_group" "websocket-security-group" {
+  name        = local.sg_name
+  description = "Security Group for ECS and Load Balancer"
+  vpc_id      = local.is_dev_preprod ? data.aws_vpc.custom[0].id : data.aws_vpc.default.id
   provider = aws.deployment-eu
-}
 
+  lifecycle {
+    ignore_changes = [description, ingress, egress]
+  }
+}
 
 data "aws_acm_certificate" "existing_certificate" {
   domain   = "*.${local.sub_domain}"
-  statuses = ["ISSUED", "PENDING_VALIDATION"] # Specify certificate statuses you want to consider as "existing"
+  statuses = ["ISSUED", "PENDING_VALIDATION"]
   provider = aws.deployment-eu
 }
 
-
-
+# IAM Roles
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecs-task-execution-role"
+  name = "ecs-task-execution-role${local.role_suffix}"
   provider = aws.deployment-eu
   assume_role_policy = <<EOF
 {
@@ -108,42 +208,43 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 EOF
 }
 
+resource "aws_iam_role" "ecs_task_role" {
+  name = "ecs-task-role${local.role_suffix}"
+  provider = aws.deployment-eu
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   },
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "states.amazonaws.com"  
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+}
+
+# IAM Role Policy Attachments
 resource "aws_iam_role_policy_attachment" "stepfunctions_full_access" {
-  role      = "${aws_iam_role.ecs_task_execution_role.name}"
+  role      = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
   provider = aws.deployment-eu
 }
 
-
-resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs-task-role"
-  provider = aws.deployment-eu
-  assume_role_policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "ecs-tasks.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   },
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "states.amazonaws.com"  
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
-}
-EOF
-}
 resource "aws_iam_role_policy_attachment" "stepfunctions_full_access_task_role" {
-  role      = "${aws_iam_role.ecs_task_role.name}"
+  role      = aws_iam_role.ecs_task_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSStepFunctionsFullAccess"
   provider = aws.deployment-eu
 }
@@ -151,111 +252,45 @@ resource "aws_iam_role_policy_attachment" "stepfunctions_full_access_task_role" 
 
 
 resource "aws_iam_role_policy_attachment" "task_s3" {
-  role       = "${aws_iam_role.ecs_task_role.name}"
+  role       = aws_iam_role.ecs_task_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
   provider = aws.deployment-eu
 }
 # Attach CloudWatch Logs full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_full_access_task_role" {
-  role      = "${aws_iam_role.ecs_task_role.name}"
+  role      = aws_iam_role.ecs_task_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
   provider = aws.deployment-eu
 }
 
 # Attach CloudWatch full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_full_access_task_role" {
-  role     = "${aws_iam_role.ecs_task_role.name}"
+  role     = aws_iam_role.ecs_task_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
   provider = aws.deployment-eu
 }
 # Attach CloudWatch Logs full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_logs_full_access_task_execution_role" {
-  role      = "${aws_iam_role.ecs_task_execution_role.name}"
+  role      = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
   provider = aws.deployment-eu
 }
 
 # Attach CloudWatch full access policy
 resource "aws_iam_role_policy_attachment" "cloudwatch_full_access_task_execution_role" {
-  role      = "${aws_iam_role.ecs_task_execution_role.name}"
+  role      = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchFullAccess"
   provider = aws.deployment-eu
 }
 resource "aws_iam_role_policy_attachment" "ecs-task-execution-role-policy-attachment" {
-  role       = "${aws_iam_role.ecs_task_execution_role.name}"
+  role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
   provider = aws.deployment-eu
 }
 
-# Security Group for loadbalancer
-resource "aws_security_group" "websocket-security-group" {
-  name        = "websocket-security-group"
-  description = "Security Group for ECS and Load Balancer"
-  vpc_id      = data.aws_vpc.default.id
-  provider = aws.deployment-eu
-
-  # Inbound rules
-  ingress {
-    from_port = 6379
-    to_port   = 6379
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 11211
-    to_port   = 11211
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 8080
-    to_port   = 8080
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 22
-    to_port   = 22
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 0
-    to_port   = 65535
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Outbound rules (allow all traffic)
-  egress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 # ECS Cluster
 resource "aws_ecs_cluster" "websocket-cluster" {
-  name = "websocket-cluster"
+  name = local.cluster_name
   provider = aws.deployment-eu
   setting {
     name  = "containerInsights"
@@ -264,7 +299,7 @@ resource "aws_ecs_cluster" "websocket-cluster" {
 }
 # ECR Repositories
 resource "aws_ecr_repository" "repo1" {
-  name = "websocket-repo"
+  name = local.ecr_repo_name
   provider = aws.deployment-eu
   force_delete = true
   image_scanning_configuration {
@@ -281,20 +316,12 @@ resource "aws_ecr_repository" "repo" {
   }
 }
 
-
-########################
-
-# data "aws_s3_bucket_object" "my_objects" {
-#   bucket = "ecs-deployment-bucket"
-#   key = "ecr-credential/task-definition.json"
-#   provider = aws.deployment-eu
-# }
-
+# Task Definition
 locals {
   definitions = jsonencode([
     {
       name      = "websocket-container"
-      image     = "${resource.aws_ecr_repository.repo1.repository_url}:latest"
+      image     = "${aws_ecr_repository.repo1.repository_url}:latest"
       cpu       = 0
       essential = true
       portMappings = [
@@ -306,7 +333,6 @@ locals {
       ]
       readonlyRootFilesystem = true
       environment = [
-        # Loop over each key in the parsed JSON and create environment variables
         for key, value in data.external.env.result :
         {
           name  = key
@@ -343,39 +369,26 @@ data "aws_ssm_parameter" "ecs_memory" {
 }
 
 resource "aws_ecs_task_definition" "websocket-task-definition" {
-  family                   = "websocket-task-definition"
+  family                   = local.task_def_name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  task_role_arn            = resource.aws_iam_role.ecs_task_role.arn
-  execution_role_arn       = resource.aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   cpu                      = data.aws_ssm_parameter.cpu.value
   memory                   = data.aws_ssm_parameter.memory.value
-  depends_on = [resource.aws_ecs_cluster.websocket-cluster,resource.aws_ecr_repository.repo1]
+  depends_on = [aws_ecs_cluster.websocket-cluster, aws_ecr_repository.repo1]
   container_definitions = local.definitions
   skip_destroy = true
   provider = aws.deployment-eu
 }
 
-data "aws_subnets" "public" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
-  }
-  filter {
-    name   = "map-public-ip-on-launch"
-    values = ["true"]
-  }
-  provider = aws.deployment-eu
-}
-
-
-# Application Load Balancer (ALB) and Target Group
+# Load Balancer
 resource "aws_lb" "load-balancer" {
-  name               = "web-socket-load-balancer"
+  name               = local.lb_name
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.websocket-security-group.id]  # Security group for the Load Balancer
-  subnets            = data.aws_subnets.public.ids
+  security_groups    = local.is_bidding ? [data.aws_ssm_parameter.security_group[0].value] : [aws_security_group.websocket-security-group.id]
+  subnets            = local.is_bidding ? [data.aws_ssm_parameter.subnet[0].value, aws_default_subnet.default_az1.id] : data.aws_subnets.public.ids
 
   enable_deletion_protection = true
   provider = aws.deployment-eu
@@ -383,7 +396,7 @@ resource "aws_lb" "load-balancer" {
 
 
 data "aws_route53_zone" "domain_zone" {
-  name = local.sub_domain # Replace with your domain name
+  name = local.sub_domain
   provider = aws.route53-account
 }
 
@@ -401,19 +414,19 @@ resource "aws_route53_record" "my_cname" {
 
 # Target Group
 resource "aws_lb_target_group" "target_group" {
-  name     = "target-group-websocket"
+  name     = local.tg_name
   port     = 80
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.default.id  # Use VPC ID from default VPC
+  vpc_id   = local.is_dev_preprod ? data.aws_vpc.custom[0].id : data.aws_vpc.default.id
   target_type = "ip"
   health_check {
     enabled             = true
-    interval            = 30             # seconds between checks
-    path                = "/"            # health check URL path
-    timeout             = 5              # seconds before timeout
-    healthy_threshold   = 5             # consecutive successes to mark healthy
-    unhealthy_threshold = 2           # consecutive failures to mark unhealthy
-    matcher             = "200"      # HTTP status codes considered healthy
+    interval            = 30
+    path                = "/"
+    timeout             = 5
+    healthy_threshold   = 5
+    unhealthy_threshold = 2
+    matcher             = "200"
   }
   provider = aws.deployment-eu
 }
@@ -437,15 +450,15 @@ resource "aws_lb_listener" "listener" {
 
 
 resource "aws_ecs_service" "ecs_service" {
-  name            = "websocket-ecs-service"
-  cluster         = resource.aws_ecs_cluster.websocket-cluster.id
-  task_definition = resource.aws_ecs_task_definition.websocket-task-definition.arn
-  desired_count   = 1
+  name            = local.service_name
+  cluster         = aws_ecs_cluster.websocket-cluster.id
+  task_definition = aws_ecs_task_definition.websocket-task-definition.arn
+  desired_count   = 2
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = [resource.aws_default_subnet.default_az1.id]  # Fetch default subnets dynamically
-    security_groups = [aws_default_security_group.default.id]
+    subnets         = local.is_bidding ? [data.aws_ssm_parameter.subnet[0].value] : (local.is_dev_preprod ? [data.aws_subnet.custom_subnet[0].id] : [aws_default_subnet.default_az1.id])
+    security_groups = local.is_bidding ? [data.aws_ssm_parameter.security_group[0].value] : (local.is_dev_preprod ? [aws_security_group.ecs_security_group[0].id] : [aws_default_security_group.default[0].id])
     assign_public_ip = true
   }
 
@@ -457,18 +470,22 @@ resource "aws_ecs_service" "ecs_service" {
   provider = aws.deployment-eu
 }
 
+# Auto Scaling
 resource "aws_appautoscaling_target" "target" {
   max_capacity = 10
-  min_capacity = 5
-  resource_id =  "service/${aws_ecs_cluster.websocket-cluster.name}/${aws_ecs_service.ecs_service.name}"
+  min_capacity = 2
+  resource_id = "service/${aws_ecs_cluster.websocket-cluster.name}/${aws_ecs_service.ecs_service.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace = "ecs"
   provider = aws.deployment-eu
 }
 
 
-resource "aws_appautoscaling_policy" "cpu" {
-  name = "cpu"
+
+# Request Count Policy (only for bidding engine)
+resource "aws_appautoscaling_policy" "request_count" {
+  count = local.is_bidding ? 1 : 0
+  name = "request-count"
   policy_type = "TargetTrackingScaling"
   resource_id = aws_appautoscaling_target.target.resource_id
   scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
@@ -476,29 +493,17 @@ resource "aws_appautoscaling_policy" "cpu" {
 
   target_tracking_scaling_policy_configuration {
     predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+      predefined_metric_type = "ALBRequestCountPerTarget"
+      resource_label = "${aws_lb.load-balancer.arn_suffix}/${aws_lb_target_group.target_group.arn_suffix}"
     }
-
-    target_value = data.aws_ssm_parameter.ecs_cpu.value
+    target_value = 25
+    scale_out_cooldown = 300
+    scale_in_cooldown = 300
   }
   provider = aws.deployment-eu
 }
-resource "aws_appautoscaling_policy" "memory" {
-  name = "memory"
-  policy_type = "TargetTrackingScaling"
-  resource_id = aws_appautoscaling_target.target.resource_id
-  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
-  service_namespace = aws_appautoscaling_target.target.service_namespace
 
-  target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
-    }
-
-    target_value = data.aws_ssm_parameter.ecs_memory.value
-  }
-  provider = aws.deployment-eu
-}
+# SSM Parameters
 resource "aws_ssm_parameter" "socket" {
   name  = "SOCKET_URL"
   type  = "String"
@@ -507,15 +512,13 @@ resource "aws_ssm_parameter" "socket" {
   overwrite = true
 }
 
-
 resource "aws_ssm_parameter" "ecr_rep_uri" {
   name  = "ECR_REPO_URI"
   type  = "String"
-  value = "${aws_ecr_repository.repo1.repository_url}"
+  value = aws_ecr_repository.repo1.repository_url
   provider = aws.deployment-eu
   overwrite = true
 }
-
 
 resource "aws_ssm_parameter" "ecr_repo_name" {
   name  = "ECR_REPO_NAME"
@@ -524,6 +527,7 @@ resource "aws_ssm_parameter" "ecr_repo_name" {
   provider = aws.deployment-eu
   overwrite = true
 }
+
 resource "aws_ssm_parameter" "ecr_repo_tag" {
   name  = "ECR_REPO_URI_TAG"
   type  = "String"
@@ -532,6 +536,15 @@ resource "aws_ssm_parameter" "ecr_repo_tag" {
   overwrite = true
 }
 
+resource "aws_ssm_parameter" "alb_arn" {
+  name  = "ALB_ARN"
+  type  = "String"
+  value = aws_lb.load-balancer.arn
+  provider = aws.deployment-eu
+  overwrite = true
+}
+
+# WAF Association (prod only)
 data "aws_ssm_parameter" "waf_web_acl" {
   count = var.STAGE == "prod" ? 1 : 0
   name ="SECURE_API_WEB_ACL_ARN"
@@ -544,10 +557,231 @@ resource "aws_wafv2_web_acl_association" "web_acl_association" {
   resource_arn = aws_lb.load-balancer.arn
   provider = aws.deployment-eu
 }
-resource "aws_ssm_parameter" "alb_arn" {
-  name  = "ALB_ARN"
-  type  = "String"
-  value = aws_lb.load-balancer.arn
+
+# CloudWatch Alarms and Step Scaling
+data "aws_sns_topic" "ses_reputation_topic" {
+  name = "SESReputationTopic"
   provider = aws.deployment-eu
-  overwrite = true
+}
+
+resource "aws_appautoscaling_policy" "ecs_cpu_scaling" {
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}cpu-scaling-${var.STAGE}"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown               = 15
+    metric_aggregation_type = "Maximum"
+    
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_appautoscaling_policy" "ecs_memory_target_scaling" {
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}memory-target-scaling-${var.STAGE}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageMemoryUtilization"
+    }
+
+    target_value       = 50               # keep average memory usage ~65%
+    scale_in_cooldown  = 60                # wait 1 min before scaling in
+    scale_out_cooldown = 30                # scale out quickly when needed
+  }
+
+  provider = aws.deployment-eu
+}
+resource "aws_appautoscaling_policy" "ecs_cpu_target_scaling" {
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}cpu-target-scaling-${var.STAGE}"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+
+    target_value       = 50               # keep average memory usage ~65%
+    scale_in_cooldown  = 60                # wait 1 min before scaling in
+    scale_out_cooldown = 30                # scale out quickly when needed
+  }
+
+  provider = aws.deployment-eu
+}
+
+resource "aws_appautoscaling_policy" "ecs_memory_scaling" {
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}memory-scaling-${var.STAGE}"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown               = 15
+    metric_aggregation_type = "Maximum"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_appautoscaling_policy" "ecs_request_scaling" {
+  name               = "ecs-${local.is_bidding ? "bidding-" : (local.is_dev_preprod ? "new-" : "")}request-scaling-${var.STAGE}"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.target.resource_id
+  scalable_dimension = aws_appautoscaling_target.target.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.target.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown               = 60
+    metric_aggregation_type = "Maximum"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+    
+    step_adjustment {
+      metric_interval_upper_bound = 0
+      scaling_adjustment          = -1
+    }
+  }
+  provider = aws.deployment-eu
+}
+
+# CloudWatch Alarms
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_out" {
+  alarm_name          = "ecs-${local.is_bidding ? "bidding-" : ""}cpu-scale-out-${var.STAGE}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = data.aws_ssm_parameter.ecs_cpu.value   # Scale at 70% Memory
+  alarm_description   = "Scale out when CPU > 60% for 1 minute"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  treat_missing_data = "notBreaching"
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_cpu_scale_in" {
+  alarm_name          = "ecs-${local.is_bidding ? "bidding-" : ""}cpu-scale-in-${var.STAGE}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 3
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 40
+  alarm_description   = "Scale in when CPU < 40% for 3 minutes"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_cpu_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_out" {
+  alarm_name          = "ecs-${local.is_bidding ? "bidding-" : ""}memory-scale-out-${var.STAGE}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Maximum"
+  threshold           = data.aws_ssm_parameter.ecs_memory.value   # Scale at 70% Memory
+  alarm_description   = "Scale out when Memory > 60% for 1 minute"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  treat_missing_data = "notBreaching"
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_memory_scale_in" {
+  alarm_name          = "ecs-${local.is_bidding ? "bidding-" : ""}memory-scale-in-${var.STAGE}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 3
+  metric_name         = "MemoryUtilization"
+  namespace           = "AWS/ECS"
+  period              = 60
+  statistic           = "Average"
+  threshold           = 40
+  alarm_description   = "Scale in when Memory < 30% for 3 minutes"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_memory_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    ServiceName = aws_ecs_service.ecs_service.name
+    ClusterName = aws_ecs_cluster.websocket-cluster.name
+  }
+  treat_missing_data = "notBreaching"
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_requests_scale_out" {
+  alarm_name          = "ecs-${local.is_bidding ? "bidding-" : ""}requests-scale-out-${var.STAGE}"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  period              = "60"
+  statistic           = "Sum"
+  threshold           = "25"
+  alarm_description   = "Scale out when requests > 25 for 1 minute"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_request_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    LoadBalancer = aws_lb.load-balancer.arn_suffix
+    TargetGroup  = aws_lb_target_group.target_group.arn_suffix
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "ecs_requests_scale_in" {
+  alarm_name          = "ecs-${local.is_bidding ? "bidding-" : ""}requests-scale-in-${var.STAGE}"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "15"
+  metric_name         = "RequestCountPerTarget"
+  namespace           = "AWS/ApplicationELB"
+  period              = "60"
+  statistic           = "Average"
+  threshold           = "90"
+  alarm_description   = "Scale in when requests < 50 for 15 minutes"
+  alarm_actions       = [aws_appautoscaling_policy.ecs_request_scaling.arn, data.aws_sns_topic.ses_reputation_topic.arn]
+  
+  dimensions = {
+    LoadBalancer = aws_lb.load-balancer.arn_suffix
+    TargetGroup  = aws_lb_target_group.target_group.arn_suffix
+  }
+  provider = aws.deployment-eu
 }

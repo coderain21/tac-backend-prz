@@ -43,6 +43,8 @@ def get_mongodb_collection():
         mongo_uri = os.environ.get("MONGO_CLIENT")
         db_name = os.environ.get("MONGODB_NAME")
         collection_name = os.environ.get("REDIS_KEYS_COLLECTION")
+        auction_collection = os.environ.get("AUCTION_COLLECTION")
+
 
         # Validate MongoDB environment variables
         if not mongo_uri:
@@ -54,7 +56,7 @@ def get_mongodb_collection():
         client.admin.command('ping')  # Test MongoDB connection
         db = client[db_name]
         print(f"Successfully connected to MongoDB. DB: {db_name}, Collection: {collection_name}")
-        return db[collection_name]
+        return db[collection_name], db[auction_collection]
     except pymongo_errors.ConnectionFailure as cf:
         print(f"MongoDB connection failed: {cf}")
         raise
@@ -70,7 +72,7 @@ def delete_old_redis_data(event, context):
     try:
         # Setup Redis and MongoDB connections
         redis_cluster = createRedisClient()
-        mongo_collection = get_mongodb_collection()
+        mongo_collection, auction_collection = get_mongodb_collection()
     except Exception as setup_e:
         # Send SNS alert if setup fails
         print(f"Setup error (Redis or MongoDB connection): {setup_e}")
@@ -124,6 +126,19 @@ def delete_old_redis_data(event, context):
             redis_keys_to_delete = [key for key in redis_keys_in_doc if key]
 
             print(f"Redis keys to attempt deletion for doc {doc_id}: {redis_keys_to_delete}")
+            # Check auction status - only delete if status is 'Completed'
+            auction_id = doc.get('auction_id')
+            seller_email = doc.get('seller_email')
+            if auction_id and seller_email:
+                try:
+                    auction_doc = auction_collection.find_one({"auction_id": auction_id, 'seller_email': seller_email})
+                    if not auction_doc or auction_doc.get('status') != 'Completed':
+                        print(f"Skipping deletion for doc {doc_id} - auction {auction_id} status: {auction_doc.get('status') if auction_doc else 'not found'}")
+                        continue
+                except Exception as ae:
+                    print(f"Error checking auction status for {auction_id}: {ae}")
+                    continue
+
 
             # If no keys to delete, mark doc for deletion from MongoDB anyway
             if not redis_keys_to_delete:
@@ -176,8 +191,8 @@ def delete_old_redis_data(event, context):
 
         stage = os.environ.get('STAGE', 'unknown')
 
-        # Send summary via SNS if topic is configured
-        if sns_topic_arn:
+        # Send summary via SNS only if data was actually deleted from both Redis and MongoDB
+        if sns_topic_arn and deleted_redis_keys_count > 0 and mongo_docs_deleted_successfully_count > 0:
             sns_client = boto3.client('sns')
             message_payload = {
                 'status': 'SUCCESS',
@@ -194,11 +209,11 @@ def delete_old_redis_data(event, context):
             sns_client.publish(
                 TopicArn=sns_topic_arn,
                 Message=json.dumps(message_payload, indent=4),
-                Subject=f'{stage}: Cron job redis cleanup'
+                Subject=f'{stage}: Cron job redis cleanup - Data Deleted'
             )
-            print("SNS alert sent.")
+            print("SNS alert sent - data was deleted from both Redis and MongoDB.")
         else:
-            print("SNS_TOPIC_ARN not set. No alert sent.")
+            print(f"No SNS alert sent. Redis deletions: {deleted_redis_keys_count}, MongoDB deletions: {mongo_docs_deleted_successfully_count}")
 
         return {
             'statusCode': 200,

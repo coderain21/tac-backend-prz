@@ -51,17 +51,7 @@ provider:
     MAILCHIMP_SECRET_KEY: ${ssm:MAILCHIMP_SECRET_KEY}
     MAILCHIMP_API_KEY:  ${ssm:MAILCHIMP_SECRET_KEY}
     ORDERS_COLLECTION: ${opt:stage, self:provider.stage}-orders
-    SQS_QUEUE_ARN:  
-       Fn::Join:
-        - ":"
-        - - "arn"
-          - "aws"
-          - "sqs"
-          - !Ref "AWS::Region"
-          - !Ref "AWS::AccountId"
-          - "auto-completion-email-${self:provider.stage}.fifo"
     BIDINFORMATIONTABLE: ${opt:stage, self:provider.stage}-bid-informations
-    SQS_QUEUE_NAME: auto-completion-email-${opt:stage, self:provider.stage}.fifo
     UNIQUE_BIDDERS_COLLECTIONS: ${opt:stage, self:provider.stage}-unique-bids
     STEP_FUNCTION_ARN_TABLE: ${opt:stage, self:provider.stage}-step-function-arns
     REDIS_CLUSTER_CONNECTION_URL: ${ssm:REDIS_CLUSTER_CONNECTION_URL}
@@ -97,20 +87,7 @@ provider:
             - !Ref "AWS::Region"
             - !Ref "AWS::AccountId"
             - "stateMachine:${opt:stage}-auction-ended"
-    QUEUE_URL: 
-      Fn::Join:
-          - "/"
-          - - "https:/"
-            - "sqs.eu-west-2.amazonaws.com"
-            - !Ref "AWS::AccountId"
-            - "auto-completion-email-${opt:stage}.fifo"
-    LOT_UPDATE_QUEUE_URL: 
-      Fn::Join:
-          - "/"
-          - - "https:/"
-            - "sqs.eu-west-2.amazonaws.com"
-            - !Ref "AWS::AccountId"
-            - "${opt:stage}-bulk-lots-update"
+
 
     
     
@@ -550,181 +527,12 @@ functions:
     layers:
       -  ${ssm:NodeLayerARN}
 
-
-
-
-  sqs-lot-update:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 180
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-
-  sqs-lot-update_1:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 180
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-
-  sqs-lot-update_2:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 180
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-
-  sqs-lot-update_3:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 180
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-
-  sqs-lot-update_4:
-    handler: handlers/batch_lots_update.handler
-    memorySize: ${ssm:LAMBDA_MEMORY}
-    maximumRetryAttempts: 0
-    timeout: 60
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs:
-          arn: 
-            Fn::GetAtt:
-                    - updateLotsQueue
-                    - Arn
-  # sqs-lot-update_5:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   maximumRetryAttempts: 0
-  #   timeout: 60
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-  # sqs-lot-update_6:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   timeout: 60
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-
-
-  # sqs-lot-update_7:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   timeout: 60
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-  # sqs-lot-update_8:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-  # sqs-lot-update_9:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   timeout: 60
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-  # sqs-lot-update_10:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   timeout: 60
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-
-
-  # sqs-lot-update_11:
-  #   handler: handlers/batch_lots_update.handler
-  #   memorySize: ${ssm:LAMBDA_MEMORY}
-  #   layers:
-  #     -  ${ssm:NodeLayerARN}
-  #   events:
-  #     - sqs:
-  #         arn: 
-  #           Fn::GetAtt:
-  #                   - updateLotsQueue
-  #                   - Arn
-
   save-to-cache:
     handler: handlers/save_to_cache.handler
     layers:
       -  ${ssm:NodeLayerARN}
       
-  sqs-trigger-function:
-    handler: handlers/sqs_trigger_function.sqsTriggerFunction
-    layers:
-      -  ${ssm:NodeLayerARN}
-    events:
-      - sqs: 
-          arn: 
-            Fn::GetAtt:
-                    - messageQueue
-                    - Arn
+
 
   wait-for-lot-ends:
     handler: handlers/wait_for_lot_ends.handler
@@ -831,11 +639,7 @@ resources:
           - StateMachineName: ${opt:stage}-auction-ended
 
 
-    messageQueue:
-      Type: "AWS::SQS::Queue"
-      Properties:
-        QueueName: auto-completion-email-${opt:stage, self:provider.stage}.fifo
-        FifoQueue: true
+
 
     # new dlq for lot update failures
     BatchLotsUpdateDLQ:
@@ -850,34 +654,9 @@ resources:
       Properties:
         QueueName: ${opt:stage, self:provider.stage}-cleanup-step-functions-dlq
         
-    updateLotsQueue:
-      Type: AWS::SQS::Queue
-      Properties:
-        QueueName: ${opt:stage, self:provider.stage}-bulk-lots-update
-        VisibilityTimeout: 180
-
-    SQSSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: SQS_QUEUE_ARN
-        Type: String
-        Value: !Sub "arn:aws:states:${AWS::Region}:${AWS::AccountId}:auto-completion-email-${opt:stage}.fifo"
 
 
-    SQSURLSSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: QUEUE_URL
-        Type: 'String'
-        Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/auto-completion-email-${opt:stage}.fifo"
 
-
-    SQSLOTUPDATESSMParameter:
-      Type: AWS::SSM::Parameter
-      Properties:
-        Name: LOT_UPDATE_QUEUE_URL
-        Type: 'String'
-        Value: !Sub "https://sqs.eu-west-2.amazonaws.com/${AWS::AccountId}/${opt:stage}-bulk-lots-update"
 
     
     # GatewayResponseDefault4XX:
