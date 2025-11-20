@@ -551,6 +551,36 @@ resource "aws_cloudwatch_metric_alarm" "add_callback_logout_urls_error_alarm" {
 
 
 
+# PayPal Connect Webhook Lambda Error Alarm
+resource "aws_cloudwatch_log_metric_filter" "paypal_connect_webhook_lambda_error_filter" {
+  name           = "PayPal Connect Webhook All Errors"
+  log_group_name = "/aws/lambda/paypal-${var.STAGE}-paypal_connect_webhook"
+  pattern        = "[timestamp, requestId, level=\"ERROR\", message=\"*Error processing webhook*\" || message=\"*Invalid Webhook Event*\" || message=\"*Merchant not found*\" || message=\"*MongoDB*\" || message=\"*PayPal*\" || message=\"*Exception*\"]"
+
+  metric_transformation {
+    name      = "PayPalConnectWebhookErrorCount"
+    namespace = "PayPalConnectWebhookError"
+    value     = "1"
+    default_value = "0"
+  }
+  provider = aws.deployment-eu
+}
+
+resource "aws_cloudwatch_metric_alarm" "paypal_connect_webhook_lambda_error_alarm" {
+  alarm_name          = "P1-IndyAuction-${var.STAGE}-PayPal-Connect-Webhook-Error-Alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = aws_cloudwatch_log_metric_filter.paypal_connect_webhook_lambda_error_filter.metric_transformation[0].name
+  namespace           = aws_cloudwatch_log_metric_filter.paypal_connect_webhook_lambda_error_filter.metric_transformation[0].namespace
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 1
+  alarm_description   = "PayPal Connect Webhook Lambda errors >= 1"
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_sns_topic.cloudwatch_alarm_topic.arn]
+  provider            = aws.deployment-eu
+}
+
 # Admin Pre Signup Lambda Error Alarm
 resource "aws_cloudwatch_log_metric_filter" "admin_pre_signup_lambda_error_filter" {
   name           = "Admin Pre Signup All Errors"
