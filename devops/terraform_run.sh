@@ -208,6 +208,7 @@ eval $( $(pwd)/aws_signing_helper credential-process \
 
 echo "Serverless Service wise Deployment Started"
 cd services/dependency-management
+npm i serverless-plugin-scripts
 run_command sls deploy --region $REGION --stage $STAGE
 # Store layer ARNs to SSM after deployment
 NODE_ARN=$(aws cloudformation describe-stacks --stack-name dependency-management-$STAGE --query "Stacks[0].Outputs[?OutputKey=='DevNodejsLambdaLayerQualifiedArn'].OutputValue" --output text --region $REGION)
