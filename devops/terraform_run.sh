@@ -213,10 +213,26 @@ run_command sls deploy --region $REGION --stage $STAGE
 # Store layer ARNs to SSM after deployment
 NODE_ARN=$(aws cloudformation describe-stacks --stack-name dependency-management-$STAGE --query "Stacks[0].Outputs[?OutputKey=='DevNodejsLambdaLayerQualifiedArn'].OutputValue" --output text --region $REGION)
 PYTHON_ARN=$(aws cloudformation describe-stacks --stack-name dependency-management-$STAGE --query "Stacks[0].Outputs[?OutputKey=='DevPythonLambdaLayerQualifiedArn'].OutputValue" --output text --region $REGION)
-PYTHON2_ARN=$(aws cloudformation describe-stacks --stack-name dependency-management-$STAGE --query "Stacks[0].Outputs[?OutputKey=='DevPython2LambdaLayerQualifiedArn'].OutputValue" --output text --region $REGION)
-aws ssm put-parameter --name "NODE_LIB_ARN" --value "$NODE_ARN" --type "String" --overwrite --region $REGION
-aws ssm put-parameter --name "PYTHON_LIB_ARN" --value "$PYTHON_ARN" --type "String" --overwrite --region $REGION
-aws ssm put-parameter --name "PYTHON_LIB_ARN_2" --value "$PYTHON2_ARN" --type "String" --overwrite --region $REGION
+PYTHON2_ARN=$(aws cloudformation describe-stacks --stack-name dependency-management-$STAGE --query "Stacks[0].Outputs[?OutputKey=='DevPythonSecondLambdaLayerQualifiedArn'].OutputValue" --output text --region $REGION)
+
+# Only store parameters if values are not empty
+if [ -n "$NODE_ARN" ] && [ "$NODE_ARN" != "None" ]; then
+    aws ssm put-parameter --name "NODE_LIB_ARN" --value "$NODE_ARN" --type "String" --overwrite --region $REGION
+else
+    echo "Warning: NODE_ARN is empty, skipping SSM parameter creation"
+fi
+
+if [ -n "$PYTHON_ARN" ] && [ "$PYTHON_ARN" != "None" ]; then
+    aws ssm put-parameter --name "PYTHON_LIB_ARN" --value "$PYTHON_ARN" --type "String" --overwrite --region $REGION
+else
+    echo "Warning: PYTHON_ARN is empty, skipping SSM parameter creation"
+fi
+
+if [ -n "$PYTHON2_ARN" ] && [ "$PYTHON2_ARN" != "None" ]; then
+    aws ssm put-parameter --name "PYTHON_LIB_ARN_2" --value "$PYTHON2_ARN" --type "String" --overwrite --region $REGION
+else
+    echo "Warning: PYTHON2_ARN is empty, skipping SSM parameter creation"
+fi
 cd ../..
 cd services/cognito-auth
 run_command sls deploy --region $REGION --stage $STAGE 
