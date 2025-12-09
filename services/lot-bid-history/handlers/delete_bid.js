@@ -92,11 +92,22 @@ module.exports.handler = async (event, context) => {
             }
         }
 
-        // Get all bids for this lot sorted by bid amount in descending order
+        // Check if this is the top bid - only top bid can be deleted
+        const topBid = await BidInformation.findOne({ lot_id: lotId }).sort({ bid_amount: -1 })
+
+        if (!topBid || topBid._id.toString() !== bidId) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ message: 'Only the top bid can be deleted' }),
+            }
+        }
+
+        // Get all bids for this lot sorted by created_at in descending order
         const bidsQuery = { lot_id: lotId }
 
-        const allBids = await BidInformation.find(bidsQuery).sort({ bid_amount: -1 })
-        const allUniqueBids = await Bid.find(bidsQuery).sort({ bid_amount: -1 })
+        const allBids = await BidInformation.find(bidsQuery).sort({ created_at: -1 })
+        const allUniqueBids = await Bid.find(bidsQuery).sort({ created_at: -1 })
 
         // Only proceed if we found the bid
         if (!allBids || allBids.length === 0) {
@@ -124,13 +135,14 @@ module.exports.handler = async (event, context) => {
         let updateData = {}
 
         if (!remainingBids || remainingBids.length === 0) {
-            // No bids left, clear bid information
+            // No bids left, clear bid information and ensure status is "Accepting Bids"
             updateData = {
                 current_bid: 0,
                 top_bidder: '',
                 paddle_number: null,
                 winning_user: '',
                 max_bid: 0,
+                status: 'Accepting Bids',
             }
         } else {
             // Set the highest remaining bidder as the top bidder
