@@ -1,9 +1,12 @@
+/* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-unused-vars */
+/* eslint-disable import/no-unresolved */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable camelcase */
 /* eslint-disable import/extensions */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable no-console */
+const axios = require('axios')
 const { createRedisClient } = require('../lib/redis_helper')
 const mongodbHelper = require('../lib/mongodb_helper')
 
@@ -19,6 +22,24 @@ const headers = {
     'Access-Control-Allow-Credentials': true,
     'Access-Control-Allow-Headers': '*',
     'Access-Control-Allow-Methods': '*',
+}
+
+/**
+ * Send socket notification to all connected clients
+ */
+async function sendSocketNotification(payload) {
+    try {
+        const headersList = {
+            Accept: '*/*',
+            'User-Agent': 'API',
+            'Content-Type': 'application/json',
+        }
+        const reqUrl = `${process.env.SOCKET_URL}/notification`
+        await axios.post(reqUrl, payload, { headers: headersList })
+        console.log('Socket notification sent successfully')
+    } catch (err) {
+        console.error('Error sending socket notification:', err.message)
+    }
 }
 
 /**
@@ -71,11 +92,22 @@ module.exports.handler = async (event, context) => {
             }
         }
 
-        // Get all bids for this lot sorted by bid amount in descending order
+        // Check if this is the top bid - only top bid can be deleted
+        const topBid = await BidInformation.findOne({ lot_id: lotId }).sort({ bid_amount: -1 })
+
+        if (!topBid || topBid._id.toString() !== bidId) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ message: 'Only the top bid can be deleted' }),
+            }
+        }
+
+        // Get all bids for this lot sorted by created_at in descending order
         const bidsQuery = { lot_id: lotId }
 
-        const allBids = await BidInformation.find(bidsQuery).sort({ bid_amount: -1 })
-        const allUniqueBids = await Bid.find(bidsQuery).sort({ bid_amount: -1 })
+        const allBids = await BidInformation.find(bidsQuery).sort({ created_at: -1 })
+        const allUniqueBids = await Bid.find(bidsQuery).sort({ created_at: -1 })
 
         // Only proceed if we found the bid
         if (!allBids || allBids.length === 0) {
@@ -103,13 +135,14 @@ module.exports.handler = async (event, context) => {
         let updateData = {}
 
         if (!remainingBids || remainingBids.length === 0) {
-            // No bids left, clear bid information
+            // No bids left, clear bid information and ensure status is "Accepting Bids"
             updateData = {
                 current_bid: 0,
                 top_bidder: '',
                 paddle_number: null,
                 winning_user: '',
                 max_bid: 0,
+                status: 'Accepting Bids',
             }
         } else {
             // Set the highest remaining bidder as the top bidder
@@ -134,6 +167,7 @@ module.exports.handler = async (event, context) => {
 
         // Update Redis cache for this lot
         const redisKey = `lot:${lotId}`
+        let updatedLotData = null
         try {
             const existingRecord = await redisClient.hget('lot', redisKey)
 
@@ -141,6 +175,7 @@ module.exports.handler = async (event, context) => {
                 const lotData = JSON.parse(existingRecord)
                 // Update the lot data with new top bidder info
                 Object.assign(lotData, updateData)
+                updatedLotData = lotData
                 // Save back to Redis using multi command for atomic operation
                 await redisClient.multi()
                     .hset('lot', redisKey, JSON.stringify(lotData))
@@ -150,6 +185,60 @@ module.exports.handler = async (event, context) => {
             console.log(`Error updating Redis: ${e}`)
         }
 
+        // Get updated lot information for socket notification
+        const updatedLot = await Lot.findById(lotId)
+
+        // Get all remaining bids for this lot to send in notification
+        const allRemainingBids = await BidInformation.find({ lot_id: lotId })
+            .sort({ bid_amount: -1 })
+            .lean()
+
+        // Prepare bid history data for socket notification
+        const bidHistoryData = {
+            success: true,
+            newResponse: {
+                top_bid: updateData.current_bid || 0,
+                bidders: await Bid.countDocuments({ lot_id: lotId }),
+                top_bidder: updateData.top_bidder || '',
+                under_bidder: allRemainingBids.length > 1 ? {
+                    name: allRemainingBids[1].name,
+                    id: allRemainingBids[1]._id,
+                    bid_amount: allRemainingBids[1].bid_amount,
+                } : {},
+                all_bidders: allRemainingBids,
+            },
+        }
+
+        // Send socket notifications to all connected clients
+        try {
+            // Notify about bid deletion
+            await sendSocketNotification({
+                event: 'deleteBid',
+                lot_id: lotId,
+                bid_id: bidId,
+                auction_id: updatedLot?.auction_id,
+                buyer_id: buyerId,
+                new_top_bidder: updateData.top_bidder || '',
+            })
+
+            // Send updated bid history to seller clients
+            await sendSocketNotification({
+                event: 'sellerListBidHistory',
+                ...bidHistoryData,
+            })
+
+            // Update lot information for all clients
+            if (updatedLotData) {
+                await sendSocketNotification({
+                    event: 'lotUpdate',
+                    lots: updatedLotData,
+                })
+            }
+        } catch (socketError) {
+            console.error('Error sending socket notifications:', socketError.message)
+            // Don't fail the request if socket notification fails
+        }
+
         return {
             statusCode: 200,
             headers,
@@ -157,6 +246,7 @@ module.exports.handler = async (event, context) => {
                 message: 'Bid successfully deleted',
                 deleted_bid_id: bidId,
                 new_top_bidder: updateData.top_bidder || '',
+                lot_id: lotId,
             }),
         }
     } catch (e) {
